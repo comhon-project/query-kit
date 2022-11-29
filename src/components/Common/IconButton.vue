@@ -3,7 +3,7 @@
   import { classes } from '../../core/ClassManager';
 import { icons } from '../../core/IconManager';
   import Utils from '../../core/Utils';
-  import { translate } from '../../i18n/Translate';
+  import { translate } from '../../i18n/i18n';
 
   const emit = defineEmits(['click']);
   const props = defineProps({

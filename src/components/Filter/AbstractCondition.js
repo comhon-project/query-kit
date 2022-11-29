@@ -1,5 +1,5 @@
 import { computed, toRaw } from 'vue'
-import { translate } from '../../i18n/Translate';
+import { translate } from '../../i18n/i18n';
 import { operatorNames, getOperators, useHelpers} from "./FilterManager";
 
 const useBaseCondition = (props, schema, conditionType) => {

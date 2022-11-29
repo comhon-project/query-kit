@@ -57,9 +57,6 @@ const props = defineProps({
   },
 });
 
-// TODO locales for schema properties and scopes
-// collection
-
 const schema = ref();
 const builtFilter = ref(null);
 const computedFilter = ref(null);

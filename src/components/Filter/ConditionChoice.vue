@@ -3,7 +3,7 @@
   import { classes } from '../../core/ClassManager';
   import SchemaLoader from '../../core/SchemaLoader';
   import Utils from '../../core/Utils';
-  import { translate } from '../../i18n/Translate';
+  import { translate } from '../../i18n/i18n';
   import IconButton from '../Common/IconButton.vue';
   import { getOperators, useHelpers } from './FilterManager';
 

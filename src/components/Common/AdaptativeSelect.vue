@@ -1,5 +1,6 @@
 <script setup>
   import { computed, onMounted, onUpdated, ref, watch } from 'vue';
+  import { locale } from '../../i18n/i18n';
 
   const emit = defineEmits(['update:modelValue']);
   const props = defineProps({
@@ -36,7 +37,7 @@
     emit('update:modelValue', event.target.value);
   }
 
-
+  watch(locale, updateWidth, { flush: 'post'});
   watch(() => props.modelValue, updateWidth, { flush: 'post'});
   onMounted(updateWidth);
 

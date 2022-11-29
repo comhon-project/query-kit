@@ -1,6 +1,7 @@
 <script setup>
 import { ref, provide, toRaw } from 'vue'
 import Search from './components/Search.vue'
+import { locale } from './i18n/i18n';
 
 const theme = provide('theme', {
   color_primary: '#7457c4',
@@ -151,10 +152,23 @@ const group = {
 };
 const filter = ref(group);
 
+// TODO locales for schema properties and scopes
+// collection
+
+
+
+setTimeout(() => {
+    locale.value = 'en';
+}, 3000);
+
 </script>
 
 <template>
   <div class="root-app">
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: end;">
+      <button @click="() => locale = 'fr'" class="qkit-btn qkit-btn-primary"> fr </button>
+      <button @click="() => locale = 'en'" class="qkit-btn qkit-btn-primary"> en </button>
+    </div>
     <Search 
       :model="model" 
       :properties="properties" 
