@@ -1,0 +1,231 @@
+:root {
+    --qkit-icon-size: .75rem; 
+    --qkit-icon-color: white;
+    --qkit-icon-cross-width: 0.2rem;
+    --qkit-color-primary: #7d4ee3;
+    --qkit-color-primary-darken: #663ebd;
+    --qkit-color-secondary: #c85757;
+    --qkit-color-secondary-darken: #a84848;
+}
+
+.qkit-modal {
+    border: 0px;
+    border-radius: 0.5rem;
+    box-shadow: 0px 0px 10px gray;
+}
+
+.qkit-condition-choice-form > *:first-child, .qkit-condition-choice-form > *:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.qkit-condition-choice-form > *:last-child {
+    text-align: center;
+}
+
+.qkit-query-main {
+    display: relative;
+}
+
+.qkit-btn {
+    cursor: pointer;
+    white-space: nowrap;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    border: 0;
+    transition: background-color .15s ease-in-out;
+}
+
+.qkit-btn-primary {
+    color: white;
+    background: var(--qkit-color-primary);
+}
+
+.qkit-btn-primary:hover {
+    background: var(--qkit-color-primary-darken);
+}
+
+.qkit-btn-secondary {
+    color: white;
+    background: var(--qkit-color-secondary);
+}
+
+.qkit-btn-secondary:hover {
+    background: var(--qkit-color-secondary-darken);
+}
+
+.qkit-group {
+    border: 1px solid lightgray;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    flex-basis: 100%;
+}
+
+.qkit-group-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.qkit-group-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.qkit-group-actions {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.qkit-icon {
+    position: relative;
+    display: block;
+    width: var(--qkit-icon-size);
+    height: var(--qkit-icon-size);
+}
+
+.qkit-icon-plus:before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 50%;
+    width: var(--qkit-icon-cross-width);
+    height: 100%;
+    background-color: var(--qkit-icon-color);
+    transform: translateX(-50%);
+}
+.qkit-icon-plus:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: var(--qkit-icon-cross-width);
+    background-color: var(--qkit-icon-color);
+    transform: translateY(-50%);
+}
+
+.qkit-icon-cross:before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 50%;
+    width: var(--qkit-icon-cross-width);
+    height: 100%;
+    background-color: var(--qkit-icon-color);
+    transform: translateX(-50%) rotate(45deg);
+}
+.qkit-icon-cross:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: var(--qkit-icon-cross-width);
+    background-color: var(--qkit-icon-color);
+    transform: translateY(-50%) rotate(45deg);
+}
+
+
+.qkit-condition-container {
+    display: flex;
+}
+.qkit-condition-container > *:first-child {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--qkit-color-secondary);
+}
+.qkit-condition-container > *:last-child {
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
+
+.qkit-condition-container > button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    background: var(--qkit-color-secondary);
+}
+.qkit-condition-container > button:hover {
+    background: var(--qkit-color-secondary-darken);
+}
+
+.qkit-condition-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.qkit-condition-header > *:last-child {
+    margin-left: auto;
+}
+
+.qkit-relationship-queue-and-action {
+    display: flex;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qkit-relationship-queue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.qkit-relationship-queue-element {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.qkit-dialog-close-container {
+    text-align: right;
+    margin-bottom: 0.5rem;
+}
+
+.qkit-in-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.qkit-in-value-container {
+    display: flex;
+}
+
+.qkit-in-value-container > button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    background: var(--qkit-color-secondary);
+}
+.qkit-in-value-container > button:hover {
+    background: var(--qkit-color-secondary-darken);
+}
+
+.qkit-input-boolean > span {
+    text-transform: capitalize;
+}
+
+.qkit-error-info > span {
+    padding: 0.25rem;
+    background: orangered;
+    color: white;
+    border-radius: 0.25rem;
+    font-family: monospace;
+}
+
+.qkit-property-name-container {
+    white-space: nowrap;
+}

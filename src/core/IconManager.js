@@ -1,0 +1,26 @@
+
+const iconList = {
+    add: undefined,
+    add_filter: undefined,
+    delete: undefined,
+    search: undefined,
+    reset: undefined,
+    validate: undefined,
+    close: undefined,
+}
+
+const registerIcons = (custom) => {
+    Object.assign(iconList, custom);
+}
+
+const handler = {
+    get(obj, prop) { return obj[prop] },
+    set(obj, prop, value) { throw new Error('icons are read only') }
+};
+
+const icons = new Proxy(iconList, handler);
+
+export {
+    registerIcons,
+    icons
+}
