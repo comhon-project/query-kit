@@ -1,5 +1,5 @@
 <script setup>
-import { ref, toRaw, watchEffect } from 'vue'
+import { ref, shallowRef, toRaw, watchEffect } from 'vue'
 import Collection from './Collection/Collection.vue';
 import FilterBuilder from './Filter/Builder.vue';
 import cloneDeep from 'lodash.clonedeep';
@@ -51,17 +51,24 @@ const props = defineProps({
     type: String,
     default: 'UTC'
   },
+  manually: {
+    type: Boolean,
+    default: true
+  },
+  directQuery: {
+    type: Boolean,
+    default: true
+  },
   deferred: {
     type: Number,
     default: 1000
   },
 });
 
+let tempFilter = null;
 const schema = ref();
 const builtFilter = ref(null);
-const computedFilter = ref(null);
-const collection = ref([]);
-const count = ref(0);
+const computedFilter = shallowRef(false);
 
 async function initSchema()
 {
@@ -93,18 +100,22 @@ function getInitialFilter()
   return initialFilter;
 }
 
-async function search()
+async function applyQuery()
 {
-  const res = {
-    count: 10,
-    collection: [
-      {id: 10, first_name: 'john', 'last_name': 'doe'},
-      {id: 11, first_name: 'jane', 'last_name': 'doe'},
-      {id: 12, first_name: 'adam', 'last_name': 'smith'},
-    ]
+  // we copy object filter if it didn't changed to force reload collection
+  computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
+  location.href = "#query-collection";
+}
+
+function updateFilter(filter)
+{
+  tempFilter = filter;
+
+  // if computedFilter.value === false, this is the initialization of the computed filter
+  // (there are no user interaction yet)
+  if (!props.manually || computedFilter.value === false) {
+    computedFilter.value = filter;
   }
-  collection.value = res.collection;
-  location.href = "#search-result"
 }
 
 watchEffect(() => {
@@ -116,13 +127,13 @@ watchEffect(() => {
 
 <template>
   <div v-if="schema">
-    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="(filter) => computedFilter = filter">
+    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter">
       <template #validate>
-          <div><IconButton icon="search" @click="search" /></div>
+          <IconButton v-if="manually" icon="search" @click="applyQuery" />
         </template>
     </FilterBuilder>
-    <div id="search-result">
-      <Collection v-bind="props" :values="collection"/>
+    <div id="query-collection">
+      <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter"/>
     </div>
     <pre wrap>{{ JSON.stringify(builtFilter) }}</pre>
     ---------------------------------------------

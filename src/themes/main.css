@@ -229,3 +229,48 @@
 .qkit-property-name-container {
     white-space: nowrap;
 }
+
+.qkit-collection-table {
+    border-collapse: separate;
+    border-spacing: 0 0.25rem;
+}
+
+.qkit-collection-table th {
+    padding: 0.5rem 1rem;
+}
+
+.qkit-collection-table td {
+    padding: 1rem;
+}
+
+.qkit-collection-table thead {
+    font-size: bold;
+}
+
+.qkit-collection-table tbody td {
+    background: white;
+    border-top: 1px solid lightgray;
+    border-bottom: 1px solid lightgray;
+}
+
+.qkit-collection-table tbody td:first-child {
+    border-left: 1px solid lightgray;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+.qkit-collection-table tbody td:last-child {
+    border-right: 1px solid lightgray;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
+
+.qkit-collection-table tbody tr {
+    cursor: pointer;
+    filter: drop-shadow(0px 0px 3px gray);
+    transition: transform 0.1s ease-in-out;
+}
+
+.qkit-collection-table tbody tr:hover {
+    transform: scale(1.02);
+}

@@ -155,12 +155,6 @@ const filter = ref(group);
 // TODO locales for schema properties and scopes
 // collection
 
-
-
-setTimeout(() => {
-    locale.value = 'en';
-}, 3000);
-
 </script>
 
 <template>
@@ -180,6 +174,8 @@ setTimeout(() => {
       user-timezone="Europe/Paris"
       :display-operator="true"
       :deferred="500"
+      :manually="true"
+      :direct-query="true"
       :computed-scopes="{user: [
         {id: 'quick_search', name: 'quick search user', type: 'string', useOperator: true, computed: (value, operator) => {
           return {type: 'group', operator: 'or', filters: [

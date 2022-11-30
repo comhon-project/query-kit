@@ -24,7 +24,9 @@ const classList = {
     group_header: 'qkit-group-header',
     group_actions: 'qkit-group-actions',
     group_list: 'qkit-group-list',
-    operator: 'qkit-operator'
+    operator: 'qkit-operator',
+
+    collection_table: 'qkit-collection-table',
 }
 
 const registerClasses = (custom) => {

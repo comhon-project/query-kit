@@ -1,16 +1,13 @@
 <script setup>
-import { computed, ref, watch, onMounted, toRaw } from 'vue'
-import SchemaLoader from '../../core/SchemaLoader.js'
+import { ref, watch, onMounted, toRaw, watchEffect } from 'vue'
+import { classes } from '../../core/ClassManager';
+import SchemaLoader from '../../core/SchemaLoader';
 
 const map = {
   string: 'text',
 };
 
 const props = defineProps({
-  values: {
-    type: Array,
-    required: true
-  },
   model: {
     type: String,
     required: true
@@ -19,10 +16,18 @@ const props = defineProps({
     type: Array,
     required: true
   },
+  filter: {
+    type: Object,
+  },
+  directQuery: {
+    type: Boolean,
+    required: true
+  },
 });
 
 const schema = ref(null);
 const computedProperties = ref([]);
+const collection = ref([]);
 
 async function init() {
   schema.value = await SchemaLoader.getComputedSchema(props.model);
@@ -47,25 +52,44 @@ async function init() {
   computedProperties.value = tempProperties;
 }
 
-onMounted(() => {
-   init(true);
+
+
+async function applyQuery()
+{
+  const res = {
+    count: 10,
+    collection: [
+      {id: 10, first_name: 'john '+Math.random().toString(36), 'last_name': 'doe'},
+      {id: 11, first_name: 'jane', 'last_name': 'doe'},
+      {id: 12, first_name: 'adam', 'last_name': 'smith'},
+    ]
+  }
+  collection.value = res.collection;
+}
+
+onMounted(async () => {
+   await init(true);
+   if (props.directQuery) {
+    applyQuery();
+  }
 });
 watch(() => props.model, () => init(true));
 watch(() => props.properties, () => init(false));
+watch(() => props.filter, applyQuery);
 
 </script>
 
 <template>
-  <table>
+  <table :class="classes.collection_table">
     <thead>
       <tr>
-        <th style="border: 1px solid blue" v-for="computedProperty in computedProperties" :key="computedProperty.id">
+        <th v-for="computedProperty in computedProperties" :key="computedProperty.id">
           {{ computedProperty.label  }}
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="object in values" :key="object.id">
+      <tr v-for="object in collection" :key="object.id">
         <td v-for="computedProperty in computedProperties" :key="computedProperty.id">
           {{ object[computedProperty.id] }}
         </td>
@@ -73,7 +97,3 @@ watch(() => props.properties, () => init(false));
     </tbody>
   </table>
 </template>
-
-<style scoped>
-
-</style>
