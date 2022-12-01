@@ -16,7 +16,6 @@ const properties = ref([
   'last_name',
   {
     'id': 'company.brand_name',
-    'label': 'override brand name',
   },
   'company.address'
 ]);
@@ -154,6 +153,7 @@ const filter = ref(group);
 
 // TODO locales for schema properties and scopes
 // collection
+// sort
 
 </script>
 
@@ -176,6 +176,7 @@ const filter = ref(group);
       :deferred="500"
       :manually="true"
       :direct-query="true"
+      :limit="5"
       :computed-scopes="{user: [
         {id: 'quick_search', name: 'quick search user', type: 'string', useOperator: true, computed: (value, operator) => {
           return {type: 'group', operator: 'or', filters: [
@@ -194,6 +195,10 @@ const filter = ref(group);
       ], organization: [
         {id: 'quick_search', name: 'quick search company'},
       ]}"
-    />
+    >
+      <template #loading>
+        <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);"> {{ 'loading...' }} </div>
+      </template>
+    </Search>
   </div>
 </template>

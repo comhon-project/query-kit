@@ -3,7 +3,8 @@ const classList = {
     modal: 'qkit-modal',
     modal_close_container: 'qkit-dialog-close-container',
     condition_choice_form: 'qkit-condition-choice-form',
-    query_main: 'qkit-query-main',
+    search: 'qkit-search',
+    builder: 'qkit-builder',
     condition_container: 'qkit-condition-container',
     condition_header: 'qkit-condition-header',
     condition_error_container: 'qkit-condition-container',
@@ -25,7 +26,7 @@ const classList = {
     group_actions: 'qkit-group-actions',
     group_list: 'qkit-group-list',
     operator: 'qkit-operator',
-
+    collection: 'qkit-collection',
     collection_table: 'qkit-collection-table',
 }
 

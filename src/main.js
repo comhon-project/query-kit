@@ -18,5 +18,27 @@ createApp(App).use(plugin, {
         close: 'qkit-icon qkit-icon-cross'
     },
     locales: { en, fr },
-    locale: 'fr'
+    locale: 'fr',
+    requester: {
+        request: (query) => {
+            const lastCompleteBulk = 3;
+            const limit = query.offset > lastCompleteBulk* query.limit ? query.limit - 1 : query.limit;
+            const collection = [];
+            for (let index = 0; index < limit; index++) {
+                const element = {};
+                for (const name of query.properties) {
+                    element[name] = Math.random().toString(36);
+                }
+                collection.push(element);
+            }
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        count: lastCompleteBulk * query.limit + (query.limit - 1),
+                        collection: collection
+                    });
+                }, 1000);
+            });
+        }
+    }
 }).mount("#app");

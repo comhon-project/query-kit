@@ -4,6 +4,7 @@ import SchemaLoader from '../../core/SchemaLoader.js'
 import cloneDeep from 'lodash.clonedeep';
 import Group from './Group.vue';
 import IconButton from '../Common/IconButton.vue';
+import { classes } from '../../core/ClassManager';
 
 const emit = defineEmits(['computed']);
 const props = defineProps({
@@ -162,7 +163,7 @@ watch(props.modelValue, () => {
 </script>
 
 <template>
-  <div>
+  <div :class="classes.builder">
     <Group v-if="schema" v-bind="props">
       <template v-if="allowReset" #reset>
         <div><IconButton icon="reset" @click="reset"/></div>

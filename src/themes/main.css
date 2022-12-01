@@ -25,10 +25,6 @@
     text-align: center;
 }
 
-.qkit-query-main {
-    display: relative;
-}
-
 .qkit-btn {
     cursor: pointer;
     white-space: nowrap;
@@ -230,9 +226,15 @@
     white-space: nowrap;
 }
 
+.qkit-collection {
+    position: relative;
+}
+
 .qkit-collection-table {
     border-collapse: separate;
     border-spacing: 0 0.25rem;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .qkit-collection-table th {

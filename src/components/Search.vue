@@ -5,6 +5,8 @@ import FilterBuilder from './Filter/Builder.vue';
 import cloneDeep from 'lodash.clonedeep';
 import SchemaLoader from '../core/SchemaLoader';
 import IconButton from './Common/IconButton.vue';
+import { classes } from '../core/ClassManager';
+import Utils from '../core/Utils';
 
 const props = defineProps({
   model: {
@@ -63,9 +65,18 @@ const props = defineProps({
     type: Number,
     default: 1000
   },
+  limit: {
+    type: Number,
+    required: true
+  },
+  offset: {
+    type: Number,
+    default: 0
+  },
 });
 
 let tempFilter = null;
+const collectionId = 'search-collection-'+Utils.getUniqueId();
 const schema = ref();
 const builtFilter = ref(null);
 const computedFilter = shallowRef(false);
@@ -126,17 +137,16 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div v-if="schema">
+  <div v-if="schema" :class="classes.search">
     <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter">
       <template #validate>
           <IconButton v-if="manually" icon="search" @click="applyQuery" />
         </template>
     </FilterBuilder>
-    <div id="query-collection">
-      <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter"/>
-    </div>
-    <pre wrap>{{ JSON.stringify(builtFilter) }}</pre>
-    ---------------------------------------------
-    <pre wrap>{{ JSON.stringify(computedFilter) }}</pre>
+    <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId">
+      <template #loading>
+        <slot name="loading"></slot>
+      </template>
+    </Collection>
   </div>
 </template>
