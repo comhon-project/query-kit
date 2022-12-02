@@ -1,9 +1,10 @@
 <script setup>
-import { ref, watch, onMounted, toRaw, watchEffect, inject } from 'vue'
+import { ref, watch, onMounted, toRaw, watchEffect, inject, shallowRef } from 'vue'
 import { classes } from '../../core/ClassManager';
 import SchemaLoader from '../../core/SchemaLoader';
 import Utils from '../../core/Utils';
 
+const emit = defineEmits(['rowClick']);
 const props = defineProps({
   model: {
     type: String,
@@ -31,6 +32,9 @@ const props = defineProps({
   id: {
     type: String,
   },
+  onRowClick: {
+    type: Function,
+  },
 });
 
 let movingOffset = props.offset;
@@ -38,7 +42,7 @@ const requesting = ref(false);
 const requester = inject(Symbol.for('requester'));
 const schema = ref(null);
 const computedProperties = ref([]);
-const collection = ref([]);
+const collection = shallowRef([]);
 const end = ref(false);
 
 const observered = ref(null);
@@ -124,7 +128,6 @@ onMounted(async () => {
 watch(() => props.model, () => init(true));
 watch(() => props.properties, () => init(false));
 watch(() => props.filter, requestServer);
-
 </script>
 
 <template>
@@ -138,8 +141,14 @@ watch(() => props.filter, requestServer);
         </tr>
       </thead>
       <tbody>
-        <tr v-for="object in collection" :key="object.id">
-          <td v-for="computedProperty in computedProperties" :key="computedProperty.id">
+        <tr v-for="object in collection" :key="object.id" 
+          :class="onRowClick ? classes.clickable : ''" 
+          @click="(e) => $emit('rowClick', object, e)"
+        >
+          <td v-for="computedProperty in computedProperties" :key="computedProperty.id" 
+            :class="computedProperty.onCellClick ? classes.clickable : ''" 
+            @click="(e) => computedProperty.onCellClick ? computedProperty.onCellClick(object, computedProperty.id, e) : null"
+          >
             {{ object[computedProperty.id] }}
           </td>
         </tr>

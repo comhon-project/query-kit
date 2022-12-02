@@ -8,6 +8,7 @@ import IconButton from './Common/IconButton.vue';
 import { classes } from '../core/ClassManager';
 import Utils from '../core/Utils';
 
+const emit = defineEmits(['rowClick']);
 const props = defineProps({
   model: {
     type: String,
@@ -72,6 +73,9 @@ const props = defineProps({
   offset: {
     type: Number,
     default: 0
+  },
+  onRowClick: {
+    type: Function
   },
 });
 

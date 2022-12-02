@@ -10,12 +10,17 @@ const theme = provide('theme', {
 const model = ref('user');
 const properties = ref([
   {
-    'id': 'first_name',
-    'label': 'override first name', 
+    id: 'first_name',
+    label: 'override first name', 
   },
   'last_name',
   {
-    'id': 'company.brand_name',
+    id: 'company.brand_name',
+    onCellClick: (object, property, event) => {
+      event.stopPropagation();
+      console.log('cell click', property);
+      console.log(object);
+    }
   },
   'company.address'
 ]);
@@ -151,6 +156,11 @@ const group = {
 };
 const filter = ref(group);
 
+function printRow(object) {
+  console.log('row click');
+  console.log(object);
+}
+
 // TODO locales for schema properties and scopes
 // collection
 // sort
@@ -177,6 +187,7 @@ const filter = ref(group);
       :manually="true"
       :direct-query="true"
       :limit="5"
+      @row-click="printRow"
       :computed-scopes="{user: [
         {id: 'quick_search', name: 'quick search user', type: 'string', useOperator: true, computed: (value, operator) => {
           return {type: 'group', operator: 'or', filters: [
