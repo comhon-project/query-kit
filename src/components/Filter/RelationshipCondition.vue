@@ -1,6 +1,6 @@
 <script setup>
   import { ref, watch, watchEffect, computed } from 'vue'
-  import SchemaLoader from '../../core/SchemaLoader.js'
+  import { resolve } from '../../core/Schema'
   import Group from './Group.vue';
   import Condition from './Condition.vue';
   import RelationshipQueueElement from './RelationshipQueueElement.vue';
@@ -63,7 +63,7 @@
 
   async function initSchema()
   {
-    schema.value = await SchemaLoader.getComputedSchema(props.model);
+    schema.value = await resolve(props.model);
     if (!schema.value) {
       invalidModel.value = props.model;
       return;
@@ -73,7 +73,7 @@
 
   async function addFilter(filter)
   {
-    const endQueuePropertySchema = await SchemaLoader.getComputedSchema(endQueuePropertyModel.value);
+    const endQueuePropertySchema = await resolve(endQueuePropertyModel.value);
     queue.value[queue.value.length - 1].value.filter = filter;
     if (filter.type == 'relationship_condition') {
       queue.value.push({
@@ -127,7 +127,7 @@ function removeEndFilter()
       }
       
       const childModelName = childSchema.mapProperties[childFilter.property].model;
-      childSchema = await SchemaLoader.getComputedSchema(childModelName);
+      childSchema = await resolve(childModelName);
       if (!childSchema) {
         invalidModel.value = childModelName;
         childFilter = null;

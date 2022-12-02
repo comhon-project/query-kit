@@ -2,7 +2,7 @@
   import { ref, watch, computed, watchEffect } from 'vue'
   import { useBaseCondition } from './AbstractCondition';
   import { operatorNames } from './FilterManager';
-  import SchemaLoader from '../../core/SchemaLoader.js';
+  import { resolve } from '../../core/Schema';
   import InvalidProperty from '../Messages/InvalidProperty.vue';
   import InvalidScope from '../Messages/InvalidScope.vue';
   import InvalidOperator from '../Messages/InvalidOperator.vue';
@@ -90,7 +90,7 @@
 
   async function initSchema()
   {
-    schema.value = await SchemaLoader.getComputedSchema(props.model);
+    schema.value = await resolve(props.model);
     if (!schema.value) {
       validModel.value = false;
       return;

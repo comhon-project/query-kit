@@ -29,6 +29,7 @@ const classList = {
     collection: 'qkit-collection',
     collection_table: 'qkit-collection-table',
     clickable: 'qkit-clickable',
+    active: 'qkit-active',
 }
 
 const registerClasses = (custom) => {

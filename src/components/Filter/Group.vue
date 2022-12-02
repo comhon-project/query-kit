@@ -5,7 +5,7 @@ import Group from './Group.vue';
 import Condition from './Condition.vue';
 import RelationshipCondition from './RelationshipCondition.vue';
 import ConditionChoice from './ConditionChoice.vue';
-import SchemaLoader from '../../core/SchemaLoader';
+import { resolve } from '../../core/Schema';
 import { useBaseCondition } from './AbstractCondition';
 import { operatorNames } from './FilterManager';
 import InvalidOperator from '../Messages/InvalidOperator.vue';
@@ -70,7 +70,7 @@ async function initFilter()
 
 async function initSchema()
 {
-  schema.value = await SchemaLoader.getComputedSchema(props.model);
+  schema.value = await resolve(props.model);
   if (!schema.value) {
     validModel.value = false;
   }

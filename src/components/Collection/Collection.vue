@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, toRaw, watchEffect, inject, shallowRef } from 'vue'
 import { classes } from '../../core/ClassManager';
-import SchemaLoader from '../../core/SchemaLoader';
+import { resolve } from '../../core/Schema';
 import Utils from '../../core/Utils';
 
 const emit = defineEmits(['rowClick']);
@@ -35,21 +35,27 @@ const props = defineProps({
   onRowClick: {
     type: Function,
   },
+  quickSort: {
+    type: Boolean,
+    default: true
+  },
 });
 
 let movingOffset = props.offset;
 const requesting = ref(false);
 const requester = inject(Symbol.for('requester'));
-const schema = ref(null);
+const schema = shallowRef(null);
 const computedProperties = ref([]);
 const collection = shallowRef([]);
 const end = ref(false);
+const active = ref(null);
+const order = ref(null);
 
 const observered = ref(null);
 let observer;
 
 async function init() {
-  schema.value = await SchemaLoader.getComputedSchema(props.model);
+  schema.value = await resolve(props.model);
   if (!schema.value) {
     throw new Error(`invalid model "${props.model}"`);
   }
@@ -57,29 +63,60 @@ async function init() {
 
   for(const property of props.properties) {
     let computedProperty = typeof property == 'object'
-        ? (property.label == null ? Object.assign({}, property) : property)
+        ? Object.assign({}, property)
         : {id: property};
     if (computedProperty.label == null) {
-      const splited = computedProperty.id.split('.');
-      let currentSchema = schema.value;
-      for (let i = 0; i < splited.length - 1; i++) {
-        if (!currentSchema.mapProperties[splited[i]]) {
-          throw new Error(`invalid collection property "${computedProperty.id}"`);
-        }
-        currentSchema = await SchemaLoader.getComputedSchema(currentSchema.mapProperties[splited[i]].model);
-        if (!currentSchema) {
-          throw new Error(`invalid model "${currentSchema.mapProperties[splited[i]].model}"`);
-        }
+      computedProperty.label = await getLabel(computedProperty);
+    }
+    if (props.quickSort) {
+      computedProperty.sortable = await isSortable(computedProperty);
+      if (computedProperty.sortable && computedProperty.order && ['asc', 'desc'].includes(computedProperty.order.toLowerCase())) {
+        active.value = computedProperty.id;
+        order.value = computedProperty.order.toLowerCase();
       }
-      if (!currentSchema.mapProperties[splited[splited.length - 1]]) {
-        throw new Error(`invalid collection property "${computedProperty.id}"`);
-      }
-      computedProperty.label = currentSchema.mapProperties[splited[splited.length - 1]].name
     }
     tempProperties.push(computedProperty);
   }
-
   computedProperties.value = tempProperties;
+}
+
+async function isSortable(computedProperty) {
+  if (!schema.value.search || !Array.isArray(schema.value.search.sort)) {
+    return false;
+  }
+  const splited = computedProperty.id.split('.');
+  let currentSchema = schema.value;
+  for (let i = 0; i < splited.length - 1; i++) {
+    if (!currentSchema.mapProperties[splited[i]]) {
+      throw new Error(`invalid collection property "${computedProperty.id}"`);
+    }
+    if (!currentSchema.search || !Array.isArray(currentSchema.search.sort) || !currentSchema.search.sort.includes(splited[i])) {
+      return false;
+    }
+    currentSchema = await resolve(currentSchema.mapProperties[splited[i]].model);
+    if (!currentSchema) {
+      throw new Error(`invalid model "${currentSchema.mapProperties[splited[i]].model}"`);
+    }
+  }
+  return currentSchema.search.sort.includes(splited[splited.length - 1]);
+}
+
+async function getLabel(computedProperty) {
+  const splited = computedProperty.id.split('.');
+  let currentSchema = schema.value;
+  for (let i = 0; i < splited.length - 1; i++) {
+    if (!currentSchema.mapProperties[splited[i]]) {
+      throw new Error(`invalid collection property "${computedProperty.id}"`);
+    }
+    currentSchema = await resolve(currentSchema.mapProperties[splited[i]].model);
+    if (!currentSchema) {
+      throw new Error(`invalid model "${currentSchema.mapProperties[splited[i]].model}"`);
+    }
+  }
+  if (!currentSchema.mapProperties[splited[splited.length - 1]]) {
+    throw new Error(`invalid collection property "${computedProperty.id}"`);
+  }
+  return currentSchema.mapProperties[splited[splited.length - 1]].name
 }
 
 async function shiftThenRequestServer()
@@ -90,10 +127,15 @@ async function shiftThenRequestServer()
   }
 }
 
-async function requestServer()
+async function requestServer(reset = false)
 {
+  if (reset) {
+    end.value = false;
+    movingOffset = 0;
+  }
   requesting.value = true;
   const response = await requester.request({
+    order: active.value ? [{property: active.value, order: order.value}] : undefined,
     offset: movingOffset,
     limit: props.limit,
     filter: props.filter,
@@ -102,8 +144,12 @@ async function requestServer()
   if ((typeof response != 'object') || !Array.isArray(response.collection)) {
     throw new Error('invalid request response, it must be an object containing a property "collection" with an array value');
   }
-  for (const element of response.collection) {
-    collection.value.push(element);
+  if (reset) {
+    collection.value = response.collection;
+  } else {
+    for (const element of response.collection) {
+      collection.value.push(element);
+    }
   }
   if (response.collection.length < props.limit) {
     end.value = true;
@@ -113,6 +159,15 @@ async function requestServer()
   setTimeout(() => {
     requesting.value = false;
   }, 10);
+}
+
+function updateOrder(property)
+{
+  if (!requesting.value) {
+    order.value = active.value != property || order.value == 'desc' ? 'asc' : 'desc';
+    active.value = property;
+    requestServer(true);
+  }
 }
 
 onMounted(async () => {
@@ -127,7 +182,7 @@ onMounted(async () => {
 });
 watch(() => props.model, () => init(true));
 watch(() => props.properties, () => init(false));
-watch(() => props.filter, requestServer);
+watch(() => props.filter, () => requestServer(true));
 </script>
 
 <template>
@@ -136,7 +191,15 @@ watch(() => props.filter, requestServer);
       <thead>
         <tr>
           <th v-for="computedProperty in computedProperties" :key="computedProperty.id">
-            {{ computedProperty.label }}
+            <div v-if="computedProperty.sortable"
+              :class="classes.clickable + ' ' + (active == computedProperty.id ? (classes.active + ' ' + order) : '')" 
+              @click="() => updateOrder(computedProperty.id)"
+            >
+              {{ computedProperty.label }}
+            </div>
+            <div v-else>
+              {{ computedProperty.label }}
+            </div>
           </th>
         </tr>
       </thead>
@@ -154,7 +217,7 @@ watch(() => props.filter, requestServer);
         </tr>
       </tbody>
     </table>
-    <div v-if="!end" ref="observered" style="height: 5px;"></div>
+    <div v-show="!end" ref="observered" style="height: 1px;"></div>
     <div v-show="requesting" style="position: relative;">
       <slot name="loading"></slot>
     </div>

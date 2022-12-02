@@ -2,7 +2,7 @@ import { locale, locales } from "../i18n/i18n";
 import { registerClasses } from "./ClassManager";
 import { registerIcons } from "./IconManager";
 import { registerComponents } from "./InputManager";
-
+import { registerLoader } from "./Schema";
 
 export default {
     install: (app, options) => {
@@ -34,6 +34,16 @@ export default {
                 throw new Error('invalid requester. it must be a function or an object containing a property "request" with a function value');
             }
             app.provide(Symbol.for('requester'), requester);
+        }
+        if (options.schemaLoader) {
+            const loader = typeof options.schemaLoader == 'function'
+                ? {load: options.schemaLoader} : options.schemaLoader;
+            if (typeof loader != 'object' || typeof loader.load != 'function') {
+                throw new Error('invalid schema loader. it must be a function or an object containing a property "load" with a function value');
+            }
+            registerLoader(loader);
+        } else {
+            throw new Error('schemaLoader config is required');
         }
     }
 }

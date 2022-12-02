@@ -249,6 +249,39 @@
     font-size: bold;
 }
 
+.qkit-collection-table thead .qkit-clickable {
+    cursor: pointer;
+    position: relative;
+    padding-right: 15px;
+}
+
+.qkit-collection-table thead .qkit-clickable:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top : 50%;
+    transform: translateY(-30%);
+    right: 0;
+    width: 0.5em;
+    height: 0.5em;
+    background: black;
+    clip-path: polygon(0 0, 50% 100%, 100% 0);
+    transition: transform 0.1s ease-in-out;
+}
+
+.qkit-collection-table thead .qkit-clickable.qkit-active {
+    color: gray;
+}
+
+.qkit-collection-table thead .qkit-clickable.qkit-active:after {
+    color: gray;
+    background: gray;
+}
+
+.qkit-collection-table thead .qkit-clickable.qkit-active.desc:after {
+    transform: translateY(-30%) rotate(180deg);
+}
+
 .qkit-collection-table tbody tr {
     position: relative;
 }

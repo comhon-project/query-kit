@@ -1,6 +1,6 @@
 <script setup>
   import { ref, watchEffect } from 'vue'
-  import SchemaLoader from '../../core/SchemaLoader.js'
+  import { resolve } from '../../core/Schema'
   import { useBaseCondition } from './AbstractCondition';
   import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
   import { classes } from '../../core/ClassManager';
@@ -37,7 +37,7 @@
 
   async function initSchema()
   {
-    schema.value = await SchemaLoader.getComputedSchema(props.model);
+    schema.value = await resolve(props.model);
   }
 
   watchEffect(initSchema);

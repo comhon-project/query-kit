@@ -4,8 +4,10 @@ import {en, fr} from "./i18n/locales";
 
 import "../src/themes/main.css";
 import plugin from "./core/Plugin";
+import SchemaLoader from "./SchemaLoader";
 
 createApp(App).use(plugin, {
+    schemaLoader: SchemaLoader,
     classes: {
         
     },

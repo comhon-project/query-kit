@@ -3,7 +3,7 @@ import { ref, shallowRef, toRaw, watchEffect } from 'vue'
 import Collection from './Collection/Collection.vue';
 import FilterBuilder from './Filter/Builder.vue';
 import cloneDeep from 'lodash.clonedeep';
-import SchemaLoader from '../core/SchemaLoader';
+import { resolve } from '../core/Schema';
 import IconButton from './Common/IconButton.vue';
 import { classes } from '../core/ClassManager';
 import Utils from '../core/Utils';
@@ -77,6 +77,10 @@ const props = defineProps({
   onRowClick: {
     type: Function
   },
+  quickSort: {
+    type: Boolean,
+    default: true
+  },
 });
 
 let tempFilter = null;
@@ -87,7 +91,7 @@ const computedFilter = shallowRef(false);
 
 async function initSchema()
 {
-  schema.value = await SchemaLoader.getComputedSchema(props.model);
+  schema.value = await resolve(props.model);
 }
 
 function getInitialFilter()

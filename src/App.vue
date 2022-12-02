@@ -11,7 +11,7 @@ const model = ref('user');
 const properties = ref([
   {
     id: 'first_name',
-    label: 'override first name', 
+    label: 'override first name',
   },
   'last_name',
   {
@@ -20,7 +20,8 @@ const properties = ref([
       event.stopPropagation();
       console.log('cell click', property);
       console.log(object);
-    }
+    },
+    order: 'desc'
   },
   'company.address'
 ]);
@@ -162,8 +163,6 @@ function printRow(object) {
 }
 
 // TODO locales for schema properties and scopes
-// collection
-// sort
 
 </script>
 
@@ -186,7 +185,8 @@ function printRow(object) {
       :deferred="500"
       :manually="true"
       :direct-query="true"
-      :limit="5"
+      :limit="20"
+      :quick-sort="true"
       @row-click="printRow"
       :computed-scopes="{user: [
         {id: 'quick_search', name: 'quick search user', type: 'string', useOperator: true, computed: (value, operator) => {

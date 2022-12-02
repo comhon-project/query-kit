@@ -1,7 +1,7 @@
 <script setup>
   import { ref, watch, onMounted, computed } from 'vue'
   import { classes } from '../../core/ClassManager';
-  import SchemaLoader from '../../core/SchemaLoader';
+  import { resolve } from '../../core/Schema';
   import Utils from '../../core/Utils';
   import { translate } from '../../i18n/i18n';
   import IconButton from '../Common/IconButton.vue';
@@ -97,10 +97,10 @@
   }
 
   onMounted(async () => {
-    schema.value = await SchemaLoader.getComputedSchema(props.model);
+    schema.value = await resolve(props.model);
   });
   watch(() => props.model, async () => {
-    schema.value = await SchemaLoader.getComputedSchema(props.model);
+    schema.value = await resolve(props.model);
   });
 </script>
 

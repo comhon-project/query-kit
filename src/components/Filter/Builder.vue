@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, toRaw, watchEffect } from 'vue'
-import SchemaLoader from '../../core/SchemaLoader.js'
+import { resolve } from '../../core/Schema'
 import cloneDeep from 'lodash.clonedeep';
 import Group from './Group.vue';
 import IconButton from '../Common/IconButton.vue';
@@ -60,7 +60,7 @@ const schema = ref(null);
 
 async function initSchema()
 {
-  schema.value = await SchemaLoader.getComputedSchema(props.model);
+  schema.value = await resolve(props.model);
 }
 
 function reset()
@@ -100,7 +100,7 @@ async function getComputedFilter()
     if (currentFilter.type == 'relationship_condition') {
       if (currentFilter.filter) {
         const modelName = currentSchema.mapProperties[currentFilter.property].model;
-        const childSchema = await SchemaLoader.getComputedSchema(modelName);
+        const childSchema = await resolve(modelName);
         if (mustKeepFilter(currentFilter.filter, childSchema)) {
           stack.push([currentFilter.filter, childSchema]);
         } else {

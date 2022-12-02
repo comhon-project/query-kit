@@ -1,6 +1,6 @@
 <script setup>
   import { ref, onMounted, watch, computed, toRaw, watchEffect } from 'vue'
-  import SchemaLoader from '../../core/SchemaLoader.js'
+  import { resolve } from '../../core/Schema'
   import { useBaseCondition } from './AbstractCondition';
   import ConditionChoice from './ConditionChoice.vue';
   import IconButton from '../Common/IconButton.vue';
@@ -35,7 +35,7 @@
 
   async function initSchema()
   {
-    schema.value = await SchemaLoader.getComputedSchema(props.model);
+    schema.value = await resolve(props.model);
   }
 
   function addFilter()
