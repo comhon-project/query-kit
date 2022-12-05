@@ -10,7 +10,7 @@ const props = defineProps({
     type: String,
     required: true
   },
-  properties: {
+  columns: {
     type: Array,
     required: true
   },
@@ -48,7 +48,7 @@ let movingOffset = props.offset;
 const requesting = ref(false);
 const requester = inject(Symbol.for('requester'));
 const schema = shallowRef(null);
-const computedProperties = shallowRef([]);
+const computedColumns = shallowRef([]);
 const collection = shallowRef([]);
 const end = ref(false);
 const active = ref(null);
@@ -62,39 +62,39 @@ async function init() {
   if (!schema.value) {
     throw new Error(`invalid model "${props.model}"`);
   }
-  const tempProperties = [];
+  const tempColumns = [];
 
-  for(const property of props.properties) {
-    let computedProperty = typeof property == 'object'
-        ? Object.assign({}, property)
-        : {id: property};
-    if (computedProperty.label == null) {
-      computedProperty.label = await getLabel(computedProperty);
+  for(const column of props.columns) {
+    let computedColumn = typeof column == 'object'
+        ? Object.assign({}, column)
+        : {id: column};
+    if (computedColumn.label == null) {
+      computedColumn.label = await getLabel(computedColumn);
     }
     if (props.quickSort) {
-      computedProperty.sortable = await isSortable(computedProperty);
-      if (computedProperty.sortable && computedProperty.order && ['asc', 'desc'].includes(computedProperty.order.toLowerCase())) {
-        active.value = computedProperty.id;
-        order.value = computedProperty.order.toLowerCase();
+      computedColumn.sortable = await isSortable(computedColumn);
+      if (computedColumn.sortable && computedColumn.order && ['asc', 'desc'].includes(computedColumn.order.toLowerCase())) {
+        active.value = computedColumn.id;
+        order.value = computedColumn.order.toLowerCase();
       }
     }
-    if (computedProperty.component) {
-      computedProperty.component = toRaw(computedProperty.component);
+    if (computedColumn.component) {
+      computedColumn.component = toRaw(computedColumn.component);
     }
-    tempProperties.push(computedProperty);
+    tempColumns.push(computedColumn);
   }
-  computedProperties.value = tempProperties;
+  computedColumns.value = tempColumns;
 }
 
-async function isSortable(computedProperty) {
+async function isSortable(computedColumn) {
   if (!schema.value.search || !Array.isArray(schema.value.search.sort)) {
     return false;
   }
-  const splited = computedProperty.id.split('.');
+  const splited = computedColumn.id.split('.');
   let currentSchema = schema.value;
   for (let i = 0; i < splited.length - 1; i++) {
     if (!currentSchema.mapProperties[splited[i]]) {
-      throw new Error(`invalid collection property "${computedProperty.id}"`);
+      throw new Error(`invalid collection property "${computedColumn.id}"`);
     }
     if (!currentSchema.search || !Array.isArray(currentSchema.search.sort) || !currentSchema.search.sort.includes(splited[i])) {
       return false;
@@ -107,12 +107,12 @@ async function isSortable(computedProperty) {
   return currentSchema.search.sort.includes(splited[splited.length - 1]);
 }
 
-async function getLabel(computedProperty) {
-  const splited = computedProperty.id.split('.');
+async function getLabel(computedColumn) {
+  const splited = computedColumn.id.split('.');
   let currentSchema = schema.value;
   for (let i = 0; i < splited.length - 1; i++) {
     if (!currentSchema.mapProperties[splited[i]]) {
-      throw new Error(`invalid collection property "${computedProperty.id}"`);
+      throw new Error(`invalid collection property "${computedColumn.id}"`);
     }
     currentSchema = await resolve(currentSchema.mapProperties[splited[i]].model);
     if (!currentSchema) {
@@ -120,7 +120,7 @@ async function getLabel(computedProperty) {
     }
   }
   if (!currentSchema.mapProperties[splited[splited.length - 1]]) {
-    throw new Error(`invalid collection property "${computedProperty.id}"`);
+    throw new Error(`invalid collection property "${computedColumn.id}"`);
   }
   return currentSchema.mapProperties[splited[splited.length - 1]].name
 }
@@ -145,7 +145,7 @@ async function requestServer(reset = false)
     offset: movingOffset,
     limit: props.limit,
     filter: props.filter,
-    properties: computedProperties.value.map(property => property.id),
+    properties: computedColumns.value.map(column => column.id),
   });
   if ((typeof response != 'object') || !Array.isArray(response.collection)) {
     throw new Error('invalid request response, it must be an object containing a property "collection" with an array value');
@@ -193,7 +193,7 @@ onMounted(async () => {
   }
 });
 watch(() => props.model, () => init(true));
-watch(() => props.properties, () => init(false));
+watch(() => props.columns, () => init(false));
 watch(() => props.filter, () => requestServer(true));
 </script>
 
@@ -202,15 +202,15 @@ watch(() => props.filter, () => requestServer(true));
     <table :class="classes.collection_table">
       <thead>
         <tr>
-          <th v-for="computedProperty in computedProperties" :key="computedProperty.id">
-            <div v-if="computedProperty.sortable"
-              :class="classes.clickable + ' ' + (active == computedProperty.id ? (classes.active + ' ' + order) : '')" 
-              @click="() => updateOrder(computedProperty.id)"
+          <th v-for="computedColumn in computedColumns" :key="computedColumn.id">
+            <div v-if="computedColumn.sortable"
+              :class="classes.clickable + ' ' + (active == computedColumn.id ? (classes.active + ' ' + order) : '')" 
+              @click="() => updateOrder(computedColumn.id)"
             >
-              {{ computedProperty.label }}
+              {{ computedColumn.label }}
             </div>
             <div v-else>
-              {{ computedProperty.label }}
+              {{ computedColumn.label }}
             </div>
           </th>
         </tr>
@@ -220,12 +220,12 @@ watch(() => props.filter, () => requestServer(true));
           :class="onRowClick ? classes.clickable : ''" 
           @click="(e) => $emit('rowClick', object, e)"
         >
-          <td v-for="computedProperty in computedProperties" :key="computedProperty.id" 
-            :class="computedProperty.onCellClick ? classes.clickable : ''" 
-            @click="(e) => computedProperty.onCellClick ? computedProperty.onCellClick(object, computedProperty.id, e) : null"
+          <td v-for="computedColumn in computedColumns" :key="computedColumn.id" 
+            :class="computedColumn.onCellClick ? classes.clickable : ''" 
+            @click="(e) => computedColumn.onCellClick ? computedColumn.onCellClick(object, computedColumn.id, e) : null"
           >
-            <component v-if="computedProperty.component" :is="computedProperty.component" :value="object[computedProperty.id]" :row-value="object"/>
-            <div v-else v-html="object[computedProperty.id]"></div>
+            <component v-if="computedColumn.component" :is="computedColumn.component" :value="object[computedColumn.id]" :row-value="object"/>
+            <div v-else v-html="object[computedColumn.id]"></div>
           </td>
         </tr>
       </tbody>

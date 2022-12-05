@@ -9,7 +9,7 @@ const theme = provide('theme', {
   color_secondary: '#c45757'
 });
 const model = ref('user');
-const properties = ref([
+const columns = ref([
   {
     id: 'first_name',
     label: 'override first name',
@@ -183,7 +183,7 @@ async function completeCollection(collection) {
     </div>
     <Search 
       :model="model" 
-      :properties="properties" 
+      :columns="columns" 
       :filter="filter"
       :allowed-properties="{user: null}"
       :allowed-scopes="{user: null}"

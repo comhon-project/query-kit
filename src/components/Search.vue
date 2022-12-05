@@ -14,7 +14,7 @@ const props = defineProps({
     type: String,
     required: true
   },
-  properties: {
+  columns: {
     type: Array,
     required: true
   },
