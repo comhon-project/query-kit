@@ -81,6 +81,9 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  postRequest: {
+    type: Function,
+  },
 });
 
 let tempFilter = null;

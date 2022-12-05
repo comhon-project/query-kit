@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, toRaw, watchEffect, inject, shallowRef } from 'vue'
+import { ref, watch, onMounted, toRaw, inject, shallowRef } from 'vue'
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import Utils from '../../core/Utils';
@@ -39,13 +39,16 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  postRequest: {
+    type: Function,
+  },
 });
 
 let movingOffset = props.offset;
 const requesting = ref(false);
 const requester = inject(Symbol.for('requester'));
 const schema = shallowRef(null);
-const computedProperties = ref([]);
+const computedProperties = shallowRef([]);
 const collection = shallowRef([]);
 const end = ref(false);
 const active = ref(null);
@@ -74,6 +77,9 @@ async function init() {
         active.value = computedProperty.id;
         order.value = computedProperty.order.toLowerCase();
       }
+    }
+    if (computedProperty.component) {
+      computedProperty.component = toRaw(computedProperty.component);
     }
     tempProperties.push(computedProperty);
   }
@@ -144,6 +150,12 @@ async function requestServer(reset = false)
   if ((typeof response != 'object') || !Array.isArray(response.collection)) {
     throw new Error('invalid request response, it must be an object containing a property "collection" with an array value');
   }
+  if (props.postRequest) {
+    const res = props.postRequest(response.collection);
+    if (res instanceof Promise) {
+      await res;
+    }
+  }
   if (reset) {
     collection.value = response.collection;
   } else {
@@ -212,7 +224,8 @@ watch(() => props.filter, () => requestServer(true));
             :class="computedProperty.onCellClick ? classes.clickable : ''" 
             @click="(e) => computedProperty.onCellClick ? computedProperty.onCellClick(object, computedProperty.id, e) : null"
           >
-            {{ object[computedProperty.id] }}
+            <component v-if="computedProperty.component" :is="computedProperty.component" :value="object[computedProperty.id]" :row-value="object"/>
+            <div v-else v-html="object[computedProperty.id]"></div>
           </td>
         </tr>
       </tbody>

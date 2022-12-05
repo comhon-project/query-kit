@@ -1,5 +1,6 @@
 <script setup>
 import { ref, provide, toRaw } from 'vue'
+import CellFirstName from './CellFirstName.vue';
 import Search from './components/Search.vue'
 import { locale } from './i18n/i18n';
 
@@ -12,6 +13,7 @@ const properties = ref([
   {
     id: 'first_name',
     label: 'override first name',
+    component: CellFirstName
   },
   'last_name',
   {
@@ -162,6 +164,13 @@ function printRow(object) {
   console.log(object);
 }
 
+async function completeCollection(collection) {  
+  for (const row of collection) {
+    row['company.brand_name'] += ' <span style="color: blue">lalala</span>';
+    row['first_name'] += ' hehe';
+  }
+}
+
 // TODO locales for schema properties and scopes
 
 </script>
@@ -188,6 +197,7 @@ function printRow(object) {
       :limit="20"
       :quick-sort="true"
       @row-click="printRow"
+      :post-request="completeCollection"
       :computed-scopes="{user: [
         {id: 'quick_search', name: 'quick search user', type: 'string', useOperator: true, computed: (value, operator) => {
           return {type: 'group', operator: 'or', filters: [
