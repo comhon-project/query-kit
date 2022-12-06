@@ -18,7 +18,5 @@ function cellAlert(e) {
 </script>
 
 <template>
-  <div>
     {{ value }}<button style="color: blue" @click="cellAlert">button</button>
-  </div>
 </template>

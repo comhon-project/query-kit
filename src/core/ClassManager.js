@@ -28,7 +28,11 @@ const classList = {
     operator: 'qkit-operator',
     collection: 'qkit-collection',
     collection_table: 'qkit-collection-table',
-    clickable: 'qkit-clickable',
+    collection_clickable_row: 'qkit-clickable-row',
+    collection_cell: 'qkit-cell',
+    collection_clickable_cell: 'qkit-cell qkit-btn',
+    order_asc: 'qkit-asc',
+    order_desc: 'qkit-desc',
     active: 'qkit-active',
 }
 

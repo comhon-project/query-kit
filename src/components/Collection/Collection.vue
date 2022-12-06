@@ -203,12 +203,13 @@ watch(() => props.filter, () => requestServer(true));
       <thead>
         <tr>
           <th v-for="computedColumn in computedColumns" :key="computedColumn.id">
-            <div v-if="computedColumn.sortable"
-              :class="classes.clickable + ' ' + (active == computedColumn.id ? (classes.active + ' ' + order) : '')" 
+            <button v-if="computedColumn.sortable"
+              type="button"
+              :class="classes.btn + ' ' + (active == computedColumn.id ? (classes.active + ' ' + (order == 'asc' ? classes.order_asc : classes.order_desc)) : '')" 
               @click="() => updateOrder(computedColumn.id)"
             >
               {{ computedColumn.label }}
-            </div>
+            </button>
             <div v-else>
               {{ computedColumn.label }}
             </div>
@@ -217,15 +218,21 @@ watch(() => props.filter, () => requestServer(true));
       </thead>
       <tbody>
         <tr v-for="object in collection" :key="object.id" 
-          :class="onRowClick ? classes.clickable : ''" 
+          :class="onRowClick ? classes.collection_clickable_row : ''" 
           @click="(e) => $emit('rowClick', object, e)"
         >
-          <td v-for="computedColumn in computedColumns" :key="computedColumn.id" 
-            :class="computedColumn.onCellClick ? classes.clickable : ''" 
-            @click="(e) => computedColumn.onCellClick ? computedColumn.onCellClick(object, computedColumn.id, e) : null"
-          >
-            <component v-if="computedColumn.component" :is="computedColumn.component" :value="object[computedColumn.id]" :row-value="object"/>
-            <div v-else v-html="object[computedColumn.id]"></div>
+          <td v-for="computedColumn in computedColumns" :key="computedColumn.id">
+            <div v-if="computedColumn.component">
+              <component :is="computedColumn.component" :value="object[computedColumn.id]" :row-value="object"/>
+            </div>
+            <button v-else-if="computedColumn.onCellClick"
+              type="button"
+              :class="classes.collection_clickable_cell"
+              v-html="object[computedColumn.id]"
+              @click="(e) => computedColumn.onCellClick ? computedColumn.onCellClick(object, computedColumn.id, e) : null"
+            >
+            </button>
+            <div :class="classes.collection_cell" v-else v-html="object[computedColumn.id]"></div>
           </td>
         </tr>
       </tbody>

@@ -6,12 +6,13 @@
     --qkit-color-primary-darken: #663ebd;
     --qkit-color-secondary: #c85757;
     --qkit-color-secondary-darken: #a84848;
+    --qkit-collection-background-color: #f3f3f3;
 }
 
 .qkit-modal {
     border: 0px;
     border-radius: 0.5rem;
-    box-shadow: 0px 0px 10px gray;
+    box-shadow: 0px 0px 10px grey;
 }
 
 .qkit-condition-choice-form > *:first-child, .qkit-condition-choice-form > *:nth-child(2) {
@@ -27,10 +28,12 @@
 
 .qkit-btn {
     cursor: pointer;
+    color: inherit;
     white-space: nowrap;
     border-radius: 0.5rem;
     padding: 0.5rem;
     border: 0;
+    background: transparent;
     transition: background-color .15s ease-in-out;
 }
 
@@ -53,7 +56,7 @@
 }
 
 .qkit-group {
-    border: 1px solid lightgray;
+    border: 1px solid lightgrey;
     border-radius: 0.5rem;
     padding: 1rem;
     flex-basis: 100%;
@@ -228,6 +231,9 @@
 
 .qkit-collection {
     position: relative;
+    max-height: 500px;
+    overflow: scroll;
+    background: var(--qkit-collection-background-color);
 }
 
 .qkit-collection-table {
@@ -241,26 +247,63 @@
     padding: 0.5rem 1rem;
 }
 
-.qkit-collection-table td {
-    padding: 1rem;
-}
-
 .qkit-collection-table thead {
+    position: relative;
     font-size: bold;
 }
 
-.qkit-collection-table thead .qkit-clickable {
-    cursor: pointer;
-    position: relative;
-    padding-right: 15px;
+.qkit-collection-table thead tr {
+    position: sticky;
+    top: 0px;
+    z-index: 10;
+    background: var(--qkit-collection-background-color);
 }
 
-.qkit-collection-table thead .qkit-clickable:after {
+.qkit-collection-table thead tr > th:first-child:before {
+    content: '';
+    display: block;
+    position: absolute;
+    left: -15px;
+    top: 0;
+    width: 15px;
+    height: 100%;
+    background: var(--qkit-collection-background-color);
+}
+
+.qkit-collection-table thead tr > th:last-child:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    right: -15px;
+    width: 15px;
+    height: 100%;
+    background: var(--qkit-collection-background-color);
+}
+
+.qkit-collection-table thead tr:after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: -15px;
+    bottom: 0;
+    width: calc(100% + 30px);
+    height: 1px;
+    box-shadow: 1px 1px 1px grey;
+}
+
+.qkit-collection-table thead .qkit-btn {
+    position: relative;
+    padding-right: 15px;
+    font-size: inherit;
+}
+
+.qkit-collection-table thead .qkit-btn:after {
     content: '';
     display: block;
     position: absolute;
     top : 50%;
-    transform: translateY(-30%);
+    transform: translateY(-50%);
     right: 0;
     width: 0.5em;
     height: 0.5em;
@@ -269,17 +312,17 @@
     transition: transform 0.1s ease-in-out;
 }
 
-.qkit-collection-table thead .qkit-clickable.qkit-active {
-    color: gray;
+.qkit-collection-table thead .qkit-btn.qkit-active {
+    color: grey;
 }
 
-.qkit-collection-table thead .qkit-clickable.qkit-active:after {
-    color: gray;
-    background: gray;
+.qkit-collection-table thead .qkit-btn.qkit-active:after {
+    color: grey;
+    background: grey;
 }
 
-.qkit-collection-table thead .qkit-clickable.qkit-active.desc:after {
-    transform: translateY(-30%) rotate(180deg);
+.qkit-collection-table thead .qkit-btn.qkit-active.qkit-desc:after {
+    transform: translateY(-50%) rotate(180deg);
 }
 
 .qkit-collection-table tbody tr {
@@ -287,44 +330,52 @@
 }
 
 .qkit-collection-table tbody tr {
-    filter: drop-shadow(0px 0px 3px gray);
+    filter: drop-shadow(0px 0px 3px grey);
 }
 
-.qkit-collection-table tbody tr.qkit-clickable {
+.qkit-collection-table tbody tr.qkit-clickable-row {
     cursor: pointer;
     transition: transform 0.1s ease-in-out;
 }
 
-.qkit-collection-table tbody tr.qkit-clickable:hover {
+.qkit-collection-table tbody tr.qkit-clickable-row:hover {
     transform: scale(1.02);
 }
 
 .qkit-collection-table tbody td {
     position: relative;
     background: white;
-    border-top: 1px solid lightgray;
-    border-bottom: 1px solid lightgray;
+    border-top: 1px solid lightgrey;
+    border-bottom: 1px solid lightgrey;
+    text-align: center;
 }
 
 .qkit-collection-table tbody td:first-child {
-    border-left: 1px solid lightgray;
+    border-left: 1px solid lightgrey;
     border-top-left-radius: 0.5rem;
     border-bottom-left-radius: 0.5rem;
 }
 
 .qkit-collection-table tbody td:last-child {
-    border-right: 1px solid lightgray;
+    border-right: 1px solid lightgrey;
     border-top-right-radius: 0.5rem;
     border-bottom-right-radius: 0.5rem;
 }
 
-.qkit-collection-table tbody td.qkit-clickable {
-    cursor: pointer;
+.qkit-collection-table .qkit-cell {
+    position: relative;
+    padding: 1rem;
+}
+
+.qkit-collection-table tbody td .qkit-cell.qkit-btn {
+    background: white;
+    border-radius: 0;
+    font-size: inherit;
     transition: transform 0.1s ease-in-out;
 }
 
-.qkit-collection-table tbody td.qkit-clickable:hover {
+.qkit-collection-table tbody td .qkit-cell.qkit-btn:hover {
     z-index: 1;
-    filter: drop-shadow(0px 0px 5px gray);
-    transform: scale(1.05);
+    box-shadow: 0px 0px 5px grey;
+    transform: scale(1.15);
 }
