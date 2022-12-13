@@ -16,6 +16,9 @@
       type: Boolean,
       default: false
     },
+    ariaLabel: {
+      type: String,
+    },
   });
   const style = ref({});
   const select = ref(null);
@@ -40,11 +43,10 @@
   watch(locale, updateWidth, { flush: 'post'});
   watch(() => props.modelValue, updateWidth, { flush: 'post'});
   onMounted(updateWidth);
-
 </script>
 
 <template>
-  <select ref="select" :value="modelValue" @change="updateValue" :style="style" :disabled="disabled">
+  <select ref="select" :value="modelValue" @change="updateValue" :style="style" :disabled="disabled" :aria-label="ariaLabel">
     <option v-for="(option, index) in options" :key="index" :value="option.value">{{ option.label }}</option>
   </select>
 </template>

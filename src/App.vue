@@ -81,7 +81,7 @@ const group = {
     },
     {
       type: 'condition',
-      property: 'countries',
+      property: 'country',
       operator: 'in',
     },
     {
@@ -187,7 +187,7 @@ async function completeCollection(collection) {
       :filter="filter"
       :allowed-properties="{user: null}"
       :allowed-scopes="{user: null}"
-      :allowed-operators="{ scope: null, group: ['or'], relationship_condition: null}"
+      :allowed-operators="{ scope: null, group: ['or'], relationship_condition: null, choice: ['in', 'not_in']}"
       :allowReset="true"
       user-timezone="Europe/Paris"
       :display-operator="true"

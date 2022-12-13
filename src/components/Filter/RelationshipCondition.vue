@@ -12,6 +12,7 @@
   import RelationshipAction from './RelationshipAction.vue';
   import Utils from '../../core/Utils';
   import { classes } from '../../core/ClassManager';
+  import { translate } from '../../i18n/i18n';
 
   const emit = defineEmits(['remove']);
   const props = defineProps({
@@ -52,6 +53,7 @@
   const invalidModel = ref(null);
   const invalidProperty = ref(null);
   const invalidOperator = ref(null);
+  const ariaLabel = ref('');
   const schema = ref(null);
   const queue = ref(null);
   const endQueueFilter = ref(null);
@@ -125,6 +127,7 @@ function removeEndFilter()
         childFilter = null;
         return;
       }
+      ariaLabel.value = childSchema.mapProperties[childFilter.property].name;
       
       const childModelName = childSchema.mapProperties[childFilter.property].model;
       childSchema = await resolve(childModelName);
@@ -160,7 +163,7 @@ function removeEndFilter()
         </div>
       <RelationshipAction v-bind="props" :model="endQueuePropertyModel" :model-value="queue[queue.length - 1].value" @remove="removeQueueFilter" @add="addFilter"/>
       </div>
-      <IconButton v-if="!(queue[queue.length - 1].value.removable === false)" icon="delete" @click="$emit('remove')"/>
+      <IconButton v-if="!(queue[queue.length - 1].value.removable === false)" icon="delete" @click="$emit('remove')" :aria-label="translate('condition')+' '+ariaLabel"/>
     </div>
     <template v-else>
       <Condition v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'" v-bind="props" :model="endQueuePropertyModel" :model-value="endQueueFilter" @remove="removeEndFilter">

@@ -12,11 +12,12 @@ createApp(App).use(plugin, {
         
     },
     inputs: {
-        choice: 'number'
+        choice: {component: 'number', unique: true}
     },
     icons: {
         delete: 'qkit-icon qkit-icon-cross',
         add: 'qkit-icon qkit-icon-plus',
+        add_value: 'qkit-icon qkit-icon-plus',
         close: 'qkit-icon qkit-icon-cross'
     },
     locales: { en, fr },

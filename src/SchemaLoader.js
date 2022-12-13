@@ -53,8 +53,8 @@ const schemas = {
             type: 'time',
         },
         {
-            id: 'countries',
-            name: 'the countries',
+            id: 'country',
+            name: 'the country',
             type: 'choice',
         },
         {
@@ -71,7 +71,7 @@ const schemas = {
         },
         ],
         search: {
-        filters: ['first_name', 'age', 'weight', 'gender', 'married', 'birth_date', 'birth_day', 'birth_hour', 'company', 'friend', 'countries'],
+        filters: ['first_name', 'age', 'weight', 'gender', 'married', 'birth_date', 'birth_day', 'birth_hour', 'company', 'friend', 'country'],
         sort: ['first_name', 'company'],
         scopes: [
             'scope_string_definition',

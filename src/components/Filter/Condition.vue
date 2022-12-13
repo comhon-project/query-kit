@@ -9,22 +9,12 @@
   import InvalidType from '../Messages/InvalidType.vue';
   import InvalidModel from '../Messages/InvalidModel.vue';
   import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
-  import BooleanInput from '../Common/BooleanInput.vue';
   import InputCollection from './InputCollection.vue';
   import InputCondition from './InputCondition.vue';
   import IconButton from '../Common/IconButton.vue';
   import { classes } from '../../core/ClassManager';
-  import { getComponent } from '../../core/InputManager';
-
-  const mapTypes = {
-    string: 'text',
-    integer: 'number',
-    float: 'number',
-    date: 'date',
-    datetime: 'datetime-local',
-    time: 'time',
-    boolean: BooleanInput,
-  };
+  import { getComponent, isUniqueComponentIn } from '../../core/InputManager';
+  import { translate } from '../../i18n/i18n';
 
   const emit = defineEmits(['remove']);
   const props = defineProps({
@@ -87,6 +77,9 @@
 
     return computedScope ? computedScope : schema.value.mapScopes[props.modelValue.id];
   });
+  const isUniqueIn = computed(() => {
+    return isUniqueComponentIn(target.value.type);
+  });
 
   async function initSchema()
   {
@@ -138,6 +131,10 @@
   {
     return value != null ? `%${value}%` : value;
   }
+  
+  function goToNext() {
+    console.log('TODO focus next condition');
+  }
 
   watchEffect(initSchema);
   watchEffect(() => {
@@ -174,7 +171,9 @@
 
 <template>
   <div :class="classes.condition_container">
-    <div>
+    <div style="position: relative;">
+      <div class="focus-only" tabindex="0" :aria-label="translate('condition')">{{ translate('condition') }}</div>
+      <button @click="goToNext" class="focus-only" :class="classes.btn">go to next condition</button>
       <InvalidModel v-if="!validModel" :model="modelValue.model"/>
       <template v-else-if="!validTarget">
         <InvalidProperty v-if="modelValue.type == 'condition'" :property="modelValue.property"/>
@@ -185,17 +184,36 @@
       <template v-else-if="schema">
         <div :class="classes.condition_header">
           <slot name="relationship" />
-          <span :class="classes.property_name_container">{{ label }}</span>
+          <label :class="classes.property_name_container">{{ label }}</label>
           <template v-if="mustDisplayOperator">
-            <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator" />
+            <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator" :aria-label="label+' '+translate('operator')"/>
           </template>
         </div>
         <template v-if="inputType">
-          <InputCollection v-if="modelValue.operator == 'in' || modelValue.operator == 'not_in'" v-bind="props" v-model="modelValue.value" :operator="modelValue.operator" :target="target" :editable="isEditable"/>
+          <InputCollection v-if="!isUniqueIn && (modelValue.operator == 'in' || modelValue.operator == 'not_in')" v-bind="props" v-model="modelValue.value" :operator="modelValue.operator" :target="target" :editable="isEditable"/>
           <InputCondition  v-else  v-bind="props" v-model="modelValue.value" :operator="modelValue.operator" :target="target" :editable="isEditable"/>
         </template>
       </template>
     </div>
-    <IconButton v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType" icon="delete" @click="$emit('remove')"/>
+    <IconButton v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType" icon="delete" @click="$emit('remove')" :aria-label="schema && target ? (translate('condition')+' '+label) : ''"/>
   </div>
 </template>
+
+<style scoped>
+    .focus-only {
+      position: absolute;
+      left: 0;
+      top: 0;
+      background-color: white;
+      width: 0;
+      height: 0;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    button.focus-only:focus-visible {
+      opacity: 1;
+      width: auto;
+      height: auto;
+    }
+</style>

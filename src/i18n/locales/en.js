@@ -2,7 +2,8 @@
 
 export default  {
     add: 'add',
-    add_filter: 'add filter',
+    add_filter: 'add a filter',
+    add_value: 'add a value',
     delete: 'delete',
     search: 'search',
     reset: 'reset',
@@ -20,4 +21,5 @@ export default  {
     no: 'no',
     condition: 'condition',
     group: 'group',
+    operator: 'operator',
 }

@@ -11,6 +11,7 @@ const classList = {
     condition_input: 'qkit-input',
     condition_input_boolean: 'qkit-input-boolean',
     in_container: 'qkit-in-container',
+    in_list: 'qkit-in-list',
     in_value_container: 'qkit-in-value-container',
     property_name_container: 'qkit-property-name-container',
     error_info: 'qkit-error-info',

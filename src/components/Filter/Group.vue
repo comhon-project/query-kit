@@ -13,6 +13,7 @@ import InvalidModel from '../Messages/InvalidModel.vue';
 import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
 import IconButton from '../Common/IconButton.vue';
 import { classes } from '../../core/ClassManager';
+import { translate } from '../../i18n/i18n';
 
 const emit = defineEmits(['remove']);
 const props = defineProps({
@@ -117,7 +118,7 @@ watchEffect(() => {
         <InvalidModel v-if="!validModel" :model="props.model" />
         <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator"/>
       </div>
-      <IconButton icon="delete" @click="$emit('remove')" />
+      <IconButton icon="delete" @click="$emit('remove')" :aria-label="translate('group')"/>
   </div>
   <div v-else-if="schema" :class="classes.group">
     <div :class="classes.group_header">
@@ -126,25 +127,25 @@ watchEffect(() => {
       </div>
       <div :class="classes.group_actions">
         <template v-if="displayOperator === true || (displayOperator && displayOperator.group)">
-          <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator"/>
+          <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator" :aria-label="translate('operator')"/>
         </template>
         <template v-if="canAddFilter"><IconButton icon="add_filter" @click="addFilter"/></template>
         <slot name="reset" />
         <slot name="validate" />
         <template v-if="isRemovable">
-          <IconButton icon="delete" @click="$emit('remove')" />
+          <IconButton icon="delete" @click="$emit('remove')" :aria-label="translate('group')"/>
         </template>
       </div>
     </div>
-    <div :class="classes.group_list">
+    <ul :class="classes.group_list">
       <template v-for="(filter, index) in modelValue.filters" :key="filter.key">
-        <template v-if="isVisible(filter)">
+        <li v-if="isVisible(filter)" :style="filter.type == 'group' ? {flexBasis: '100%'} : {}">
           <Condition v-if="filter.type == 'condition' || filter.type == 'scope'" v-bind="props" :model-value="filter" @remove="() => removeFilter(index)"/>
           <RelationshipCondition v-else-if="filter.type == 'relationship_condition'" v-bind="props" :model-value="filter" @remove="() => removeFilter(index)"/>
           <Group v-else-if="filter.type == 'group'" v-bind="props" :model-value="filter" @remove="() => removeFilter(index)"/>
-        </template>
+        </li>
       </template>
-    </div>
+    </ul>
     <dialog ref="addFilterDialog" :class="classes.modal">
       <div :class="classes.modal_close_container">
         <IconButton icon="close" @click="() => addFilterDialog.close()"/>

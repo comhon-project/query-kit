@@ -1,9 +1,10 @@
 <script setup>
-  import { ref, watchEffect } from 'vue'
+  import { computed, ref, watchEffect } from 'vue'
   import { resolve } from '../../core/Schema'
   import { useBaseCondition } from './AbstractCondition';
   import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
   import { classes } from '../../core/ClassManager';
+  import { translate } from '../../i18n/i18n';
 
   const emit = defineEmits(['remove', 'end:relationship']);
   const props = defineProps({
@@ -34,6 +35,7 @@
   });
   const schema = ref(null);
   const { canEditOperator, operatorOptions } = useBaseCondition(props, schema, 'relationship_condition');
+  const label = computed(() => schema.value.mapProperties[props.modelValue.property].name);
 
   async function initSchema()
   {
@@ -46,10 +48,10 @@
 <template>
   <div v-if="schema" :class="classes.relationship_queue_element">
     <div v-if="displayOperator === true || (displayOperator && displayOperator.relationship_condition)">
-      <AdaptativeSelect :class="classes.operator" v-model="props.modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator"/>
+      <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator"  :aria-label="label+' '+translate('operator')"/>
     </div>
     <span :class="classes.property_name_container">
-      {{ schema.mapProperties[props.modelValue.property].name }}
+      {{ label }}
     </span>
   </div>
 </template>

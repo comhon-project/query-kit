@@ -2,6 +2,7 @@
 const iconList = {
     add: undefined,
     add_filter: undefined,
+    add_value: undefined,
     delete: undefined,
     search: undefined,
     reset: undefined,

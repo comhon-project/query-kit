@@ -118,7 +118,7 @@
 </script>
 
 <template>
-  <component v-if="isVueComponent" :is="inputType" v-model="conditionValue" :model="model" :target="target" :disabled="!editable" />
+  <component v-if="isVueComponent" :is="inputType" v-model="conditionValue" :model="model" :target="target" :operator="operator" :disabled="!editable" />
   <select v-else-if="inputType == 'select' && target.enum" :class="classes.condition_input" v-model="conditionValue" :disabled="!editable">
     <option v-for="(label, value) in target.enum" :key="value" :value="value">{{ label }}</option>
   </select>

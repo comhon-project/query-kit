@@ -59,13 +59,14 @@
     border: 1px solid lightgrey;
     border-radius: 0.5rem;
     padding: 1rem;
-    flex-basis: 100%;
 }
 
 .qkit-group-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    list-style: none;
+    padding: 0;
 }
 
 .qkit-group-header {
@@ -198,6 +199,14 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+}
+
+.qkit-in-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
 }
 
 .qkit-in-value-container {

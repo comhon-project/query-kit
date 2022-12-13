@@ -19,13 +19,21 @@ import { icons } from '../../core/IconManager';
       type: String,
       default: 'button'
     },
+    ariaLabel: {
+      type: String,
+    },
   });
 
   const iconClass = computed(() => icons[props.icon]);
+  const computedAriaLabel = computed(() => {
+    return props.ariaLabel
+      ? (translate(props.icon)+' '+props.ariaLabel)
+      : translate(props.icon);
+  });
 </script>
 
 <template>
-  <button :class="classes[btnClass]" :type="type" @click="$emit('click')">
+  <button :class="classes[btnClass]" :type="type" @click="$emit('click')" :aria-label="computedAriaLabel">
     <i v-if="iconClass" :class="iconClass"></i>
     <template v-else>{{ translate(icon) }}</template>
   </button>

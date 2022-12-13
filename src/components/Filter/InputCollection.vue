@@ -1,7 +1,7 @@
 <script setup>
   import { reactive, watch } from 'vue'
-import { classes } from '../../core/ClassManager';
-import IconButton from '../Common/IconButton.vue';
+  import { classes } from '../../core/ClassManager';
+  import IconButton from '../Common/IconButton.vue';
   import InputCondition from './InputCondition.vue';
 
   const emit = defineEmits(['update:modelValue']);
@@ -41,10 +41,12 @@ import IconButton from '../Common/IconButton.vue';
 
 <template>
   <div :class="classes.in_container">
-    <div :class="classes.in_value_container" v-for="(value, index) in arrayValues">
-      <InputCondition v-bind="props" :model-value="value" @update:model-value="(newValue) => arrayValues[index] = newValue" :editable="editable"/>
-      <IconButton v-if="editable" icon="delete" @click="() => arrayValues.splice(index, 1)"/>
-    </div>
-    <IconButton v-if="editable" icon="add" @click="() => arrayValues.push(undefined)"/>
+    <ul :class="classes.in_list">
+      <li :class="classes.in_value_container" v-for="(value, index) in arrayValues">
+        <InputCondition v-bind="props" :model-value="value" @update:model-value="(newValue) => arrayValues[index] = newValue" :editable="editable"/>
+        <IconButton v-if="editable" icon="delete" @click="() => arrayValues.splice(index, 1)"/>
+      </li>
+    </ul>
+    <IconButton v-if="editable" icon="add_value" @click="() => arrayValues.push(undefined)"/>
   </div>
 </template>
