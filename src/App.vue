@@ -172,6 +172,9 @@ async function completeCollection(collection) {
 }
 
 // TODO locales for schema properties and scopes
+// shortcut to go from builder to collection and inverse
+// collection shortcut go to next line
+// insert export button
 
 </script>
 

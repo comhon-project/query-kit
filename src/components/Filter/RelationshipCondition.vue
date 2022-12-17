@@ -13,8 +13,9 @@
   import Utils from '../../core/Utils';
   import { classes } from '../../core/ClassManager';
   import { translate } from '../../i18n/i18n';
+  import Shortcuts from './Shortcuts.vue';
 
-  const emit = defineEmits(['remove']);
+  const emit = defineEmits(['remove', 'goToNext', 'goToPrevious', 'goToParentGroup', 'goToRootGroup', 'addFilterToParentGroup']);
   const props = defineProps({
     modelValue: {
       type: Object,
@@ -48,12 +49,22 @@
       type: String,
       default: 'UTC'
     },
+    exceptShortcuts: {
+      type: Array,
+    },
+    // not used, just permit to avoid warning when parent component pass ariaLabel prop
+    ariaLabel: { 
+      type: String
+    },
+    root: { // not used, just permit to avoid warning when parent component pass ariaLabel prop
+      type: Boolean
+    },
   });
 
   const invalidModel = ref(null);
   const invalidProperty = ref(null);
   const invalidOperator = ref(null);
-  const ariaLabel = ref('');
+  const childAriaLabel = ref('');
   const schema = ref(null);
   const queue = ref(null);
   const endQueueFilter = ref(null);
@@ -62,6 +73,13 @@
     const lastQueueSchema = lastQueueElement.schema;
     return  lastQueueSchema.mapProperties[lastQueueElement.value.property].model;
   });
+  const shortcutEvents = {
+    goToNext: () => emit('goToNext'),
+    goToPrevious: () => emit('goToPrevious'),
+    goToParentGroup: () => emit('goToParentGroup'),
+    goToRootGroup: () => emit('goToRootGroup'),
+    addFilterToParentGroup: () => emit('addFilterToParentGroup'),
+  }
 
   async function initSchema()
   {
@@ -127,7 +145,7 @@ function removeEndFilter()
         childFilter = null;
         return;
       }
-      ariaLabel.value = childSchema.mapProperties[childFilter.property].name;
+      childAriaLabel.value = childSchema.mapProperties[childFilter.property].name;
       
       const childModelName = childSchema.mapProperties[childFilter.property].model;
       childSchema = await resolve(childModelName);
@@ -147,7 +165,7 @@ function removeEndFilter()
 </script>
 
 <template>
-  <div v-if="invalidModel || invalidProperty || invalidOperator" :class="classes.condition_error_container">
+  <div v-if="invalidModel || invalidProperty || invalidOperator" :class="classes.condition_error_container" tabindex="0" :aria-label="translate('relationship_condition')">
       <div>
         <InvalidModel v-if="invalidModel" :model="invalidModel"/>
         <InvalidProperty v-else-if="invalidProperty" :property="invalidProperty"/>
@@ -156,24 +174,25 @@ function removeEndFilter()
       <IconButton icon="delete" @click="$emit('remove')"/>
   </div>
   <template v-else-if="queue">
-    <div v-if="!endQueueFilter" :class="classes.relationship_container">
+    <div v-if="!endQueueFilter" :class="classes.relationship_container" tabindex="0" :aria-label="translate('relationship_condition')">
       <div :class="classes.relationship_queue_and_action">
+        <Shortcuts v-on="shortcutEvents" :except="exceptShortcuts"/>
         <div :class="classes.relationship_queue">
           <RelationshipQueueElement v-for="elmnt in queue" :key="elmnt.key" v-bind="props" :model-value="elmnt.value" :model="elmnt.schema.name"/>
         </div>
-      <RelationshipAction v-bind="props" :model="endQueuePropertyModel" :model-value="queue[queue.length - 1].value" @remove="removeQueueFilter" @add="addFilter"/>
+        <RelationshipAction v-bind="props" :model="endQueuePropertyModel" :model-value="queue[queue.length - 1].value" @remove="removeQueueFilter" @add="addFilter"/>
       </div>
-      <IconButton v-if="!(queue[queue.length - 1].value.removable === false)" icon="delete" @click="$emit('remove')" :aria-label="translate('condition')+' '+ariaLabel"/>
+      <IconButton v-if="!(queue[queue.length - 1].value.removable === false)" icon="delete" @click="$emit('remove')" :aria-label="translate('condition')+' '+childAriaLabel"/>
     </div>
     <template v-else>
-      <Condition v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'" v-bind="props" :model="endQueuePropertyModel" :model-value="endQueueFilter" @remove="removeEndFilter">
+      <Condition v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'" v-bind="props" :model="endQueuePropertyModel" :model-value="endQueueFilter" @remove="removeEndFilter" v-on="shortcutEvents" :aria-label="translate('relationship_condition_with_condition')">
         <template #relationship>
           <div :class="classes.relationship_queue">
             <RelationshipQueueElement v-for="elmnt in queue" :key="elmnt.key" v-bind="props" :model-value="elmnt.value" :model="elmnt.schema.name"/>
           </div>
         </template>
       </Condition>
-      <Group v-else-if="endQueueFilter.type == 'group'" v-bind="props" :model="endQueuePropertyModel" :model-value="endQueueFilter" @remove="removeEndFilter">
+      <Group v-else-if="endQueueFilter.type == 'group'" v-bind="props" :model="endQueuePropertyModel" :model-value="endQueueFilter" @remove="removeEndFilter" v-on="shortcutEvents" :aria-label="translate('relationship_condition_with_group')">
         <template #relationship>
           <div :class="classes.relationship_queue">
             <RelationshipQueueElement v-for="elmnt in queue" :key="elmnt.key" v-bind="props" v-model="elmnt.value" :model="elmnt.schema.name"/>

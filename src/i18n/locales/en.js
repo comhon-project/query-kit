@@ -20,6 +20,16 @@ export default  {
     yes: 'yes',
     no: 'no',
     condition: 'condition',
+    relationship_condition: 'relationship condition',
+    relationship_condition_with_condition: 'relationship condition with condition',
+    relationship_condition_with_group: 'relationship condition with group',
     group: 'group',
     operator: 'operator',
+
+    show_action_shortcuts: 'show action shortcuts',
+    go_to_next_condition: 'go to next condition',
+    go_to_previous_condition: 'go to previous condition',
+    go_to_parent_group: 'go to parent group',
+    go_to_root_group: 'go to first level group',
+    add_filter_on_parent_group: 'add a filter to the parent group',
 }

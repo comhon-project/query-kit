@@ -56,6 +56,7 @@
 }
 
 .qkit-group {
+    position: relative;
     border: 1px solid lightgrey;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -67,6 +68,10 @@
     gap: 0.5rem;
     list-style: none;
     padding: 0;
+}
+
+ul.qkit-group-list > li > .qkit-condition-container {
+    height: 100%;
 }
 
 .qkit-group-header {
@@ -132,8 +137,8 @@
     transform: translateY(-50%) rotate(45deg);
 }
 
-
 .qkit-condition-container {
+    position: relative;
     display: flex;
 }
 .qkit-condition-container > *:first-child {

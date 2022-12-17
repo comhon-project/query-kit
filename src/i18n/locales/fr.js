@@ -20,6 +20,16 @@ export default  {
     yes: 'oui',
     no: 'non',
     condition: 'condition',
+    relationship_condition: 'condition de parenté',
+    relationship_condition_with_condition: 'condition de parenté avec condition',
+    relationship_condition_with_group: 'condition de parenté avec groupe',
     group: 'groupe',
     operator: 'opérateur',
+
+    show_action_shortcuts: 'afficher les raccourcis d\'actions',
+    go_to_next_condition: 'aller à la condition suivante',
+    go_to_previous_condition: 'aller à la condition précédente',
+    go_to_parent_group: 'aller au group parent',
+    go_to_root_group: 'aller au group de premier niveau',
+    add_filter_on_parent_group: 'ajouter un filtre au groupe parent',
 }

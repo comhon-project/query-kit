@@ -15,8 +15,9 @@
   import { classes } from '../../core/ClassManager';
   import { getComponent, isUniqueComponentIn } from '../../core/InputManager';
   import { translate } from '../../i18n/i18n';
+  import Shortcuts from './Shortcuts.vue';
 
-  const emit = defineEmits(['remove']);
+  const emit = defineEmits(['remove', 'goToNext', 'goToPrevious', 'goToParentGroup', 'goToRootGroup', 'addFilterToParentGroup']);
   const props = defineProps({
     modelValue: {
       type: Object,
@@ -44,14 +45,27 @@
       type: String,
       default: 'UTC'
     },
+    ariaLabel: {
+      type: String,
+    },
+    exceptShortcuts: {
+      type: Array,
+    },
   });
-
   const validModel = ref(true);
   const validOperator = ref(true);
   const validTarget = ref(true);
   const validType = ref(true);
   const schema = ref(null);
   const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseCondition(props, schema, props.modelValue.type);
+
+  const shortcutEvents = {
+    goToNext: () => emit('goToNext'),
+    goToPrevious: () => emit('goToPrevious'),
+    goToParentGroup: () => emit('goToParentGroup'),
+    goToRootGroup: () => emit('goToRootGroup'),
+    addFilterToParentGroup: () => emit('addFilterToParentGroup'),
+  }
 
   const label = computed(() => {
     return target.value.name;
@@ -131,10 +145,6 @@
   {
     return value != null ? `%${value}%` : value;
   }
-  
-  function goToNext() {
-    console.log('TODO focus next condition');
-  }
 
   watchEffect(initSchema);
   watchEffect(() => {
@@ -170,10 +180,9 @@
 </script>
 
 <template>
-  <div :class="classes.condition_container">
-    <div style="position: relative;">
-      <div class="focus-only" tabindex="0" :aria-label="translate('condition')">{{ translate('condition') }}</div>
-      <button @click="goToNext" class="focus-only" :class="classes.btn">go to next condition</button>
+  <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
+    <div>
+      <Shortcuts v-on="shortcutEvents" :except="exceptShortcuts"/>
       <InvalidModel v-if="!validModel" :model="modelValue.model"/>
       <template v-else-if="!validTarget">
         <InvalidProperty v-if="modelValue.type == 'condition'" :property="modelValue.property"/>
@@ -198,22 +207,3 @@
     <IconButton v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType" icon="delete" @click="$emit('remove')" :aria-label="schema && target ? (translate('condition')+' '+label) : ''"/>
   </div>
 </template>
-
-<style scoped>
-    .focus-only {
-      position: absolute;
-      left: 0;
-      top: 0;
-      background-color: white;
-      width: 0;
-      height: 0;
-      opacity: 0;
-      overflow: hidden;
-    }
-
-    button.focus-only:focus-visible {
-      opacity: 1;
-      width: auto;
-      height: auto;
-    }
-</style>
