@@ -72,20 +72,20 @@
 </template>
 
 <style scoped>
-    .qkit-focus-only {
-      position: absolute;
-      left: 0;
-      top: 0;
-      background-color: white;
-      width: 0;
-      height: 0;
-      opacity: 0;
-      overflow: hidden;
-    }
+  .qkit-focus-only {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: white;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
 
-    .qkit-focus-only:focus-visible {
-      opacity: 1;
-      width: auto;
-      height: auto;
-    }
+  .qkit-focus-only:focus-visible {
+    opacity: 1;
+    width: auto;
+    height: auto;
+  }
 </style>

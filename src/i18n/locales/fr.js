@@ -25,6 +25,7 @@ export default  {
     relationship_condition_with_group: 'condition de parenté avec groupe',
     group: 'groupe',
     operator: 'opérateur',
+    choose_condition_element:'choisissez sur quel élément vous voulez appliquer la condition',
 
     show_action_shortcuts: 'afficher les raccourcis d\'actions',
     go_to_next_condition: 'aller à la condition suivante',

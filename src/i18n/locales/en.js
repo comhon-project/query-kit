@@ -25,6 +25,7 @@ export default  {
     relationship_condition_with_group: 'relationship condition with group',
     group: 'group',
     operator: 'operator',
+    choose_condition_element:'choose on which element you want to apply the condition',
 
     show_action_shortcuts: 'show action shortcuts',
     go_to_next_condition: 'go to next condition',

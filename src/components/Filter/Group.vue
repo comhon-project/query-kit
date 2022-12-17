@@ -210,19 +210,15 @@ watchEffect(() => {
         <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter"/>
         <slot name="reset" />
         <slot name="validate" />
-        <template v-if="isRemovable">
-          <IconButton icon="delete" @click="$emit('remove')" :aria-label="translate('group')"/>
-        </template>
+        <IconButton v-if="isRemovable" icon="delete" @click="$emit('remove')" :aria-label="translate('group')"/>
       </div>
     </div>
     <ul ref="listRef" :class="classes.group_list">
-      <template v-for="(element, displayIndex) in visibleFilters" :key="element.filter.key">
-        <li :style="element.filter.type == 'group' ? {flexBasis: '100%'} : {}">
-          <Condition v-if="element.filter.type == 'condition' || element.filter.type == 'scope'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
-          <RelationshipCondition v-else-if="element.filter.type == 'relationship_condition'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
-          <Group v-else-if="element.filter.type == 'group'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
-        </li>
-      </template>
+      <li v-for="(element, displayIndex) in visibleFilters" :key="element.filter.key" :style="element.filter.type == 'group' ? {flexBasis: '100%'} : {}">
+        <Condition v-if="element.filter.type == 'condition' || element.filter.type == 'scope'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
+        <RelationshipCondition v-else-if="element.filter.type == 'relationship_condition'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
+        <Group v-else-if="element.filter.type == 'group'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
+      </li>
     </ul>
     <dialog ref="addFilterDialog" :class="classes.modal">
       <div :class="classes.modal_close_container">

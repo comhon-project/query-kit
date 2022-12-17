@@ -35,6 +35,7 @@ const classList = {
     order_asc: 'qkit-asc',
     order_desc: 'qkit-desc',
     active: 'qkit-active',
+    spinner: 'qkit-spinner',
 }
 
 const registerClasses = (custom) => {

@@ -239,7 +239,9 @@ watch(() => props.filter, () => requestServer(true));
     </table>
     <div v-show="!end" ref="observered" style="height: 1px;"></div>
     <div v-show="requesting" style="position: relative;">
-      <slot name="loading"></slot>
+      <slot name="loading">
+        <div :class="classes.spinner"></div>
+      </slot>
     </div>
   </div>
 </template>

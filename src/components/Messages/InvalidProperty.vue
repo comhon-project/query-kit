@@ -15,7 +15,3 @@ const props = defineProps({
     invalid property <span>{{ props.property }}</span>
   </span>
 </template>
-
-<style scoped>
-
-</style>

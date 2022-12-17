@@ -15,7 +15,3 @@ const props = defineProps({
     invalid operator <span>{{ props.operator }}</span>
   </span>
 </template>
-
-<style scoped>
-
-</style>

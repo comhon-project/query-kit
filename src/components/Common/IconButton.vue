@@ -38,7 +38,3 @@ import { icons } from '../../core/IconManager';
     <template v-else>{{ translate(icon) }}</template>
   </button>
 </template>
-
-<style scoped>
-
-</style>

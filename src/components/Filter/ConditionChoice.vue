@@ -28,8 +28,8 @@
   });
 
   const uniqueName = ref(`choice-${Utils.getUniqueId()}`);
-  const uniqueId1 = ref(`choice-${Utils.getUniqueId()}`);
-  const uniqueId2 = ref(`choice-${Utils.getUniqueId()}`);
+  const uniqueIdCondition = ref(`choice-${Utils.getUniqueId()}`);
+  const uniqueIdGroup = ref(`choice-${Utils.getUniqueId()}`);
   const schema = ref(null);
   const targetCondition = ref(null);
   const tempType = ref('condition');
@@ -108,15 +108,15 @@
   <div v-if="schema">
     <form @submit="validate" :class="classes.condition_choice_form">
       <div>
-        <input type="radio" @click="() => selectType('condition')" :name="uniqueName" :id="uniqueId1" checked/>
-        <label :for="uniqueId1">{{ translate('condition') }}</label>
-        <select v-model="targetCondition" :disabled="tempType == 'group'" required>
+        <input type="radio" @click="() => selectType('condition')" :name="uniqueName" :id="uniqueIdCondition" checked/>
+        <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
+        <select v-model="targetCondition" :disabled="tempType == 'group'" :aria-label="translate('choose_condition_element')" required>
           <option v-for="(display, value) in options" :key="value" :value="value">{{ display }}</option>
         </select>
       </div>
       <div v-if="displayGroup">
-        <input type="radio" @click="() => selectType('group')" :name="uniqueName" :id="uniqueId2"/>
-        <label :for="uniqueId2">{{ translate('group') }}</label>
+        <input type="radio" @click="() => selectType('group')" :name="uniqueName" :id="uniqueIdGroup"/>
+        <label :for="uniqueIdGroup">{{ translate('group') }}</label>
       </div>
       <div>
         <IconButton icon="validate" type="submit"/>
@@ -124,7 +124,3 @@
     </form>
   </div>
 </template>
-
-<style scoped>
-
-</style>

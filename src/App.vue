@@ -173,6 +173,7 @@ async function completeCollection(collection) {
 
 // TODO locales for schema properties and scopes
 // shortcut to go from builder to collection and inverse
+// shortcut goToNext/Previous can go on parent group
 // collection shortcut go to next line
 // insert export button
 
@@ -220,9 +221,6 @@ async function completeCollection(collection) {
         {id: 'quick_search', name: 'quick search company'},
       ]}"
     >
-      <template #loading>
-        <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);"> {{ 'loading...' }} </div>
-      </template>
     </Search>
   </div>
 </template>

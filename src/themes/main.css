@@ -393,3 +393,28 @@ ul.qkit-group-list > li > .qkit-condition-container {
     box-shadow: 0px 0px 5px grey;
     transform: scale(1.15);
 }
+
+.qkit-spinner {
+    position: absolute; 
+    bottom: 5px; 
+    left: 50%; 
+    transform: translateX(-50%);
+}
+.qkit-spinner:after {
+    content: " ";
+    display: block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 5px solid rgb(82, 82, 82);
+    border-color: rgb(82, 82, 82) transparent rgb(82, 82, 82) transparent;
+    animation: qkit-spinner 1.2s linear infinite;
+}
+@keyframes qkit-spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
