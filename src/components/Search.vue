@@ -84,6 +84,15 @@ const props = defineProps({
   postRequest: {
     type: Function,
   },
+  infiniteScroll: {
+    type: Boolean,
+  },
+  displayCount: {
+    type: Boolean,
+  },
+  onExport: {
+    type: Function,
+  },
 });
 
 let tempFilter = null;
@@ -126,7 +135,7 @@ async function applyQuery()
 {
   // we copy object filter if it didn't changed to force reload collection
   computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
-  location.href = "#query-collection";
+  location.href = `#${collectionId}`;
 }
 
 function updateFilter(filter)

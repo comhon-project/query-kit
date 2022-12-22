@@ -8,6 +8,9 @@ const iconList = {
     reset: undefined,
     validate: undefined,
     close: undefined,
+    previous: undefined,
+    next: undefined,
+    export: undefined,
 }
 
 const registerIcons = (custom) => {

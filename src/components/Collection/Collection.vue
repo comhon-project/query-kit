@@ -3,8 +3,11 @@ import { ref, watch, onMounted, toRaw, inject, shallowRef } from 'vue'
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import Utils from '../../core/Utils';
+import { translate } from '../../i18n/i18n';
+import IconButton from '../Common/IconButton.vue';
+import Pagination from '../Pagination/Pagination.vue';
 
-const emit = defineEmits(['rowClick']);
+const emit = defineEmits(['rowClick', 'export']);
 const props = defineProps({
   model: {
     type: String,
@@ -42,6 +45,15 @@ const props = defineProps({
   postRequest: {
     type: Function,
   },
+  infiniteScroll: {
+    type: Boolean,
+  },
+  displayCount: {
+    type: Boolean,
+  },
+  onExport: {
+    type: Function,
+  },
 });
 
 let movingOffset = props.offset;
@@ -50,9 +62,11 @@ const requester = inject(Symbol.for('requester'));
 const schema = shallowRef(null);
 const computedColumns = shallowRef([]);
 const collection = shallowRef([]);
+const count = ref(0);
 const end = ref(false);
 const active = ref(null);
 const order = ref(null);
+const page = ref(1);
 
 const observered = ref(null);
 let observer;
@@ -133,11 +147,21 @@ async function shiftThenRequestServer()
   }
 }
 
+async function updatePage(newPage)
+{
+  if (!requesting.value) {
+    page.value = newPage;
+    movingOffset = (page.value - 1) * props.limit;
+    requestServer();
+  }
+}
+
 async function requestServer(reset = false)
 {
   if (reset) {
     end.value = false;
     movingOffset = 0;
+    page.value = 1;
   }
   requesting.value = true;
   const response = await requester.request({
@@ -150,20 +174,21 @@ async function requestServer(reset = false)
   if ((typeof response != 'object') || !Array.isArray(response.collection)) {
     throw new Error('invalid request response, it must be an object containing a property "collection" with an array value');
   }
+  count.value = response.count;
   if (props.postRequest) {
     const res = props.postRequest(response.collection);
     if (res instanceof Promise) {
       await res;
     }
   }
-  if (reset) {
+  if (reset || !props.infiniteScroll) {
     collection.value = response.collection;
   } else {
     for (const element of response.collection) {
       collection.value.push(element);
     }
   }
-  if (response.collection.length < props.limit) {
+  if (props.infiniteScroll && response.collection.length < props.limit) {
     end.value = true;
   }
   // observer is directly triggered when view is updated
@@ -195,53 +220,63 @@ onMounted(async () => {
 watch(() => props.model, () => init(true));
 watch(() => props.columns, () => init(false));
 watch(() => props.filter, () => requestServer(true));
+watch(() => props.infiniteScroll, () => requestServer(true));
 </script>
 
 <template>
   <div :class="classes.collection" :id="id">
-    <table :class="classes.collection_table">
-      <thead>
-        <tr>
-          <th v-for="computedColumn in computedColumns" :key="computedColumn.id">
-            <button v-if="computedColumn.sortable"
-              type="button"
-              :class="classes.btn + ' ' + (active == computedColumn.id ? (classes.active + ' ' + (order == 'asc' ? classes.order_asc : classes.order_desc)) : '')" 
-              @click="() => updateOrder(computedColumn.id)"
+    <div v-if="displayCount || !infiniteScroll || onExport" :class="classes.collection_header">
+      <div><div v-if="displayCount">{{ translate('results') }} : {{ count }}</div></div>
+      <Pagination v-if="!infiniteScroll" :page="page" :count="Math.max(1, Math.ceil(count/limit))" :lock="requesting" @update="updatePage"/>
+      <div><IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)"/></div>
+    </div>
+    <div style="position: relative;">
+      <div v-show="requesting">
+        <slot name="loading">
+          <div :class="classes.spinner"></div>
+        </slot>
+      </div>
+      <div :class="classes.collection_content">
+        <table :class="classes.collection_table">
+          <thead>
+            <tr>
+              <th v-for="computedColumn in computedColumns" :key="computedColumn.id">
+                <button v-if="computedColumn.sortable"
+                  type="button"
+                  :class="classes.btn + ' ' + (active == computedColumn.id ? (classes.active + ' ' + (order == 'asc' ? classes.order_asc : classes.order_desc)) : '')" 
+                  @click="() => updateOrder(computedColumn.id)"
+                >
+                  {{ computedColumn.label }}
+                </button>
+                <div v-else>
+                  {{ computedColumn.label }}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="object in collection" :key="object.id" 
+              :class="onRowClick ? classes.collection_clickable_row : ''" 
+              @click="(e) => $emit('rowClick', object, e)"
             >
-              {{ computedColumn.label }}
-            </button>
-            <div v-else>
-              {{ computedColumn.label }}
-            </div>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="object in collection" :key="object.id" 
-          :class="onRowClick ? classes.collection_clickable_row : ''" 
-          @click="(e) => $emit('rowClick', object, e)"
-        >
-          <td v-for="computedColumn in computedColumns" :key="computedColumn.id">
-            <div v-if="computedColumn.component">
-              <component :is="computedColumn.component" :value="object[computedColumn.id]" :row-value="object"/>
-            </div>
-            <button v-else-if="computedColumn.onCellClick"
-              type="button"
-              :class="classes.collection_clickable_cell"
-              v-html="object[computedColumn.id]"
-              @click="(e) => computedColumn.onCellClick ? computedColumn.onCellClick(object, computedColumn.id, e) : null"
-            >
-            </button>
-            <div :class="classes.collection_cell" v-else v-html="object[computedColumn.id]"></div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-show="!end" ref="observered" style="height: 1px;"></div>
-    <div v-show="requesting" style="position: relative;">
-      <slot name="loading">
-        <div :class="classes.spinner"></div>
-      </slot>
+              <td v-for="computedColumn in computedColumns" :key="computedColumn.id">
+                <div v-if="computedColumn.component">
+                  <component :is="computedColumn.component" :value="object[computedColumn.id]" :row-value="object"/>
+                </div>
+                <button v-else-if="computedColumn.onCellClick"
+                  type="button"
+                  :class="classes.collection_clickable_cell"
+                  v-html="object[computedColumn.id]"
+                  @click="(e) => computedColumn.onCellClick ? computedColumn.onCellClick(object, computedColumn.id, e) : null"
+                >
+                </button>
+                <div :class="classes.collection_cell" v-else v-html="object[computedColumn.id]"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-show="infiniteScroll && !end" ref="observered" style="height: 1px;"></div>
+      </div>
     </div>
   </div>
 </template>

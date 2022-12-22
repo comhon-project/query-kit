@@ -1,8 +1,7 @@
 <script setup>
   import { computed, onMounted, onUpdated, ref, watch } from 'vue';
   import { classes } from '../../core/ClassManager';
-import { icons } from '../../core/IconManager';
-  import Utils from '../../core/Utils';
+  import { icons } from '../../core/IconManager';
   import { translate } from '../../i18n/i18n';
 
   const emit = defineEmits(['click']);

@@ -28,6 +28,8 @@ const classList = {
     group_list: 'qkit-group-list',
     operator: 'qkit-operator',
     collection: 'qkit-collection',
+    collection_header: 'qkit-collection-header',
+    collection_content: 'qkit-collection-content',
     collection_table: 'qkit-collection-table',
     collection_clickable_row: 'qkit-clickable-row',
     collection_cell: 'qkit-cell',
@@ -36,6 +38,7 @@ const classList = {
     order_desc: 'qkit-desc',
     active: 'qkit-active',
     spinner: 'qkit-spinner',
+    pagination: 'qkit-pagination',
 }
 
 const registerClasses = (custom) => {

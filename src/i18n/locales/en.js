@@ -25,6 +25,11 @@ export default  {
     relationship_condition_with_group: 'relationship condition with group',
     group: 'group',
     operator: 'operator',
+    export: 'export',
+    pagination: 'pagination',
+    previous: 'previous',
+    next: 'next',
+    results: 'results',
     choose_condition_element:'choose on which element you want to apply the condition',
 
     show_action_shortcuts: 'show action shortcuts',

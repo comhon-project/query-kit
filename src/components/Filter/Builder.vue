@@ -166,7 +166,7 @@ watch(props.modelValue, () => {
   <div :class="classes.builder">
     <Group v-if="schema" v-bind="props" :root="true">
       <template v-if="allowReset" #reset>
-        <div><IconButton icon="reset" @click="reset"/></div>
+        <IconButton icon="reset" @click="reset"/>
       </template>
       <template #validate>
         <slot name="validate" />

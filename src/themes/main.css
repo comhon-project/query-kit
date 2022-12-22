@@ -1,420 +1,503 @@
 :root {
-    --qkit-icon-size: .75rem; 
-    --qkit-icon-color: white;
-    --qkit-icon-cross-width: 0.2rem;
-    --qkit-color-primary: #7d4ee3;
-    --qkit-color-primary-darken: #663ebd;
-    --qkit-color-secondary: #c85757;
-    --qkit-color-secondary-darken: #a84848;
-    --qkit-collection-background-color: #f3f3f3;
+  --qkit-icon-size: .75rem; 
+  --qkit-icon-color: white;
+  --qkit-icon-cross-width: 0.2rem;
+  --qkit-color-primary: hsl(263, 45%, 55%);
+  --qkit-color-primary-darken: hsl(263, 45%, 45%);
+  --qkit-color-secondary: hsl(9, 57%, 50%);
+  --qkit-color-secondary-darken: hsl(9, 57%, 45%);
+  --qkit-collection-background-color: hsl(0, 0%, 95%);
+  --qkit-collection-background-color-darken: hsl(0, 0%, 90%);
 }
 
 .qkit-modal {
-    border: 0px;
-    border-radius: 0.5rem;
-    box-shadow: 0px 0px 10px grey;
+  border: 0px;
+  border-radius: 0.5rem;
+  box-shadow: 0px 0px 10px grey;
+}
+
+.qkit-search >.qkit-builder > .qkit-group {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.qkit-search >.qkit-collection {
+  border-top: 0;
 }
 
 .qkit-condition-choice-form > *:first-child, .qkit-condition-choice-form > *:nth-child(2) {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .qkit-condition-choice-form > *:last-child {
-    text-align: center;
+  text-align: center;
 }
 
 .qkit-btn {
-    cursor: pointer;
-    color: inherit;
-    white-space: nowrap;
-    border-radius: 0.5rem;
-    padding: 0.5rem;
-    border: 0;
-    background: transparent;
-    transition: background-color .15s ease-in-out;
+  font-size: inherit;
+  cursor: pointer;
+  color: inherit;
+  white-space: nowrap;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  border: 0;
+  background: transparent;
+  transition: background-color .15s ease-in-out;
 }
 
 .qkit-btn-primary {
-    color: white;
-    background: var(--qkit-color-primary);
+  color: white;
+  background: var(--qkit-color-primary);
 }
 
 .qkit-btn-primary:hover {
-    background: var(--qkit-color-primary-darken);
+  background: var(--qkit-color-primary-darken);
 }
 
 .qkit-btn-secondary {
-    color: white;
-    background: var(--qkit-color-secondary);
+  color: white;
+  background: var(--qkit-color-secondary);
 }
 
 .qkit-btn-secondary:hover {
-    background: var(--qkit-color-secondary-darken);
+  background: var(--qkit-color-secondary-darken);
 }
 
 .qkit-group {
-    position: relative;
-    border: 1px solid lightgrey;
-    border-radius: 0.5rem;
-    padding: 1rem;
+  position: relative;
+  border: 1px solid lightgrey;
+  border-radius: 0.5rem;
+  padding: 1rem;
 }
 
 .qkit-group-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    list-style: none;
-    padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 ul.qkit-group-list > li > .qkit-condition-container {
-    height: 100%;
+  height: 100%;
 }
 
 .qkit-group-header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .qkit-group-actions {
-    margin-left: auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .qkit-icon {
-    position: relative;
-    display: block;
-    width: var(--qkit-icon-size);
-    height: var(--qkit-icon-size);
+  position: relative;
+  display: block;
+  width: var(--qkit-icon-size);
+  height: var(--qkit-icon-size);
 }
 
 .qkit-icon-plus:before {
-    content: '';
-    display: block;
-    position: absolute;
-    left: 50%;
-    width: var(--qkit-icon-cross-width);
-    height: 100%;
-    background-color: var(--qkit-icon-color);
-    transform: translateX(-50%);
+  content: '';
+  display: block;
+  position: absolute;
+  left: 50%;
+  width: var(--qkit-icon-cross-width);
+  height: 100%;
+  background-color: var(--qkit-icon-color);
+  transform: translateX(-50%);
 }
 .qkit-icon-plus:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    height: var(--qkit-icon-cross-width);
-    background-color: var(--qkit-icon-color);
-    transform: translateY(-50%);
+  content: '';
+  display: block;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: var(--qkit-icon-cross-width);
+  background-color: var(--qkit-icon-color);
+  transform: translateY(-50%);
 }
 
 .qkit-icon-cross:before {
-    content: '';
-    display: block;
-    position: absolute;
-    left: 50%;
-    width: var(--qkit-icon-cross-width);
-    height: 100%;
-    background-color: var(--qkit-icon-color);
-    transform: translateX(-50%) rotate(45deg);
+  content: '';
+  display: block;
+  position: absolute;
+  left: 50%;
+  width: var(--qkit-icon-cross-width);
+  height: 100%;
+  background-color: var(--qkit-icon-color);
+  transform: translateX(-50%) rotate(45deg);
 }
 .qkit-icon-cross:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    height: var(--qkit-icon-cross-width);
-    background-color: var(--qkit-icon-color);
-    transform: translateY(-50%) rotate(45deg);
+  content: '';
+  display: block;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: var(--qkit-icon-cross-width);
+  background-color: var(--qkit-icon-color);
+  transform: translateY(-50%) rotate(45deg);
 }
 
 .qkit-condition-container {
-    position: relative;
-    display: flex;
+  position: relative;
+  display: flex;
 }
 .qkit-condition-container > *:first-child {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
-    padding: 0.5rem;
-    border: 1px solid var(--qkit-color-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--qkit-color-secondary);
 }
 .qkit-condition-container > *:last-child {
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
 }
 
 .qkit-condition-container > button {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    background: var(--qkit-color-secondary);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: var(--qkit-color-secondary);
 }
 .qkit-condition-container > button:hover {
-    background: var(--qkit-color-secondary-darken);
+  background: var(--qkit-color-secondary-darken);
 }
 
 .qkit-condition-header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: center;
-    margin-bottom: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .qkit-condition-header > *:last-child {
-    margin-left: auto;
+  margin-left: auto;
 }
 
 .qkit-relationship-queue-and-action {
-    display: flex;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .qkit-relationship-queue {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .qkit-relationship-queue-element {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .qkit-dialog-close-container {
-    text-align: right;
-    margin-bottom: 0.5rem;
+  text-align: right;
+  margin-bottom: 0.5rem;
 }
 
 .qkit-in-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .qkit-in-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    list-style: none;
-    padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .qkit-in-value-container {
-    display: flex;
+  display: flex;
 }
 
 .qkit-in-value-container > button {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    background: var(--qkit-color-secondary);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: var(--qkit-color-secondary);
 }
 .qkit-in-value-container > button:hover {
-    background: var(--qkit-color-secondary-darken);
+  background: var(--qkit-color-secondary-darken);
 }
 
 .qkit-input-boolean > span {
-    text-transform: capitalize;
+  text-transform: capitalize;
 }
 
 .qkit-error-info > span {
-    padding: 0.25rem;
-    background: orangered;
-    color: white;
-    border-radius: 0.25rem;
-    font-family: monospace;
+  padding: 0.25rem;
+  background: orangered;
+  color: white;
+  border-radius: 0.25rem;
+  font-family: monospace;
 }
 
 .qkit-property-name-container {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .qkit-collection {
-    position: relative;
-    max-height: 500px;
-    overflow: scroll;
-    background: var(--qkit-collection-background-color);
+  position: relative;
+  border: 1px solid lightgrey;
+}
+
+.qkit-collection-header {
+  position: relative;
+  background: var(--qkit-collection-background-color-darken);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid lightgrey;
+  overflow: auto;
+}
+
+.qkit-collection-header > *:first-child {
+  align-self: center;
+  margin-right: auto;
+  flex-basis: 50%;
+}
+
+.qkit-collection-header > *:last-child {
+  margin-left: auto;
+  flex-basis: 50%;
+  text-align: right;
+}
+
+.qkit-collection-content {
+  position: relative;
+  max-height: 90vh;
+  overflow: scroll;
+  background: var(--qkit-collection-background-color);
 }
 
 .qkit-collection-table {
-    border-collapse: separate;
-    border-spacing: 0 0.25rem;
-    margin-left: auto;
-    margin-right: auto;
+  border-collapse: separate;
+  border-spacing: 0 0.25rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .qkit-collection-table th {
-    padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
 }
 
 .qkit-collection-table thead {
-    position: relative;
-    font-size: bold;
+  position: relative;
+  font-size: bold;
 }
 
 .qkit-collection-table thead tr {
-    position: sticky;
-    top: 0px;
-    z-index: 10;
-    background: var(--qkit-collection-background-color);
+  position: sticky;
+  top: 0px;
+  z-index: 10;
+  background: var(--qkit-collection-background-color);
 }
 
 .qkit-collection-table thead tr > th:first-child:before {
-    content: '';
-    display: block;
-    position: absolute;
-    left: -15px;
-    top: 0;
-    width: 15px;
-    height: 100%;
-    background: var(--qkit-collection-background-color);
+  content: '';
+  display: block;
+  position: absolute;
+  left: -15px;
+  top: 0;
+  width: 15px;
+  height: 100%;
+  background: var(--qkit-collection-background-color);
 }
 
 .qkit-collection-table thead tr > th:last-child:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 0;
-    right: -15px;
-    width: 15px;
-    height: 100%;
-    background: var(--qkit-collection-background-color);
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  right: -15px;
+  width: 15px;
+  height: 100%;
+  background: var(--qkit-collection-background-color);
 }
 
 .qkit-collection-table thead tr:after {
-    content: '';
-    display: block;
-    position: absolute;
-    left: -15px;
-    bottom: 0;
-    width: calc(100% + 30px);
-    height: 1px;
-    box-shadow: 1px 1px 1px grey;
+  content: '';
+  display: block;
+  position: absolute;
+  left: -15px;
+  bottom: 0;
+  width: calc(100% + 30px);
+  height: 1px;
+  box-shadow: 1px 1px 1px grey;
 }
 
 .qkit-collection-table thead .qkit-btn {
-    position: relative;
-    padding-right: 15px;
-    font-size: inherit;
+  position: relative;
+  padding-right: 15px;
+  font-size: inherit;
 }
 
 .qkit-collection-table thead .qkit-btn:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top : 50%;
-    transform: translateY(-50%);
-    right: 0;
-    width: 0.5em;
-    height: 0.5em;
-    background: black;
-    clip-path: polygon(0 0, 50% 100%, 100% 0);
-    transition: transform 0.1s ease-in-out;
+  content: '';
+  display: block;
+  position: absolute;
+  top : 50%;
+  transform: translateY(-50%);
+  right: 0;
+  width: 0.5em;
+  height: 0.5em;
+  background: black;
+  clip-path: polygon(0 0, 50% 100%, 100% 0);
+  transition: transform 0.1s ease-in-out;
 }
 
 .qkit-collection-table thead .qkit-btn.qkit-active {
-    color: grey;
+  color: grey;
 }
 
 .qkit-collection-table thead .qkit-btn.qkit-active:after {
-    color: grey;
-    background: grey;
+  color: grey;
+  background: grey;
 }
 
 .qkit-collection-table thead .qkit-btn.qkit-active.qkit-desc:after {
-    transform: translateY(-50%) rotate(180deg);
+  transform: translateY(-50%) rotate(180deg);
 }
 
 .qkit-collection-table tbody tr {
-    position: relative;
+  position: relative;
 }
 
 .qkit-collection-table tbody tr {
-    filter: drop-shadow(0px 0px 3px grey);
+  filter: drop-shadow(0px 0px 3px grey);
 }
 
 .qkit-collection-table tbody tr.qkit-clickable-row {
-    cursor: pointer;
-    transition: transform 0.1s ease-in-out;
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
 }
 
 .qkit-collection-table tbody tr.qkit-clickable-row:hover {
-    transform: scale(1.02);
+  transform: scale(1.02);
 }
 
 .qkit-collection-table tbody td {
-    position: relative;
-    background: white;
-    border-top: 1px solid lightgrey;
-    border-bottom: 1px solid lightgrey;
-    text-align: center;
+  position: relative;
+  background: white;
+  border-top: 1px solid lightgrey;
+  border-bottom: 1px solid lightgrey;
+  text-align: center;
 }
 
 .qkit-collection-table tbody td:first-child {
-    border-left: 1px solid lightgrey;
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
+  border-left: 1px solid lightgrey;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
 }
 
 .qkit-collection-table tbody td:last-child {
-    border-right: 1px solid lightgrey;
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
+  border-right: 1px solid lightgrey;
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
 }
 
 .qkit-collection-table .qkit-cell {
-    position: relative;
-    padding: 1rem;
+  position: relative;
+  padding: 1rem;
 }
 
 .qkit-collection-table tbody td .qkit-cell.qkit-btn {
-    background: white;
-    border-radius: 0;
-    font-size: inherit;
-    transition: transform 0.1s ease-in-out;
+  background: white;
+  border-radius: 0;
+  font-size: inherit;
+  transition: transform 0.1s ease-in-out;
 }
 
 .qkit-collection-table tbody td .qkit-cell.qkit-btn:hover {
-    z-index: 1;
-    box-shadow: 0px 0px 5px grey;
-    transform: scale(1.15);
+  z-index: 1;
+  box-shadow: 0px 0px 5px grey;
+  transform: scale(1.15);
 }
 
 .qkit-spinner {
-    position: absolute; 
-    bottom: 5px; 
-    left: 50%; 
-    transform: translateX(-50%);
+  z-index: 10;
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%);
+  top: 60px; 
 }
+
 .qkit-spinner:after {
-    content: " ";
-    display: block;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 5px solid rgb(82, 82, 82);
-    border-color: rgb(82, 82, 82) transparent rgb(82, 82, 82) transparent;
-    animation: qkit-spinner 1.2s linear infinite;
+  content: " ";
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 5px solid rgb(82, 82, 82);
+  border-color: rgb(82, 82, 82) transparent rgb(82, 82, 82) transparent;
+  animation: qkit-spinner 1.2s linear infinite;
 }
 @keyframes qkit-spinner {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.qkit-pagination {
+  margin: 0;
+  list-style: none;
+  padding: 0;
+  display: flex;
+}
+
+.qkit-pagination > li {
+  cursor: pointer;
+  padding: 0.5rem;
+  color: white;
+  background-color: var(--qkit-color-primary);
+  transition: background-color 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+.qkit-pagination > li > a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.qkit-pagination > li.qkit-active {
+  background-color: var(--qkit-color-primary-darken);
+}
+
+.qkit-pagination > li:hover {
+  padding: 0.5rem;
+  background-color: var(--qkit-color-primary-darken);
+}
+
+.qkit-pagination > li:first-child {
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
+.qkit-pagination > li:last-child {
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
 }

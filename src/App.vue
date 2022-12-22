@@ -171,11 +171,15 @@ async function completeCollection(collection) {
   }
 }
 
+async function exportResults(newFilter) {  
+  console.log('export');
+  console.log(newFilter);
+}
+
 // TODO locales for schema properties and scopes
 // shortcut to go from builder to collection and inverse
 // shortcut goToNext/Previous can go on parent group
 // collection shortcut go to next line
-// insert export button
 
 </script>
 
@@ -196,12 +200,15 @@ async function completeCollection(collection) {
       user-timezone="Europe/Paris"
       :display-operator="true"
       :deferred="500"
-      :manually="true"
+      :manually="false"
       :direct-query="true"
       :limit="20"
       :quick-sort="true"
       @row-click="printRow"
       :post-request="completeCollection"
+      :infinite-scroll="true"
+      :display-count="true"
+      @export="exportResults"
       :computed-scopes="{user: [
         {id: 'quick_search', name: 'quick search user', type: 'string', useOperator: true, computed: (value, operator) => {
           return {type: 'group', operator: 'or', filters: [

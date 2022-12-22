@@ -25,6 +25,11 @@ export default  {
     relationship_condition_with_group: 'condition de parenté avec groupe',
     group: 'groupe',
     operator: 'opérateur',
+    export: 'exporter',
+    pagination: 'pagination',
+    previous: 'précédent',
+    next: 'suivant',
+    results: 'résultats',
     choose_condition_element:'choisissez sur quel élément vous voulez appliquer la condition',
 
     show_action_shortcuts: 'afficher les raccourcis d\'actions',
