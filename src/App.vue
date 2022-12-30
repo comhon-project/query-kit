@@ -228,6 +228,7 @@ async function exportResults(newFilter) {
         {id: 'quick_search', name: 'quick search company'},
       ]}"
     >
+    <template #loadings="{ requesting }"><div v-show="requesting">loading...</div></template>
     </Search>
   </div>
 </template>

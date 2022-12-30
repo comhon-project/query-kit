@@ -2,7 +2,6 @@
 import { ref, watch, onMounted, toRaw, inject, shallowRef } from 'vue'
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
-import Utils from '../../core/Utils';
 import { translate } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
 import Pagination from '../Pagination/Pagination.vue';
@@ -191,11 +190,7 @@ async function requestServer(reset = false)
   if (props.infiniteScroll && response.collection.length < props.limit) {
     end.value = true;
   }
-  // observer is directly triggered when view is updated
-  // so we wait 10 ms to avoid to request two times in a row
-  setTimeout(() => {
-    requesting.value = false;
-  }, 10);
+  requesting.value = false;
 }
 
 function updateOrder(property)
@@ -231,11 +226,11 @@ watch(() => props.infiniteScroll, () => requestServer(true));
       <div><IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)"/></div>
     </div>
     <div style="position: relative;">
-      <div v-show="requesting">
-        <slot name="loading">
-          <div :class="classes.spinner"></div>
-        </slot>
-      </div>
+      <slot name="loading" :requesting="requesting">
+        <Transition name="qkit-collection-spinner">
+          <div v-if="requesting" :class="classes.spinner"></div>
+        </Transition>
+      </slot>
       <div :class="classes.collection_content">
         <table :class="classes.collection_table">
           <thead>
@@ -275,7 +270,7 @@ watch(() => props.infiniteScroll, () => requestServer(true));
             </tr>
           </tbody>
         </table>
-        <div v-show="infiniteScroll && !end" ref="observered" style="height: 1px;"></div>
+        <div v-show="infiniteScroll && !end && !requesting" ref="observered" style="height: 1px;"></div>
       </div>
     </div>
   </div>

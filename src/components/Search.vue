@@ -164,8 +164,8 @@ watchEffect(() => {
         </template>
     </FilterBuilder>
     <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId">
-      <template #loading>
-        <slot name="loading"></slot>
+      <template #loading="loadingProps">
+        <slot name="loading" v-bind="loadingProps"></slot>
       </template>
     </Collection>
   </div>
