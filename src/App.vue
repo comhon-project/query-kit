@@ -177,7 +177,6 @@ async function exportResults(newFilter) {
 }
 
 // TODO locales for schema properties and scopes
-// allow to switch from infinite to paginate ?
 // export components from main js file as library
 // lazy load locales ? 
 
@@ -206,7 +205,7 @@ async function exportResults(newFilter) {
       :quick-sort="true"
       @row-click="printRow"
       :post-request="completeCollection"
-      :infinite-scroll="true"
+      :allowed-collection-types="['infinite', 'pagination']"
       :display-count="true"
       @export="exportResults"
       :computed-scopes="{user: [

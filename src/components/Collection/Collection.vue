@@ -45,8 +45,9 @@ const props = defineProps({
   postRequest: {
     type: Function,
   },
-  infiniteScroll: {
-    type: Boolean,
+  allowedCollectionTypes: {
+    type: Array,
+    default: ['pagination']
   },
   displayCount: {
     type: Boolean,
@@ -71,6 +72,7 @@ const end = ref(false);
 const active = ref(null);
 const order = ref(null);
 const page = ref(1);
+const infiniteScroll = ref(isInfiniteAccordingProps());
 const collectionContent = ref(null);
 const shortcutEvents = {
   goToFilter: () => emit('goToFilter'),
@@ -190,14 +192,14 @@ async function requestServer(reset = false)
       await res;
     }
   }
-  if (reset || !props.infiniteScroll) {
+  if (reset || !infiniteScroll.value) {
     collection.value = response.collection;
   } else {
     for (const element of response.collection) {
       collection.value.push(element);
     }
   }
-  if (props.infiniteScroll && response.collection.length < props.limit) {
+  if (infiniteScroll.value && response.collection.length < props.limit) {
     end.value = true;
   }
   requesting.value = false;
@@ -212,11 +214,22 @@ function updateOrder(property)
   }
 }
 
+function isInfiniteAccordingProps()
+{
+  if (!props.allowedCollectionTypes.length) {
+    throw new Error('allowedCollectionTypes prop must be not empty array')
+  }
+  for (const type of props.allowedCollectionTypes) {
+    if (type != 'infinite' && type != 'pagination') {
+      throw new Error('invalide allowed collection type '+type)
+    }
+  }
+  return props.allowedCollectionTypes[0] == 'infinite';
+}
+
 onMounted(async () => {
    await init(true);
-   observer = new IntersectionObserver(shiftThenRequestServer, {
-    threshold: 1.0
-   });
+   observer = new IntersectionObserver(shiftThenRequestServer);
    observer.observe(observered.value);
    if (props.directQuery) {
     requestServer();
@@ -225,16 +238,20 @@ onMounted(async () => {
 watch(() => props.model, () => init(true));
 watch(() => props.columns, () => init(false));
 watch(() => props.filter, () => requestServer(true));
-watch(() => props.infiniteScroll, () => requestServer(true));
+watch(infiniteScroll, () => requestServer(true));
+watch(() => props.allowedCollectionTypes, () => infiniteScroll.value = isInfiniteAccordingProps());
 </script>
 
 <template>
   <div :class="classes.collection" :id="id" tabindex=0 :aria-label="translate('results')">
     <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)"/>
-    <div v-if="displayCount || !infiniteScroll || onExport" :class="classes.collection_header">
+    <div v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1" :class="classes.collection_header">
       <div><div v-if="displayCount">{{ translate('results') }} : {{ count }}</div></div>
       <Pagination v-if="!infiniteScroll" :page="page" :count="Math.max(1, Math.ceil(count/limit))" :lock="requesting" @update="updatePage"/>
-      <div><IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)"/></div>
+      <div :class="classes.collection_actions">
+        <IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)"/>
+        <IconButton v-if="allowedCollectionTypes.length > 1" :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'" @click="() => infiniteScroll = !infiniteScroll"/>
+      </div>
     </div>
     <div style="position: relative;">
       <slot name="loading" :requesting="requesting">

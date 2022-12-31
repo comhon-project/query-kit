@@ -32,6 +32,8 @@ export default  {
     next: 'next',
     results: 'results',
     choose_condition_element:'choose on which element you want to apply the condition',
+    infinite_list: 'infinite list',
+    paginated_list: 'paginated list',
 
     show_action_shortcuts: 'show action shortcuts',
     go_to_next_condition: 'go to next condition',

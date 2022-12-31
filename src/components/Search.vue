@@ -84,8 +84,9 @@ const props = defineProps({
   postRequest: {
     type: Function,
   },
-  infiniteScroll: {
-    type: Boolean,
+  allowedCollectionTypes: {
+    type: Array,
+    default: ['pagination']
   },
   displayCount: {
     type: Boolean,

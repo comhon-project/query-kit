@@ -280,7 +280,12 @@ ul.qkit-group-list > li > .qkit-condition-container {
 .qkit-collection-header > *:last-child {
   margin-left: auto;
   flex-basis: 50%;
-  text-align: right;
+}
+
+.qkit-collection-actions {
+  justify-content: end;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .qkit-collection-content {

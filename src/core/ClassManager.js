@@ -34,6 +34,7 @@ const classList = {
     collection_clickable_row: 'qkit-clickable-row',
     collection_cell: 'qkit-cell',
     collection_clickable_cell: 'qkit-cell qkit-btn',
+    collection_actions: 'qkit-collection-actions',
     order_asc: 'qkit-asc',
     order_desc: 'qkit-desc',
     active: 'qkit-active',
