@@ -9,7 +9,7 @@ const locale = ref('en');
 const reactiveLocales = reactive({});
 
 async function loadLocale() {
-    const value = await import(`./locales/${locale.value}`);
+    const value = await import(`./locales/${locale.value}.js`);
     locales.value[locale.value] = value.default;
 }
 

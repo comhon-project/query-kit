@@ -37,6 +37,7 @@
 }
 
 .qkit-btn {
+  text-transform: capitalize;
   font-size: inherit;
   cursor: pointer;
   color: inherit;

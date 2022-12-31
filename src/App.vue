@@ -186,6 +186,7 @@ async function exportResults(newFilter) {
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: end;">
       <button @click="() => locale = 'fr'" class="qkit-btn qkit-btn-primary"> fr </button>
       <button @click="() => locale = 'en'" class="qkit-btn qkit-btn-primary"> en </button>
+      <button @click="() => locale = 'es'" class="qkit-btn qkit-btn-primary"> es </button>
     </div>
     <Search 
       :model="model" 
