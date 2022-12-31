@@ -84,7 +84,7 @@ const visibleFilters = computed(() => {
     if (!isVisible(filter)) {
       continue;
     }
-    const except = [];
+    const except = ['goToCollection', 'goToFilter'];
     if (!canAddFilter.value) {
       except.push('addFilterToParentGroup');
     } if (firstVisible) {

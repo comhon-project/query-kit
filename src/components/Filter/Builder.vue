@@ -5,8 +5,10 @@ import cloneDeep from 'lodash.clonedeep';
 import Group from './Group.vue';
 import IconButton from '../Common/IconButton.vue';
 import { classes } from '../../core/ClassManager';
+import { translate } from '../../i18n/i18n';
+import Shortcuts from './Shortcuts.vue';
 
-const emit = defineEmits(['computed']);
+const emit = defineEmits(['computed', 'goToCollection']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -52,11 +54,22 @@ const props = defineProps({
     type: Number,
     default: 1000
   },
+  displayShortcuts: {
+    type: Boolean,
+    default: false
+  },
+  id: {
+    type: String,
+  },
 });
 
 let timeoutId;
 let originalFilter;
 const schema = ref(null);
+
+const shortcutEvents = {
+  goToCollection: () => emit('goToCollection'),
+}
 
 async function initSchema()
 {
@@ -163,7 +176,8 @@ watch(props.modelValue, () => {
 </script>
 
 <template>
-  <div :class="classes.builder">
+  <div style="position: relative;" :class="classes.builder" :id="id" tabindex=0 :aria-label="translate('filter')">
+    <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)"/>
     <Group v-if="schema" v-bind="props" :root="true">
       <template v-if="allowReset" #reset>
         <IconButton icon="reset" @click="reset"/>

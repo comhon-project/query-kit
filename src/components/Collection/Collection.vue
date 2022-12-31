@@ -4,9 +4,10 @@ import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import { translate } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
+import Shortcuts from '../Filter/Shortcuts.vue';
 import Pagination from '../Pagination/Pagination.vue';
 
-const emit = defineEmits(['rowClick', 'export']);
+const emit = defineEmits(['rowClick', 'export', 'goToFilter']);
 const props = defineProps({
   model: {
     type: String,
@@ -50,6 +51,10 @@ const props = defineProps({
   displayCount: {
     type: Boolean,
   },
+  displayShortcuts: {
+    type: Boolean,
+    default: false
+  },
   onExport: {
     type: Function,
   },
@@ -66,6 +71,10 @@ const end = ref(false);
 const active = ref(null);
 const order = ref(null);
 const page = ref(1);
+const collectionContent = ref(null);
+const shortcutEvents = {
+  goToFilter: () => emit('goToFilter'),
+}
 
 const observered = ref(null);
 let observer;
@@ -161,6 +170,7 @@ async function requestServer(reset = false)
     end.value = false;
     movingOffset = 0;
     page.value = 1;
+    collectionContent.value.scrollTop = 0;
   }
   requesting.value = true;
   const response = await requester.request({
@@ -219,7 +229,8 @@ watch(() => props.infiniteScroll, () => requestServer(true));
 </script>
 
 <template>
-  <div :class="classes.collection" :id="id">
+  <div :class="classes.collection" :id="id" tabindex=0 :aria-label="translate('results')">
+    <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)"/>
     <div v-if="displayCount || !infiniteScroll || onExport" :class="classes.collection_header">
       <div><div v-if="displayCount">{{ translate('results') }} : {{ count }}</div></div>
       <Pagination v-if="!infiniteScroll" :page="page" :count="Math.max(1, Math.ceil(count/limit))" :lock="requesting" @update="updatePage"/>
@@ -231,7 +242,7 @@ watch(() => props.infiniteScroll, () => requestServer(true));
           <div v-if="requesting" :class="classes.spinner"></div>
         </Transition>
       </slot>
-      <div :class="classes.collection_content">
+      <div ref="collectionContent" :class="classes.collection_content">
         <table :class="classes.collection_table">
           <thead>
             <tr>

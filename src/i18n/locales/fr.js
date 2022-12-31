@@ -1,6 +1,7 @@
 
 
 export default  {
+    filter: 'filtre',
     add: 'ajouter',
     add_filter: 'ajouter un filtre',
     add_value: 'ajouter une valeur',
@@ -37,5 +38,7 @@ export default  {
     go_to_previous_condition: 'aller à la condition précédente',
     go_to_parent_group: 'aller au group parent',
     go_to_root_group: 'aller au group de premier niveau',
+    go_to_collection: 'aller aux resultats de la recherche',
+    go_to_filter: 'aller au filtre',
     add_filter_on_parent_group: 'ajouter un filtre au groupe parent',
 }

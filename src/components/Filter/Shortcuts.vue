@@ -3,9 +3,12 @@
   import { classes } from '../../core/ClassManager';
   import { translate } from '../../i18n/i18n';
 
-  const emit = defineEmits(['goToNext', 'goToPrevious', 'goToParentGroup', 'goToRootGroup', 'addFilterToParentGroup']);
+  const emit = defineEmits(['goToNext', 'goToPrevious', 'addFilterToParentGroup', 'goToParentGroup', 'goToRootGroup', 'goToCollection', 'goToFilter']);
   const props = defineProps({
     except: {
+        type: Array
+    },
+    only: {
         type: Array
     }
   });
@@ -18,6 +21,8 @@
     addFilterToParentGroup: 'add_filter_on_parent_group',
     goToParentGroup: 'go_to_parent_group',
     goToRootGroup: 'go_to_root_group',
+    goToCollection: 'go_to_collection',
+    goToFilter: 'go_to_filter',
   }
   const filteredActions = computed(() => {
     let map = actions;
@@ -25,6 +30,12 @@
         map = Object.assign({}, actions);
         for (const action of props.except) {
             delete map[action];
+        }
+    }
+    else if (props.only && props.only.length) {
+        map = {};
+        for (const action of props.only) {
+            map[action] = actions[action];
         }
     }
     const list = [];
@@ -60,7 +71,7 @@
 </script>
 
 <template>
-  <div v-if="filteredActions.length">
+  <div v-if="filteredActions.length" style="position:absolute; z-index: 10; left: 0; top: 0;">
     <!-- follownig div is a workaround for screen reader, actually orca doesn't read next button without it (tabindex is important) -->
     <div tabindex="-1"></div>
     <button @click="startUsingShortcuts" class="qkit-focus-only" :class="classes.btn">{{ translate('show_action_shortcuts') }}</button>

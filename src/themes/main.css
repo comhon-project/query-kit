@@ -448,7 +448,7 @@ ul.qkit-group-list > li > .qkit-condition-container {
 
 .qkit-collection-spinner-enter-active,
 .qkit-collection-spinner-leave-active {
-  transition: opacity 0.3s ease, top 0.3s ease;
+  transition: opacity 0.2s ease, top 0.2s ease;
 }
 
 .qkit-collection-spinner-enter-from,

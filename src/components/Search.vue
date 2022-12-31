@@ -96,7 +96,9 @@ const props = defineProps({
 });
 
 let tempFilter = null;
-const collectionId = 'search-collection-'+Utils.getUniqueId();
+const uniqueId = Utils.getUniqueId();
+const filterId = 'qkit-filter-'+uniqueId;
+const collectionId = 'qkit-collection-'+uniqueId;
 const schema = ref();
 const builtFilter = ref(null);
 const computedFilter = shallowRef(false);
@@ -149,6 +151,18 @@ function updateFilter(filter)
   }
 }
 
+function goToCollection()
+{
+  location.href = `#${collectionId}`;
+  document.getElementById(collectionId).focus();
+}
+
+function goToFilter()
+{
+  location.href = `#${filterId}`;
+  document.getElementById(filterId).focus();
+}
+
 watchEffect(() => {
   initSchema();
   builtFilter.value = getInitialFilter();
@@ -158,12 +172,12 @@ watchEffect(() => {
 
 <template>
   <div v-if="schema" :class="classes.search">
-    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter">
+    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter" :id="filterId" :display-shortcuts="true" @go-to-collection="goToCollection">
       <template #validate>
           <IconButton v-if="manually" icon="search" @click="applyQuery" />
         </template>
     </FilterBuilder>
-    <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId">
+    <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId" :display-shortcuts="true" @go-to-filter="goToFilter">
       <template #loading="loadingProps">
         <slot name="loading" v-bind="loadingProps"></slot>
       </template>

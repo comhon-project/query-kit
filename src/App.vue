@@ -177,9 +177,9 @@ async function exportResults(newFilter) {
 }
 
 // TODO locales for schema properties and scopes
-// shortcut to go from builder to collection and inverse
-// shortcut goToNext/Previous can go on parent group
-// collection shortcut go to next line
+// allow to switch from infinite to paginate ?
+// export components from main js file as library
+// lazy load locales ? 
 
 </script>
 
