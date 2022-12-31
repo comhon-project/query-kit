@@ -178,7 +178,6 @@ async function exportResults(newFilter) {
 
 // TODO locales for schema properties and scopes
 // export components from main js file as library
-// lazy load locales ? 
 
 </script>
 

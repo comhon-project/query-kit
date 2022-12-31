@@ -1,20 +1,31 @@
-import { reactive, ref, watch } from "vue";
+import { reactive, ref, shallowRef, watch } from "vue";
 import en from "./locales/en";
 
 // set english as default language
 const locales = ref({ en });
+const translations = shallowRef(locales.value.en);
 const locale = ref('en');
 
 const reactiveLocales = reactive({});
 
-watch(locale, () => {
-    if (!locales.value[locale.value]) {
-        throw new Error('invalid locale '+locale.value);
-    }
-    for (const key in reactiveLocales) {
-        if (Object.hasOwnProperty.call(reactiveLocales, key)) {
-            reactiveLocales[key] = translation(key);
+async function loadLocale() {
+    const value = await import(`./locales/${locale.value}`);
+    locales.value[locale.value] = value.default;
+}
+
+watch(locale, async () => {
+    try {
+        if (!locales.value[locale.value]) {
+            await loadLocale();
         }
+        translations.value = locales.value[locale.value];
+        for (const key in reactiveLocales) {
+            if (Object.hasOwnProperty.call(reactiveLocales, key)) {
+                reactiveLocales[key] = translation(key);
+            }
+        }
+    } catch (error) {
+        locale.value = 'en';
     }
 });
 
@@ -38,6 +49,6 @@ const translate = (key) => {
 
 export {
     locale,
-    locales,
+    translations,
     translate
 }

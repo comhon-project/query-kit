@@ -1,4 +1,4 @@
-import { locale, locales } from "../i18n/i18n";
+import { locale } from "../i18n/i18n";
 import { registerClasses } from "./ClassManager";
 import { registerIcons } from "./IconManager";
 import { registerComponents } from "./InputManager";
@@ -18,14 +18,8 @@ export default {
         if (options.inputs) {
             registerComponents(options.inputs);
         }
-        if (options.locales) {
-            locales.value = options.locales;
-        }
         if (options.locale) {
             locale.value = options.locale;
-        }
-        if (!locales.value[locale.value]) {
-            throw new Error('invalid locale '+locale.value);
         }
         if (options.requester) {
             const requester = typeof options.requester == 'function'
