@@ -1,4 +1,4 @@
-import { locale } from "../i18n/i18n";
+import { locale, fallback } from "../i18n/i18n";
 import { registerClasses } from "./ClassManager";
 import { registerIcons } from "./IconManager";
 import { registerComponents } from "./InputManager";
@@ -18,8 +18,11 @@ export default {
         if (options.inputs) {
             registerComponents(options.inputs);
         }
-        if (options.locale) {
-            locale.value = options.locale;
+        if (options.defaultLocale) {
+            locale.value = options.defaultLocale;
+        }
+        if (options.fallbackLocale) {
+            fallback.value = options.fallbackLocale;
         }
         if (options.requester) {
             const requester = typeof options.requester == 'function'

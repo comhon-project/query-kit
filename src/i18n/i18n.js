@@ -5,6 +5,7 @@ import en from "./locales/en";
 const locales = ref({ en });
 const translations = shallowRef(locales.value.en);
 const locale = ref('en');
+const fallback = ref('en');
 
 const reactiveLocales = reactive({});
 
@@ -25,7 +26,12 @@ watch(locale, async () => {
             }
         }
     } catch (error) {
-        locale.value = 'en';
+        if (locale.value == fallback.value) {
+            // if locale and fallback config are invalid (translation doesn't exists)
+            // we set the fallback to a trusted value
+            fallback.value = 'en';
+        }
+        locale.value = fallback.value;
     }
 });
 
@@ -49,6 +55,7 @@ const translate = (key) => {
 
 export {
     locale,
+    fallback,
     translations,
     translate
 }

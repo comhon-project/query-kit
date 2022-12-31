@@ -19,7 +19,8 @@ createApp(App).use(plugin, {
         add_value: 'qkit-icon qkit-icon-plus',
         close: 'qkit-icon qkit-icon-cross'
     },
-    locale: 'fr',
+    defaultLocale: 'fr',
+    fallbackLocale: 'fr',
     requester: {
         request: (query) => {
             const lastCompleteBulk = 3;
