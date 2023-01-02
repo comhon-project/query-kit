@@ -87,6 +87,10 @@ ul.qkit-group-list > li > .qkit-condition-container {
   height: 100%;
 }
 
+ul.qkit-group-list > li:has(.qkit-group) {
+  flex-basis: 100%;
+}
+
 .qkit-group-header {
   display: flex;
   flex-wrap: wrap;

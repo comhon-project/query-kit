@@ -175,6 +175,19 @@ async function setNewFilter(data)
   addFilterDialog.value.close();
 }
 
+/**
+ * TODO remove this function call when firefox will support css :has pseudo class
+ * 
+ * @param {Object} filter 
+ */
+function hasGroup(filter)
+{
+  while (filter && filter.type == 'relationship_condition') {
+    filter = filter.filter;
+  }
+  return filter && filter.type == 'group';
+}
+
 watchEffect(() => {
   initFilter();
   initSchema();
@@ -214,7 +227,7 @@ watchEffect(() => {
       </div>
     </div>
     <ul ref="listRef" :class="classes.group_list">
-      <li v-for="(element, displayIndex) in visibleFilters" :key="element.filter.key" :style="element.filter.type == 'group' ? {flexBasis: '100%'} : {}">
+      <li v-for="(element, displayIndex) in visibleFilters" :key="element.filter.key" :style="hasGroup(element.filter) ? {flexBasis: '100%'} : {}">
         <Condition v-if="element.filter.type == 'condition' || element.filter.type == 'scope'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
         <RelationshipCondition v-else-if="element.filter.type == 'relationship_condition'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
         <Group v-else-if="element.filter.type == 'group'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
