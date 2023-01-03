@@ -2,7 +2,7 @@ import { locale, fallback } from "../i18n/i18n";
 import { registerClasses } from "./ClassManager";
 import { registerIcons } from "./IconManager";
 import { registerComponents } from "./InputManager";
-import { registerLoader } from "./Schema";
+import { registerLoader, registerLocaleLoader } from "./Schema";
 
 export default {
     install: (app, options) => {
@@ -41,6 +41,14 @@ export default {
             registerLoader(loader);
         } else {
             throw new Error('schemaLoader config is required');
+        }
+        if (options.schemaLocaleLoader) {
+            const localeLoader = typeof options.schemaLocaleLoader == 'function'
+                ? {load: options.schemaLocaleLoader} : options.schemaLocaleLoader;
+            if (typeof localeLoader != 'object' || typeof localeLoader.load != 'function') {
+                throw new Error('invalid schema locale loader. it must be a function or an object containing a property "load" with a function value');
+            }
+            registerLocaleLoader(localeLoader);
         }
     }
 }

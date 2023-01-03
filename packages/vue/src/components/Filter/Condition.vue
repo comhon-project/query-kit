@@ -67,9 +67,6 @@
     addFilterToParentGroup: () => emit('addFilterToParentGroup'),
   }
 
-  const label = computed(() => {
-    return target.value.name;
-  });
   const inputType = computed(() => {
     return getComponent(target.value.type, target.value.enum);
   });
@@ -193,9 +190,9 @@
       <template v-else-if="schema">
         <div :class="classes.condition_header">
           <slot name="relationship" />
-          <label :class="classes.property_name_container">{{ label }}</label>
+          <label :class="classes.property_name_container">{{ target.name }}</label>
           <template v-if="mustDisplayOperator">
-            <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator" :aria-label="label+' '+translate('operator')"/>
+            <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator" :aria-label="target.name+' '+translate('operator')"/>
           </template>
         </div>
         <template v-if="inputType">
@@ -204,6 +201,6 @@
         </template>
       </template>
     </div>
-    <IconButton v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType" icon="delete" @click="$emit('remove')" :aria-label="schema && target ? (translate('condition')+' '+label) : ''"/>
+    <IconButton v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType" icon="delete" @click="$emit('remove')" :aria-label="schema && target ? (translate('condition')+' '+target.name) : ''"/>
   </div>
 </template>
