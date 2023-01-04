@@ -6,6 +6,7 @@ import { translate } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
 import Shortcuts from '../Filter/Shortcuts.vue';
 import Pagination from '../Pagination/Pagination.vue';
+import Cell from './Cell.vue';
 
 const emit = defineEmits(['rowClick', 'export', 'goToFilter']);
 const props = defineProps({
@@ -59,6 +60,14 @@ const props = defineProps({
   onExport: {
     type: Function,
   },
+  userTimezone: {
+    type: String,
+    default: 'UTC'
+  },
+  requestTimezone: {
+    type: String,
+    default: 'UTC'
+  },
 });
 
 let movingOffset = props.offset;
@@ -90,13 +99,16 @@ async function init() {
 
   for(const column of props.columns) {
     let computedColumn = typeof column == 'object'
-        ? Object.assign({}, column)
-        : {id: column};
+      ? Object.assign({}, column)
+      : {id: column};
+    const propertyPath = await getPropertyPath(computedColumn);
+    const property = propertyPath[propertyPath.length - 1];
+    computedColumn.property = property;
     if (computedColumn.label == null) {
-      computedColumn.label = await getLabel(computedColumn);
+      computedColumn.label = property.name;
     }
     if (props.quickSort) {
-      computedColumn.sortable = await isSortable(computedColumn);
+      computedColumn.sortable = await isSortable(propertyPath);
       if (computedColumn.sortable && computedColumn.order && ['asc', 'desc'].includes(computedColumn.order.toLowerCase())) {
         active.value = computedColumn.id;
         order.value = computedColumn.order.toLowerCase();
@@ -110,43 +122,39 @@ async function init() {
   computedColumns.value = tempColumns;
 }
 
-async function isSortable(computedColumn) {
-  if (!schema.value.search || !Array.isArray(schema.value.search.sort)) {
-    return false;
-  }
-  const splited = computedColumn.id.split('.');
+async function isSortable(propertyPath) {
   let currentSchema = schema.value;
-  for (let i = 0; i < splited.length - 1; i++) {
-    if (!currentSchema.mapProperties[splited[i]]) {
-      throw new Error(`invalid collection property "${computedColumn.id}"`);
-    }
-    if (!currentSchema.search || !Array.isArray(currentSchema.search.sort) || !currentSchema.search.sort.includes(splited[i])) {
+  for (let property of propertyPath) {
+    if (!currentSchema.search || !Array.isArray(currentSchema.search.sort) || !currentSchema.search.sort.includes(property.id)) {
       return false;
     }
-    currentSchema = await resolve(currentSchema.mapProperties[splited[i]].model);
-    if (!currentSchema) {
-      throw new Error(`invalid model "${currentSchema.mapProperties[splited[i]].model}"`);
+    if (property.model) { // add condition just for the very last property that probably don't have model
+      currentSchema = await resolve(property.model);
     }
   }
-  return currentSchema.search.sort.includes(splited[splited.length - 1]);
+  return true;
 }
 
-async function getLabel(computedColumn) {
+async function getPropertyPath(computedColumn) {
+  const propertyPath = [];
   const splited = computedColumn.id.split('.');
   let currentSchema = schema.value;
   for (let i = 0; i < splited.length - 1; i++) {
-    if (!currentSchema.mapProperties[splited[i]]) {
+    const property = currentSchema.mapProperties[splited[i]];
+    if (!property) {
       throw new Error(`invalid collection property "${computedColumn.id}"`);
     }
-    currentSchema = await resolve(currentSchema.mapProperties[splited[i]].model);
+    propertyPath.push(property);
+    currentSchema = await resolve(property.model);
     if (!currentSchema) {
-      throw new Error(`invalid model "${currentSchema.mapProperties[splited[i]].model}"`);
+      throw new Error(`invalid model "${property.model}"`);
     }
   }
   if (!currentSchema.mapProperties[splited[splited.length - 1]]) {
     throw new Error(`invalid collection property "${computedColumn.id}"`);
   }
-  return currentSchema.mapProperties[splited[splited.length - 1]].name
+    propertyPath.push(currentSchema.mapProperties[splited[splited.length - 1]]);
+  return propertyPath;
 }
 
 async function shiftThenRequestServer()
@@ -269,10 +277,10 @@ watch(() => props.allowedCollectionTypes, () => infiniteScroll.value = isInfinit
                   :class="classes.btn + ' ' + (active == computedColumn.id ? (classes.active + ' ' + (order == 'asc' ? classes.order_asc : classes.order_desc)) : '')" 
                   @click="() => updateOrder(computedColumn.id)"
                 >
-                  {{ computedColumn.label }}
+                  {{ typeof computedColumn.label == 'string' ? computedColumn.label : computedColumn.label.value}}
                 </button>
                 <div v-else>
-                  {{ computedColumn.label }}
+                  {{ typeof computedColumn.label == 'string' ? computedColumn.label : computedColumn.label.value}}
                 </div>
               </th>
             </tr>
@@ -282,19 +290,9 @@ watch(() => props.allowedCollectionTypes, () => infiniteScroll.value = isInfinit
               :class="onRowClick ? classes.collection_clickable_row : ''" 
               @click="(e) => $emit('rowClick', object, e)"
             >
-              <td v-for="computedColumn in computedColumns" :key="computedColumn.id">
-                <div v-if="computedColumn.component">
-                  <component :is="computedColumn.component" :value="object[computedColumn.id]" :row-value="object"/>
-                </div>
-                <button v-else-if="computedColumn.onCellClick"
-                  type="button"
-                  :class="classes.collection_clickable_cell"
-                  v-html="object[computedColumn.id]"
-                  @click="(e) => computedColumn.onCellClick ? computedColumn.onCellClick(object, computedColumn.id, e) : null"
-                >
-                </button>
-                <div :class="classes.collection_cell" v-else v-html="object[computedColumn.id]"></div>
-              </td>
+              <template v-for="computedColumn in computedColumns" :key="computedColumn.id">
+                <Cell :column="computedColumn" :row-value="object" :user-timezone="userTimezone" :request-timezone="requestTimezone"/>
+              </template>
             </tr>
           </tbody>
         </table>

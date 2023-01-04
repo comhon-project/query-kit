@@ -2,6 +2,7 @@ import BooleanInput from '../components/Common/BooleanInput.vue'
 
 const componentList = {
     string: 'text',
+    html: 'text',
     integer: 'number',
     float: 'number',
     date: 'date',

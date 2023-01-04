@@ -3,6 +3,7 @@ import { registerClasses } from "./ClassManager";
 import { registerIcons } from "./IconManager";
 import { registerComponents } from "./InputManager";
 import { registerLoader, registerLocaleLoader } from "./Schema";
+import { config } from "../config/config";
 
 export default {
     install: (app, options) => {
@@ -49,6 +50,12 @@ export default {
                 throw new Error('invalid schema locale loader. it must be a function or an object containing a property "load" with a function value');
             }
             registerLocaleLoader(localeLoader);
+        }
+
+        for (const key in config) {
+            if (Object.hasOwnProperty.call(config, key) && Object.hasOwnProperty.call(options, key)) {
+                config[key] = options[key];
+            }
         }
     }
 }
