@@ -68,21 +68,17 @@ const useHtml = computed(() => {
     <div v-if="column.component">
       <component :is="column.component" :value="computedValue" :row-value="rowValue"/>
     </div>
-    <button v-else-if="column.onCellClick && useHtml"
-      type="button"
-      :class="classes.collection_clickable_cell"
-      @click="(e) => column.onCellClick ? column.onCellClick(rowValue, column.id, e) : null"
-      v-html="computedValue"
-    />
     <button v-else-if="column.onCellClick"
       type="button"
       :class="classes.collection_clickable_cell"
       @click="(e) => column.onCellClick ? column.onCellClick(rowValue, column.id, e) : null"
     >
-      {{ computedValue }}
+      <div v-if="useHtml" v-html="computedValue"></div>
+      <template v-else>{{ computedValue }}</template>
     </button>
-    <div v-else-if="useHtml" :class="classes.collection_cell" v-html="computedValue"></div>
-    <div v-else :class="classes.collection_cell">{{ computedValue }}</div>
-
+    <div v-else :class="classes.collection_cell">
+      <div v-if="useHtml" v-html="computedValue"></div>
+      <template v-else>{{ computedValue }}</template>
+    </div>
   </td>
 </template>
