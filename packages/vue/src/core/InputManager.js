@@ -10,7 +10,7 @@ const componentList = {
     time: 'time',
     enum: 'select',
     boolean: BooleanInput,
-  };
+};
 
 const registerComponents = (custom) => {
     Object.assign(componentList, custom);

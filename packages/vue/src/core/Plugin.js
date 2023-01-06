@@ -4,11 +4,12 @@ import { registerIcons } from "./IconManager";
 import { registerComponents } from "./InputManager";
 import { registerLoader, registerLocaleLoader } from "./Schema";
 import { config } from "../config/config";
+import { registerRequester } from "./Requester";
 
 export default {
     install: (app, options) => {
         if (!options) {
-            return;
+            throw new Error('must have at least required configs');
         }
         if (options.icons) {
             registerIcons(options.icons);
@@ -31,7 +32,9 @@ export default {
             if (typeof requester != 'object' || typeof requester.request != 'function') {
                 throw new Error('invalid requester. it must be a function or an object containing a property "request" with a function value');
             }
-            app.provide(Symbol.for('requester'), requester);
+            registerRequester(requester);
+        } else {
+            throw new Error('requester config is required');
         }
         if (options.schemaLoader) {
             const loader = typeof options.schemaLoader == 'function'

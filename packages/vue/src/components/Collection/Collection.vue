@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch, onMounted, toRaw, inject, shallowRef } from 'vue'
+import { ref, watch, onMounted, toRaw, shallowRef } from 'vue'
+import { requester } from '../../core/Requester';
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import { translate } from '../../i18n/i18n';
@@ -72,7 +73,6 @@ const props = defineProps({
 
 let movingOffset = props.offset;
 const requesting = ref(false);
-const requester = inject(Symbol.for('requester'));
 const schema = shallowRef(null);
 const computedColumns = shallowRef([]);
 const collection = shallowRef([]);
