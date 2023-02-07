@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 
-import { mount } from '@vue/test-utils'
-import Utils from '../../core/Utils'
+import { mount } from '@vue/test-utils';
+import Utils from '../../core/Utils';
 
 describe('utils', () => {
   it('get unique id', () => {
@@ -10,8 +10,8 @@ describe('utils', () => {
     expect(Utils.getUniqueId()).toEqual(3);
 
     for (let index = 0; index < 100; index++) {
-        Utils.getUniqueId()
+      Utils.getUniqueId();
     }
     expect(Utils.getUniqueId()).toEqual(104);
-  })
-})
+  });
+});

@@ -1,0 +1,7 @@
+# Ignore artifacts:
+build
+coverage
+node_modules
+packages/vue/dist
+packages/vue/node_modules
+packages/vue/src/node_modules

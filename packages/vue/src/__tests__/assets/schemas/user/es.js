@@ -1,11 +1,10 @@
-
 export default {
-    first_name: 'primer nombre',
-    last_name: 'apellido',
+  first_name: 'primer nombre',
+  last_name: 'apellido',
 
-    __enumerations__: {
-        gender: {
-            male: 'señor',
-        }
-    }
-}
+  __enumerations__: {
+    gender: {
+      male: 'señor',
+    },
+  },
+};

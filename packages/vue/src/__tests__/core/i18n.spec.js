@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest';
 import { locale, translate, translations } from '../../i18n/i18n';
 
 beforeAll(() => {
@@ -15,7 +15,7 @@ describe('i18n', () => {
   });
   it('translate with locale fr', async () => {
     locale.value = 'fr';
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       setTimeout(() => {
         expect(translations.value.add).toBe('ajouter');
         expect(translations.value.search).toBe('rechercher');
@@ -25,4 +25,4 @@ describe('i18n', () => {
       }, 10);
     });
   });
-})
+});

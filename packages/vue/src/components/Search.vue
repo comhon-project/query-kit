@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef, toRaw, watchEffect } from 'vue'
+import { ref, shallowRef, toRaw, watchEffect } from 'vue';
 import Collection from './Collection/Collection.vue';
 import FilterBuilder from './Filter/Builder.vue';
 import cloneDeep from 'lodash.clonedeep';
@@ -12,19 +12,19 @@ const emit = defineEmits(['rowClick']);
 const props = defineProps({
   model: {
     type: String,
-    required: true
+    required: true,
   },
   columns: {
     type: Array,
-    required: true
+    required: true,
   },
   filter: {
     type: Object,
-    default: null
+    default: null,
   },
   allowReset: {
     type: Boolean,
-    default: true
+    default: true,
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
@@ -40,7 +40,7 @@ const props = defineProps({
   },
   displayOperator: {
     type: [Boolean, Object],
-    default: true
+    default: true,
   },
   computedFilters: {
     type: Array,
@@ -48,45 +48,45 @@ const props = defineProps({
   },
   userTimezone: {
     type: String,
-    default: 'UTC'
+    default: 'UTC',
   },
   requestTimezone: {
     type: String,
-    default: 'UTC'
+    default: 'UTC',
   },
   manually: {
     type: Boolean,
-    default: true
+    default: true,
   },
   directQuery: {
     type: Boolean,
-    default: true
+    default: true,
   },
   deferred: {
     type: Number,
-    default: 1000
+    default: 1000,
   },
   limit: {
     type: Number,
-    required: true
+    required: true,
   },
   offset: {
     type: Number,
-    default: 0
+    default: 0,
   },
   onRowClick: {
-    type: Function
+    type: Function,
   },
   quickSort: {
     type: Boolean,
-    default: true
+    default: true,
   },
   postRequest: {
     type: Function,
   },
   allowedCollectionTypes: {
     type: Array,
-    default: ['pagination']
+    default: ['pagination'],
   },
   displayCount: {
     type: Boolean,
@@ -98,51 +98,46 @@ const props = defineProps({
 
 let tempFilter = null;
 const uniqueId = Utils.getUniqueId();
-const filterId = 'qkit-filter-'+uniqueId;
-const collectionId = 'qkit-collection-'+uniqueId;
+const filterId = 'qkit-filter-' + uniqueId;
+const collectionId = 'qkit-collection-' + uniqueId;
 const schema = ref();
 const builtFilter = ref(null);
 const computedFilter = shallowRef(false);
 
-async function initSchema()
-{
+async function initSchema() {
   schema.value = await resolve(props.model);
 }
 
-function getInitialFilter()
-{
+function getInitialFilter() {
   if (
-    !props.filter 
-    && props.allowedOperators 
-    && props.allowedOperators['group'] 
-    && (
-      !Array.isArray(props.allowedOperators['group'])
-      || (!props.allowedOperators['group'].includes('and') && !props.allowedOperators['group'].includes('or'))
-    )
+    !props.filter &&
+    props.allowedOperators &&
+    props.allowedOperators['group'] &&
+    (!Array.isArray(props.allowedOperators['group']) ||
+      (!props.allowedOperators['group'].includes('and') && !props.allowedOperators['group'].includes('or')))
   ) {
     throw new Error('invalid allowed operators, must be array that contain at least "and" or "or" values');
   }
-  const initialFilter = props.filter ? cloneDeep(toRaw(props.filter)) : {
-    type: 'group', 
-    filters: [], 
-    operator: props.allowedOperators && props.allowedOperators['group'] 
-      ? props.allowedOperators['group'][0]
-      : 'and'
-  };
+  const initialFilter = props.filter
+    ? cloneDeep(toRaw(props.filter))
+    : {
+        type: 'group',
+        filters: [],
+        operator:
+          props.allowedOperators && props.allowedOperators['group'] ? props.allowedOperators['group'][0] : 'and',
+      };
   initialFilter.removable = false;
 
   return initialFilter;
 }
 
-async function applyQuery()
-{
+async function applyQuery() {
   // we copy object filter if it didn't changed to force reload collection
   computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
   location.href = `#${collectionId}`;
 }
 
-function updateFilter(filter)
-{
+function updateFilter(filter) {
   tempFilter = filter;
 
   // if computedFilter.value === false, this is the initialization of the computed filter
@@ -152,14 +147,12 @@ function updateFilter(filter)
   }
 }
 
-function goToCollection()
-{
+function goToCollection() {
   location.href = `#${collectionId}`;
   document.getElementById(collectionId).focus();
 }
 
-function goToFilter()
-{
+function goToFilter() {
   location.href = `#${filterId}`;
   document.getElementById(filterId).focus();
 }
@@ -168,17 +161,30 @@ watchEffect(() => {
   initSchema();
   builtFilter.value = getInitialFilter();
 });
-
 </script>
 
 <template>
   <div v-if="schema" :class="classes.search">
-    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter" :id="filterId" :display-shortcuts="true" @go-to-collection="goToCollection">
+    <FilterBuilder
+      v-bind="props"
+      v-model="builtFilter"
+      @computed="updateFilter"
+      :id="filterId"
+      :display-shortcuts="true"
+      @go-to-collection="goToCollection"
+    >
       <template #validate>
-          <IconButton v-if="manually" icon="search" @click="applyQuery" />
-        </template>
+        <IconButton v-if="manually" icon="search" @click="applyQuery" />
+      </template>
     </FilterBuilder>
-    <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId" :display-shortcuts="true" @go-to-filter="goToFilter">
+    <Collection
+      v-if="computedFilter !== false"
+      v-bind="props"
+      :filter="computedFilter"
+      :id="collectionId"
+      :display-shortcuts="true"
+      @go-to-filter="goToFilter"
+    >
       <template #loading="loadingProps">
         <slot name="loading" v-bind="loadingProps"></slot>
       </template>

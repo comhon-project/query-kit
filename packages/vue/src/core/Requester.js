@@ -1,11 +1,7 @@
-
 let requester;
 
 const registerRequester = (req) => {
-    requester = req;
-}
+  requester = req;
+};
 
-export {
-    registerRequester,
-    requester
-}
+export { registerRequester, requester };

@@ -8,17 +8,17 @@ const computedSchemas = {};
 
 async function compute(name) {
   let computed = null;
-  const mapProperties = {}; 
-  const mapScopes = {}; 
+  const mapProperties = {};
+  const mapScopes = {};
   const loadedSchema = cloneDeep(await schemaLoader.load(name));
   if (loadedSchema) {
     for (const property of loadedSchema.properties) {
       mapProperties[property.id] = property;
     }
     if (loadedSchema.search && loadedSchema.search.scopes && Array.isArray(loadedSchema.search.scopes)) {
-      const scopes = []; 
+      const scopes = [];
       for (let scope of loadedSchema.search.scopes) {
-        scope = typeof scope == 'object' ? scope : {id : scope, name : scope};
+        scope = typeof scope == 'object' ? scope : { id: scope, name: scope };
         mapScopes[scope.id] = scope;
         scopes.push(scope);
       }
@@ -84,8 +84,7 @@ async function computeLocales(schema, create) {
   }
 }
 
-async function getTranslations(schema, targetLocale)
-{
+async function getTranslations(schema, targetLocale) {
   if (!schema.translations[targetLocale]) {
     try {
       schema.translations[targetLocale] = await schemaLocaleLoader.load(schema.name, targetLocale);
@@ -98,11 +97,11 @@ async function getTranslations(schema, targetLocale)
 
 const registerLoader = (config) => {
   schemaLoader = config;
-}
+};
 
 const registerLocaleLoader = (config) => {
   schemaLocaleLoader = config;
-}
+};
 
 const resolve = (name) => {
   if (!computedSchemas[name]) {
@@ -117,13 +116,9 @@ watch(locale, () => {
       if (!Object.hasOwnProperty.call(computedSchemas, name)) {
         continue;
       }
-      computedSchemas[name].then(schema => computeLocales(schema, false));
+      computedSchemas[name].then((schema) => computeLocales(schema, false));
     }
   }
 });
-  
-export {
-  registerLoader,
-  registerLocaleLoader,
-  resolve
-};
+
+export { registerLoader, registerLocaleLoader, resolve };

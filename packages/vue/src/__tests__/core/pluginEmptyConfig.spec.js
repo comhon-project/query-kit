@@ -1,24 +1,24 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 
 import plugin from '../../core/Plugin';
 import { requester } from '../../core/Requester';
-import { icons } from "../../core/IconManager";
-import { classes } from "../../core/ClassManager";
-import { getComponent } from "../../core/InputManager";
-import { config } from "../../config/config";
+import { icons } from '../../core/IconManager';
+import { classes } from '../../core/ClassManager';
+import { getComponent } from '../../core/InputManager';
+import { config } from '../../config/config';
 import BooleanInput from '../../components/Common/BooleanInput.vue';
-import { locale, fallback }  from '../../i18n/i18n';
+import { locale, fallback } from '../../i18n/i18n';
 
 const componentList = {
-    string: 'text',
-    html: 'text',
-    integer: 'number',
-    float: 'number',
-    date: 'date',
-    datetime: 'datetime-local',
-    time: 'time',
-    enum: 'select',
-    boolean: BooleanInput,
+  string: 'text',
+  html: 'text',
+  integer: 'number',
+  float: 'number',
+  date: 'date',
+  datetime: 'datetime-local',
+  time: 'time',
+  enum: 'select',
+  boolean: BooleanInput,
 };
 
 describe('minimal plugin', () => {
@@ -29,35 +29,43 @@ describe('minimal plugin', () => {
   it('missing required config', () => {
     expect(() => plugin.install()).toThrowError('must have at least required configs');
     expect(() => plugin.install(null, {})).toThrowError('requester config is required');
-    expect(() => plugin.install(null, { requester : 1 })).toThrowError('invalid requester. it must be a function or an object containing a property "request" with a function value');
-    expect(() => plugin.install(null, { requester: {}})).toThrowError('invalid requester. it must be a function or an object containing a property "request" with a function value');
-    expect(() => plugin.install(null, { requester : () => {} })).toThrowError('schemaLoader config is required');
-    expect(() => plugin.install(null, { requester : { request: () => {} }, schemaLoader: 1 })).toThrowError('invalid schema loader. it must be a function or an object containing a property "load" with a function value');
-    expect(() => plugin.install(null, { requester : { request: () => {} }, schemaLoader: {} })).toThrowError('invalid schema loader. it must be a function or an object containing a property "load" with a function value');
+    expect(() => plugin.install(null, { requester: 1 })).toThrowError(
+      'invalid requester. it must be a function or an object containing a property "request" with a function value'
+    );
+    expect(() => plugin.install(null, { requester: {} })).toThrowError(
+      'invalid requester. it must be a function or an object containing a property "request" with a function value'
+    );
+    expect(() => plugin.install(null, { requester: () => {} })).toThrowError('schemaLoader config is required');
+    expect(() => plugin.install(null, { requester: { request: () => {} }, schemaLoader: 1 })).toThrowError(
+      'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
+    );
+    expect(() => plugin.install(null, { requester: { request: () => {} }, schemaLoader: {} })).toThrowError(
+      'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
+    );
   });
   it('minimal config', () => {
     expect(plugin).toBeDefined();
-    const options = { requester : { request: () => {} }, schemaLoader: {load: () => {}} };
+    const options = { requester: { request: () => {} }, schemaLoader: { load: () => {} } };
     plugin.install(null, options);
     expect(locale.value).toBe('en');
     expect(fallback.value).toBe('en');
     expect(requester).toBe(options.requester);
-    
+
     expect(config).toEqual({
       renderHtml: false,
     });
     expect(icons).toEqual({
-        add: undefined,
-        add_filter: undefined,
-        add_value: undefined,
-        delete: undefined,
-        search: undefined,
-        reset: undefined,
-        validate: undefined,
-        close: undefined,
-        previous: undefined,
-        next: undefined,
-        export: undefined,
+      add: undefined,
+      add_filter: undefined,
+      add_value: undefined,
+      delete: undefined,
+      search: undefined,
+      reset: undefined,
+      validate: undefined,
+      close: undefined,
+      previous: undefined,
+      next: undefined,
+      export: undefined,
     });
     expect(classes).toEqual({
       modal: 'qkit-modal',
@@ -108,4 +116,4 @@ describe('minimal plugin', () => {
     }
     expect(getComponent('string', true)).toEqual('select');
   });
-})
+});

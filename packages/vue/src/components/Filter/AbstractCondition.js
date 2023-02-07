@@ -1,6 +1,6 @@
-import { computed, toRaw } from 'vue'
+import { computed, toRaw } from 'vue';
 import { translate } from '../../i18n/i18n';
-import { operatorNames, getOperators, useHelpers} from "./FilterManager";
+import { operatorNames, getOperators, useHelpers } from './FilterManager';
 
 const useBaseCondition = (props, schema, conditionType) => {
   const { searchableProperties, searchableScopes, searchableComputedScopes } = useHelpers(props, schema);
@@ -12,9 +12,10 @@ const useBaseCondition = (props, schema, conditionType) => {
   const operatorOptions = computed(() => {
     const options = [];
     const operatorConditionType = conditionType == 'scope' ? 'condition' : conditionType;
-    const currentOperators = conditionType == 'condition'
-      ? getOperators(conditionType, props.allowedOperators, props.modelValue.property, schema)
-      : conditionType == 'scope'
+    const currentOperators =
+      conditionType == 'condition'
+        ? getOperators(conditionType, props.allowedOperators, props.modelValue.property, schema)
+        : conditionType == 'scope'
         ? getOperators(conditionType, props.allowedOperators, props.modelValue.id, schema, props.computedScopes)
         : getOperators(conditionType, props.allowedOperators);
 
@@ -25,7 +26,7 @@ const useBaseCondition = (props, schema, conditionType) => {
       }
       options.push({
         label: label,
-        value: operator
+        value: operator,
       });
     }
     let has = false;
@@ -48,12 +49,13 @@ const useBaseCondition = (props, schema, conditionType) => {
     return options;
   });
   const canAddFilter = computed(() => {
-    return isEditable.value && (searchableProperties.value.length || searchableScopes.value.length || searchableComputedScopes.value.length);
+    return (
+      isEditable.value &&
+      (searchableProperties.value.length || searchableScopes.value.length || searchableComputedScopes.value.length)
+    );
   });
 
   return { isRemovable, isEditable, canAddFilter, canEditOperator, operatorOptions };
-}
+};
 
-export {
-  useBaseCondition
-}
+export { useBaseCondition };

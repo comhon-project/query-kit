@@ -1,14 +1,12 @@
 <script setup>
 import { classes } from '../../core/ClassManager';
 
-
 const props = defineProps({
   type: {
     type: String,
-    required: true
+    required: true,
   },
 });
-
 </script>
 
 <template>

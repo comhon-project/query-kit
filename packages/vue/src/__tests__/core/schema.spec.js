@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest';
 
 import { schemaLoader } from '../assets/SchemaLoader';
 import { resolve, registerLoader } from '../../core/Schema';
@@ -19,7 +19,7 @@ describe('test schemas', async () => {
     const schemaOrga = await resolve('organization');
     expect(schemaOrga).toBeDefined();
     expect(schemaOrga.name).toBe('organization');
-    
+
     const schemaOrgaTwo = await resolve('organization');
     expect(schemaOrga).toBe(schemaOrgaTwo);
 
@@ -30,42 +30,44 @@ describe('test schemas', async () => {
     expect(schema).toBeDefined();
     expect(schema.name).toBe('user');
     expect(schema.mapProperties).toStrictEqual({
-      first_name: { id: "first_name", name: "first name", type: "string" },
-      last_name: { id: "last_name", name: "last name", type: "string" },
-      age: { id: "age", name: "the age", type: "integer" },
-      weight: { id: "weight", name: "the weight", type: "float" },
-      married: { id: "married", name: "is married", type: "boolean" },
-      gender: { id: "gender", name: "the gender", type: "string", enum: { male: "Mr.", female: "Ms." } },
-      birth_date: { id: "birth_date", name: "birth date", type: "datetime" },
-      birth_day: { id: "birth_day", name: "birth day", type: "date" },
-      birth_hour: { id: "birth_hour", name: "birth hour", type: "time" },
-      country: { id: "country", name: "the country", type: "choice" },
-      company: { id: "company", name: "the company", type: "relationship", model: "organization" },
-      friend: { id: "friend", name: "the friend", type: "relationship", model: "user" }
+      first_name: { id: 'first_name', name: 'first name', type: 'string' },
+      last_name: { id: 'last_name', name: 'last name', type: 'string' },
+      age: { id: 'age', name: 'the age', type: 'integer' },
+      weight: { id: 'weight', name: 'the weight', type: 'float' },
+      married: { id: 'married', name: 'is married', type: 'boolean' },
+      gender: { id: 'gender', name: 'the gender', type: 'string', enum: { male: 'Mr.', female: 'Ms.' } },
+      birth_date: { id: 'birth_date', name: 'birth date', type: 'datetime' },
+      birth_day: { id: 'birth_day', name: 'birth day', type: 'date' },
+      birth_hour: { id: 'birth_hour', name: 'birth hour', type: 'time' },
+      country: { id: 'country', name: 'the country', type: 'choice' },
+      company: { id: 'company', name: 'the company', type: 'relationship', model: 'organization' },
+      friend: { id: 'friend', name: 'the friend', type: 'relationship', model: 'user' },
     });
     expect(schema.mapScopes).toStrictEqual({
-      scope_string_definition: { id: "scope_string_definition", name: "scope_string_definition" },
-      scope: { id: "scope", name: "scope without value" },
-      string_scope: { id: "string_scope", name: "string scope", type: "string", "useOperator": true },
-      datetime_scope: { id: "datetime_scope", name: "datetime scope", type: "datetime" },
-      enum_scope: { id: "enum_scope", name: "enum scope", type: "string", enum: { one: "value one", two: "value two" } }
+      scope_string_definition: { id: 'scope_string_definition', name: 'scope_string_definition' },
+      scope: { id: 'scope', name: 'scope without value' },
+      string_scope: { id: 'string_scope', name: 'string scope', type: 'string', useOperator: true },
+      datetime_scope: { id: 'datetime_scope', name: 'datetime scope', type: 'datetime' },
+      enum_scope: {
+        id: 'enum_scope',
+        name: 'enum scope',
+        type: 'string',
+        enum: { one: 'value one', two: 'value two' },
+      },
     });
     expect(schema.search.filters).toStrictEqual([
-      "first_name",
-      "age",
-      "weight",
-      "gender",
-      "married",
-      "birth_date",
-      "birth_day",
-      "birth_hour",
-      "company",
-      "friend",
-      "country"
+      'first_name',
+      'age',
+      'weight',
+      'gender',
+      'married',
+      'birth_date',
+      'birth_day',
+      'birth_hour',
+      'company',
+      'friend',
+      'country',
     ]);
-    expect(schema.search.sort).toStrictEqual([
-      "first_name",
-      "company"
-    ]);
+    expect(schema.search.sort).toStrictEqual(['first_name', 'company']);
   });
-})
+});

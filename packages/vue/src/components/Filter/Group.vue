@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, watchEffect } from 'vue'
-import Utils from '../../core/Utils.js'
+import { ref, computed, watchEffect } from 'vue';
+import Utils from '../../core/Utils.js';
 import Group from './Group.vue';
 import Condition from './Condition.vue';
 import RelationshipCondition from './RelationshipCondition.vue';
@@ -16,15 +16,22 @@ import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
 import Shortcuts from './Shortcuts.vue';
 
-const emit = defineEmits(['remove', 'goToNext', 'goToPrevious', 'goToParentGroup', 'goToRootGroup', 'addFilterToParentGroup']);
+const emit = defineEmits([
+  'remove',
+  'goToNext',
+  'goToPrevious',
+  'goToParentGroup',
+  'goToRootGroup',
+  'addFilterToParentGroup',
+]);
 const props = defineProps({
   modelValue: {
     type: Object,
-    required: true
+    required: true,
   },
   model: {
     type: String,
-    required: true
+    required: true,
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
@@ -40,19 +47,19 @@ const props = defineProps({
   },
   displayOperator: {
     type: [Boolean, Object],
-    default: true
+    default: true,
   },
   userTimezone: {
     type: String,
-    default: 'UTC'
+    default: 'UTC',
   },
   requestTimezone: {
     type: String,
-    default: 'UTC'
+    default: 'UTC',
   },
   root: {
     type: Boolean,
-    default: false
+    default: false,
   },
   ariaLabel: {
     type: String,
@@ -87,15 +94,17 @@ const visibleFilters = computed(() => {
     const except = ['goToCollection', 'goToFilter'];
     if (!canAddFilter.value) {
       except.push('addFilterToParentGroup');
-    } if (firstVisible) {
+    }
+    if (firstVisible) {
       except.push('goToPrevious');
-    } if (index == lastVisibleIndex) {
+    }
+    if (index == lastVisibleIndex) {
       except.push('goToNext');
     }
     filters.push({ filter, except, index });
     firstVisible = false;
   }
-  
+
   return filters;
 });
 
@@ -105,38 +114,36 @@ const shortcutEvents = {
   goToParentGroup: () => emit('goToParentGroup'),
   goToRootGroup: () => emit('goToRootGroup'),
   addFilterToParentGroup: () => emit('addFilterToParentGroup'),
-}
+};
 
-const on = (realIndex, displayIndex) => {return {
-  remove: () => removeFilter(realIndex),
-  goToNext: () => goToCondition(displayIndex + 1),
-  goToPrevious: () => goToCondition(displayIndex - 1),
-  goToParentGroup: focusGroup,
-  goToRootGroup: goToRootGroup,
-  addFilterToParentGroup: addFilter,
-}};
+const on = (realIndex, displayIndex) => {
+  return {
+    remove: () => removeFilter(realIndex),
+    goToNext: () => goToCondition(displayIndex + 1),
+    goToPrevious: () => goToCondition(displayIndex - 1),
+    goToParentGroup: focusGroup,
+    goToRootGroup: goToRootGroup,
+    addFilterToParentGroup: addFilter,
+  };
+};
 
-function goToCondition(index)
-{
+function goToCondition(index) {
   const next = listRef.value.children[index];
   if (next && next.children[0]) {
     next.children[0].focus();
   }
 }
 
-function focusGroup()
-{
+function focusGroup() {
   groupRef.value.focus();
 }
 
-function goToRootGroup()
-{
+function goToRootGroup() {
   props.root ? groupRef.value.focus() : emit('goToRootGroup');
 }
 
-async function initFilter()
-{
-  if(!props.modelValue.filters) {
+async function initFilter() {
+  if (!props.modelValue.filters) {
     props.modelValue.filters = [];
   }
   for (const filter of props.modelValue.filters) {
@@ -146,42 +153,36 @@ async function initFilter()
   }
 }
 
-async function initSchema()
-{
+async function initSchema() {
   schema.value = await resolve(props.model);
   if (!schema.value) {
     validModel.value = false;
   }
 }
 
-function isVisible(filter)
-{
+function isVisible(filter) {
   return !(filter.visible === false);
 }
 
-function removeFilter(index)
-{
+function removeFilter(index) {
   props.modelValue.filters.splice(index, 1);
 }
 
-function addFilter(index)
-{
-    addFilterDialog.value.showModal();
+function addFilter(index) {
+  addFilterDialog.value.showModal();
 }
 
-async function setNewFilter(data)
-{
+async function setNewFilter(data) {
   props.modelValue.filters.push(data);
   addFilterDialog.value.close();
 }
 
 /**
  * TODO remove this function call when firefox will support css :has pseudo class
- * 
- * @param {Object} filter 
+ *
+ * @param {Object} filter
  */
-function hasGroup(filter)
-{
+function hasGroup(filter) {
   while (filter && filter.type == 'relationship_condition') {
     filter = filter.filter;
   }
@@ -203,41 +204,86 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div v-if="!validModel || !validOperator" :class="classes.condition_error_container" tabindex="0" :aria-label="ariaLabel ?? translate('group')">
-      <div>
-        <InvalidModel v-if="!validModel" :model="props.model" />
-        <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator"/>
-      </div>
-      <IconButton icon="delete" @click="$emit('remove')" :aria-label="translate('group')"/>
+  <div
+    v-if="!validModel || !validOperator"
+    :class="classes.condition_error_container"
+    tabindex="0"
+    :aria-label="ariaLabel ?? translate('group')"
+  >
+    <div>
+      <InvalidModel v-if="!validModel" :model="props.model" />
+      <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator" />
+    </div>
+    <IconButton icon="delete" @click="$emit('remove')" :aria-label="translate('group')" />
   </div>
-  <div ref="groupRef" v-else-if="schema" :class="classes.group" tabindex="0" :aria-label="ariaLabel ?? translate('group')">
-    <Shortcuts v-if="!root" v-on="shortcutEvents" :except="exceptShortcuts"/>
+  <div
+    ref="groupRef"
+    v-else-if="schema"
+    :class="classes.group"
+    tabindex="0"
+    :aria-label="ariaLabel ?? translate('group')"
+  >
+    <Shortcuts v-if="!root" v-on="shortcutEvents" :except="exceptShortcuts" />
     <div :class="classes.group_header">
       <div>
         <slot name="relationship" />
       </div>
       <div :class="classes.group_actions">
         <template v-if="displayOperator === true || (displayOperator && displayOperator.group)">
-          <AdaptativeSelect :class="classes.operator" v-model="modelValue.operator" :options="operatorOptions" :disabled="!canEditOperator" :aria-label="translate('operator')"/>
+          <AdaptativeSelect
+            :class="classes.operator"
+            v-model="modelValue.operator"
+            :options="operatorOptions"
+            :disabled="!canEditOperator"
+            :aria-label="translate('operator')"
+          />
         </template>
-        <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter"/>
+        <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
         <slot name="reset" />
         <slot name="validate" />
-        <IconButton v-if="isRemovable" icon="delete" @click="$emit('remove')" :aria-label="translate('group')"/>
+        <IconButton v-if="isRemovable" icon="delete" @click="$emit('remove')" :aria-label="translate('group')" />
       </div>
     </div>
     <ul ref="listRef" :class="classes.group_list">
-      <li v-for="(element, displayIndex) in visibleFilters" :key="element.filter.key" :style="hasGroup(element.filter) ? {flexBasis: '100%'} : {}">
-        <Condition v-if="element.filter.type == 'condition' || element.filter.type == 'scope'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
-        <RelationshipCondition v-else-if="element.filter.type == 'relationship_condition'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
-        <Group v-else-if="element.filter.type == 'group'" v-bind="props" :model-value="element.filter" v-on="on(element.index, displayIndex)" :aria-label="null" :except-shortcuts="element.except" :root="false"/>
+      <li
+        v-for="(element, displayIndex) in visibleFilters"
+        :key="element.filter.key"
+        :style="hasGroup(element.filter) ? { flexBasis: '100%' } : {}"
+      >
+        <Condition
+          v-if="element.filter.type == 'condition' || element.filter.type == 'scope'"
+          v-bind="props"
+          :model-value="element.filter"
+          v-on="on(element.index, displayIndex)"
+          :aria-label="null"
+          :except-shortcuts="element.except"
+          :root="false"
+        />
+        <RelationshipCondition
+          v-else-if="element.filter.type == 'relationship_condition'"
+          v-bind="props"
+          :model-value="element.filter"
+          v-on="on(element.index, displayIndex)"
+          :aria-label="null"
+          :except-shortcuts="element.except"
+          :root="false"
+        />
+        <Group
+          v-else-if="element.filter.type == 'group'"
+          v-bind="props"
+          :model-value="element.filter"
+          v-on="on(element.index, displayIndex)"
+          :aria-label="null"
+          :except-shortcuts="element.except"
+          :root="false"
+        />
       </li>
     </ul>
     <dialog ref="addFilterDialog" :class="classes.modal">
       <div :class="classes.modal_close_container">
-        <IconButton icon="close" @click="() => addFilterDialog.close()"/>
+        <IconButton icon="close" @click="() => addFilterDialog.close()" />
       </div>
-      <ConditionChoice v-bind="props" @validate="setNewFilter"/>
+      <ConditionChoice v-bind="props" @validate="setNewFilter" />
     </dialog>
   </div>
 </template>

@@ -1,12 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 
-import {
-    plugin,
-    locale,
-    Search,
-    Builder,
-    Collection,
-}  from '../../../index';
+import { plugin, locale, Search, Builder, Collection } from '../../../index';
 
 describe('index', () => {
   it('verify exports', () => {
@@ -15,5 +9,5 @@ describe('index', () => {
     expect(Builder).toBeDefined();
     expect(Collection).toBeDefined();
     expect(locale.value).toBe('en');
-  })
-})
+  });
+});

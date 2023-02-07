@@ -1,34 +1,32 @@
 <script setup>
-  import { computed, onMounted, onUpdated, ref, watch } from 'vue';
-  import { classes } from '../../core/ClassManager';
-  import { icons } from '../../core/IconManager';
-  import { translate } from '../../i18n/i18n';
+import { computed, onMounted, onUpdated, ref, watch } from 'vue';
+import { classes } from '../../core/ClassManager';
+import { icons } from '../../core/IconManager';
+import { translate } from '../../i18n/i18n';
 
-  const emit = defineEmits(['click']);
-  const props = defineProps({
-    icon: {
-      type: String,
-      required: true
-    },
-    btnClass: {
-      type: String,
-      default: 'btn_primary'
-    },
-    type: {
-      type: String,
-      default: 'button'
-    },
-    ariaLabel: {
-      type: String,
-    },
-  });
+const emit = defineEmits(['click']);
+const props = defineProps({
+  icon: {
+    type: String,
+    required: true,
+  },
+  btnClass: {
+    type: String,
+    default: 'btn_primary',
+  },
+  type: {
+    type: String,
+    default: 'button',
+  },
+  ariaLabel: {
+    type: String,
+  },
+});
 
-  const iconClass = computed(() => icons[props.icon]);
-  const computedAriaLabel = computed(() => {
-    return props.ariaLabel
-      ? (translate(props.icon)+' '+props.ariaLabel)
-      : translate(props.icon);
-  });
+const iconClass = computed(() => icons[props.icon]);
+const computedAriaLabel = computed(() => {
+  return props.ariaLabel ? translate(props.icon) + ' ' + props.ariaLabel : translate(props.icon);
+});
 </script>
 
 <template>

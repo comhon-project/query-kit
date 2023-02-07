@@ -1,9 +1,5 @@
-
-
 const config = {
-    renderHtml: false
+  renderHtml: false,
 };
 
-export {
-    config
-}
+export { config };

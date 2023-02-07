@@ -4,10 +4,9 @@ import { classes } from '../../core/ClassManager';
 const props = defineProps({
   operator: {
     type: String,
-    required: true
+    required: true,
   },
 });
-
 </script>
 
 <template>

@@ -1,22 +1,18 @@
 <script setup>
-
 const props = defineProps({
   value: {
-    required: true
+    required: true,
   },
   rowValue: {
     type: Object,
-    required: true
+    required: true,
   },
 });
 
 function cellAlert(e) {
-    e.stopPropagation();
-    alert(props.rowValue['company.brand_name']);
+  e.stopPropagation();
+  alert(props.rowValue['company.brand_name']);
 }
-
 </script>
 
-<template>
-    {{ value }}<button style="color: blue" @click="cellAlert">button</button>
-</template>
+<template>{{ value }}<button style="color: blue" @click="cellAlert">button</button></template>

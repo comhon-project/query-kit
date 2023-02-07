@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch, toRaw, watchEffect } from 'vue'
-import { resolve } from '../../core/Schema'
+import { ref, watch, toRaw, watchEffect } from 'vue';
+import { resolve } from '../../core/Schema';
 import cloneDeep from 'lodash.clonedeep';
 import Group from './Group.vue';
 import IconButton from '../Common/IconButton.vue';
@@ -12,15 +12,15 @@ const emit = defineEmits(['computed', 'goToCollection']);
 const props = defineProps({
   modelValue: {
     type: Object,
-    required: true
+    required: true,
   },
   model: {
     type: String,
-    required: true
+    required: true,
   },
   allowReset: {
     type: Boolean,
-    default: true
+    default: true,
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
@@ -36,7 +36,7 @@ const props = defineProps({
   },
   displayOperator: {
     type: [Boolean, Object],
-    default: true
+    default: true,
   },
   computedFilters: {
     type: Array,
@@ -44,19 +44,19 @@ const props = defineProps({
   },
   userTimezone: {
     type: String,
-    default: 'UTC'
+    default: 'UTC',
   },
   requestTimezone: {
     type: String,
-    default: 'UTC'
+    default: 'UTC',
   },
   deferred: {
     type: Number,
-    default: 1000
+    default: 1000,
   },
   displayShortcuts: {
     type: Boolean,
-    default: false
+    default: false,
   },
   id: {
     type: String,
@@ -69,43 +69,40 @@ const schema = ref(null);
 
 const shortcutEvents = {
   goToCollection: () => emit('goToCollection'),
-}
+};
 
-async function initSchema()
-{
+async function initSchema() {
   schema.value = await resolve(props.model);
 }
 
-function reset()
-{
+function reset() {
   for (var member in props.modelValue) delete props.modelValue[member];
   Object.assign(props.modelValue, cloneDeep(originalFilter));
 }
 
-function getScopeDefinition(scopeId, schema)
-{
-  let scope = props.computedScopes && props.computedScopes[props.model]
-      ? props.computedScopes[props.model].find(scope => scope.id == scopeId)
+function getScopeDefinition(scopeId, schema) {
+  let scope =
+    props.computedScopes && props.computedScopes[props.model]
+      ? props.computedScopes[props.model].find((scope) => scope.id == scopeId)
       : null;
-  return scope = scope || schema.mapScopes[scopeId];
+  return (scope = scope || schema.mapScopes[scopeId]);
 }
 
-function mustKeepFilter(filter, schema)
-{
+function mustKeepFilter(filter, schema) {
   if (filter.type == 'scope') {
     const scope = getScopeDefinition(filter.id, schema);
     if (scope && !scope.type) {
       return true; // a scope without type is a scope without value and must be kept
     }
   }
-  const isEmpty = filter.value === undefined 
-    || (Array.isArray(filter.value) && filter.value.filter(value => value !== undefined).length == 0);
-  
-  return !(isEmpty && (filter.type == 'condition' || filter.type == 'scope'))
+  const isEmpty =
+    filter.value === undefined ||
+    (Array.isArray(filter.value) && filter.value.filter((value) => value !== undefined).length == 0);
+
+  return !(isEmpty && (filter.type == 'condition' || filter.type == 'scope'));
 }
 
-async function getComputedFilter()
-{
+async function getComputedFilter() {
   const computedFilter = cloneDeep(toRaw(props.modelValue));
   const stack = [[computedFilter, schema.value]];
   while (stack.length) {
@@ -120,8 +117,7 @@ async function getComputedFilter()
           delete currentFilter.filter;
         }
       }
-    }
-    else if (currentFilter.type == 'group') {
+    } else if (currentFilter.type == 'group') {
       const filters = [];
       for (const filter of currentFilter.filters) {
         if (!mustKeepFilter(filter, currentSchema)) {
@@ -133,7 +129,7 @@ async function getComputedFilter()
       currentFilter.filters = filters;
     } else {
       if (Array.isArray(currentFilter.value)) {
-        currentFilter.value = currentFilter.value.filter(value => value !== undefined);
+        currentFilter.value = currentFilter.value.filter((value) => value !== undefined);
       }
       if (currentFilter.type == 'scope') {
         const scope = getScopeDefinition(currentFilter.id, currentSchema);
@@ -172,15 +168,14 @@ watch(props.modelValue, () => {
     emit('computed', await getComputedFilter());
   }, props.deferred);
 });
-
 </script>
 
 <template>
-  <div style="position: relative;" :class="classes.builder" :id="id" tabindex=0 :aria-label="translate('filter')">
-    <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)"/>
+  <div style="position: relative" :class="classes.builder" :id="id" tabindex="0" :aria-label="translate('filter')">
+    <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)" />
     <Group v-if="schema" v-bind="props" :root="true">
       <template v-if="allowReset" #reset>
-        <IconButton icon="reset" @click="reset"/>
+        <IconButton icon="reset" @click="reset" />
       </template>
       <template #validate>
         <slot name="validate" />

@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 
 import plugin from '../../core/Plugin';
 import { requester } from '../../core/Requester';
-import { icons } from "../../core/IconManager";
-import { classes } from "../../core/ClassManager";
-import { getComponent } from "../../core/InputManager";
-import { config } from "../../config/config";
-import { locale, fallback }  from '../../i18n/i18n';
+import { icons } from '../../core/IconManager';
+import { classes } from '../../core/ClassManager';
+import { getComponent } from '../../core/InputManager';
+import { config } from '../../config/config';
+import { locale, fallback } from '../../i18n/i18n';
 import { schemaLoader, schemaLocaleLoader } from '../assets/SchemaLoader';
 import requesterConfig from '../assets/Requester';
 import { resolve } from '../../core/Schema';
@@ -14,7 +14,7 @@ import { resolve } from '../../core/Schema';
 describe('plugin', () => {
   it('full config', async () => {
     expect(plugin).toBeDefined();
-    const options = { 
+    const options = {
       icons: {
         add: 'icon_add',
         delete: 'icon_delete',
@@ -24,12 +24,12 @@ describe('plugin', () => {
         search: 'my-search',
       },
       inputs: {
-        'integer': 'my_integer',
-        'date': 'my_date',
+        integer: 'my_integer',
+        date: 'my_date',
       },
       defaultLocale: 'es',
       fallbackLocale: 'fr',
-      requester : requesterConfig, 
+      requester: requesterConfig,
       schemaLoader,
       schemaLocaleLoader,
       renderHtml: true,
@@ -38,7 +38,7 @@ describe('plugin', () => {
     expect(locale.value).toBe('es');
     expect(fallback.value).toBe('fr');
     expect(requester).toBe(options.requester);
-    
+
     expect(config).toEqual({
       renderHtml: true,
     });
@@ -59,4 +59,4 @@ describe('plugin', () => {
     expect(schema).toBeDefined();
     expect(schema.name).toBe('user');
   });
-})
+});
