@@ -12,7 +12,7 @@ export default {
       throw new Error('must have at least required configs');
     }
     if (options.icons) {
-      registerIcons(options.icons);
+      registerIcons(options.icons, options.iconComponent, options.iconPropName);
     }
     if (options.classes) {
       registerClasses(options.classes);

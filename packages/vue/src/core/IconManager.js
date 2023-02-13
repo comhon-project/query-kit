@@ -11,9 +11,13 @@ const iconList = {
   next: undefined,
   export: undefined,
 };
+let iconComponent = 'i';
+let iconPropName = 'class';
 
-const registerIcons = (custom) => {
-  Object.assign(iconList, custom);
+const registerIcons = (customIcons, customComponent = 'i', customPropName = 'class') => {
+  Object.assign(iconList, customIcons);
+  iconComponent = customComponent;
+  iconPropName = customPropName;
 };
 
 const handler = {
@@ -27,4 +31,4 @@ const handler = {
 
 const icons = new Proxy(iconList, handler);
 
-export { registerIcons, icons };
+export { registerIcons, icons, iconComponent, iconPropName };

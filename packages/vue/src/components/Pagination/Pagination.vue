@@ -1,8 +1,8 @@
 <script setup>
 import { computed, watchEffect, ref } from 'vue';
 import { classes } from '../../core/ClassManager';
-import { icons } from '../../core/IconManager';
 import { translate } from '../../i18n/i18n';
+import Icon from '../Common/Icon.vue';
 
 const emit = defineEmits(['update']);
 const props = defineProps({
@@ -49,8 +49,7 @@ watchEffect(() => (currentPage.value = props.page));
     <ul :class="classes.pagination">
       <li @click="(e) => updatePage(currentPage - 1, e)">
         <a href="#" :aria-label="translate('previous')">
-          <i v-if="icons['previous']" :class="icons['previous']"></i>
-          <template v-else>{{ translate('previous') }}</template>
+          <Icon icon="previous" />
         </a>
       </li>
       <li :class="1 == currentPage ? classes.active : ''" @click="(e) => updatePage(1, e)"><a href="#">1</a></li>
@@ -73,8 +72,7 @@ watchEffect(() => (currentPage.value = props.page));
       </li>
       <li @click="(e) => updatePage(currentPage + 1, e)">
         <a href="#" :aria-label="translate('next')">
-          <i v-if="icons['next']" :class="icons['next']"></i>
-          <template v-else>{{ translate('next') }}</template>
+          <Icon icon="next" />
         </a>
       </li>
     </ul>

@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, onUpdated, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
-import { icons } from '../../core/IconManager';
 import { translate } from '../../i18n/i18n';
+import Icon from './Icon.vue';
 
 const emit = defineEmits(['click']);
 const props = defineProps({
@@ -23,7 +23,6 @@ const props = defineProps({
   },
 });
 
-const iconClass = computed(() => icons[props.icon]);
 const computedAriaLabel = computed(() => {
   return props.ariaLabel ? translate(props.icon) + ' ' + props.ariaLabel : translate(props.icon);
 });
@@ -31,7 +30,6 @@ const computedAriaLabel = computed(() => {
 
 <template>
   <button :class="classes[btnClass]" :type="type" @click="$emit('click')" :aria-label="computedAriaLabel">
-    <i v-if="iconClass" :class="iconClass"></i>
-    <template v-else>{{ translate(icon) }}</template>
+    <Icon :icon="icon" />
   </button>
 </template>
