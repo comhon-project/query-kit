@@ -145,22 +145,27 @@ async function isSortable(propertyPath) {
 async function getPropertyPath(computedColumn) {
   const propertyPath = [];
   const splited = computedColumn.id.split('.');
+  let propertyName = '';
   let currentSchema = schema.value;
   for (let i = 0; i < splited.length - 1; i++) {
-    const property = currentSchema.mapProperties[splited[i]];
+    propertyName = propertyName.length ? `${propertyName}.${splited[i]}` : splited[i];
+    const property = currentSchema.mapProperties[propertyName];
     if (!property) {
-      throw new Error(`invalid collection property "${computedColumn.id}"`);
+      continue;
     }
     propertyPath.push(property);
     currentSchema = await resolve(property.model);
     if (!currentSchema) {
       throw new Error(`invalid model "${property.model}"`);
     }
+    propertyName = '';
   }
-  if (!currentSchema.mapProperties[splited[splited.length - 1]]) {
+  const last = splited[splited.length - 1];
+  propertyName = propertyName.length ? `${propertyName}.${last}` : last;
+  if (!currentSchema.mapProperties[propertyName]) {
     throw new Error(`invalid collection property "${computedColumn.id}"`);
   }
-  propertyPath.push(currentSchema.mapProperties[splited[splited.length - 1]]);
+  propertyPath.push(currentSchema.mapProperties[propertyName]);
   return propertyPath;
 }
 
