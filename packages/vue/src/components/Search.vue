@@ -2,7 +2,6 @@
 import { ref, shallowRef, toRaw, watchEffect } from 'vue';
 import Collection from './Collection/Collection.vue';
 import FilterBuilder from './Filter/Builder.vue';
-import cloneDeep from 'lodash.clonedeep';
 import { resolve } from '../core/Schema';
 import IconButton from './Common/IconButton.vue';
 import { classes } from '../core/ClassManager';
@@ -119,7 +118,7 @@ function getInitialFilter() {
     throw new Error('invalid allowed operators, must be array that contain at least "and" or "or" values');
   }
   const initialFilter = props.filter
-    ? cloneDeep(toRaw(props.filter))
+    ? structuredClone(toRaw(props.filter))
     : {
         type: 'group',
         filters: [],

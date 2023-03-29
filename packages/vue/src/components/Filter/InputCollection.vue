@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { classes } from '../../core/ClassManager';
 import IconButton from '../Common/IconButton.vue';
 import InputCondition from './InputCondition.vue';
@@ -35,8 +35,29 @@ const props = defineProps({
   },
 });
 
-const arrayValues = reactive(props.modelValue ? [...props.modelValue] : [undefined]);
-watch(arrayValues, () => emit('update:modelValue', arrayValues));
+const arrayValues = ref(props.modelValue ? [...props.modelValue] : [undefined]);
+
+function addValue() {
+  arrayValues.value.push(undefined);
+  emit('update:modelValue', arrayValues.value);
+}
+
+function removeValue(index) {
+  arrayValues.value.splice(index, 1);
+  emit('update:modelValue', arrayValues.value);
+}
+
+function updateValue(value, index) {
+  arrayValues.value[index] = value;
+  emit('update:modelValue', arrayValues.value);
+}
+
+watch(
+  () => props.modelValue,
+  () => {
+    arrayValues.value = props.modelValue ? [...props.modelValue] : [undefined];
+  }
+);
 </script>
 
 <template>
@@ -46,12 +67,12 @@ watch(arrayValues, () => emit('update:modelValue', arrayValues));
         <InputCondition
           v-bind="props"
           :model-value="value"
-          @update:model-value="(newValue) => (arrayValues[index] = newValue)"
+          @update:model-value="(newValue) => updateValue(newValue, index)"
           :editable="editable"
         />
-        <IconButton v-if="editable" icon="delete" @click="() => arrayValues.splice(index, 1)" />
+        <IconButton v-if="editable" icon="delete" @click="() => removeValue(index)" />
       </li>
     </ul>
-    <IconButton v-if="editable" icon="add_value" @click="() => arrayValues.push(undefined)" />
+    <IconButton v-if="editable" icon="add_value" @click="addValue" />
   </div>
 </template>

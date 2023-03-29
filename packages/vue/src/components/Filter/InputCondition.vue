@@ -54,7 +54,9 @@ function removePercentageSymbole(value, operator) {
 }
 
 function addPercentageSymbole(value, operator) {
-  return value != null && (operator == 'like' || operator == 'not_like') ? `%${value}%` : value;
+  return value != null && value.charAt(0) != '%' && (operator == 'like' || operator == 'not_like')
+    ? `%${value}%`
+    : value;
 }
 
 function getConditionValueFromModelValue() {
@@ -88,10 +90,6 @@ function getNotEmptyModelValue() {
   return value;
 }
 
-watch(
-  () => props.modelValue,
-  () => {}
-);
 watchEffect(() => {
   if (props.modelValue !== getNotEmptyModelValue()) {
     emit('update:modelValue', getNotEmptyModelValue());

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch, toRaw, watchEffect } from 'vue';
 import { resolve } from '../../core/Schema';
-import cloneDeep from 'lodash.clonedeep';
 import Group from './Group.vue';
 import IconButton from '../Common/IconButton.vue';
 import { classes } from '../../core/ClassManager';
@@ -77,7 +76,7 @@ async function initSchema() {
 
 function reset() {
   for (var member in props.modelValue) delete props.modelValue[member];
-  Object.assign(props.modelValue, cloneDeep(originalFilter));
+  Object.assign(props.modelValue, structuredClone(originalFilter));
 }
 
 function getScopeDefinition(scopeId, schema) {
@@ -103,7 +102,7 @@ function mustKeepFilter(filter, schema) {
 }
 
 async function getComputedFilter() {
-  const computedFilter = cloneDeep(toRaw(props.modelValue));
+  const computedFilter = structuredClone(toRaw(props.modelValue));
   const stack = [[computedFilter, schema.value]];
   while (stack.length) {
     const [currentFilter, currentSchema] = stack.pop();
@@ -152,7 +151,7 @@ async function getComputedFilter() {
 
 watchEffect(async () => {
   await initSchema();
-  originalFilter = cloneDeep(toRaw(props.modelValue));
+  originalFilter = structuredClone(toRaw(props.modelValue));
   if (timeoutId) {
     clearTimeout(timeoutId);
   }

@@ -1,4 +1,3 @@
-import cloneDeep from 'lodash.clonedeep';
 import { reactive, ref, watch } from 'vue';
 import { fallback, locale } from '../i18n/i18n';
 
@@ -10,7 +9,7 @@ async function compute(name) {
   let computed = null;
   const mapProperties = {};
   const mapScopes = {};
-  const loadedSchema = cloneDeep(await schemaLoader.load(name));
+  const loadedSchema = structuredClone(await schemaLoader.load(name));
   if (loadedSchema) {
     for (const property of loadedSchema.properties) {
       mapProperties[property.id] = property;

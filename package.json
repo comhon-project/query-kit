@@ -13,7 +13,6 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "lodash.clonedeep": "^4.5.0",
     "luxon": "^3.2.1",
     "vue": "^3.2.45"
   },

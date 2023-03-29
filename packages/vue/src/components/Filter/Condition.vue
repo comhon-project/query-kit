@@ -152,7 +152,7 @@ function removePercentageSymbole(value) {
 }
 
 function addPercentageSymbole(value) {
-  return value != null ? `%${value}%` : value;
+  return value != null && value.charAt(0) != '%' ? `%${value}%` : value;
 }
 
 watchEffect(initSchema);
@@ -165,14 +165,24 @@ watchEffect(() => {
 watch(
   () => props.modelValue.operator,
   (newOperator, oldOperator) => {
-    if ((oldOperator == 'in' || oldOperator == 'not_in') && newOperator != 'in' && newOperator != 'not_in') {
+    if (
+      (Array.isArray(props.modelValue.value) || !props.modelValue.value) &&
+      (oldOperator == 'in' || oldOperator == 'not_in') &&
+      newOperator != 'in' &&
+      newOperator != 'not_in'
+    ) {
       props.modelValue.value =
         props.modelValue.value && props.modelValue.value[0] ? props.modelValue.value[0] : undefined;
     }
     if ((oldOperator == 'like' || oldOperator == 'not_like') && newOperator != 'like' && newOperator != 'not_like') {
       props.modelValue.value = removePercentageSymbole(props.modelValue.value);
     }
-    if ((newOperator == 'in' || newOperator == 'not_in') && oldOperator != 'in' && oldOperator != 'not_in') {
+    if (
+      !Array.isArray(props.modelValue.value) &&
+      (newOperator == 'in' || newOperator == 'not_in') &&
+      oldOperator != 'in' &&
+      oldOperator != 'not_in'
+    ) {
       props.modelValue.value = [props.modelValue.value];
     }
     if ((newOperator == 'like' || newOperator == 'not_like') && oldOperator != 'like' && oldOperator != 'not_like') {
