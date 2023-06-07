@@ -193,6 +193,7 @@ async function requestServer(reset = false) {
   }
   requesting.value = true;
   const response = await requester.request({
+    model: props.model,
     order: active.value ? [{ property: active.value, order: order.value }] : undefined,
     offset: movingOffset,
     limit: props.limit,

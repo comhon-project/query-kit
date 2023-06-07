@@ -1,7 +1,7 @@
 {
   "name": "@query-kit/themes",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "exports": {
     "./package.json": "./package.json",
     "./default": "./default/main.css"

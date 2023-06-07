@@ -1,7 +1,7 @@
 {
   "name": "@query-kit/vue",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.1",
+  "private": false,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,18 +11,18 @@
   },
   "dependencies": {
     "luxon": "^3.2.1",
-    "vue": "^3.2.45"
+    "vue": "^3.3.2"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",
-    "@vitejs/plugin-vue": "^3.2.0",
+    "@vitejs/plugin-vue": "^4.2.3",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/test-utils": "^2.2.4",
     "eslint": "^8.22.0",
     "eslint-plugin-vue": "^9.3.0",
     "jsdom": "^20.0.3",
     "prettier": "^2.7.1",
-    "vite": "^3.2.4",
+    "vite": "^4.3.5",
     "vitest": "^0.25.3"
   }
 }
