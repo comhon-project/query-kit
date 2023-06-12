@@ -69,18 +69,20 @@ const props = defineProps({
   },
 });
 
+let schema = null;
 const invalidModel = ref(null);
 const invalidProperty = ref(null);
 const invalidOperator = ref(null);
 const childAriaLabel = ref('');
-const schema = ref(null);
 const queue = ref(null);
 const endQueueFilter = ref(null);
+
 const endQueuePropertyModel = computed(() => {
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
   return lastQueueSchema.mapProperties[lastQueueElement.value.property].model;
 });
+
 const shortcutEvents = {
   goToNext: () => emit('goToNext'),
   goToPrevious: () => emit('goToPrevious'),
@@ -90,8 +92,8 @@ const shortcutEvents = {
 };
 
 async function initSchema() {
-  schema.value = await resolve(props.model);
-  if (!schema.value) {
+  schema = await resolve(props.model);
+  if (!schema) {
     invalidModel.value = props.model;
     return;
   }
@@ -127,7 +129,7 @@ function removeEndFilter() {
 }
 
 async function setChild() {
-  let childSchema = schema.value;
+  let childSchema = schema;
   let childFilter = props.modelValue;
   let tempQueue = [];
   while (childFilter && childFilter.type == 'relationship_condition') {
@@ -211,7 +213,9 @@ watch(() => props.modelValue.filter, initSchema);
         v-if="!(queue[queue.length - 1].value.removable === false)"
         icon="delete"
         @click="$emit('remove')"
-        :aria-label="translate('condition') + ' ' + childAriaLabel"
+        :aria-label="
+          translate('condition') + ' ' + (typeof childAriaLabel == 'object' ? childAriaLabel.value : childAriaLabel)
+        "
       />
     </div>
     <template v-else>

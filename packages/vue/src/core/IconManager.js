@@ -10,6 +10,7 @@ const iconList = {
   previous: undefined,
   next: undefined,
   export: undefined,
+  collapse: undefined,
 };
 let iconComponent = 'i';
 let iconPropName = 'class';

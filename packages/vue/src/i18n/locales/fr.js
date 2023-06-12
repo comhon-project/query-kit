@@ -1,5 +1,6 @@
 export default {
   filter: 'filtre',
+  filters: 'filtres',
   add: 'ajouter',
   add_filter: 'ajouter un filtre',
   add_value: 'ajouter une valeur',
@@ -8,6 +9,8 @@ export default {
   reset: 'réinitialiser',
   validate: 'valider',
   close: 'fermer',
+  collapse: 'replier',
+  expande: 'étendre',
   like: 'comme',
   not_like: 'pas comme',
   in: 'dans',

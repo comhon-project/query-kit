@@ -12,6 +12,7 @@ import InvalidOperator from '../Messages/InvalidOperator.vue';
 import InvalidModel from '../Messages/InvalidModel.vue';
 import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
 import IconButton from '../Common/IconButton.vue';
+import CollapseButton from '../Common/CollapseButton.vue';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
 import Shortcuts from './Shortcuts.vue';
@@ -75,6 +76,7 @@ const validOperator = ref(true);
 const validModel = ref(true);
 const schema = ref(null);
 const addFilterDialog = ref(null);
+const collapsed = ref(false);
 const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useBaseCondition(props, schema, 'group');
 
 const visibleFilters = computed(() => {
@@ -168,7 +170,8 @@ function removeFilter(index) {
   props.modelValue.filters.splice(index, 1);
 }
 
-function addFilter(index) {
+function addFilter() {
+  collapsed.value = false;
   addFilterDialog.value.showModal();
 }
 
@@ -229,6 +232,10 @@ watchEffect(() => {
         <slot name="relationship" />
       </div>
       <div :class="classes.group_actions">
+        <div :class="classes.group_resume" :collapsed="collapsed ? '' : undefined">
+          {{ visibleFilters.length }}
+          <span>{{ translate(visibleFilters.length > 1 ? 'filters' : 'filter') }}</span>
+        </div>
         <template v-if="displayOperator === true || (displayOperator && displayOperator.group)">
           <AdaptativeSelect
             :class="classes.operator"
@@ -242,43 +249,48 @@ watchEffect(() => {
         <slot name="reset" />
         <slot name="validate" />
         <IconButton v-if="isRemovable" icon="delete" @click="$emit('remove')" :aria-label="translate('group')" />
+        <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />
       </div>
     </div>
-    <ul ref="listRef" :class="classes.group_list">
-      <li
-        v-for="(element, displayIndex) in visibleFilters"
-        :key="element.filter.key"
-        :style="hasGroup(element.filter) ? { flexBasis: '100%' } : {}"
-      >
-        <Condition
-          v-if="element.filter.type == 'condition' || element.filter.type == 'scope'"
-          v-bind="props"
-          :model-value="element.filter"
-          v-on="on(element.index, displayIndex)"
-          :aria-label="null"
-          :except-shortcuts="element.except"
-          :root="false"
-        />
-        <RelationshipCondition
-          v-else-if="element.filter.type == 'relationship_condition'"
-          v-bind="props"
-          :model-value="element.filter"
-          v-on="on(element.index, displayIndex)"
-          :aria-label="null"
-          :except-shortcuts="element.except"
-          :root="false"
-        />
-        <Group
-          v-else-if="element.filter.type == 'group'"
-          v-bind="props"
-          :model-value="element.filter"
-          v-on="on(element.index, displayIndex)"
-          :aria-label="null"
-          :except-shortcuts="element.except"
-          :root="false"
-        />
-      </li>
-    </ul>
+    <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined">
+      <div style="overflow: hidden">
+        <ul ref="listRef" :class="classes.group_list">
+          <li
+            v-for="(element, displayIndex) in visibleFilters"
+            :key="element.filter.key"
+            :style="hasGroup(element.filter) ? { flexBasis: '100%' } : {}"
+          >
+            <Condition
+              v-if="element.filter.type == 'condition' || element.filter.type == 'scope'"
+              v-bind="props"
+              :model-value="element.filter"
+              v-on="on(element.index, displayIndex)"
+              :aria-label="null"
+              :except-shortcuts="element.except"
+              :root="false"
+            />
+            <RelationshipCondition
+              v-else-if="element.filter.type == 'relationship_condition'"
+              v-bind="props"
+              :model-value="element.filter"
+              v-on="on(element.index, displayIndex)"
+              :aria-label="null"
+              :except-shortcuts="element.except"
+              :root="false"
+            />
+            <Group
+              v-else-if="element.filter.type == 'group'"
+              v-bind="props"
+              :model-value="element.filter"
+              v-on="on(element.index, displayIndex)"
+              :aria-label="null"
+              :except-shortcuts="element.except"
+              :root="false"
+            />
+          </li>
+        </ul>
+      </div>
+    </div>
     <dialog ref="addFilterDialog" :class="classes.modal">
       <div :class="classes.modal_close_container">
         <IconButton icon="close" @click="() => addFilterDialog.close()" />
@@ -287,3 +299,14 @@ watchEffect(() => {
     </dialog>
   </div>
 </template>
+
+<style>
+.qkit-collapse-wrapper {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s ease;
+}
+.qkit-collapse-wrapper[collapsed] {
+  grid-template-rows: 0fr;
+}
+</style>

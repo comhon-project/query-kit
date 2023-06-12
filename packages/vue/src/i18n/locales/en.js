@@ -1,5 +1,6 @@
 export default {
   filter: 'filter',
+  filters: 'filters',
   add: 'add',
   add_filter: 'add a filter',
   add_value: 'add a value',
@@ -8,6 +9,8 @@ export default {
   reset: 'reset',
   validate: 'validate',
   close: 'close',
+  collapse: 'collapse',
+  expande: 'expande',
   like: 'like',
   not_like: 'not like',
   in: 'in',

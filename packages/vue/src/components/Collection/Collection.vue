@@ -275,30 +275,32 @@ watch(
 <template>
   <div :class="classes.collection" :id="id" tabindex="0" :aria-label="translate('results')">
     <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)" />
-    <div
-      v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1"
-      :class="classes.collection_header"
-    >
-      <div>
-        <div v-if="displayCount">{{ translate('results') }} : {{ count }}</div>
-      </div>
-      <Pagination
-        v-if="!infiniteScroll"
-        :page="page"
-        :count="Math.max(1, Math.ceil(count / limit))"
-        :lock="requesting"
-        @update="updatePage"
-      />
-      <div :class="classes.collection_actions">
-        <IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)" />
-        <IconButton
-          v-if="allowedCollectionTypes.length > 1"
-          :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
-          @click="() => (infiniteScroll = !infiniteScroll)"
+    <div>
+      <div
+        v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1"
+        :class="classes.collection_header"
+      >
+        <div>
+          <div v-if="displayCount">{{ translate('results') }} : {{ count }}</div>
+        </div>
+        <Pagination
+          v-if="!infiniteScroll"
+          :page="page"
+          :count="Math.max(1, Math.ceil(count / limit))"
+          :lock="requesting"
+          @update="updatePage"
         />
+        <div :class="classes.collection_actions">
+          <IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)" />
+          <IconButton
+            v-if="allowedCollectionTypes.length > 1"
+            :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
+            @click="() => (infiniteScroll = !infiniteScroll)"
+          />
+        </div>
       </div>
     </div>
-    <div style="position: relative">
+    <div :class="classes.collection_content_wrapper">
       <slot name="loading" :requesting="requesting">
         <Transition name="qkit-collection-spinner">
           <div v-if="requesting" :class="classes.spinner"></div>
