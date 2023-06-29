@@ -69,6 +69,12 @@ const props = defineProps({
     type: String,
     default: 'UTC',
   },
+  requester: {
+    type: [Object, Function],
+    validator(value) {
+      return typeof value == 'function' || (typeof value == 'object' && typeof value.request == 'function');
+    },
+  },
 });
 
 let movingOffset = props.offset;
@@ -192,7 +198,13 @@ async function requestServer(reset = false) {
     collectionContent.value.scrollTop = 0;
   }
   requesting.value = true;
-  const response = await requester.request({
+  const fetch = props.requester
+    ? typeof props.requester == 'function'
+      ? props.requester
+      : props.requester.request
+    : requester.request;
+
+  const response = await fetch({
     model: props.model,
     order: active.value ? [{ property: active.value, order: order.value }] : undefined,
     offset: movingOffset,

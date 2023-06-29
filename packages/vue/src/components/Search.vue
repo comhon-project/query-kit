@@ -53,6 +53,12 @@ const props = defineProps({
     type: String,
     default: 'UTC',
   },
+  requester: {
+    type: [Object, Function],
+    validator(value) {
+      return typeof value == 'function' || (typeof value == 'object' && typeof value.request == 'function');
+    },
+  },
   manually: {
     type: Boolean,
     default: true,
