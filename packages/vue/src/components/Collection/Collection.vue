@@ -5,11 +5,10 @@ import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import { translate } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
-import Shortcuts from '../Filter/Shortcuts.vue';
 import Pagination from '../Pagination/Pagination.vue';
 import Cell from './Cell.vue';
 
-const emit = defineEmits(['rowClick', 'export', 'goToFilter']);
+const emit = defineEmits(['rowClick', 'export']);
 const props = defineProps({
   model: {
     type: String,
@@ -54,10 +53,6 @@ const props = defineProps({
   displayCount: {
     type: Boolean,
   },
-  displayShortcuts: {
-    type: Boolean,
-    default: false,
-  },
   onExport: {
     type: Function,
   },
@@ -89,9 +84,6 @@ const order = ref(null);
 const page = ref(1);
 const infiniteScroll = ref(isInfiniteAccordingProps());
 const collectionContent = ref(null);
-const shortcutEvents = {
-  goToFilter: () => emit('goToFilter'),
-};
 
 const observered = ref(null);
 let observer;
@@ -286,7 +278,7 @@ watch(
 
 <template>
   <div :class="classes.collection" :id="id" tabindex="0" :aria-label="translate('results')">
-    <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)" />
+    <slot name="shortcuts"></slot>
     <div>
       <div
         v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1"

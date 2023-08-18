@@ -13,11 +13,26 @@ const emit = defineEmits([
   'goToFilter',
 ]);
 const props = defineProps({
-  except: {
-    type: Array,
+  onGoToNext: {
+    type: Function,
   },
-  only: {
-    type: Array,
+  onGoToPrevious: {
+    type: Function,
+  },
+  onAddFilterToParentGroup: {
+    type: Function,
+  },
+  onGoToParentGroup: {
+    type: Function,
+  },
+  onGoToRootGroup: {
+    type: Function,
+  },
+  onGoToCollection: {
+    type: Function,
+  },
+  onGoToFilter: {
+    type: Function,
   },
 });
 
@@ -33,24 +48,13 @@ const actions = {
   goToFilter: 'go_to_filter',
 };
 const filteredActions = computed(() => {
-  let map = actions;
-  if (props.except && props.except.length) {
-    map = Object.assign({}, actions);
-    for (const action of props.except) {
-      delete map[action];
-    }
-  } else if (props.only && props.only.length) {
-    map = {};
-    for (const action of props.only) {
-      map[action] = actions[action];
-    }
-  }
   const list = [];
-  for (const key in map) {
-    if (Object.hasOwnProperty.call(map, key)) {
+  for (const key in actions) {
+    const propEventName = 'on' + key.charAt(0).toUpperCase() + key.slice(1);
+    if (props[propEventName]) {
       list.push({
         action: key,
-        translation: map[key],
+        translation: actions[key],
       });
     }
   }

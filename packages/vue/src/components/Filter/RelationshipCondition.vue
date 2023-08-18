@@ -13,16 +13,8 @@ import RelationshipAction from './RelationshipAction.vue';
 import Utils from '../../core/Utils';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
-import Shortcuts from './Shortcuts.vue';
 
-const emit = defineEmits([
-  'remove',
-  'goToNext',
-  'goToPrevious',
-  'goToParentGroup',
-  'goToRootGroup',
-  'addFilterToParentGroup',
-]);
+const emit = defineEmits(['remove', 'goToRootGroup']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -56,14 +48,27 @@ const props = defineProps({
     type: String,
     default: 'UTC',
   },
-  exceptShortcuts: {
-    type: Array,
-  },
   // not used, just permit to avoid warning when parent component pass ariaLabel prop
   ariaLabel: {
     type: String,
   },
   root: {
+    // not used, just permit to avoid warning when parent component pass ariaLabel prop
+    type: Boolean,
+  },
+  filter: {
+    // not used, just permit to avoid warning when parent component pass ariaLabel prop
+    type: Object,
+  },
+  exceptAddFilterToParentGroup: {
+    // not used, just permit to avoid warning when parent component pass ariaLabel prop
+    type: Boolean,
+  },
+  exceptGoToPrevious: {
+    // not used, just permit to avoid warning when parent component pass ariaLabel prop
+    type: Boolean,
+  },
+  exceptGoToNext: {
     // not used, just permit to avoid warning when parent component pass ariaLabel prop
     type: Boolean,
   },
@@ -82,14 +87,6 @@ const endQueuePropertyModel = computed(() => {
   const lastQueueSchema = lastQueueElement.schema;
   return lastQueueSchema.mapProperties[lastQueueElement.value.property].model;
 });
-
-const shortcutEvents = {
-  goToNext: () => emit('goToNext'),
-  goToPrevious: () => emit('goToPrevious'),
-  goToParentGroup: () => emit('goToParentGroup'),
-  goToRootGroup: () => emit('goToRootGroup'),
-  addFilterToParentGroup: () => emit('addFilterToParentGroup'),
-};
 
 async function initSchema() {
   schema = await resolve(props.model);
@@ -191,7 +188,7 @@ watch(() => props.modelValue.filter, initSchema);
       :aria-label="translate('relationship_condition')"
     >
       <div :class="classes.relationship_queue_and_action">
-        <Shortcuts v-on="shortcutEvents" :except="exceptShortcuts" />
+        <slot name="shortcuts"></slot>
         <div :class="classes.relationship_queue">
           <RelationshipQueueElement
             v-for="elmnt in queue"
@@ -225,7 +222,6 @@ watch(() => props.modelValue.filter, initSchema);
         :model="endQueuePropertyModel"
         :model-value="endQueueFilter"
         @remove="removeEndFilter"
-        v-on="shortcutEvents"
         :aria-label="translate('relationship_condition_with_condition')"
       >
         <template #relationship>
@@ -239,6 +235,9 @@ watch(() => props.modelValue.filter, initSchema);
             />
           </div>
         </template>
+        <template #shortcuts="shortcutsProps">
+          <slot name="shortcuts" v-bind="shortcutsProps"></slot>
+        </template>
       </Condition>
       <Group
         v-else-if="endQueueFilter.type == 'group'"
@@ -246,7 +245,7 @@ watch(() => props.modelValue.filter, initSchema);
         :model="endQueuePropertyModel"
         :model-value="endQueueFilter"
         @remove="removeEndFilter"
-        v-on="shortcutEvents"
+        @go-to-root-group="$emit('goToRootGroup')"
         :aria-label="translate('relationship_condition_with_group')"
       >
         <template #relationship>
@@ -259,6 +258,9 @@ watch(() => props.modelValue.filter, initSchema);
               :model="elmnt.schema.name"
             />
           </div>
+        </template>
+        <template #shortcuts="shortcutsProps">
+          <slot name="shortcuts" v-bind="shortcutsProps"></slot>
         </template>
       </Group>
     </template>

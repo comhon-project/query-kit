@@ -5,9 +5,8 @@ import Group from './Group.vue';
 import IconButton from '../Common/IconButton.vue';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
-import Shortcuts from './Shortcuts.vue';
 
-const emit = defineEmits(['computed', 'goToCollection']);
+const emit = defineEmits(['computed']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -53,10 +52,6 @@ const props = defineProps({
     type: Number,
     default: 1000,
   },
-  displayShortcuts: {
-    type: Boolean,
-    default: false,
-  },
   id: {
     type: String,
   },
@@ -65,10 +60,6 @@ const props = defineProps({
 let timeoutId;
 let originalFilter;
 const schema = ref(null);
-
-const shortcutEvents = {
-  goToCollection: () => emit('goToCollection'),
-};
 
 async function initSchema() {
   schema.value = await resolve(props.model);
@@ -171,7 +162,7 @@ watch(props.modelValue, () => {
 
 <template>
   <div style="position: relative" :class="classes.builder" :id="id" tabindex="0" :aria-label="translate('filter')">
-    <Shortcuts v-if="displayShortcuts" v-on="shortcutEvents" :only="Object.keys(shortcutEvents)" />
+    <slot name="shortcuts"></slot>
     <Group v-if="schema" v-bind="props" :root="true">
       <template v-if="allowReset" #reset>
         <IconButton icon="reset" @click="reset" />

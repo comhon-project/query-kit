@@ -15,16 +15,8 @@ import IconButton from '../Common/IconButton.vue';
 import { classes } from '../../core/ClassManager';
 import { getComponent, isUniqueComponentIn } from '../../core/InputManager';
 import { translate } from '../../i18n/i18n';
-import Shortcuts from './Shortcuts.vue';
 
-const emit = defineEmits([
-  'remove',
-  'goToNext',
-  'goToPrevious',
-  'goToParentGroup',
-  'goToRootGroup',
-  'addFilterToParentGroup',
-]);
+const emit = defineEmits(['remove']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -55,9 +47,6 @@ const props = defineProps({
   ariaLabel: {
     type: String,
   },
-  exceptShortcuts: {
-    type: Array,
-  },
 });
 const validModel = ref(true);
 const validOperator = ref(true);
@@ -69,14 +58,6 @@ const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseCon
   schema,
   props.modelValue.type
 );
-
-const shortcutEvents = {
-  goToNext: () => emit('goToNext'),
-  goToPrevious: () => emit('goToPrevious'),
-  goToParentGroup: () => emit('goToParentGroup'),
-  goToRootGroup: () => emit('goToRootGroup'),
-  addFilterToParentGroup: () => emit('addFilterToParentGroup'),
-};
 
 const inputType = computed(() => {
   return getComponent(target.value.type, target.value.enum);
@@ -209,7 +190,7 @@ watch(
 <template>
   <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
     <div>
-      <Shortcuts v-on="shortcutEvents" :except="exceptShortcuts" />
+      <slot name="shortcuts"></slot>
       <InvalidModel v-if="!validModel" :model="modelValue.model" />
       <template v-else-if="!validTarget">
         <InvalidProperty v-if="modelValue.type == 'condition'" :property="modelValue.property" />

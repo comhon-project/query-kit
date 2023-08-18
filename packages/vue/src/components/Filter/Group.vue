@@ -1,9 +1,6 @@
 <script setup>
 import { ref, computed, watchEffect } from 'vue';
 import Utils from '../../core/Utils.js';
-import Group from './Group.vue';
-import Condition from './Condition.vue';
-import RelationshipCondition from './RelationshipCondition.vue';
 import ConditionChoice from './ConditionChoice.vue';
 import { resolve } from '../../core/Schema';
 import { useBaseCondition } from './AbstractCondition';
@@ -15,16 +12,9 @@ import IconButton from '../Common/IconButton.vue';
 import CollapseButton from '../Common/CollapseButton.vue';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
-import Shortcuts from './Shortcuts.vue';
+import GroupFilter from './GroupFilter.vue';
 
-const emit = defineEmits([
-  'remove',
-  'goToNext',
-  'goToPrevious',
-  'goToParentGroup',
-  'goToRootGroup',
-  'addFilterToParentGroup',
-]);
+const emit = defineEmits(['remove', 'goToRootGroup']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -65,9 +55,6 @@ const props = defineProps({
   ariaLabel: {
     type: String,
   },
-  exceptShortcuts: {
-    type: Array,
-  },
 });
 
 const listRef = ref(null);
@@ -80,54 +67,26 @@ const collapsed = ref(false);
 const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useBaseCondition(props, schema, 'group');
 
 const visibleFilters = computed(() => {
-  let firstVisible = true;
-  let lastVisibleIndex = -1;
-  const filters = [];
-  for (let index = 0; index < props.modelValue.filters.length; index++) {
-    if (isVisible(props.modelValue.filters[index])) {
-      lastVisibleIndex = index;
-    }
-  }
-  for (let index = 0; index < props.modelValue.filters.length; index++) {
-    const filter = props.modelValue.filters[index];
-    if (!isVisible(filter)) {
-      continue;
-    }
-    const except = ['goToCollection', 'goToFilter'];
-    if (!canAddFilter.value) {
-      except.push('addFilterToParentGroup');
-    }
-    if (firstVisible) {
-      except.push('goToPrevious');
-    }
-    if (index == lastVisibleIndex) {
-      except.push('goToNext');
-    }
-    filters.push({ filter, except, index });
-    firstVisible = false;
-  }
-
-  return filters;
+  return props.modelValue.filters.filter((filter) => isVisible(filter));
 });
 
 const shortcutEvents = {
-  goToNext: () => emit('goToNext'),
-  goToPrevious: () => emit('goToPrevious'),
-  goToParentGroup: () => emit('goToParentGroup'),
-  goToRootGroup: () => emit('goToRootGroup'),
-  addFilterToParentGroup: () => emit('addFilterToParentGroup'),
+  goToNext: goToNext,
+  goToPrevious: goToPrevious,
+  goToParentGroup: focusGroup,
+  goToRootGroup: goToRootGroup,
+  addFilterToParentGroup: addFilter,
 };
 
-const on = (realIndex, displayIndex) => {
-  return {
-    remove: () => removeFilter(realIndex),
-    goToNext: () => goToCondition(displayIndex + 1),
-    goToPrevious: () => goToCondition(displayIndex - 1),
-    goToParentGroup: focusGroup,
-    goToRootGroup: goToRootGroup,
-    addFilterToParentGroup: addFilter,
-  };
-};
+function goToNext(key) {
+  const index = visibleFilters.value.findIndex((filter) => filter.key == key);
+  goToCondition(index + 1);
+}
+
+function goToPrevious(key) {
+  const index = visibleFilters.value.findIndex((filter) => filter.key == key);
+  goToCondition(index - 1);
+}
 
 function goToCondition(index) {
   const next = listRef.value.children[index];
@@ -166,7 +125,8 @@ function isVisible(filter) {
   return !(filter.visible === false);
 }
 
-function removeFilter(index) {
+function removeFilter(key) {
+  const index = props.modelValue.filters.findIndex((filter) => filter.key == key);
   props.modelValue.filters.splice(index, 1);
 }
 
@@ -226,7 +186,7 @@ watchEffect(() => {
     tabindex="0"
     :aria-label="ariaLabel ?? translate('group')"
   >
-    <Shortcuts v-if="!root" v-on="shortcutEvents" :except="exceptShortcuts" />
+    <slot name="shortcuts"></slot>
     <div :class="classes.group_header">
       <div>
         <slot name="relationship" />
@@ -255,39 +215,17 @@ watchEffect(() => {
     <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined">
       <div style="overflow: hidden">
         <ul ref="listRef" :class="classes.group_list">
-          <li
-            v-for="(element, displayIndex) in visibleFilters"
-            :key="element.filter.key"
-            :style="hasGroup(element.filter) ? { flexBasis: '100%' } : {}"
-          >
-            <Condition
-              v-if="element.filter.type == 'condition' || element.filter.type == 'scope'"
-              v-bind="props"
-              :model-value="element.filter"
-              v-on="on(element.index, displayIndex)"
-              :aria-label="null"
-              :except-shortcuts="element.except"
-              :root="false"
-            />
-            <RelationshipCondition
-              v-else-if="element.filter.type == 'relationship_condition'"
-              v-bind="props"
-              :model-value="element.filter"
-              v-on="on(element.index, displayIndex)"
-              :aria-label="null"
-              :except-shortcuts="element.except"
-              :root="false"
-            />
-            <Group
-              v-else-if="element.filter.type == 'group'"
-              v-bind="props"
-              :model-value="element.filter"
-              v-on="on(element.index, displayIndex)"
-              :aria-label="null"
-              :except-shortcuts="element.except"
-              :root="false"
-            />
-          </li>
+          <GroupFilter
+            v-for="(filter, displayIndex) in visibleFilters"
+            :key="filter.key"
+            v-bind="props"
+            :model-value="filter"
+            :except-add-filter-to-parent-group="!canAddFilter"
+            :except-go-to-previous="displayIndex == 0"
+            :except-go-to-next="displayIndex == visibleFilters.length - 1"
+            @remove="() => removeFilter(filter.key)"
+            v-on="shortcutEvents"
+          />
         </ul>
       </div>
     </div>

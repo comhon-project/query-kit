@@ -6,6 +6,7 @@ import { resolve } from '../core/Schema';
 import IconButton from './Common/IconButton.vue';
 import { classes } from '../core/ClassManager';
 import Utils from '../core/Utils';
+import Shortcuts from './Filter/Shortcuts.vue';
 
 const emit = defineEmits(['rowClick']);
 const props = defineProps({
@@ -170,28 +171,20 @@ watchEffect(() => {
 
 <template>
   <div v-if="schema" :class="classes.search">
-    <FilterBuilder
-      v-bind="props"
-      v-model="builtFilter"
-      @computed="updateFilter"
-      :id="filterId"
-      :display-shortcuts="true"
-      @go-to-collection="goToCollection"
-    >
+    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter" :id="filterId">
       <template #validate>
         <IconButton v-if="manually" icon="search" @click="applyQuery" />
       </template>
+      <template #shortcuts>
+        <Shortcuts @go-to-collection="goToCollection" />
+      </template>
     </FilterBuilder>
-    <Collection
-      v-if="computedFilter !== false"
-      v-bind="props"
-      :filter="computedFilter"
-      :id="collectionId"
-      :display-shortcuts="true"
-      @go-to-filter="goToFilter"
-    >
+    <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId">
       <template #loading="loadingProps">
         <slot name="loading" v-bind="loadingProps"></slot>
+      </template>
+      <template #shortcuts>
+        <Shortcuts @go-to-filter="goToFilter" />
       </template>
     </Collection>
   </div>
