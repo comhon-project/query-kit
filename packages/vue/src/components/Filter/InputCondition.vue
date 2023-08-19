@@ -42,7 +42,7 @@ const inputType = computed(() => {
 const isVueComponent = computed(() => typeof inputType.value != 'string');
 
 function removePercentageSymbole(value, operator) {
-  if (value != null && (operator == 'like' || operator == 'not_like')) {
+  if (typeof value == 'string' && (operator == 'like' || operator == 'not_like')) {
     if (value.charAt(0) == '%') {
       value = value.slice(1);
     }
@@ -54,7 +54,9 @@ function removePercentageSymbole(value, operator) {
 }
 
 function addPercentageSymbole(value, operator) {
-  return value != null && value.charAt(0) != '%' && (operator == 'like' || operator == 'not_like')
+  return value != null &&
+    (typeof value == 'number' || value.charAt(0) != '%') &&
+    (operator == 'like' || operator == 'not_like')
     ? `%${value}%`
     : value;
 }

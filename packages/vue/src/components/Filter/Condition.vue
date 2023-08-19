@@ -121,7 +121,7 @@ function verifyType() {
 }
 
 function removePercentageSymbole(value) {
-  if (value != null) {
+  if (typeof value == 'string') {
     if (value.charAt(0) == '%') {
       value = value.slice(1);
     }
@@ -133,7 +133,7 @@ function removePercentageSymbole(value) {
 }
 
 function addPercentageSymbole(value) {
-  return value != null && value.charAt(0) != '%' ? `%${value}%` : value;
+  return value != null && (typeof value == 'number' || value.charAt(0) != '%') ? `%${value}%` : value;
 }
 
 watchEffect(initSchema);
