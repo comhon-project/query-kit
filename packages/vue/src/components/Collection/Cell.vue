@@ -1,15 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
-import { config } from '../../config/config';
-import { locale, translate } from '../../i18n/i18n';
-import Enum from '../Common/Renderers/Enum.vue';
-import Html from '../Common/Renderers/Html.vue';
-import Boolean from '../Common/Renderers/Boolean.vue';
-import Date from '../Common/Renderers/Date.vue';
-import DateTime from '../Common/Renderers/DateTime.vue';
-import Time from '../Common/Renderers/Time.vue';
-import ForeignModel from '../Common/Renderers/ForeignModel.vue';
+import { getComponent } from '../../core/CellRendererManager';
 
 const props = defineProps({
   column: {
@@ -33,31 +25,7 @@ const computedComponent = computed(() => {
   if (props.column.component) {
     return props.column.component;
   }
-  if (props.column.property.enum) {
-    return Enum;
-  }
-  switch (props.column.property.type) {
-    case 'string':
-      return 'raw';
-    case 'integer':
-      return 'raw';
-    case 'float':
-      return 'raw';
-    case 'html':
-      return Html;
-    case 'boolean':
-      return Boolean;
-    case 'date':
-      return Date;
-    case 'datetime':
-      return DateTime;
-    case 'time':
-      return Time;
-    case 'relationship':
-      return ForeignModel;
-    default:
-      return 'raw';
-  }
+  return getComponent(props.column.property.type, props.column.property.enum);
 });
 </script>
 
