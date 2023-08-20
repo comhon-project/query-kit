@@ -73,6 +73,7 @@ const props = defineProps({
 });
 
 let movingOffset = props.offset;
+let computedProperties = [];
 const requesting = ref(false);
 const schema = shallowRef(null);
 const computedColumns = shallowRef([]);
@@ -94,6 +95,7 @@ async function init() {
     throw new Error(`invalid model "${props.model}"`);
   }
   const tempColumns = [];
+  computedProperties = [];
 
   for (const column of props.columns) {
     let computedColumn = typeof column == 'object' ? Object.assign({}, column) : { id: column };
@@ -118,6 +120,21 @@ async function init() {
       computedColumn.component = toRaw(computedColumn.component);
     }
     tempColumns.push(computedColumn);
+
+    if (computedColumn.property.type != 'relationship') {
+      computedProperties.push(computedColumn.id);
+    } else if (
+      computedColumn.property.relationship_type == 'belongs_to' ||
+      computedColumn.property.relationship_type == 'has_one'
+    ) {
+      const propertySchema = await resolve(property.model);
+      computedProperties.push(computedColumn.id + '.' + (propertySchema.unique_identifier || 'id'));
+      if (propertySchema.primary_identifiers) {
+        for (const propertyId of propertySchema.primary_identifiers) {
+          computedProperties.push(computedColumn.id + '.' + propertyId);
+        }
+      }
+    }
   }
   computedColumns.value = tempColumns;
 }
@@ -202,7 +219,7 @@ async function requestServer(reset = false) {
     offset: movingOffset,
     limit: props.limit,
     filter: props.filter,
-    properties: computedColumns.value.map((column) => column.id),
+    properties: computedProperties,
   });
   if (typeof response != 'object' || !Array.isArray(response.collection)) {
     throw new Error(

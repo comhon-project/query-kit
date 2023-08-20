@@ -3,7 +3,13 @@ import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
 import { config } from '../../config/config';
 import { locale, translate } from '../../i18n/i18n';
-import { DateTime } from 'luxon';
+import Enum from '../Common/Renderers/Enum.vue';
+import Html from '../Common/Renderers/Html.vue';
+import Boolean from '../Common/Renderers/Boolean.vue';
+import Date from '../Common/Renderers/Date.vue';
+import DateTime from '../Common/Renderers/DateTime.vue';
+import Time from '../Common/Renderers/Time.vue';
+import ForeignModel from '../Common/Renderers/ForeignModel.vue';
 
 const props = defineProps({
   column: {
@@ -23,64 +29,66 @@ const props = defineProps({
     required: true,
   },
 });
-const computedValue = computed(() => {
-  const propertyValue = props.rowValue[props.column.id];
-  if (props.column.property.enum) {
-    return props.column.property.enum[propertyValue];
+const computedComponent = computed(() => {
+  if (props.column.component) {
+    return props.column.component;
   }
-
+  if (props.column.property.enum) {
+    return Enum;
+  }
   switch (props.column.property.type) {
     case 'string':
-      return propertyValue;
+      return 'raw';
     case 'integer':
-      return propertyValue;
+      return 'raw';
     case 'float':
-      return propertyValue;
+      return 'raw';
     case 'html':
-      return propertyValue;
+      return Html;
     case 'boolean':
-      return translate(propertyValue ? 'yes' : 'no');
+      return Boolean;
     case 'date':
-      return new Date(propertyValue).toLocaleDateString(locale.value, {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      });
+      return Date;
     case 'datetime':
-      return DateTime.fromISO(propertyValue, { zone: props.requestTimezone, locale: locale.value })
-        .setZone(props.userTimezone)
-        .toLocaleString({ year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return DateTime;
     case 'time':
-      return new Date('1970-01-01 ' + propertyValue).toLocaleTimeString(locale.value, {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      return Time;
+    case 'relationship':
+      return ForeignModel;
     default:
-      return propertyValue;
+      return 'raw';
   }
-});
-const useHtml = computed(() => {
-  return config.renderHtml && props.column.property.type == 'html';
 });
 </script>
 
 <template>
   <td>
-    <div v-if="column.component">
-      <component :is="column.component" :value="computedValue" :row-value="rowValue" />
-    </div>
     <button
-      v-else-if="column.onCellClick"
+      v-if="column.onCellClick"
       type="button"
       :class="classes.collection_clickable_cell"
       @click="(e) => (column.onCellClick ? column.onCellClick(rowValue, column.id, e) : null)"
     >
-      <div v-if="useHtml" v-html="computedValue"></div>
-      <template v-else>{{ computedValue }}</template>
+      <template v-if="computedComponent == 'raw'">{{ rowValue[column.id] }}</template>
+      <component
+        :is="computedComponent"
+        :column="column"
+        :value="rowValue[column.id]"
+        :row-value="rowValue"
+        :request-timezone="requestTimezone"
+        :user-timezone="userTimezone"
+      />
     </button>
     <div v-else :class="classes.collection_cell">
-      <div v-if="useHtml" v-html="computedValue"></div>
-      <template v-else>{{ computedValue }}</template>
+      <template v-if="computedComponent == 'raw'">{{ rowValue[column.id] }}</template>
+      <component
+        :is="computedComponent"
+        :column="column"
+        :value="rowValue[column.id]"
+        :row-value="rowValue"
+        :request-timezone="requestTimezone"
+        :user-timezone="userTimezone"
+      />
     </div>
   </td>
 </template>
