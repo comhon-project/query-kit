@@ -41,6 +41,7 @@ const computedComponent = computed(() => {
       <component
         :is="computedComponent"
         :column="column"
+        :type="column.property"
         :value="rowValue[column.id]"
         :row-value="rowValue"
         :request-timezone="requestTimezone"
@@ -52,6 +53,7 @@ const computedComponent = computed(() => {
       <component
         :is="computedComponent"
         :column="column"
+        :type="column.property"
         :value="rowValue[column.id]"
         :row-value="rowValue"
         :request-timezone="requestTimezone"

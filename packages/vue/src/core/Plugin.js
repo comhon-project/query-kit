@@ -6,6 +6,7 @@ import { registerComponents as registerCellComponents } from './CellRendererMana
 import { registerLoader, registerLocaleLoader } from './Schema';
 import { config } from '../config/config';
 import { registerRequester } from './Requester';
+import { registerAllowedOperators } from '../components/Filter/FilterManager';
 
 export default {
   install: (app, options) => {
@@ -29,6 +30,9 @@ export default {
     }
     if (options.fallbackLocale) {
       fallback.value = options.fallbackLocale;
+    }
+    if (options.allowedOperators) {
+      registerAllowedOperators(options.allowedOperators);
     }
     if (options.requester) {
       const requester = typeof options.requester == 'function' ? { request: options.requester } : options.requester;

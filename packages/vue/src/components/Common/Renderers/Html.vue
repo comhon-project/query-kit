@@ -6,6 +6,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  type: {
+    type: Object,
+    required: true,
+  },
   value: {
     required: true,
   },

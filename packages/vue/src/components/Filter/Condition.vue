@@ -60,7 +60,16 @@ const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseCon
 );
 
 const inputType = computed(() => {
-  return getComponent(target.value.type, target.value.enum);
+  return getComponent(containerType.value.type, containerType.value.enum);
+});
+const containerType = computed(() => {
+  let container = target.value;
+  if (container) {
+    while (container.type == 'array') {
+      container = container.children;
+    }
+  }
+  return container;
 });
 const useOperator = computed(() => {
   return props.modelValue.type == 'condition' || target.value.useOperator;
@@ -83,7 +92,7 @@ const target = computed(() => {
   return computedScope ? computedScope : schema.value.mapScopes[props.modelValue.id];
 });
 const isUniqueIn = computed(() => {
-  return isUniqueComponentIn(target.value.type);
+  return isUniqueComponentIn(containerType.value.type);
 });
 
 async function initSchema() {
@@ -113,8 +122,8 @@ function verifyType() {
   if (
     schema.value &&
     target.value &&
-    (props.modelValue.type == 'condition' || target.value.type) &&
-    !getComponent(target.value.type, target.value.enum)
+    (props.modelValue.type == 'condition' || containerType.value.type) &&
+    !getComponent(containerType.value.type, containerType.value.enum)
   ) {
     validType.value = false;
   }
@@ -197,7 +206,7 @@ watch(
         <InvalidScope v-else :id="modelValue.id" />
       </template>
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
-      <InvalidType v-else-if="!validType" :type="target.type" />
+      <InvalidType v-else-if="!validType" :type="containerType.type" />
       <template v-else-if="schema">
         <div :class="classes.condition_header">
           <slot name="relationship" />

@@ -32,7 +32,7 @@ const uniqueIdCondition = ref(`choice-${Utils.getUniqueId()}`);
 const uniqueIdGroup = ref(`choice-${Utils.getUniqueId()}`);
 const schema = ref(null);
 const targetCondition = ref(null);
-const tempType = ref('condition');
+const selectedType = ref('condition');
 const { searchableProperties, searchableScopes, searchableComputedScopes } = useHelpers(props, schema);
 const options = computed(() => {
   const options = {};
@@ -53,7 +53,7 @@ const displayGroup = computed(() => {
 
 function validate(e) {
   const condition = {};
-  if (tempType.value == 'condition') {
+  if (selectedType.value == 'condition') {
     let scope =
       props.computedScopes && props.computedScopes[props.model]
         ? props.computedScopes[props.model].find((scope) => scope.id == targetCondition.value)
@@ -90,7 +90,7 @@ function validate(e) {
 }
 
 function selectType(type) {
-  tempType.value = type;
+  selectedType.value = type;
 }
 
 onMounted(async () => {
@@ -112,7 +112,7 @@ watch(
         <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
         <select
           v-model="targetCondition"
-          :disabled="tempType == 'group'"
+          :disabled="selectedType == 'group'"
           :aria-label="translate('choose_condition_element')"
           required
         >

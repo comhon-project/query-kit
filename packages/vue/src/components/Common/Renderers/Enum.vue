@@ -1,8 +1,10 @@
 <script setup>
-import { computed } from 'vue';
-
 const props = defineProps({
   column: {
+    type: Object,
+    required: true,
+  },
+  type: {
     type: Object,
     required: true,
   },
@@ -25,5 +27,5 @@ const props = defineProps({
 </script>
 
 <template>
-  {{ props.column.property.enum[props.value] }}
+  {{ type.enum[props.value] }}
 </template>

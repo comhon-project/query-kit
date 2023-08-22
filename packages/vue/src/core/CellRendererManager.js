@@ -5,6 +5,7 @@ import Date from '../components/Common/Renderers/Date.vue';
 import DateTime from '../components/Common/Renderers/DateTime.vue';
 import Time from '../components/Common/Renderers/Time.vue';
 import ForeignModel from '../components/Common/Renderers/ForeignModel.vue';
+import Array from '../components/Common/Renderers/Array.vue';
 
 const componentList = {
   string: 'raw',
@@ -17,6 +18,7 @@ const componentList = {
   time: Time,
   boolean: Boolean,
   relationship: ForeignModel,
+  array: Array,
 };
 
 const registerComponents = (custom) => {

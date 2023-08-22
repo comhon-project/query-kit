@@ -37,7 +37,16 @@ const props = defineProps({
 const conditionValue = ref(null);
 const isNullCondition = ref(false); // TODO manage 'is null' condition
 const inputType = computed(() => {
-  return getComponent(props.target.type, props.target.enum);
+  return getComponent(containerType.value.type, containerType.value.enum);
+});
+const containerType = computed(() => {
+  let container = props.target;
+  if (container) {
+    while (container.type == 'array') {
+      container = container.children;
+    }
+  }
+  return container;
 });
 const isVueComponent = computed(() => typeof inputType.value != 'string');
 
@@ -55,8 +64,8 @@ function removePercentageSymbole(value, operator) {
 
 function addPercentageSymbole(value, operator) {
   return value != null &&
-    (typeof value == 'number' || value.charAt(0) != '%') &&
-    (operator == 'like' || operator == 'not_like')
+    (operator == 'like' || operator == 'not_like') &&
+    (typeof value == 'number' || value.charAt(0) != '%')
     ? `%${value}%`
     : value;
 }
@@ -124,12 +133,12 @@ watch(conditionValue, () => {
     :disabled="!editable"
   />
   <select
-    v-else-if="inputType == 'select' && target.enum"
+    v-else-if="inputType == 'select' && containerType.enum"
     :class="classes.condition_input"
     v-model="conditionValue"
     :disabled="!editable"
   >
-    <option v-for="(label, value) in target.enum" :key="value" :value="value">{{ label }}</option>
+    <option v-for="(label, value) in containerType.enum" :key="value" :value="value">{{ label }}</option>
   </select>
   <input :class="classes.condition_input" v-else :type="inputType" v-model="conditionValue" :disabled="!editable" />
 </template>

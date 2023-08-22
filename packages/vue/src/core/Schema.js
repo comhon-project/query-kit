@@ -57,15 +57,19 @@ async function computeLocales(schema, create) {
       if (!target.name.value) {
         target.name.value = 'undefined';
       }
-      if (target.enum) {
+      let enumTarget = target;
+      while (enumTarget.type == 'array') {
+        enumTarget = target.children;
+      }
+      if (enumTarget.enum) {
         if (create) {
-          const enumKeys = Array.isArray(target.enum) ? target.enum : Object.keys(target.enum);
-          target.enum = reactive({});
+          const enumKeys = Array.isArray(enumTarget.enum) ? enumTarget.enum : Object.keys(enumTarget.enum);
+          enumTarget.enum = reactive({});
           for (const key of enumKeys) {
-            target.enum[key] = null;
+            enumTarget.enum[key] = null;
           }
         }
-        for (const key in target.enum) {
+        for (const key in enumTarget.enum) {
           let value = translations?.__enumerations__?.[target.id]?.[key];
           if (!value) {
             if (!fallbackTranslations) {
@@ -76,7 +80,7 @@ async function computeLocales(schema, create) {
           if (!value) {
             value = 'undefined';
           }
-          target.enum[key] = value;
+          enumTarget.enum[key] = value;
         }
       }
     }

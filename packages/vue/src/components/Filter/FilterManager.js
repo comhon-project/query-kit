@@ -25,7 +25,7 @@ const operatorNames = {
 
 const operators = {
   condition: {
-    all: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in', 'like', 'not_like'],
+    basic: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in', 'like', 'not_like'],
     enum: ['=', '<>', 'in', 'not_in'],
     // ---------------
     date: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in'],
@@ -46,7 +46,10 @@ const getOperators = (
 ) => {
   const isConditionKind = conditionType == 'condition' || conditionType == 'scope';
   let target;
-  if (targetCondition) {
+  if (isConditionKind) {
+    if (!targetCondition) {
+      throw new Error('targetCondition is required when conditionType is "condition" or "scope"');
+    }
     if (!schema) {
       throw new Error('schema is required when targetCondition is given');
     }
@@ -67,14 +70,24 @@ const getOperators = (
     allowedOperators && allowedOperators[conditionType]
       ? allowedOperators[conditionType]
       : isConditionKind
-      ? operators.condition['all']
+      ? operators.condition.basic
       : operators[conditionType];
   if (target && isConditionKind) {
-    const type = target.enum ? 'enum' : target.type;
+    let containerType = target;
+    let isArray = false;
+    while (containerType.type == 'array') {
+      containerType = containerType.children;
+      isArray = true;
+    }
+    const type = containerType.enum ? 'enum' : containerType.type;
     if (allowedOperators && allowedOperators[type]) {
       currentOperators = allowedOperators[type];
     } else if ((!allowedOperators || !allowedOperators[conditionType]) && operators.condition[type]) {
       currentOperators = operators.condition[type];
+    }
+    if (isArray && (operators?.condition?.array || allowedOperators?.array)) {
+      const filterOperators = allowedOperators?.array || operators?.condition?.array;
+      currentOperators = currentOperators.filter((value) => filterOperators.includes(value));
     }
   }
   return currentOperators;
@@ -126,4 +139,22 @@ const useHelpers = (props, schema) => {
   return { searchableProperties, searchableScopes, searchableComputedScopes };
 };
 
-export { useHelpers, operatorNames, getOperators };
+const registerAllowedOperators = (allowedOperators) => {
+  if (allowedOperators.condition) {
+    for (const key in allowedOperators.condition) {
+      if (!Object.hasOwnProperty.call(allowedOperators.condition, key)) {
+        continue;
+      }
+      operators.condition[key] = allowedOperators.condition[key].map((op) => op.toLowerCase());
+    }
+    Object.assign(operators.condition, allowedOperators.condition);
+  }
+  if (allowedOperators.group) {
+    operators.group = allowedOperators.group.map((op) => op.toLowerCase());
+  }
+  if (allowedOperators.relationship_condition) {
+    operators.relationship_condition = allowedOperators.relationship_condition.map((op) => op.toLowerCase());
+  }
+};
+
+export { useHelpers, operatorNames, getOperators, registerAllowedOperators };

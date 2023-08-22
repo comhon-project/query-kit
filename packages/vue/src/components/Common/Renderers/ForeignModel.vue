@@ -7,6 +7,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  type: {
+    type: Object,
+    required: true,
+  },
   value: {
     required: true,
   },
@@ -25,13 +29,22 @@ const props = defineProps({
 });
 const schema = ref(null);
 const computedValue = computed(() => {
+  const idProp = schema.value.unique_identifier || 'id';
   return schema.value.primary_identifiers
-    ? schema.value.primary_identifiers.map((property) => props.rowValue[props.column.id + '.' + property]).join(' ')
-    : props.rowValue[props.column.id + '.' + (schema.value.unique_identifier || 'id')];
+    ? schema.value.primary_identifiers
+        .map((property) => {
+          const object = props.value || props.rowValue;
+          const key = props.value ? property : props.column.id + '.' + property;
+          return object[key];
+        })
+        .join(' ')
+    : props.value
+    ? props.value[idProp]
+    : props.rowValue[props.column.id + '.' + idProp];
 });
 
 onBeforeMount(async () => {
-  schema.value = await resolve(props.column.property.model);
+  schema.value = await resolve(props.type.model);
 });
 </script>
 
