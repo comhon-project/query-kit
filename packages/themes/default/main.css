@@ -54,6 +54,7 @@
   border: 0;
   background: transparent;
   transition: background-color 0.15s ease-in-out;
+  font-family: inherit;
 }
 
 .qkit-btn-primary {
@@ -366,6 +367,7 @@ ul.qkit-group-list > li:has(.qkit-group) {
 
 .qkit-collection-table th {
   padding: 0.5rem 1rem;
+  font-weight: initial;
 }
 
 .qkit-collection-table thead {

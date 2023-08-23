@@ -3,7 +3,7 @@ import { ref, watch, onMounted, computed } from 'vue';
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import Utils from '../../core/Utils';
-import { translate } from '../../i18n/i18n';
+import { translate, locale } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
 import { getOperators, useHelpers } from './FilterManager';
 
@@ -43,7 +43,11 @@ const options = computed(() => {
     options[scope.id] = scope.name;
   }
   for (const scope of searchableComputedScopes.value) {
-    options[scope.id] = scope.name;
+    if (scope.translation) {
+      options[scope.id] = scope.translation(locale.value);
+    } else if (scope.name) {
+      options[scope.id] = scope.name;
+    }
   }
   return options;
 });

@@ -36,10 +36,6 @@ const props = defineProps({
     type: [Boolean, Object],
     default: true,
   },
-  computedFilters: {
-    type: Array,
-    default: [],
-  },
   userTimezone: {
     type: String,
     default: 'UTC',

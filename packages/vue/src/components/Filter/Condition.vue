@@ -14,7 +14,7 @@ import InputCondition from './InputCondition.vue';
 import IconButton from '../Common/IconButton.vue';
 import { classes } from '../../core/ClassManager';
 import { getComponent, isUniqueComponentIn } from '../../core/InputManager';
-import { translate } from '../../i18n/i18n';
+import { locale, translate } from '../../i18n/i18n';
 
 const emit = defineEmits(['remove']);
 const props = defineProps({
@@ -90,6 +90,10 @@ const target = computed(() => {
       : null;
 
   return computedScope ? computedScope : schema.value.mapScopes[props.modelValue.id];
+});
+const targetName = computed(() => {
+  const currentLocale = locale.value;
+  return target.value.translation ? target.value.translation(currentLocale) : target.value.name;
 });
 const isUniqueIn = computed(() => {
   return isUniqueComponentIn(containerType.value.type);
@@ -210,14 +214,14 @@ watch(
       <template v-else-if="schema">
         <div :class="classes.condition_header">
           <slot name="relationship" />
-          <label :class="classes.property_name_container">{{ target.name }}</label>
+          <label :class="classes.property_name_container">{{ targetName }}</label>
           <template v-if="mustDisplayOperator">
             <AdaptativeSelect
               :class="classes.operator"
               v-model="modelValue.operator"
               :options="operatorOptions"
               :disabled="!canEditOperator"
-              :aria-label="target.name + ' ' + translate('operator')"
+              :aria-label="targetName + ' ' + translate('operator')"
             />
           </template>
         </div>
@@ -245,7 +249,7 @@ watch(
       v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType"
       icon="delete"
       @click="$emit('remove')"
-      :aria-label="schema && target ? translate('condition') + ' ' + target.name : ''"
+      :aria-label="schema && target ? translate('condition') + ' ' + targetName : ''"
     />
   </div>
 </template>

@@ -7,6 +7,7 @@ import { translate } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
 import Pagination from '../Pagination/Pagination.vue';
 import Cell from './Cell.vue';
+import Header from './Header.vue';
 
 const emit = defineEmits(['rowClick', 'export']);
 const props = defineProps({
@@ -335,25 +336,14 @@ watch(
         <table :class="classes.collection_table">
           <thead>
             <tr>
-              <th v-for="computedColumn in computedColumns" :key="computedColumn.id">
-                <button
-                  v-if="computedColumn.sortable"
-                  type="button"
-                  :class="
-                    classes.btn +
-                    ' ' +
-                    (active == computedColumn.id
-                      ? classes.active + ' ' + (order == 'asc' ? classes.order_asc : classes.order_desc)
-                      : '')
-                  "
-                  @click="() => updateOrder(computedColumn.id)"
-                >
-                  {{ typeof computedColumn.label == 'string' ? computedColumn.label : computedColumn.label.value }}
-                </button>
-                <div v-else>
-                  {{ typeof computedColumn.label == 'string' ? computedColumn.label : computedColumn.label.value }}
-                </div>
-              </th>
+              <Header
+                v-for="computedColumn in computedColumns"
+                :key="computedColumn.id"
+                :column="computedColumn"
+                :active="active == computedColumn.id"
+                :order="order"
+                @click="updateOrder"
+              />
             </tr>
           </thead>
           <tbody>
