@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
+import Utils from '../../core/Utils';
 import { getComponent } from '../../core/CellRendererManager';
 
 const props = defineProps({
@@ -20,12 +21,19 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  flattened: {
+    type: Boolean,
+  },
 });
 const computedComponent = computed(() => {
   if (props.column.component) {
     return props.column.component;
   }
   return getComponent(props.column.property.type, props.column.property.enum);
+});
+
+const value = computed(() => {
+  return props.flattened ? props.rowValue[props.column.id] : Utils.getNestedValue(props.rowValue, props.column.id);
 });
 </script>
 
@@ -37,24 +45,24 @@ const computedComponent = computed(() => {
       :class="classes.collection_clickable_cell"
       @click="(e) => (column.onCellClick ? column.onCellClick(rowValue, column.id, e) : null)"
     >
-      <template v-if="computedComponent == 'raw'">{{ rowValue[column.id] }}</template>
+      <template v-if="computedComponent == 'raw'">{{ value }}</template>
       <component
         :is="computedComponent"
         :column="column"
         :type="column.property"
-        :value="rowValue[column.id]"
+        :value="value"
         :row-value="rowValue"
         :request-timezone="requestTimezone"
         :user-timezone="userTimezone"
       />
     </button>
     <div v-else :class="classes.collection_cell">
-      <template v-if="computedComponent == 'raw'">{{ rowValue[column.id] }}</template>
+      <template v-if="computedComponent == 'raw'">{{ value }}</template>
       <component
         :is="computedComponent"
         :column="column"
         :type="column.property"
-        :value="rowValue[column.id]"
+        :value="value"
         :row-value="rowValue"
         :request-timezone="requestTimezone"
         :user-timezone="userTimezone"

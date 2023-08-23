@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, toRaw, shallowRef } from 'vue';
+import { ref, watch, onMounted, toRaw, shallowRef, computed } from 'vue';
 import { requester } from '../../core/Requester';
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
@@ -88,6 +88,10 @@ const collectionContent = ref(null);
 
 const observered = ref(null);
 let observer;
+
+const isResultFlattened = computed(() => {
+  return props.requester && typeof props.requester == 'object' ? props.requester.flattened : requester.flattened;
+});
 
 async function init() {
   schema.value = await resolve(props.model);
@@ -363,6 +367,7 @@ watch(
                 <Cell
                   :column="computedColumn"
                   :row-value="object"
+                  :flattened="isResultFlattened"
                   :user-timezone="userTimezone"
                   :request-timezone="requestTimezone"
                 />
