@@ -8,6 +8,10 @@ import { config } from '../config/config';
 import { registerRequester } from './Requester';
 import { registerAllowedOperators } from '../components/Filter/FilterManager';
 
+import Search from '../components/Search.vue';
+import Builder from '../components/Filter/Builder.vue';
+import Collection from '../components/Collection/Collection.vue';
+
 export default {
   install: (app, options) => {
     if (!options) {
@@ -74,5 +78,9 @@ export default {
         config[key] = options[key];
       }
     }
+
+    app.component('Search', Search);
+    app.component('Collection', Collection);
+    app.component('Builder', Builder);
   },
 };
