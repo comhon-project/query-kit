@@ -1,7 +1,7 @@
 <script setup>
 import { config } from '../../../config/config';
 
-const props = defineProps({
+defineProps({
   column: {
     type: Object,
     required: true,

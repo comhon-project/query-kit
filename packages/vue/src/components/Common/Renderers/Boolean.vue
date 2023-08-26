@@ -1,7 +1,7 @@
 <script setup>
 import { translate } from '../../../i18n/i18n';
 
-const props = defineProps({
+defineProps({
   column: {
     type: Object,
     required: true,

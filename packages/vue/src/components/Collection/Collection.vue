@@ -9,7 +9,7 @@ import Pagination from '../Pagination/Pagination.vue';
 import Cell from './Cell.vue';
 import Header from './Header.vue';
 
-const emit = defineEmits(['rowClick', 'export']);
+defineEmits(['rowClick', 'export']);
 const props = defineProps({
   model: {
     type: String,

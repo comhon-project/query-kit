@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
 import { locale } from '../../i18n/i18n';
 
-const emit = defineEmits(['click']);
+defineEmits(['click']);
 const props = defineProps({
   column: {
     type: Object,

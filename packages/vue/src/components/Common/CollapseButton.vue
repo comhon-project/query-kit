@@ -5,7 +5,7 @@ import { translate } from '../../i18n/i18n';
 import { icons } from '../../core/IconManager';
 import Icon from './Icon.vue';
 
-const emit = defineEmits(['update:collapsed']);
+defineEmits(['update:collapsed']);
 const props = defineProps({
   collapsed: {
     type: Boolean,

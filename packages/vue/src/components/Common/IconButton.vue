@@ -4,7 +4,7 @@ import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
 import Icon from './Icon.vue';
 
-const emit = defineEmits(['click']);
+defineEmits(['click']);
 const props = defineProps({
   icon: {
     type: String,

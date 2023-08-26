@@ -6,7 +6,7 @@ import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
 
-const emit = defineEmits(['remove', 'end:relationship']);
+defineEmits(['remove', 'end:relationship']);
 const props = defineProps({
   modelValue: {
     type: Object,

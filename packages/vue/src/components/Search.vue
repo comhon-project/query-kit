@@ -8,7 +8,7 @@ import { classes } from '../core/ClassManager';
 import Utils from '../core/Utils';
 import Shortcuts from './Filter/Shortcuts.vue';
 
-const emit = defineEmits(['rowClick', 'export']);
+defineEmits(['rowClick', 'export']);
 const props = defineProps({
   model: {
     type: String,

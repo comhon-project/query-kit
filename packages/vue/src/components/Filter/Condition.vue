@@ -16,7 +16,7 @@ import { classes } from '../../core/ClassManager';
 import { getComponent, isUniqueComponentIn } from '../../core/InputManager';
 import { locale, translate } from '../../i18n/i18n';
 
-const emit = defineEmits(['remove']);
+defineEmits(['remove']);
 const props = defineProps({
   modelValue: {
     type: Object,

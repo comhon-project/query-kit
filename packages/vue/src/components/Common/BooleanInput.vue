@@ -4,7 +4,7 @@ import Utils from '../../core/Utils';
 import { translate } from '../../i18n/i18n';
 
 const emit = defineEmits(['update:modelValue']);
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
   },

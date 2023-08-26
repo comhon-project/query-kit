@@ -3,7 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
 
-const emit = defineEmits([
+defineEmits([
   'goToNext',
   'goToPrevious',
   'addFilterToParentGroup',
