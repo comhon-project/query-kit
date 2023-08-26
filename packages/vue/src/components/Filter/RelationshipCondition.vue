@@ -26,15 +26,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
   displayOperator: {
     type: [Boolean, Object],
@@ -51,6 +55,7 @@ const props = defineProps({
   // not used, just permit to avoid warning when parent component pass ariaLabel prop
   ariaLabel: {
     type: String,
+    default: undefined,
   },
   root: {
     // not used, just permit to avoid warning when parent component pass ariaLabel prop
@@ -59,6 +64,7 @@ const props = defineProps({
   filter: {
     // not used, just permit to avoid warning when parent component pass ariaLabel prop
     type: Object,
+    default: undefined,
   },
   exceptAddFilterToParentGroup: {
     // not used, just permit to avoid warning when parent component pass ariaLabel prop
@@ -188,7 +194,7 @@ watch(() => props.modelValue.filter, initSchema);
       :aria-label="translate('relationship_condition')"
     >
       <div :class="classes.relationship_queue_and_action">
-        <slot name="shortcuts"></slot>
+        <slot name="shortcuts" />
         <div :class="classes.relationship_queue">
           <RelationshipQueueElement
             v-for="elmnt in queue"
@@ -209,10 +215,10 @@ watch(() => props.modelValue.filter, initSchema);
       <IconButton
         v-if="!(queue[queue.length - 1].value.removable === false)"
         icon="delete"
-        @click="$emit('remove')"
         :aria-label="
           translate('condition') + ' ' + (typeof childAriaLabel == 'object' ? childAriaLabel.value : childAriaLabel)
         "
+        @click="$emit('remove')"
       />
     </div>
     <template v-else>
@@ -221,8 +227,8 @@ watch(() => props.modelValue.filter, initSchema);
         v-bind="props"
         :model="endQueuePropertyModel"
         :model-value="endQueueFilter"
-        @remove="removeEndFilter"
         :aria-label="translate('relationship_condition_with_condition')"
+        @remove="removeEndFilter"
       >
         <template #relationship>
           <div :class="classes.relationship_queue">
@@ -236,7 +242,7 @@ watch(() => props.modelValue.filter, initSchema);
           </div>
         </template>
         <template #shortcuts="shortcutsProps">
-          <slot name="shortcuts" v-bind="shortcutsProps"></slot>
+          <slot name="shortcuts" v-bind="shortcutsProps" />
         </template>
       </Condition>
       <Group
@@ -244,9 +250,9 @@ watch(() => props.modelValue.filter, initSchema);
         v-bind="props"
         :model="endQueuePropertyModel"
         :model-value="endQueueFilter"
+        :aria-label="translate('relationship_condition_with_group')"
         @remove="removeEndFilter"
         @go-to-root-group="$emit('goToRootGroup')"
-        :aria-label="translate('relationship_condition_with_group')"
       >
         <template #relationship>
           <div :class="classes.relationship_queue">
@@ -260,7 +266,7 @@ watch(() => props.modelValue.filter, initSchema);
           </div>
         </template>
         <template #shortcuts="shortcutsProps">
-          <slot name="shortcuts" v-bind="shortcutsProps"></slot>
+          <slot name="shortcuts" v-bind="shortcutsProps" />
         </template>
       </Group>
     </template>

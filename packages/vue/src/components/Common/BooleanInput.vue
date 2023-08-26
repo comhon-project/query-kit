@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue';
 import { classes } from '../../core/ClassManager';
 import Utils from '../../core/Utils';
 import { translate } from '../../i18n/i18n';

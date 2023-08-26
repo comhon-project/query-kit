@@ -21,6 +21,7 @@ const props = defineProps({
   },
   ariaLabel: {
     type: String,
+    default: undefined,
   },
 });
 
@@ -28,16 +29,14 @@ const stateTranslation = computed(() => translate(props.collapsed ? 'expande' : 
 const computedAriaLabel = computed(() => {
   return props.ariaLabel ? stateTranslation.value + ' ' + props.ariaLabel : stateTranslation.value;
 });
-
-function toggleCollapse() {}
 </script>
 
 <template>
   <button
     :class="classes[btnClass]"
     :type="type"
-    @click="$emit('update:collapsed', !collapsed)"
     :aria-label="computedAriaLabel"
+    @click="$emit('update:collapsed', !collapsed)"
   >
     <div v-if="icons['collapse']" class="qkit-collapse-icon-wrapper" :upsidedown="collapsed ? '' : undefined">
       <Icon icon="collapse" />

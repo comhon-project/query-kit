@@ -25,7 +25,7 @@ const handler = {
   get(obj, prop) {
     return obj[prop];
   },
-  set(obj, prop, value) {
+  set() {
     throw new Error('icons are read only');
   },
 };

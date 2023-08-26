@@ -28,15 +28,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
   displayOperator: {
     type: [Boolean, Object],
@@ -55,6 +59,7 @@ const props = defineProps({
     validator(value) {
       return typeof value == 'function' || (typeof value == 'object' && typeof value.request == 'function');
     },
+    default: undefined,
   },
   manually: {
     type: Boolean,
@@ -78,6 +83,7 @@ const props = defineProps({
   },
   onRowClick: {
     type: Function,
+    default: undefined,
   },
   quickSort: {
     type: Boolean,
@@ -85,16 +91,20 @@ const props = defineProps({
   },
   postRequest: {
     type: Function,
+    default: undefined,
   },
   allowedCollectionTypes: {
     type: Array,
-    default: ['pagination'],
+    default() {
+      return ['pagination'];
+    },
   },
   displayCount: {
     type: Boolean,
   },
   onExport: {
     type: Function,
+    default: undefined,
   },
 });
 
@@ -167,7 +177,7 @@ watchEffect(() => {
 
 <template>
   <div v-if="schema" :class="classes.search">
-    <FilterBuilder v-bind="props" v-model="builtFilter" @computed="updateFilter" :id="filterId">
+    <FilterBuilder v-bind="props" :id="filterId" v-model="builtFilter" @computed="updateFilter">
       <template #validate>
         <IconButton v-if="manually" icon="search" @click="applyQuery" />
       </template>
@@ -175,9 +185,9 @@ watchEffect(() => {
         <Shortcuts @go-to-collection="goToCollection" />
       </template>
     </FilterBuilder>
-    <Collection v-if="computedFilter !== false" v-bind="props" :filter="computedFilter" :id="collectionId">
+    <Collection v-if="computedFilter !== false" v-bind="props" :id="collectionId" :filter="computedFilter">
       <template #loading="loadingProps">
-        <slot name="loading" v-bind="loadingProps"></slot>
+        <slot name="loading" v-bind="loadingProps" />
       </template>
       <template #shortcuts>
         <Shortcuts @go-to-filter="goToFilter" />

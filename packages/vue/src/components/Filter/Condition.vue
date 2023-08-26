@@ -28,9 +28,11 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
   displayOperator: {
     type: [Boolean, Object],
@@ -46,6 +48,7 @@ const props = defineProps({
   },
   ariaLabel: {
     type: String,
+    default: undefined,
   },
 });
 const validModel = ref(true);
@@ -203,7 +206,7 @@ watch(
 <template>
   <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
     <div>
-      <slot name="shortcuts"></slot>
+      <slot name="shortcuts" />
       <InvalidModel v-if="!validModel" :model="modelValue.model" />
       <template v-else-if="!validTarget">
         <InvalidProperty v-if="modelValue.type == 'condition'" :property="modelValue.property" />
@@ -217,8 +220,8 @@ watch(
           <label :class="classes.property_name_container">{{ targetName }}</label>
           <template v-if="mustDisplayOperator">
             <AdaptativeSelect
-              :class="classes.operator"
               v-model="modelValue.operator"
+              :class="classes.operator"
               :options="operatorOptions"
               :disabled="!canEditOperator"
               :aria-label="targetName + ' ' + translate('operator')"
@@ -248,8 +251,8 @@ watch(
     <IconButton
       v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType"
       icon="delete"
-      @click="$emit('remove')"
       :aria-label="schema && target ? translate('condition') + ' ' + targetName : ''"
+      @click="$emit('remove')"
     />
   </div>
 </template>

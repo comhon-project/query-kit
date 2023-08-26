@@ -26,15 +26,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
   displayOperator: {
     type: [Boolean, Object],
@@ -54,6 +58,7 @@ const props = defineProps({
   },
   ariaLabel: {
     type: String,
+    default: undefined,
   },
 });
 
@@ -140,18 +145,6 @@ async function setNewFilter(data) {
   addFilterDialog.value.close();
 }
 
-/**
- * TODO remove this function call when firefox will support css :has pseudo class
- *
- * @param {Object} filter
- */
-function hasGroup(filter) {
-  while (filter && filter.type == 'relationship_condition') {
-    filter = filter.filter;
-  }
-  return filter && filter.type == 'group';
-}
-
 watchEffect(() => {
   initFilter();
   initSchema();
@@ -177,16 +170,16 @@ watchEffect(() => {
       <InvalidModel v-if="!validModel" :model="props.model" />
       <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator" />
     </div>
-    <IconButton icon="delete" @click="$emit('remove')" :aria-label="translate('group')" />
+    <IconButton icon="delete" :aria-label="translate('group')" @click="$emit('remove')" />
   </div>
   <div
-    ref="groupRef"
     v-else-if="schema"
+    ref="groupRef"
     :class="classes.group"
     tabindex="0"
     :aria-label="ariaLabel ?? translate('group')"
   >
-    <slot name="shortcuts"></slot>
+    <slot name="shortcuts" />
     <div :class="classes.group_header">
       <div>
         <slot name="relationship" />
@@ -198,8 +191,8 @@ watchEffect(() => {
         </div>
         <template v-if="displayOperator === true || (displayOperator && displayOperator.group)">
           <AdaptativeSelect
-            :class="classes.operator"
             v-model="modelValue.operator"
+            :class="classes.operator"
             :options="operatorOptions"
             :disabled="!canEditOperator"
             :aria-label="translate('operator')"
@@ -208,7 +201,7 @@ watchEffect(() => {
         <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
         <slot name="reset" />
         <slot name="validate" />
-        <IconButton v-if="isRemovable" icon="delete" @click="$emit('remove')" :aria-label="translate('group')" />
+        <IconButton v-if="isRemovable" icon="delete" :aria-label="translate('group')" @click="$emit('remove')" />
         <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />
       </div>
     </div>

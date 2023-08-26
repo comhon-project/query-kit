@@ -15,15 +15,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
 });
 
@@ -110,9 +114,9 @@ watch(
 
 <template>
   <div v-if="schema">
-    <form @submit="validate" :class="classes.condition_choice_form">
+    <form :class="classes.condition_choice_form" @submit="validate">
       <div>
-        <input type="radio" @click="() => selectType('condition')" :name="uniqueName" :id="uniqueIdCondition" checked />
+        <input :id="uniqueIdCondition" type="radio" :name="uniqueName" checked @click="() => selectType('condition')" />
         <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
         <select
           v-model="targetCondition"
@@ -120,11 +124,13 @@ watch(
           :aria-label="translate('choose_condition_element')"
           required
         >
-          <option v-for="(display, value) in options" :key="value" :value="value">{{ display }}</option>
+          <option v-for="(display, value) in options" :key="value" :value="value">
+            {{ display }}
+          </option>
         </select>
       </div>
       <div v-if="displayGroup">
-        <input type="radio" @click="() => selectType('group')" :name="uniqueName" :id="uniqueIdGroup" />
+        <input :id="uniqueIdGroup" type="radio" :name="uniqueName" @click="() => selectType('group')" />
         <label :for="uniqueIdGroup">{{ translate('group') }}</label>
       </div>
       <div>

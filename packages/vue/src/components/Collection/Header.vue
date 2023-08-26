@@ -14,6 +14,7 @@ const props = defineProps({
   },
   order: {
     type: String,
+    default: undefined,
   },
 });
 

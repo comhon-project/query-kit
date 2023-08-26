@@ -18,15 +18,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
   displayOperator: {
     type: [Boolean, Object],
@@ -48,8 +52,8 @@ watchEffect(initSchema);
   <div v-if="schema" :class="classes.relationship_queue_element">
     <div v-if="displayOperator === true || (displayOperator && displayOperator.relationship_condition)">
       <AdaptativeSelect
-        :class="classes.operator"
         v-model="modelValue.operator"
+        :class="classes.operator"
         :options="operatorOptions"
         :disabled="!canEditOperator"
         :aria-label="label + ' ' + translate('operator')"

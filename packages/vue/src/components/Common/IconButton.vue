@@ -20,6 +20,7 @@ const props = defineProps({
   },
   ariaLabel: {
     type: String,
+    default: undefined,
   },
 });
 
@@ -29,7 +30,7 @@ const computedAriaLabel = computed(() => {
 </script>
 
 <template>
-  <button :class="classes[btnClass]" :type="type" @click="$emit('click')" :aria-label="computedAriaLabel">
+  <button :class="classes[btnClass]" :type="type" :aria-label="computedAriaLabel" @click="$emit('click')">
     <Icon :icon="icon" />
   </button>
 </template>

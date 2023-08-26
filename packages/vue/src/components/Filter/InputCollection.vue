@@ -8,6 +8,7 @@ const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
   modelValue: {
     type: Object,
+    default: undefined,
   },
   operator: {
     type: String,
@@ -63,12 +64,12 @@ watch(
 <template>
   <div :class="classes.in_container">
     <ul :class="classes.in_list">
-      <li :class="classes.in_value_container" v-for="(value, index) in arrayValues">
+      <li v-for="(value, index) in arrayValues" :key="index" :class="classes.in_value_container">
         <InputCondition
           v-bind="props"
           :model-value="value"
-          @update:model-value="(newValue) => updateValue(newValue, index)"
           :editable="editable"
+          @update:model-value="(newValue) => updateValue(newValue, index)"
         />
         <IconButton v-if="editable" icon="delete" @click="() => removeValue(index)" />
       </li>

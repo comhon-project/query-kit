@@ -11,6 +11,7 @@ const props = defineProps({
     required: true,
   },
   value: {
+    type: undefined,
     required: true,
   },
   rowValue: {
@@ -29,6 +30,6 @@ const props = defineProps({
 </script>
 
 <template>
-  <div v-if="config.renderHtml" v-html="value"></div>
+  <div v-if="config.renderHtml" v-html="value" />
   <template v-else>{{ value }}</template>
 </template>

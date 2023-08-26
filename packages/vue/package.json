@@ -14,11 +14,13 @@
     "vue": "^3.3.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.22.11",
+    "@babel/eslint-parser": "^7.22.11",
     "@rushstack/eslint-patch": "^1.1.4",
     "@vitejs/plugin-vue": "^4.2.3",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/test-utils": "^2.2.4",
-    "eslint": "^8.22.0",
+    "eslint": "^8.48.0",
     "eslint-plugin-vue": "^9.3.0",
     "jsdom": "^20.0.3",
     "prettier": "^2.7.1",

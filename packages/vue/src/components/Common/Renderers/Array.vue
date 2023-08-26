@@ -12,6 +12,7 @@ const props = defineProps({
     required: true,
   },
   value: {
+    type: undefined,
     required: true,
   },
   rowValue: {
@@ -37,7 +38,7 @@ const computedComponent = computed(() => {
 
 <template>
   <template v-if="value">
-    <span v-for="(subValue, index) in value">
+    <span v-for="(subValue, index) in value" :key="index">
       <template v-if="index">, </template>
       <template v-if="computedComponent == 'raw'">{{ subValue }}</template>
       <component

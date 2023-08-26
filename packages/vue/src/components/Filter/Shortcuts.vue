@@ -15,24 +15,31 @@ const emit = defineEmits([
 const props = defineProps({
   onGoToNext: {
     type: Function,
+    default: undefined,
   },
   onGoToPrevious: {
     type: Function,
+    default: undefined,
   },
   onAddFilterToParentGroup: {
     type: Function,
+    default: undefined,
   },
   onGoToParentGroup: {
     type: Function,
+    default: undefined,
   },
   onGoToRootGroup: {
     type: Function,
+    default: undefined,
   },
   onGoToCollection: {
     type: Function,
+    default: undefined,
   },
   onGoToFilter: {
     type: Function,
+    default: undefined,
   },
 });
 
@@ -81,25 +88,26 @@ watch(isUsingShortcuts, () => (isUsingShortcuts.value ? firstShortcut.value.focu
   <div v-if="filteredActions.length" style="position: absolute; z-index: 10; left: 0; top: 0">
     <!-- follownig div is a workaround for screen reader, actually orca doesn't read next button without it (tabindex is important) -->
     <div tabindex="-1"></div>
-    <button @click="startUsingShortcuts" class="qkit-focus-only" :class="classes.btn">
+    <button class="qkit-focus-only" :class="classes.btn" @click="startUsingShortcuts">
       {{ translate('show_action_shortcuts') }}
     </button>
     <template v-if="isUsingShortcuts">
       <button
         ref="firstShortcut"
-        @click="$emit(filteredActions[0].action)"
-        @focusout="finishUsingShortcuts"
         class="qkit-shortcut qkit-focus-only"
         :class="classes.btn"
+        @click="$emit(filteredActions[0].action)"
+        @focusout="finishUsingShortcuts"
       >
         {{ translate(filteredActions[0].translation) }}
       </button>
       <button
         v-for="index in filteredActions.length - 1"
-        @click="$emit(filteredActions[index].action)"
-        @focusout="finishUsingShortcuts"
+        :key="index"
         class="qkit-shortcut qkit-focus-only"
         :class="classes.btn"
+        @click="$emit(filteredActions[index].action)"
+        @focusout="finishUsingShortcuts"
       >
         {{ translate(filteredActions[index].translation) }}
       </button>

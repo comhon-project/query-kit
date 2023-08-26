@@ -18,6 +18,6 @@ const component = computed(() =>
 </script>
 
 <template>
-  <component v-if="icons[icon]" :is="component" v-bind="bindings"></component>
+  <component :is="component" v-if="icons[icon]" v-bind="bindings" />
   <template v-else>{{ translate(icon) }}</template>
 </template>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, toRaw, shallowRef, computed } from 'vue';
-import { requester } from '../../core/Requester';
+import { requester as baseRequester } from '../../core/Requester';
 import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import { translate } from '../../i18n/i18n';
@@ -21,6 +21,7 @@ const props = defineProps({
   },
   filter: {
     type: Object,
+    default: undefined,
   },
   directQuery: {
     type: Boolean,
@@ -36,9 +37,11 @@ const props = defineProps({
   },
   id: {
     type: String,
+    default: undefined,
   },
   onRowClick: {
     type: Function,
+    default: undefined,
   },
   quickSort: {
     type: Boolean,
@@ -46,16 +49,20 @@ const props = defineProps({
   },
   postRequest: {
     type: Function,
+    default: undefined,
   },
   allowedCollectionTypes: {
     type: Array,
-    default: ['pagination'],
+    default() {
+      return ['pagination'];
+    },
   },
   displayCount: {
     type: Boolean,
   },
   onExport: {
     type: Function,
+    default: undefined,
   },
   userTimezone: {
     type: String,
@@ -70,10 +77,11 @@ const props = defineProps({
     validator(value) {
       return typeof value == 'function' || (typeof value == 'object' && typeof value.request == 'function');
     },
+    default: undefined,
   },
 });
 
-let movingOffset = props.offset;
+let movingOffset = 0;
 let computedProperties = [];
 const requesting = ref(false);
 const schema = shallowRef(null);
@@ -91,7 +99,7 @@ const observered = ref(null);
 let observer;
 
 const isResultFlattened = computed(() => {
-  return props.requester && typeof props.requester == 'object' ? props.requester.flattened : requester.flattened;
+  return props.requester && typeof props.requester == 'object' ? props.requester.flattened : baseRequester.flattened;
 });
 
 async function init() {
@@ -216,7 +224,7 @@ async function requestServer(reset = false) {
     ? typeof props.requester == 'function'
       ? props.requester
       : props.requester.request
-    : requester.request;
+    : baseRequester.request;
 
   const response = await fetch({
     model: props.model,
@@ -272,6 +280,7 @@ function isInfiniteAccordingProps() {
 }
 
 onMounted(async () => {
+  movingOffset = props.offset;
   await init(true);
   observer = new IntersectionObserver(shiftThenRequestServer);
   observer.observe(observered.value);
@@ -299,8 +308,8 @@ watch(
 </script>
 
 <template>
-  <div :class="classes.collection" :id="id" tabindex="0" :aria-label="translate('results')">
-    <slot name="shortcuts"></slot>
+  <div :id="id" :class="classes.collection" tabindex="0" :aria-label="translate('results')">
+    <slot name="shortcuts" />
     <div>
       <div
         v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1"

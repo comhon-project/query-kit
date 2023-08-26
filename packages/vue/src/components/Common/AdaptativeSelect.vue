@@ -18,6 +18,7 @@ const props = defineProps({
   },
   ariaLabel: {
     type: String,
+    default: undefined,
   },
 });
 const style = ref({});
@@ -51,11 +52,13 @@ onMounted(updateWidth);
   <select
     ref="select"
     :value="modelValue"
-    @change="updateValue"
     :style="style"
     :disabled="disabled"
     :aria-label="ariaLabel"
+    @change="updateValue"
   >
-    <option v-for="(option, index) in options" :key="index" :value="option.value">{{ option.label }}</option>
+    <option v-for="(option, index) in options" :key="index" :value="option.value">
+      {{ option.label }}
+    </option>
   </select>
 </template>

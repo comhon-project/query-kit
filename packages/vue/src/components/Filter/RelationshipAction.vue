@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed, toRaw, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { resolve } from '../../core/Schema';
 import { useBaseCondition } from './AbstractCondition';
 import ConditionChoice from './ConditionChoice.vue';
@@ -18,15 +18,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
 });
 const schema = ref(null);
@@ -56,7 +60,7 @@ watchEffect(initSchema);
       <div :class="classes.modal_close_container">
         <IconButton icon="close" @click="() => addFilterDialog.close()" />
       </div>
-      <ConditionChoice v-bind="props" @validate="setNewFilter" :model="schema.name" />
+      <ConditionChoice v-bind="props" :model="schema.name" @validate="setNewFilter" />
     </dialog>
   </div>
 </template>

@@ -8,9 +8,11 @@ const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
   modelValue: {
     required: true,
+    type: undefined,
   },
   operator: {
     type: String,
+    default: undefined,
   },
   target: {
     type: Object,
@@ -76,9 +78,10 @@ function getConditionValueFromModelValue() {
     return null;
   }
   switch (inputType.value) {
-    case 'datetime-local':
+    case 'datetime-local': {
       const date = DateTime.fromISO(value, { zone: props.requestTimezone }).setZone(props.userTimezone);
       return `${date.toFormat('yyyy-LL-dd')}T${date.toFormat('TT')}`;
+    }
     default:
       return removePercentageSymbole(value, props.operator);
   }
@@ -124,8 +127,8 @@ watch(conditionValue, () => {
 
 <template>
   <component
-    v-if="isVueComponent"
     :is="inputType"
+    v-if="isVueComponent"
     v-model="conditionValue"
     :model="model"
     :target="target"
@@ -134,11 +137,13 @@ watch(conditionValue, () => {
   />
   <select
     v-else-if="inputType == 'select' && containerType.enum"
-    :class="classes.condition_input"
     v-model="conditionValue"
+    :class="classes.condition_input"
     :disabled="!editable"
   >
-    <option v-for="(label, value) in containerType.enum" :key="value" :value="value">{{ label }}</option>
+    <option v-for="(label, value) in containerType.enum" :key="value" :value="value">
+      {{ label }}
+    </option>
   </select>
-  <input :class="classes.condition_input" v-else :type="inputType" v-model="conditionValue" :disabled="!editable" />
+  <input v-else v-model="conditionValue" :class="classes.condition_input" :type="inputType" :disabled="!editable" />
 </template>

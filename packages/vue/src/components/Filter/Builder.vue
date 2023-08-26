@@ -22,15 +22,19 @@ const props = defineProps({
   },
   computedScopes: {
     type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    default: undefined,
   },
   allowedScopes: {
     type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    default: undefined,
   },
   allowedProperties: {
     type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
+    default: undefined,
   },
   displayOperator: {
     type: [Boolean, Object],
@@ -50,6 +54,7 @@ const props = defineProps({
   },
   id: {
     type: String,
+    default: undefined,
   },
 });
 
@@ -157,8 +162,8 @@ watch(props.modelValue, () => {
 </script>
 
 <template>
-  <div style="position: relative" :class="classes.builder" :id="id" tabindex="0" :aria-label="translate('filter')">
-    <slot name="shortcuts"></slot>
+  <div :id="id" style="position: relative" :class="classes.builder" tabindex="0" :aria-label="translate('filter')">
+    <slot name="shortcuts" />
     <Group v-if="schema" v-bind="props" :root="true">
       <template v-if="allowReset" #reset>
         <IconButton icon="reset" @click="reset" />

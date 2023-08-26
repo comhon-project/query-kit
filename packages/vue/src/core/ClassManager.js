@@ -51,7 +51,7 @@ const handler = {
   get(obj, prop) {
     return obj[prop];
   },
-  set(obj, prop, value) {
+  set() {
     throw new Error('classes are read only');
   },
 };
