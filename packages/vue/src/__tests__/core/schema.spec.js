@@ -30,6 +30,7 @@ describe('test schemas', async () => {
     expect(schema).toBeDefined();
     expect(schema.name).toBe('user');
     expect(schema.mapProperties).toStrictEqual({
+      id: { id: 'id', name: 'identifier', type: 'string' },
       first_name: { id: 'first_name', name: 'first name', type: 'string' },
       last_name: { id: 'last_name', name: 'last name', type: 'string' },
       age: { id: 'age', name: 'the age', type: 'integer' },
@@ -40,8 +41,29 @@ describe('test schemas', async () => {
       'birth.birth_day': { id: 'birth.birth_day', name: 'birth day', type: 'date' },
       'birth.birth_hour': { id: 'birth.birth_hour', name: 'birth hour', type: 'time' },
       country: { id: 'country', name: 'the country', type: 'choice' },
-      company: { id: 'company', name: 'the company', type: 'relationship', model: 'organization' },
-      friend: { id: 'friend', name: 'the friend', type: 'relationship', model: 'user' },
+      favorite_fruits: {
+        id: 'favorite_fruits',
+        name: 'favorite fruits',
+        type: 'array',
+        children: {
+          type: 'string',
+          enum: ['1', '2', '3'],
+        },
+      },
+      company: {
+        id: 'company',
+        name: 'the company',
+        type: 'relationship',
+        relationship_type: 'belongs_to',
+        model: 'organization',
+      },
+      friend: {
+        id: 'friend',
+        name: 'the friend',
+        type: 'relationship',
+        relationship_type: 'belongs_to',
+        model: 'user',
+      },
     });
     expect(schema.mapScopes).toStrictEqual({
       scope_string_definition: { id: 'scope_string_definition', name: 'scope_string_definition' },
@@ -67,6 +89,7 @@ describe('test schemas', async () => {
       'company',
       'friend',
       'country',
+      'favorite_fruits',
     ]);
     expect(schema.search.sort).toStrictEqual(['first_name', 'company']);
   });

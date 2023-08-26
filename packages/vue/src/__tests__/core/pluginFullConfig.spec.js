@@ -11,6 +11,10 @@ import { schemaLoader, schemaLocaleLoader } from '../assets/SchemaLoader';
 import requesterConfig from '../assets/Requester';
 import { resolve } from '../../core/Schema';
 
+const appMock = {
+  component: () => {},
+};
+
 describe('plugin', () => {
   it('full config', async () => {
     expect(plugin).toBeDefined();
@@ -34,7 +38,7 @@ describe('plugin', () => {
       schemaLocaleLoader,
       renderHtml: true,
     };
-    plugin.install(null, options);
+    plugin.install(appMock, options);
     expect(locale.value).toBe('es');
     expect(fallback.value).toBe('fr');
     expect(requester).toBe(options.requester);

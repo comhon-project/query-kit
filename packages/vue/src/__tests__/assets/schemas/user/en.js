@@ -11,6 +11,7 @@ export default {
   country: 'the country',
   company: 'the company',
   friend: 'the friend',
+  favorite_fruits: 'favorite fruits',
 
   scope_string_definition: 'scope string definition',
   scope: 'scope without value',
@@ -22,6 +23,11 @@ export default {
     gender: {
       male: 'Mr.',
       female: 'Ms.',
+    },
+    favorite_fruits: {
+      1: 'apple',
+      2: 'orange',
+      3: 'watermelon',
     },
     enum_scope: {
       one: 'value one',

@@ -20,6 +20,9 @@ const componentList = {
   enum: 'select',
   boolean: BooleanInput,
 };
+const appMock = {
+  component: () => {},
+};
 
 describe('minimal plugin', () => {
   it('install', () => {
@@ -27,26 +30,26 @@ describe('minimal plugin', () => {
     expect(plugin.install).toBeDefined();
   });
   it('missing required config', () => {
-    expect(() => plugin.install()).toThrowError('must have at least required configs');
-    expect(() => plugin.install(null, {})).toThrowError('requester config is required');
-    expect(() => plugin.install(null, { requester: 1 })).toThrowError(
+    expect(() => plugin.install(appMock)).toThrowError('must have at least required configs');
+    expect(() => plugin.install(appMock, {})).toThrowError('requester config is required');
+    expect(() => plugin.install(appMock, { requester: 1 })).toThrowError(
       'invalid requester. it must be a function or an object containing a property "request" with a function value'
     );
-    expect(() => plugin.install(null, { requester: {} })).toThrowError(
+    expect(() => plugin.install(appMock, { requester: {} })).toThrowError(
       'invalid requester. it must be a function or an object containing a property "request" with a function value'
     );
-    expect(() => plugin.install(null, { requester: () => {} })).toThrowError('schemaLoader config is required');
-    expect(() => plugin.install(null, { requester: { request: () => {} }, schemaLoader: 1 })).toThrowError(
+    expect(() => plugin.install(appMock, { requester: () => {} })).toThrowError('schemaLoader config is required');
+    expect(() => plugin.install(appMock, { requester: { request: () => {} }, schemaLoader: 1 })).toThrowError(
       'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
     );
-    expect(() => plugin.install(null, { requester: { request: () => {} }, schemaLoader: {} })).toThrowError(
+    expect(() => plugin.install(appMock, { requester: { request: () => {} }, schemaLoader: {} })).toThrowError(
       'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
     );
   });
   it('minimal config', () => {
     expect(plugin).toBeDefined();
     const options = { requester: { request: () => {} }, schemaLoader: { load: () => {} } };
-    plugin.install(null, options);
+    plugin.install(appMock, options);
     expect(locale.value).toBe('en');
     expect(fallback.value).toBe('en');
     expect(requester).toBe(options.requester);
@@ -94,10 +97,12 @@ describe('minimal plugin', () => {
       group_header: 'qkit-group-header',
       group_actions: 'qkit-group-actions',
       group_list: 'qkit-group-list',
+      group_resume: 'qkit-group-resume',
       operator: 'qkit-operator',
       collection: 'qkit-collection',
       collection_header: 'qkit-collection-header',
       collection_content: 'qkit-collection-content',
+      collection_content_wrapper: 'qkit-collection-content-wrapper',
       collection_table: 'qkit-collection-table',
       collection_clickable_row: 'qkit-clickable-row',
       collection_cell: 'qkit-cell',

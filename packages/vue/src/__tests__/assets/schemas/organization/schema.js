@@ -2,6 +2,11 @@ export default {
   name: 'organization',
   properties: [
     {
+      id: 'id',
+      name: 'identifier',
+      type: 'string',
+    },
+    {
       id: 'brand_name',
       name: 'brand name',
       type: 'string',
@@ -20,9 +25,12 @@ export default {
       id: 'contacts',
       name: 'the contacts',
       type: 'relationship',
+      relationship_type: 'has_many',
       model: 'user',
     },
   ],
+  unique_identifier: 'id',
+  primary_identifiers: ['brand_name'],
   search: {
     filters: ['address', 'brand_name', 'contacts', 'description'],
     sort: ['brand_name'],

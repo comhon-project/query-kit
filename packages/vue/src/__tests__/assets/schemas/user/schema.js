@@ -2,6 +2,11 @@ export default {
   name: 'user',
   properties: [
     {
+      id: 'id',
+      name: 'identifier',
+      type: 'string',
+    },
+    {
       id: 'first_name',
       name: 'first name',
       type: 'string',
@@ -56,18 +61,31 @@ export default {
       type: 'choice',
     },
     {
+      id: 'favorite_fruits',
+      name: 'favorite fruits',
+      type: 'array',
+      children: {
+        type: 'string',
+        enum: ['1', '2', '3'],
+      },
+    },
+    {
       id: 'company',
       name: 'the company',
       type: 'relationship',
+      relationship_type: 'belongs_to',
       model: 'organization',
     },
     {
       id: 'friend',
       name: 'the friend',
       type: 'relationship',
+      relationship_type: 'belongs_to',
       model: 'user',
     },
   ],
+  unique_identifier: 'id',
+  primary_identifiers: ['last_name', 'first_name'],
   search: {
     filters: [
       'first_name',
@@ -81,6 +99,7 @@ export default {
       'company',
       'friend',
       'country',
+      'favorite_fruits',
     ],
     sort: ['first_name', 'company'],
     scopes: [
