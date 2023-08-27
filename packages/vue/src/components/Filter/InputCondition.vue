@@ -2,7 +2,7 @@
 import { ref, computed, watchEffect, watch } from 'vue';
 import { DateTime } from 'luxon';
 import { classes } from '../../core/ClassManager';
-import { getComponent } from '../../core/InputManager';
+import { getComponent, isNativeHtmlComponent } from '../../core/InputManager';
 
 const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
@@ -50,7 +50,7 @@ const containerType = computed(() => {
   }
   return container;
 });
-const isVueComponent = computed(() => typeof inputType.value != 'string');
+const isVueComponent = computed(() => !isNativeHtmlComponent(inputType.value));
 
 function removePercentageSymbole(value, operator) {
   if (typeof value == 'string' && (operator == 'like' || operator == 'not_like')) {

@@ -16,6 +16,14 @@ defineProps({
     type: String,
     required: true,
   },
+  operator: {
+    type: String,
+    required: true,
+  },
+  disabled: {
+    type: Boolean,
+    required: true,
+  },
 });
 const uniqueId = Utils.getUniqueId();
 
@@ -30,6 +38,7 @@ function update(value) {
       type="radio"
       :name="`boolean-input-filter-${uniqueId}`"
       :checked="modelValue === true"
+      :disabled="disabled"
       @input="() => update(true)"
     />
     <span>{{ translate('yes') }}</span>
@@ -37,6 +46,7 @@ function update(value) {
       type="radio"
       :name="`boolean-input-filter-${uniqueId}`"
       :checked="modelValue === false"
+      :disabled="disabled"
       @input="() => update(false)"
     />
     <span>{{ translate('no') }}</span>

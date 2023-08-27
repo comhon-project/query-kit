@@ -236,7 +236,7 @@ ul.qkit-group-list > li:has(.qkit-group) {
   margin-bottom: 0.5rem;
 }
 
-.qkit-condition-header > *:last-child {
+.qkit-condition-header > :not(.qkit-property-name-container):last-child {
   margin-left: auto;
 }
 
