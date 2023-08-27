@@ -96,20 +96,21 @@ const hasGroup = computed(() => {
   }
   return filter && filter.type == 'group';
 });
+const component = computed(() => {
+  return props.modelValue.type == 'condition' || props.modelValue.type == 'scope'
+    ? Condition
+    : props.modelValue.type == 'relationship_condition'
+    ? RelationshipCondition
+    : props.modelValue.type == 'group'
+    ? Group
+    : null;
+});
 </script>
 
 <template>
   <li :style="hasGroup ? { flexBasis: '100%' } : {}">
     <component
-      :is="
-        modelValue.type == 'condition' || modelValue.type == 'scope'
-          ? Condition
-          : modelValue.type == 'relationship_condition'
-          ? RelationshipCondition
-          : modelValue.type == 'group'
-          ? Group
-          : null
-      "
+      :is="component"
       v-bind="props"
       :model-value="modelValue"
       @remove="$emit('remove', modelValue.key)"

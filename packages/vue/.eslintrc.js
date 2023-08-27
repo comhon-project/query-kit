@@ -10,6 +10,7 @@ module.exports = {
     // 'vue/no-unused-vars': 'error'
     'vue/multi-word-component-names': 'off',
     'vue/singleline-html-element-content-newline': 'off',
+    'vue/no-v-html': 'off',
     'vue/html-self-closing': [
       'error',
       {
@@ -27,6 +28,12 @@ module.exports = {
         multiline: {
           max: 1,
         },
+      },
+    ],
+    'vue/no-mutating-props': [
+      'error',
+      {
+        shallowOnly: true,
       },
     ],
   },

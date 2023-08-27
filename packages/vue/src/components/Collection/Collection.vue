@@ -303,7 +303,7 @@ watch(
     <div :class="classes.collection_content_wrapper">
       <slot name="loading" :requesting="requesting">
         <Transition name="qkit-collection-spinner">
-          <div v-if="requesting" :class="classes.spinner"></div>
+          <div v-if="requesting" :class="classes.spinner" />
         </Transition>
       </slot>
       <div ref="collectionContent" :class="classes.collection_content">
@@ -341,7 +341,7 @@ watch(
             </tr>
           </tbody>
         </table>
-        <div v-show="infiniteScroll && !end && !requesting" ref="observered" style="height: 1px"></div>
+        <div v-show="infiniteScroll && !end && !requesting" ref="observered" style="height: 1px" />
       </div>
     </div>
   </div>

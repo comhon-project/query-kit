@@ -87,7 +87,7 @@ watch(isUsingShortcuts, () => (isUsingShortcuts.value ? firstShortcut.value.focu
 <template>
   <div v-if="filteredActions.length" style="position: absolute; z-index: 10; left: 0; top: 0">
     <!-- follownig div is a workaround for screen reader, actually orca doesn't read next button without it (tabindex is important) -->
-    <div tabindex="-1"></div>
+    <div tabindex="-1" />
     <button class="qkit-focus-only" :class="classes.btn" @click="startUsingShortcuts">
       {{ translate('show_action_shortcuts') }}
     </button>
