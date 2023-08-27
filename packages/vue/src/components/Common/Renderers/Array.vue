@@ -29,9 +29,6 @@ const props = defineProps({
   },
 });
 const computedComponent = computed(() => {
-  if (props.column.component) {
-    return props.column.component;
-  }
   return getComponent(props.type.children.type, props.type.children.enum);
 });
 </script>

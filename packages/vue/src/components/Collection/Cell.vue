@@ -25,9 +25,9 @@ const props = defineProps({
     type: Boolean,
   },
 });
-const computedComponent = computed(() => {
-  if (props.column.component) {
-    return props.column.component;
+const cellComponent = computed(() => {
+  if (props.column.cellComponent) {
+    return props.column.cellComponent;
   }
   return getComponent(props.column.property.type, props.column.property.enum);
 });
@@ -43,11 +43,11 @@ const value = computed(() => {
       v-if="column.onCellClick"
       type="button"
       :class="classes.collection_clickable_cell"
-      @click="(e) => (column.onCellClick ? column.onCellClick(rowValue, column.id, e) : null)"
+      @click="(e) => (column.onCellClick ? column.onCellClick(value, rowValue, column.id, e) : null)"
     >
-      <template v-if="computedComponent == 'raw'">{{ value }}</template>
+      <template v-if="cellComponent == 'raw'">{{ value }}</template>
       <component
-        :is="computedComponent"
+        :is="cellComponent"
         :column="column"
         :type="column.property"
         :value="value"
@@ -57,9 +57,9 @@ const value = computed(() => {
       />
     </button>
     <div v-else :class="classes.collection_cell">
-      <template v-if="computedComponent == 'raw'">{{ value }}</template>
+      <template v-if="cellComponent == 'raw'">{{ value }}</template>
       <component
-        :is="computedComponent"
+        :is="cellComponent"
         :column="column"
         :type="column.property"
         :value="value"

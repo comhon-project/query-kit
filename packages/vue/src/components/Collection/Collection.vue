@@ -2,7 +2,7 @@
 import { ref, watch, onMounted, toRaw, shallowRef, computed } from 'vue';
 import { requester as baseRequester } from '../../core/Requester';
 import { classes } from '../../core/ClassManager';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyPath } from '../../core/Schema';
 import { translate } from '../../i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
 import Pagination from '../Pagination/Pagination.vue';
@@ -112,25 +112,18 @@ async function init() {
 
   for (const column of props.columns) {
     let computedColumn = typeof column == 'object' ? Object.assign({}, column) : { id: column };
-    const propertyPath = await getPropertyPath(computedColumn);
+    const propertyPath = await getPropertyPath(props.model, computedColumn.id);
     const property = propertyPath[propertyPath.length - 1];
     computedColumn.property = property;
-    if (computedColumn.label == null) {
-      computedColumn.label = property.name;
-    }
+
     if (props.quickSort) {
-      computedColumn.sortable = await isSortable(propertyPath);
-      if (
-        computedColumn.sortable &&
-        computedColumn.order &&
-        ['asc', 'desc'].includes(computedColumn.order.toLowerCase())
-      ) {
+      if (computedColumn.order && ['asc', 'desc'].includes(computedColumn.order.toLowerCase())) {
         active.value = computedColumn.id;
         order.value = computedColumn.order.toLowerCase();
       }
     }
-    if (computedColumn.component) {
-      computedColumn.component = toRaw(computedColumn.component);
+    if (computedColumn.cellComponent) {
+      computedColumn.cellComponent = toRaw(computedColumn.cellComponent);
     }
     tempColumns.push(computedColumn);
 
@@ -150,51 +143,6 @@ async function init() {
     }
   }
   computedColumns.value = tempColumns;
-}
-
-async function isSortable(propertyPath) {
-  let currentSchema = schema.value;
-  for (let property of propertyPath) {
-    if (
-      !currentSchema.search ||
-      !Array.isArray(currentSchema.search.sort) ||
-      !currentSchema.search.sort.includes(property.id)
-    ) {
-      return false;
-    }
-    if (property.model) {
-      // add condition just for the very last property that probably don't have model
-      currentSchema = await resolve(property.model);
-    }
-  }
-  return true;
-}
-
-async function getPropertyPath(computedColumn) {
-  const propertyPath = [];
-  const splited = computedColumn.id.split('.');
-  let propertyName = '';
-  let currentSchema = schema.value;
-  for (let i = 0; i < splited.length - 1; i++) {
-    propertyName = propertyName.length ? `${propertyName}.${splited[i]}` : splited[i];
-    const property = currentSchema.mapProperties[propertyName];
-    if (!property) {
-      continue;
-    }
-    propertyPath.push(property);
-    currentSchema = await resolve(property.model);
-    if (!currentSchema) {
-      throw new Error(`invalid model "${property.model}"`);
-    }
-    propertyName = '';
-  }
-  const last = splited[splited.length - 1];
-  propertyName = propertyName.length ? `${propertyName}.${last}` : last;
-  if (!currentSchema.mapProperties[propertyName]) {
-    throw new Error(`invalid collection property "${computedColumn.id}"`);
-  }
-  propertyPath.push(currentSchema.mapProperties[propertyName]);
-  return propertyPath;
 }
 
 async function shiftThenRequestServer() {
@@ -228,7 +176,7 @@ async function requestServer(reset = false) {
 
   const response = await fetch({
     model: props.model,
-    order: active.value ? [{ property: active.value, order: order.value }] : undefined,
+    order: active.value ? await getRequestOrder() : undefined,
     offset: movingOffset,
     limit: props.limit,
     filter: props.filter,
@@ -265,6 +213,23 @@ function updateOrder(property) {
     active.value = property;
     requestServer(true);
   }
+}
+
+async function getRequestOrder() {
+  const propertyPath = await getPropertyPath(props.model, active.value);
+  const property = propertyPath[propertyPath.length - 1];
+
+  if (property.type != 'relationship') {
+    return [{ property: active.value, order: order.value }];
+  }
+  const schema = await resolve(property.model);
+  if (schema.natural_order) {
+    return schema.natural_order.map((property) => {
+      return { property: active.value + '.' + property, order: order.value };
+    });
+  }
+  const idProperty = schema.unique_identifier || 'id';
+  return [{ property: active.value + '.' + idProperty, order: order.value }];
 }
 
 function isInfiniteAccordingProps() {
@@ -348,7 +313,9 @@ watch(
               <Header
                 v-for="computedColumn in computedColumns"
                 :key="computedColumn.id"
-                :column="computedColumn"
+                :model="model"
+                :property-id="computedColumn.id"
+                :label="computedColumn.label"
                 :active="active == computedColumn.id"
                 :order="order"
                 @click="updateOrder"

@@ -87,6 +87,33 @@ async function computeLocales(schema, create) {
   }
 }
 
+async function getPropertyPath(model, nestedProperty) {
+  const propertyPath = [];
+  const splited = nestedProperty.split('.');
+  let propertyName = '';
+  let currentSchema = await resolve(model);
+  for (let i = 0; i < splited.length - 1; i++) {
+    propertyName = propertyName.length ? `${propertyName}.${splited[i]}` : splited[i];
+    const property = currentSchema.mapProperties[propertyName];
+    if (!property) {
+      continue;
+    }
+    propertyPath.push(property);
+    currentSchema = await resolve(property.model);
+    if (!currentSchema) {
+      throw new Error(`invalid model "${property.model}"`);
+    }
+    propertyName = '';
+  }
+  const last = splited[splited.length - 1];
+  propertyName = propertyName.length ? `${propertyName}.${last}` : last;
+  if (!currentSchema.mapProperties[propertyName]) {
+    throw new Error(`invalid collection property "${nestedProperty}"`);
+  }
+  propertyPath.push(currentSchema.mapProperties[propertyName]);
+  return propertyPath;
+}
+
 async function getTranslations(schema, targetLocale) {
   if (!schema.translations[targetLocale]) {
     try {
@@ -124,4 +151,4 @@ watch(locale, () => {
   }
 });
 
-export { registerLoader, registerLocaleLoader, resolve };
+export { registerLoader, registerLocaleLoader, resolve, getPropertyPath };
