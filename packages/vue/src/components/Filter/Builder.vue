@@ -121,6 +121,14 @@ async function getComputedFilter() {
     } else {
       if (Array.isArray(currentFilter.value)) {
         currentFilter.value = currentFilter.value.filter((value) => value !== undefined);
+      } else if (currentFilter.operator == 'like' || currentFilter.operator == 'not_like') {
+        currentFilter.value = `%${currentFilter.value}%`;
+      } else if (currentFilter.operator == 'begins_with' || currentFilter.operator == 'doesnt_begin_with') {
+        currentFilter.operator = currentFilter.operator == 'begins_with' ? 'like' : 'not_like';
+        currentFilter.value = `${currentFilter.value}%`;
+      } else if (currentFilter.operator == 'ends_with' || currentFilter.operator == 'doesnt_end_with') {
+        currentFilter.operator = currentFilter.operator == 'ends_with' ? 'like' : 'not_like';
+        currentFilter.value = `%${currentFilter.value}`;
       }
       if (currentFilter.type == 'scope') {
         const scope = getScopeDefinition(currentFilter.id, currentSchema);

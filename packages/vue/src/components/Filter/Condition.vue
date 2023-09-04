@@ -136,22 +136,6 @@ function verifyType() {
   }
 }
 
-function removePercentageSymbole(value) {
-  if (typeof value == 'string') {
-    if (value.charAt(0) == '%') {
-      value = value.slice(1);
-    }
-    if (value.charAt(value.length - 1) == '%') {
-      value = value.slice(0, -1);
-    }
-  }
-  return value;
-}
-
-function addPercentageSymbole(value) {
-  return value != null && (typeof value == 'number' || value.charAt(0) != '%') ? `%${value}%` : value;
-}
-
 watchEffect(initSchema);
 watchEffect(() => {
   if (props.modelValue.operator && !operatorNames['condition'][props.modelValue.operator]) {
@@ -162,28 +146,17 @@ watchEffect(() => {
 watch(
   () => props.modelValue.operator,
   (newOperator, oldOperator) => {
-    if (
-      (Array.isArray(props.modelValue.value) || !props.modelValue.value) &&
-      (oldOperator == 'in' || oldOperator == 'not_in') &&
-      newOperator != 'in' &&
-      newOperator != 'not_in'
-    ) {
-      props.modelValue.value =
-        props.modelValue.value && props.modelValue.value[0] ? props.modelValue.value[0] : undefined;
-    }
-    if ((oldOperator == 'like' || oldOperator == 'not_like') && newOperator != 'like' && newOperator != 'not_like') {
-      props.modelValue.value = removePercentageSymbole(props.modelValue.value);
-    }
-    if (
-      !Array.isArray(props.modelValue.value) &&
-      (newOperator == 'in' || newOperator == 'not_in') &&
-      oldOperator != 'in' &&
-      oldOperator != 'not_in'
-    ) {
-      props.modelValue.value = [props.modelValue.value];
-    }
-    if ((newOperator == 'like' || newOperator == 'not_like') && oldOperator != 'like' && oldOperator != 'not_like') {
-      props.modelValue.value = addPercentageSymbole(props.modelValue.value);
+    const isOldOperatorIn = oldOperator == 'in' || oldOperator == 'not_in';
+    const isNewOperatorIn = newOperator == 'in' || newOperator == 'not_in';
+    const hasToggleOperatorIn = isOldOperatorIn ^ isNewOperatorIn;
+
+    if (hasToggleOperatorIn) {
+      if (isOldOperatorIn && Array.isArray(props.modelValue.value)) {
+        props.modelValue.value = props.modelValue?.value?.[0];
+      }
+      if (isNewOperatorIn && !Array.isArray(props.modelValue.value)) {
+        props.modelValue.value = [props.modelValue.value];
+      }
     }
   }
 );

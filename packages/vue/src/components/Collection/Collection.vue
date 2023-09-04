@@ -223,8 +223,8 @@ async function getRequestOrder() {
     return [{ property: active.value, order: order.value }];
   }
   const schema = await resolve(property.model);
-  if (schema.natural_order) {
-    return schema.natural_order.map((property) => {
+  if (schema.natural_sort) {
+    return schema.natural_sort.map((property) => {
       return { property: active.value + '.' + property, order: order.value };
     });
   }

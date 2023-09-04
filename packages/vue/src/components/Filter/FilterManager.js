@@ -10,6 +10,10 @@ const operatorNames = {
     '>=': '>=',
     like: 'like',
     not_like: 'not_like',
+    ends_with: 'ends_with',
+    doesnt_end_with: 'doesnt_end_with',
+    begins_with: 'begins_with',
+    doesnt_begin_with: 'doesnt_begin_with',
     in: 'in',
     not_in: 'not_in',
   },
@@ -25,7 +29,22 @@ const operatorNames = {
 
 const operators = {
   condition: {
-    basic: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in', 'like', 'not_like'],
+    basic: [
+      '=',
+      '<>',
+      '<',
+      '<=',
+      '>',
+      '>=',
+      'in',
+      'not_in',
+      'like',
+      'not_like',
+      'begins_with',
+      'doesnt_begin_with',
+      'ends_with',
+      'doesnt_end_with',
+    ],
     enum: ['=', '<>', 'in', 'not_in'],
     // ---------------
     date: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in'],
