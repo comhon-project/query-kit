@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef, toRaw, watchEffect } from 'vue';
+import { ref, shallowRef, toRaw, watch, watchEffect } from 'vue';
 import Collection from './Collection/Collection.vue';
 import FilterBuilder from './Filter/Builder.vue';
 import { resolve } from '../core/Schema';
@@ -8,7 +8,7 @@ import { classes } from '../core/ClassManager';
 import Utils from '../core/Utils';
 import Shortcuts from './Filter/Shortcuts.vue';
 
-defineEmits(['rowClick', 'export']);
+const emit = defineEmits(['rowClick', 'export', 'computed', 'updated']);
 const props = defineProps({
   model: {
     type: String,
@@ -172,6 +172,10 @@ function goToFilter() {
 watchEffect(() => {
   initSchema();
   builtFilter.value = getInitialFilter();
+});
+watch(computedFilter, () => {
+  emit('updated', structuredClone(toRaw(builtFilter.value)));
+  emit('computed', structuredClone(toRaw(computedFilter.value)));
 });
 </script>
 
