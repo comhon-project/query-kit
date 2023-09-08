@@ -146,6 +146,10 @@ watchEffect(() => {
 watch(
   () => props.modelValue.operator,
   (newOperator, oldOperator) => {
+    if (newOperator == 'null' || newOperator == 'not_null') {
+      props.modelValue.value = undefined;
+      return;
+    }
     const isOldOperatorIn = oldOperator == 'in' || oldOperator == 'not_in';
     const isNewOperatorIn = newOperator == 'in' || newOperator == 'not_in';
     const hasToggleOperatorIn = isOldOperatorIn ^ isNewOperatorIn;
@@ -202,22 +206,24 @@ watch(
           </template>
         </div>
         <template v-if="inputType">
-          <InputCollection
-            v-if="!isUniqueIn && (modelValue.operator == 'in' || modelValue.operator == 'not_in')"
-            v-bind="props"
-            v-model="modelValue.value"
-            :operator="modelValue.operator"
-            :target="target"
-            :editable="isEditable"
-          />
-          <InputCondition
-            v-else
-            v-bind="props"
-            v-model="modelValue.value"
-            :operator="modelValue.operator"
-            :target="target"
-            :editable="isEditable"
-          />
+          <template v-if="modelValue.operator != 'null' && modelValue.operator != 'not_null'">
+            <InputCollection
+              v-if="!isUniqueIn && (modelValue.operator == 'in' || modelValue.operator == 'not_in')"
+              v-bind="props"
+              v-model="modelValue.value"
+              :operator="modelValue.operator"
+              :target="target"
+              :editable="isEditable"
+            />
+            <InputCondition
+              v-else
+              v-bind="props"
+              v-model="modelValue.value"
+              :operator="modelValue.operator"
+              :target="target"
+              :editable="isEditable"
+            />
+          </template>
         </template>
       </template>
     </div>

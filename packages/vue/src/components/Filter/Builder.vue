@@ -80,6 +80,9 @@ function getScopeDefinition(scopeId, schema) {
 }
 
 function mustKeepFilter(filter, schema) {
+  if (filter.operator == 'null' || filter.operator == 'not_null') {
+    return true;
+  }
   if (filter.type == 'scope') {
     const scope = getScopeDefinition(filter.id, schema);
     if (scope && !scope.type) {

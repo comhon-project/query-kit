@@ -213,6 +213,7 @@ ul.qkit-group-list > li:has(.qkit-group) {
   border-bottom-left-radius: 0.5rem;
   padding: 0.5rem;
   border: 1px solid var(--qkit-color-secondary);
+  gap: 0.5rem;
 }
 .qkit-condition-container > *:last-child {
   border-top-right-radius: 0.5rem;
@@ -233,7 +234,6 @@ ul.qkit-group-list > li:has(.qkit-group) {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
 .qkit-condition-header > :not(.qkit-property-name-container):last-child {

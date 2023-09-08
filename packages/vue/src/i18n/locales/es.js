@@ -19,6 +19,8 @@ export default {
   doesnt_begin_with: 'no comienza con',
   in: 'en',
   not_in: 'no en',
+  null: 'nulo',
+  not_null: 'no nulo',
   and: 'y',
   or: 'o',
   has: 'tiene',

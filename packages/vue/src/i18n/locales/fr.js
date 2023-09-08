@@ -19,6 +19,8 @@ export default {
   doesnt_begin_with: 'ne commence pas par',
   in: 'dans',
   not_in: 'pas dans',
+  null: 'nul',
+  not_null: 'non nul',
   and: 'et',
   or: 'ou',
   has: 'a',
