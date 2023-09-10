@@ -21,12 +21,12 @@ const componentList = {
   array: Array,
 };
 
-const registerComponents = (custom) => {
+const registerRenderers = (custom) => {
   Object.assign(componentList, custom);
 };
 
-const getComponent = (type, enumeration) => {
+const getRenderer = (type, enumeration) => {
   return componentList[type] && enumeration ? componentList.enum : componentList[type] || 'raw';
 };
 
-export { registerComponents, getComponent };
+export { registerRenderers, getRenderer };

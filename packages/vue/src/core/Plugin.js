@@ -1,8 +1,8 @@
 import { locale, fallback } from '../i18n/i18n';
 import { registerClasses } from './ClassManager';
 import { registerIcons } from './IconManager';
-import { registerComponents as registerInputComponents } from './InputManager';
-import { registerComponents as registerCellComponents } from './CellRendererManager';
+import { registerComponents } from './InputManager';
+import { registerRenderers } from './CellRendererManager';
 import { registerLoader, registerLocaleLoader } from './Schema';
 import { config } from '../config/config';
 import { registerRequester } from './Requester';
@@ -24,10 +24,10 @@ export default {
       registerClasses(options.classes);
     }
     if (options.inputs) {
-      registerInputComponents(options.inputs);
+      registerComponents(options.inputs);
     }
     if (options.cellRenderers) {
-      registerCellComponents(options.cellRenderers);
+      registerRenderers(options.cellRenderers);
     }
     if (options.defaultLocale) {
       locale.value = options.defaultLocale;

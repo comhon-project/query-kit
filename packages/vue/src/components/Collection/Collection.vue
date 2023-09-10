@@ -111,33 +111,34 @@ async function init() {
   computedProperties = [];
 
   for (const column of props.columns) {
-    let computedColumn = typeof column == 'object' ? Object.assign({}, column) : { id: column };
-    const propertyPath = await getPropertyPath(props.model, computedColumn.id);
-    const property = propertyPath[propertyPath.length - 1];
-    computedColumn.property = property;
+    const computedColumn = typeof column == 'object' ? Object.assign({}, column) : { id: column };
+    tempColumns.push(computedColumn);
 
-    if (props.quickSort) {
-      if (computedColumn.order && ['asc', 'desc'].includes(computedColumn.order.toLowerCase())) {
+    if (computedColumn.id) {
+      const propertyPath = await getPropertyPath(props.model, computedColumn.id);
+      computedColumn.property = propertyPath[propertyPath.length - 1];
+    }
+    if (computedColumn.renderer) {
+      computedColumn.renderer = toRaw(computedColumn.renderer);
+    }
+    if (computedColumn.property) {
+      if (props.quickSort && computedColumn.order && ['asc', 'desc'].includes(computedColumn.order.toLowerCase())) {
         active.value = computedColumn.id;
         order.value = computedColumn.order.toLowerCase();
       }
-    }
-    if (computedColumn.cellComponent) {
-      computedColumn.cellComponent = toRaw(computedColumn.cellComponent);
-    }
-    tempColumns.push(computedColumn);
 
-    if (computedColumn.property.type != 'relationship') {
-      computedProperties.push(computedColumn.id);
-    } else if (
-      computedColumn.property.relationship_type == 'belongs_to' ||
-      computedColumn.property.relationship_type == 'has_one'
-    ) {
-      const propertySchema = await resolve(property.model);
-      computedProperties.push(computedColumn.id + '.' + (propertySchema.unique_identifier || 'id'));
-      if (propertySchema.primary_identifiers) {
-        for (const propertyId of propertySchema.primary_identifiers) {
-          computedProperties.push(computedColumn.id + '.' + propertyId);
+      if (computedColumn.property.type != 'relationship') {
+        computedProperties.push(computedColumn.id);
+      } else if (
+        computedColumn.property.relationship_type == 'belongs_to' ||
+        computedColumn.property.relationship_type == 'has_one'
+      ) {
+        const propertySchema = await resolve(computedColumn.property.model);
+        computedProperties.push(computedColumn.id + '.' + (propertySchema.unique_identifier || 'id'));
+        if (propertySchema.primary_identifiers) {
+          for (const propertyId of propertySchema.primary_identifiers) {
+            computedProperties.push(computedColumn.id + '.' + propertyId);
+          }
         }
       }
     }

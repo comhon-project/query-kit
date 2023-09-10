@@ -12,7 +12,7 @@ const props = defineProps({
   },
   propertyId: {
     type: String,
-    required: true,
+    default: undefined,
   },
   label: {
     type: [String, Function],
@@ -32,11 +32,14 @@ const propertyPath = shallowRef([]);
 const label = computed(() => {
   const path = propertyPath.value;
   const currentLocale = locale.value;
-  if (props.label) {
-    return typeof props.label == 'function' ? props.label(currentLocale) : props.label;
-  } else {
-    return path.map((property) => property.name.value).join(' ');
-  }
+
+  return props.label
+    ? typeof props.label == 'function'
+      ? props.label(currentLocale)
+      : props.label
+    : path
+    ? path.map((property) => property.name.value).join(' ')
+    : undefined;
 });
 const buttonClass = computed(() => {
   return (
@@ -67,8 +70,8 @@ async function isSortable() {
 watch(
   () => props.propertyId,
   async () => {
-    propertyPath.value = await getPropertyPath(props.model, props.propertyId);
-    sortable.value = await isSortable();
+    propertyPath.value = props.propertyId ? await getPropertyPath(props.model, props.propertyId) : false;
+    sortable.value = props.propertyId ? await isSortable() : false;
   },
   { immediate: true }
 );

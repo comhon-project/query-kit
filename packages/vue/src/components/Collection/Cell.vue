@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
+import { getRenderer } from '../../core/CellRendererManager';
 import Utils from '../../core/Utils';
-import { getComponent } from '../../core/CellRendererManager';
 
 const props = defineProps({
   column: {
@@ -26,14 +26,28 @@ const props = defineProps({
   },
 });
 const cellComponent = computed(() => {
-  if (props.column.cellComponent) {
-    return props.column.cellComponent;
-  }
-  return getComponent(props.column.property.type, props.column.property.enum);
+  return typeof renderer.value == 'function' ? 'raw' : renderer.value;
+});
+
+const renderer = computed(() => {
+  return props.column.renderer
+    ? props.column.renderer
+    : props.column.property
+    ? getRenderer(props.column.property.type, props.column.property.enum)
+    : 'raw';
 });
 
 const value = computed(() => {
-  return props.flattened ? props.rowValue[props.column.id] : Utils.getNestedValue(props.rowValue, props.column.id);
+  let cellValue = props.column.property
+    ? props.flattened
+      ? props.rowValue[props.column.id]
+      : Utils.getNestedValue(props.rowValue, props.column.id)
+    : undefined;
+
+  if (typeof renderer.value == 'function') {
+    cellValue = renderer.value(cellValue, props.rowValue, props.column.id);
+  }
+  return cellValue;
 });
 </script>
 

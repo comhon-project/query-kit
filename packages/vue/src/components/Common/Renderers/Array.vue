@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { getComponent } from '../../../core/CellRendererManager';
+import { getRenderer } from '../../../core/CellRendererManager';
 
 const props = defineProps({
   column: {
@@ -28,25 +28,33 @@ const props = defineProps({
     required: true,
   },
 });
-const computedComponent = computed(() => {
-  return getComponent(props.type.children.type, props.type.children.enum);
+const elementComponent = computed(() => {
+  return typeof renderer.value == 'function' ? 'raw' : renderer.value;
+});
+const renderer = computed(() => {
+  return getRenderer(props.type.children.type, props.type.children.enum);
+});
+const subValues = computed(() => {
+  return props.value
+    ? typeof renderer.value == 'function'
+      ? props.value.map((subValue) => renderer.value(subValue))
+      : props.value
+    : [];
 });
 </script>
 
 <template>
-  <template v-if="value">
-    <span v-for="(subValue, index) in value" :key="index">
-      <template v-if="index">, </template>
-      <template v-if="computedComponent == 'raw'">{{ subValue }}</template>
-      <component
-        :is="computedComponent"
-        :column="column"
-        :type="type.children"
-        :value="subValue"
-        :row-value="rowValue"
-        :request-timezone="requestTimezone"
-        :user-timezone="userTimezone"
-      />
-    </span>
-  </template>
+  <span v-for="(subValue, index) in subValues" :key="index">
+    <template v-if="index">, </template>
+    <template v-if="elementComponent == 'raw'">{{ subValue }}</template>
+    <component
+      :is="elementComponent"
+      :column="column"
+      :type="type.children"
+      :value="subValue"
+      :row-value="rowValue"
+      :request-timezone="requestTimezone"
+      :user-timezone="userTimezone"
+    />
+  </span>
 </template>
