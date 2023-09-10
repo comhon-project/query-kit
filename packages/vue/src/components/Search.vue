@@ -7,6 +7,7 @@ import IconButton from './Common/IconButton.vue';
 import { classes } from '../core/ClassManager';
 import Utils from '../core/Utils';
 import Shortcuts from './Filter/Shortcuts.vue';
+import { getContainerOperators } from '../core/OperatorManager';
 
 const emit = defineEmits(['rowClick', 'export', 'computed', 'updated']);
 const props = defineProps({
@@ -126,7 +127,7 @@ function getInitialFilter() {
     : {
         type: 'group',
         filters: [],
-        operator: props.allowedOperators?.['group']?.[0] || 'and',
+        operator: getContainerOperators('group', props.allowedOperators)?.[0] || 'and',
       };
   initialFilter.removable = false;
 

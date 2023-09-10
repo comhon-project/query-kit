@@ -4,7 +4,7 @@ import { resolve } from '../../core/Schema';
 import Group from './Group.vue';
 import Condition from './Condition.vue';
 import RelationshipQueueElement from './RelationshipQueueElement.vue';
-import { operatorNames } from './FilterManager';
+import { isValidOperator } from '../../core/OperatorManager';
 import InvalidModel from '../Messages/InvalidModel.vue';
 import InvalidProperty from '../Messages/InvalidProperty.vue';
 import InvalidOperator from '../Messages/InvalidOperator.vue';
@@ -143,7 +143,7 @@ async function setChild() {
     });
     const operator =
       typeof childFilter.operator == 'string' ? childFilter.operator.toLowerCase() : childFilter.operator;
-    if (!operatorNames['relationship_condition'][operator]) {
+    if (!isValidOperator('relationship_condition', operator)) {
       invalidOperator.value = childFilter.operator;
       childFilter = null;
       return;

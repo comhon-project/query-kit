@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, computed, watchEffect } from 'vue';
-import { useBaseCondition } from './AbstractCondition';
-import { operatorNames } from './FilterManager';
+import { useBaseFilter } from './Composable/BaseFilter';
+import { isValidOperator } from '../../core/OperatorManager';
 import { resolve } from '../../core/Schema';
 import InvalidProperty from '../Messages/InvalidProperty.vue';
 import InvalidScope from '../Messages/InvalidScope.vue';
@@ -56,7 +56,7 @@ const validOperator = ref(true);
 const validTarget = ref(true);
 const validType = ref(true);
 const schema = ref(null);
-const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseCondition(
+const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseFilter(
   props,
   schema,
   props.modelValue.type
@@ -120,7 +120,7 @@ function verifyTarget() {
 }
 
 function verifyOperator() {
-  if (schema.value && useOperator.value && !operatorNames['condition'][props.modelValue.operator]) {
+  if (schema.value && useOperator.value && !isValidOperator('condition', props.modelValue.operator)) {
     validOperator.value = false;
   }
 }
@@ -138,7 +138,7 @@ function verifyType() {
 
 watchEffect(initSchema);
 watchEffect(() => {
-  if (props.modelValue.operator && !operatorNames['condition'][props.modelValue.operator]) {
+  if (props.modelValue.operator && !isValidOperator('condition', props.modelValue.operator)) {
     props.modelValue.operator = props.modelValue.operator.toLowerCase();
   }
   verifyOperator();

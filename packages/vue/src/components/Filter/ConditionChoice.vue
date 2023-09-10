@@ -4,7 +4,8 @@ import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import Utils from '../../core/Utils';
 import { translate, locale } from '../../i18n/i18n';
-import { getOperators, useHelpers } from './FilterManager';
+import { getConditionOperators, getContainerOperators } from '../../core/OperatorManager';
+import { useSearchable } from './Composable/Searchable';
 import Modal from '../Common/Modal.vue';
 
 const emit = defineEmits(['update:show', 'validate']);
@@ -43,7 +44,7 @@ const uniqueIdGroup = ref(`choice-${Utils.getUniqueId()}`);
 const schema = ref(null);
 const targetCondition = ref(null);
 const selectedType = ref('condition');
-const { searchableProperties, searchableScopes, searchableComputedScopes } = useHelpers(props, schema);
+const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(props, schema);
 const options = computed(() => {
   const options = {};
   for (const property of searchableProperties.value) {
@@ -62,7 +63,7 @@ const options = computed(() => {
   return options;
 });
 const displayGroup = computed(() => {
-  return !props.allowedOperators || !props.allowedOperators.group || props.allowedOperators.group.length;
+  return getContainerOperators('group', props.allowedOperators).length;
 });
 const isVisible = computed({
   get() {
@@ -76,32 +77,40 @@ const isVisible = computed({
 function validate(e) {
   condition = {};
   if (selectedType.value == 'condition') {
-    let scope =
-      props.computedScopes && props.computedScopes[props.model]
-        ? props.computedScopes[props.model].find((scope) => scope.id == targetCondition.value)
-        : schema.value.mapScopes[targetCondition.value];
-    scope = scope || schema.value.mapScopes[targetCondition.value];
+    const computedScope = props.computedScopes?.[props.model]?.find((scope) => scope.id == targetCondition.value);
+    const scope = computedScope || schema.value.mapScopes[targetCondition.value];
     if (scope) {
       condition.type = 'scope';
       condition.id = targetCondition.value;
       if (scope.useOperator) {
-        const operators = getOperators('scope', props.allowedOperators, condition.id, schema, props.computedScopes);
+        const operators = getConditionOperators(
+          'scope',
+          condition.id,
+          schema.value,
+          props.allowedOperators,
+          props.computedScopes
+        );
         condition.operator = operators[0];
       }
     } else {
       if (schema.value.mapProperties[targetCondition.value].type == 'relationship') {
-        const operators = getOperators('relationship_condition', props.allowedOperators);
+        const operators = getContainerOperators('relationship_condition', props.allowedOperators);
         condition.operator = operators[0];
         condition.type = 'relationship_condition';
       } else {
-        const operators = getOperators('condition', props.allowedOperators, targetCondition.value, schema);
+        const operators = getConditionOperators(
+          'condition',
+          targetCondition.value,
+          schema.value,
+          props.allowedOperators
+        );
         condition.operator = operators[0];
         condition.type = 'condition';
       }
       condition.property = targetCondition.value;
     }
   } else {
-    const operators = getOperators('group', props.allowedOperators);
+    const operators = getContainerOperators('group', props.allowedOperators);
     condition.type = 'group';
     condition.operator = operators[0];
     condition.filters = [];

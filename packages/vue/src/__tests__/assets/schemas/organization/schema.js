@@ -32,7 +32,7 @@ export default {
   unique_identifier: 'id',
   primary_identifiers: ['brand_name'],
   search: {
-    filters: ['address', 'brand_name', 'contacts', 'description'],
+    properties: ['address', 'brand_name', 'contacts', 'description'],
     sort: ['brand_name'],
   },
 };

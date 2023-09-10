@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watchEffect } from 'vue';
 import { resolve } from '../../core/Schema';
-import { useBaseCondition } from './AbstractCondition';
+import { useBaseFilter } from './Composable/BaseFilter';
 import ConditionChoice from './ConditionChoice.vue';
 import IconButton from '../Common/IconButton.vue';
 
@@ -34,7 +34,7 @@ const props = defineProps({
 });
 const schema = ref(null);
 const showConditionChoice = ref(false);
-const { canAddFilter } = useBaseCondition(props, schema, 'relationship_condition');
+const { canAddFilter } = useBaseFilter(props, schema, 'relationship_condition');
 
 async function initSchema() {
   schema.value = await resolve(props.model);

@@ -3,8 +3,8 @@ import { ref, computed, watchEffect } from 'vue';
 import Utils from '../../core/Utils.js';
 import ConditionChoice from './ConditionChoice.vue';
 import { resolve } from '../../core/Schema';
-import { useBaseCondition } from './AbstractCondition';
-import { operatorNames } from './FilterManager';
+import { useBaseFilter } from './Composable/BaseFilter';
+import { isValidOperator } from '../../core/OperatorManager';
 import InvalidOperator from '../Messages/InvalidOperator.vue';
 import InvalidModel from '../Messages/InvalidModel.vue';
 import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
@@ -69,7 +69,7 @@ const validModel = ref(true);
 const schema = ref(null);
 const showConditionChoice = ref(false);
 const collapsed = ref(false);
-const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useBaseCondition(props, schema, 'group');
+const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useBaseFilter(props, schema, 'group');
 
 const visibleFilters = computed(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
@@ -149,11 +149,10 @@ watchEffect(() => {
   initSchema();
 });
 watchEffect(() => {
-  if (!operatorNames['group'][props.modelValue.operator]) {
+  if (!isValidOperator('group', props.modelValue.operator, false)) {
+    validOperator.value = false;
+  } else if (!isValidOperator('group', props.modelValue.operator, true)) {
     props.modelValue.operator = props.modelValue.operator.toLowerCase();
-    if (!operatorNames['group'][props.modelValue.operator]) {
-      validOperator.value = false;
-    }
   }
 });
 </script>

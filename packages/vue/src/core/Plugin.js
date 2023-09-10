@@ -6,7 +6,7 @@ import { registerComponents as registerCellComponents } from './CellRendererMana
 import { registerLoader, registerLocaleLoader } from './Schema';
 import { config } from '../config/config';
 import { registerRequester } from './Requester';
-import { registerAllowedOperators } from '../components/Filter/FilterManager';
+import { registerAllowedOperators } from './OperatorManager';
 
 import Search from '../components/Search.vue';
 import Builder from '../components/Filter/Builder.vue';

@@ -87,7 +87,7 @@ export default {
   unique_identifier: 'id',
   primary_identifiers: ['last_name', 'first_name'],
   search: {
-    filters: [
+    properties: [
       'first_name',
       'age',
       'weight',

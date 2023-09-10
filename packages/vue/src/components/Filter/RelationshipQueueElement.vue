@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watchEffect } from 'vue';
 import { resolve } from '../../core/Schema';
-import { useBaseCondition } from './AbstractCondition';
+import { useBaseFilter } from './Composable/BaseFilter';
 import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
@@ -38,7 +38,7 @@ const props = defineProps({
   },
 });
 const schema = ref(null);
-const { canEditOperator, operatorOptions } = useBaseCondition(props, schema, 'relationship_condition');
+const { canEditOperator, operatorOptions } = useBaseFilter(props, schema, 'relationship_condition');
 const label = computed(() => schema.value.mapProperties[props.modelValue.property].name);
 
 async function initSchema() {

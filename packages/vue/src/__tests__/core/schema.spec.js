@@ -77,7 +77,7 @@ describe('test schemas', async () => {
         enum: { one: 'value one', two: 'value two' },
       },
     });
-    expect(schema.search.filters).toStrictEqual([
+    expect(schema.search.properties).toStrictEqual([
       'first_name',
       'age',
       'weight',
