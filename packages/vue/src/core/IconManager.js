@@ -5,7 +5,7 @@ const iconList = {
   delete: undefined,
   search: undefined,
   reset: undefined,
-  validate: undefined,
+  confirm: undefined,
   close: undefined,
   previous: undefined,
   next: undefined,

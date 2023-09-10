@@ -4,7 +4,6 @@ import { resolve } from '../../core/Schema';
 import { useBaseCondition } from './AbstractCondition';
 import ConditionChoice from './ConditionChoice.vue';
 import IconButton from '../Common/IconButton.vue';
-import { classes } from '../../core/ClassManager';
 
 const emit = defineEmits(['remove', 'add']);
 const props = defineProps({
@@ -34,7 +33,7 @@ const props = defineProps({
   },
 });
 const schema = ref(null);
-const addFilterDialog = ref(null);
+const showConditionChoice = ref(false);
 const { canAddFilter } = useBaseCondition(props, schema, 'relationship_condition');
 
 async function initSchema() {
@@ -42,12 +41,11 @@ async function initSchema() {
 }
 
 function addFilter() {
-  addFilterDialog.value.showModal();
+  showConditionChoice.value = true;
 }
 
 async function setNewFilter(data) {
   emit('add', data);
-  addFilterDialog.value.close();
 }
 
 watchEffect(initSchema);
@@ -56,11 +54,6 @@ watchEffect(initSchema);
 <template>
   <div v-if="schema">
     <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
-    <dialog ref="addFilterDialog" :class="classes.modal">
-      <div :class="classes.modal_close_container">
-        <IconButton icon="close" @click="() => addFilterDialog.close()" />
-      </div>
-      <ConditionChoice v-bind="props" :model="schema.name" @validate="setNewFilter" />
-    </dialog>
+    <ConditionChoice v-model:show="showConditionChoice" v-bind="props" :model="schema.name" @validate="setNewFilter" />
   </div>
 </template>

@@ -8,6 +8,7 @@ export default {
   search: 'rechercher',
   reset: 'réinitialiser',
   validate: 'valider',
+  confirm: 'confirmer',
   close: 'fermer',
   collapse: 'replier',
   expande: 'étendre',

@@ -67,7 +67,7 @@ const groupRef = ref(null);
 const validOperator = ref(true);
 const validModel = ref(true);
 const schema = ref(null);
-const addFilterDialog = ref(null);
+const showConditionChoice = ref(false);
 const collapsed = ref(false);
 const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useBaseCondition(props, schema, 'group');
 
@@ -137,12 +137,11 @@ function removeFilter(key) {
 
 function addFilter() {
   collapsed.value = false;
-  addFilterDialog.value.showModal();
+  showConditionChoice.value = true;
 }
 
 async function setNewFilter(data) {
   props.modelValue.filters.push(data);
-  addFilterDialog.value.close();
 }
 
 watchEffect(() => {
@@ -170,7 +169,7 @@ watchEffect(() => {
       <InvalidModel v-if="!validModel" :model="props.model" />
       <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator" />
     </div>
-    <IconButton icon="delete" :aria-label="translate('group')" @click="$emit('remove')" />
+    <IconButton icon="delete" btn-class="btn_secondary" :aria-label="translate('group')" @click="$emit('remove')" />
   </div>
   <div
     v-else-if="schema"
@@ -213,6 +212,8 @@ watchEffect(() => {
             :key="filter.key"
             v-bind="props"
             :model-value="filter"
+            :root="undefined"
+            :aria-label="undefined"
             :except-add-filter-to-parent-group="!canAddFilter"
             :except-go-to-previous="displayIndex == 0"
             :except-go-to-next="displayIndex == visibleFilters.length - 1"
@@ -222,12 +223,7 @@ watchEffect(() => {
         </ul>
       </div>
     </div>
-    <dialog ref="addFilterDialog" :class="classes.modal">
-      <div :class="classes.modal_close_container">
-        <IconButton icon="close" @click="() => addFilterDialog.close()" />
-      </div>
-      <ConditionChoice v-bind="props" @validate="setNewFilter" />
-    </dialog>
+    <ConditionChoice v-model:show="showConditionChoice" v-bind="props" @validate="setNewFilter" />
   </div>
 </template>
 

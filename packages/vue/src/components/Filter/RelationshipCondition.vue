@@ -184,7 +184,7 @@ watch(() => props.modelValue.filter, initSchema);
       <InvalidProperty v-else-if="invalidProperty" :property="invalidProperty" />
       <InvalidOperator v-else-if="invalidOperator" :operator="invalidOperator" />
     </div>
-    <IconButton icon="delete" @click="$emit('remove')" />
+    <IconButton icon="delete" btn-class="btn_secondary" @click="$emit('remove')" />
   </div>
   <template v-else-if="queue">
     <div
@@ -215,6 +215,7 @@ watch(() => props.modelValue.filter, initSchema);
       <IconButton
         v-if="!(queue[queue.length - 1].value.removable === false)"
         icon="delete"
+        btn-class="btn_secondary"
         :aria-label="
           translate('condition') + ' ' + (typeof childAriaLabel == 'object' ? childAriaLabel.value : childAriaLabel)
         "

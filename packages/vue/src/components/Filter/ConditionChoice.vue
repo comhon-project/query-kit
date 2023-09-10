@@ -4,11 +4,15 @@ import { classes } from '../../core/ClassManager';
 import { resolve } from '../../core/Schema';
 import Utils from '../../core/Utils';
 import { translate, locale } from '../../i18n/i18n';
-import IconButton from '../Common/IconButton.vue';
 import { getOperators, useHelpers } from './FilterManager';
+import Modal from '../Common/Modal.vue';
 
-const emit = defineEmits(['validate']);
+const emit = defineEmits(['update:show', 'validate']);
 const props = defineProps({
+  show: {
+    type: Boolean,
+    required: true,
+  },
   model: {
     type: String,
     required: true,
@@ -31,6 +35,8 @@ const props = defineProps({
   },
 });
 
+let condition = null;
+const form = ref(false);
 const uniqueName = ref(`choice-${Utils.getUniqueId()}`);
 const uniqueIdCondition = ref(`choice-${Utils.getUniqueId()}`);
 const uniqueIdGroup = ref(`choice-${Utils.getUniqueId()}`);
@@ -58,9 +64,17 @@ const options = computed(() => {
 const displayGroup = computed(() => {
   return !props.allowedOperators || !props.allowedOperators.group || props.allowedOperators.group.length;
 });
+const isVisible = computed({
+  get() {
+    return props.show;
+  },
+  set(value) {
+    emit('update:show', value);
+  },
+});
 
 function validate(e) {
-  const condition = {};
+  condition = {};
   if (selectedType.value == 'condition') {
     let scope =
       props.computedScopes && props.computedScopes[props.model]
@@ -93,12 +107,23 @@ function validate(e) {
     condition.filters = [];
   }
   condition.key = Utils.getUniqueId();
-  emit('validate', condition);
+  isVisible.value = false;
   e.preventDefault();
+}
+
+function onClosed() {
+  if (condition) {
+    emit('validate', { ...condition });
+    condition = null;
+  }
 }
 
 function selectType(type) {
   selectedType.value = type;
+}
+
+function submitForm() {
+  form.value.requestSubmit();
 }
 
 onMounted(async () => {
@@ -113,29 +138,35 @@ watch(
 </script>
 
 <template>
-  <div v-if="schema">
-    <form :class="classes.condition_choice_form" @submit="validate">
-      <div>
-        <input :id="uniqueIdCondition" type="radio" :name="uniqueName" checked @click="() => selectType('condition')" />
-        <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
-        <select
-          v-model="targetCondition"
-          :disabled="selectedType == 'group'"
-          :aria-label="translate('choose_condition_element')"
-          required
-        >
-          <option v-for="(display, value) in options" :key="value" :value="value">
-            {{ display }}
-          </option>
-        </select>
-      </div>
-      <div v-if="displayGroup">
-        <input :id="uniqueIdGroup" type="radio" :name="uniqueName" @click="() => selectType('group')" />
-        <label :for="uniqueIdGroup">{{ translate('group') }}</label>
-      </div>
-      <div>
-        <IconButton icon="validate" type="submit" />
-      </div>
-    </form>
-  </div>
+  <Modal v-if="schema" v-model:show="isVisible" @confirm="submitForm" @closed="onClosed">
+    <template #body>
+      <form ref="form" :class="classes.condition_choice_form" @submit="validate">
+        <div>
+          <input
+            :id="uniqueIdCondition"
+            type="radio"
+            :name="uniqueName"
+            checked
+            @click="() => selectType('condition')"
+          />
+          <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
+          <select
+            v-model="targetCondition"
+            :class="classes.input"
+            :disabled="selectedType == 'group'"
+            :aria-label="translate('choose_condition_element')"
+            required
+          >
+            <option v-for="(display, value) in options" :key="value" :value="value">
+              {{ display }}
+            </option>
+          </select>
+        </div>
+        <div v-if="displayGroup">
+          <input :id="uniqueIdGroup" type="radio" :name="uniqueName" @click="() => selectType('group')" />
+          <label :for="uniqueIdGroup">{{ translate('group') }}</label>
+        </div>
+      </form>
+    </template>
+  </Modal>
 </template>

@@ -59,6 +59,11 @@ const props = defineProps({
   exceptGoToNext: {
     type: Boolean,
   },
+  ariaLabel: {
+    // not used but avoid prop to be injected automatically by vue on first template html node
+    type: String,
+    default: undefined,
+  },
 });
 
 const shortcutEvents = {

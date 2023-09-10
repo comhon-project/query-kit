@@ -71,7 +71,7 @@ watch(
           :editable="editable"
           @update:model-value="(newValue) => updateValue(newValue, index)"
         />
-        <IconButton v-if="editable" icon="delete" @click="() => removeValue(index)" />
+        <IconButton v-if="editable" icon="delete" btn-class="btn_secondary" @click="() => removeValue(index)" />
       </li>
     </ul>
     <IconButton v-if="editable" icon="add_value" @click="addValue" />

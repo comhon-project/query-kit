@@ -121,22 +121,12 @@ async function initSchema() {
 }
 
 function getInitialFilter() {
-  if (
-    !props.filter &&
-    props.allowedOperators &&
-    props.allowedOperators['group'] &&
-    (!Array.isArray(props.allowedOperators['group']) ||
-      (!props.allowedOperators['group'].includes('and') && !props.allowedOperators['group'].includes('or')))
-  ) {
-    throw new Error('invalid allowed operators, must be array that contain at least "and" or "or" values');
-  }
   const initialFilter = props.filter
     ? structuredClone(toRaw(props.filter))
     : {
         type: 'group',
         filters: [],
-        operator:
-          props.allowedOperators && props.allowedOperators['group'] ? props.allowedOperators['group'][0] : 'and',
+        operator: props.allowedOperators?.['group']?.[0] || 'and',
       };
   initialFilter.removable = false;
 

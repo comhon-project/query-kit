@@ -105,12 +105,12 @@ watch(conditionValue, () => {
   <select
     v-else-if="inputType == 'select' && containerType.enum"
     v-model="conditionValue"
-    :class="classes.condition_input"
+    :class="classes.input"
     :disabled="!editable"
   >
     <option v-for="(label, value) in containerType.enum" :key="value" :value="value">
       {{ label }}
     </option>
   </select>
-  <input v-else v-model="conditionValue" :class="classes.condition_input" :type="inputType" :disabled="!editable" />
+  <input v-else v-model="conditionValue" :class="classes.input" :type="inputType" :disabled="!editable" />
 </template>

@@ -20,6 +20,10 @@ const props = defineProps({
     type: String,
     default: undefined,
   },
+  class: {
+    type: String,
+    default: undefined,
+  },
 });
 const style = ref({});
 const select = ref(null);
@@ -31,7 +35,7 @@ const selectedLabel = computed(() => {
 function updateWidth() {
   select.value.insertAdjacentHTML(
     'afterend',
-    `<select :disabled="disabled">
+    `<select :disabled="disabled" class="${props.class}">
       <option selected>${selectedLabel.value}</option>
     </select>`
   );
@@ -53,6 +57,7 @@ onMounted(updateWidth);
     ref="select"
     :value="modelValue"
     :style="style"
+    :class="props.class"
     :disabled="disabled"
     :aria-label="ariaLabel"
     @change="updateValue"

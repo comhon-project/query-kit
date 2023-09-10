@@ -33,7 +33,7 @@ function update(value) {
 </script>
 
 <template>
-  <div :class="classes.condition_input_boolean">
+  <div :class="classes.input_boolean">
     <input
       type="radio"
       :name="`boolean-input-filter-${uniqueId}`"
