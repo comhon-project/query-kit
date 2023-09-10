@@ -29,7 +29,7 @@ const props = defineProps({
   },
 });
 const elementComponent = computed(() => {
-  return typeof renderer.value == 'function' ? 'raw' : renderer.value;
+  return typeof renderer.value == 'function' ? null : renderer.value;
 });
 const renderer = computed(() => {
   return getRenderer(props.type.children.type, props.type.children.enum);
@@ -46,7 +46,7 @@ const subValues = computed(() => {
 <template>
   <span v-for="(subValue, index) in subValues" :key="index">
     <template v-if="index">, </template>
-    <template v-if="elementComponent == 'raw'">{{ subValue }}</template>
+    <template v-if="elementComponent == null">{{ subValue }}</template>
     <component
       :is="elementComponent"
       :column="column"

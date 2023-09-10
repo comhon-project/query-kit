@@ -7,10 +7,10 @@ import Time from '../components/Common/Renderers/Time.vue';
 import ForeignModel from '../components/Common/Renderers/ForeignModel.vue';
 import Array from '../components/Common/Renderers/Array.vue';
 
-const componentList = {
-  string: 'raw',
-  integer: 'raw',
-  float: 'raw',
+const renderers = {
+  string: null,
+  integer: null,
+  float: null,
   enum: Enum,
   html: Html,
   date: Date,
@@ -22,11 +22,11 @@ const componentList = {
 };
 
 const registerRenderers = (custom) => {
-  Object.assign(componentList, custom);
+  Object.assign(renderers, custom);
 };
 
 const getRenderer = (type, enumeration) => {
-  return componentList[type] && enumeration ? componentList.enum : componentList[type] || 'raw';
+  return enumeration ? renderers.enum : renderers[type] || null;
 };
 
 export { registerRenderers, getRenderer };
