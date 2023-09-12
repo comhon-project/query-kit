@@ -9,8 +9,10 @@ const iconList = {
   close: undefined,
   previous: undefined,
   next: undefined,
-  export: undefined,
   collapse: undefined,
+  minus: undefined,
+  export: undefined,
+  columns: undefined,
 };
 let iconComponent = 'i';
 let iconPropName = 'class';

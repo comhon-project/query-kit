@@ -13,6 +13,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  disableConfirm: {
+    type: Boolean,
+    default: false,
+  },
 });
 const modal = ref(null);
 const closing = ref(null);
@@ -74,7 +78,7 @@ watch(
     <div :class="classes.modal_body"><slot name="body" /></div>
     <div :class="classes.modal_footer">
       <slot name="footer">
-        <IconButton icon="confirm" @click="confirm" />
+        <IconButton icon="confirm" :disabled="disableConfirm" @click="confirm" />
       </slot>
     </div>
   </dialog>

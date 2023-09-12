@@ -54,6 +54,9 @@
 .qkit-modal-header > *:first-child {
   flex-grow: 1;
 }
+.qkit-modal-header h1 {
+  margin-block: 0;
+}
 .qkit-modal-body {
   padding: 1rem;
 }
@@ -106,12 +109,17 @@
   font-family: inherit;
 }
 
+.qkit-btn:disabled {
+  opacity: 0.65;
+  cursor: inherit;
+}
+
 .qkit-btn-primary {
   color: white;
   background: var(--qkit-color-primary);
 }
 
-.qkit-btn-primary:hover {
+.qkit-btn-primary:hover:not(:disabled) {
   background: var(--qkit-color-primary-darken);
 }
 
@@ -120,7 +128,7 @@
   background: var(--qkit-color-secondary);
 }
 
-.qkit-btn-secondary:hover {
+.qkit-btn-secondary:hover:not(:disabled) {
   background: var(--qkit-color-secondary-darken);
 }
 
@@ -185,6 +193,11 @@ ul.qkit-group-list > li:has(.qkit-group) {
   display: block;
   width: var(--qkit-icon-size);
   height: var(--qkit-icon-size);
+}
+
+.qkit-icon-minus {
+  background: currentColor;
+  clip-path: polygon(0% 35%, 100% 35%, 100% 65%, 0% 65%);
 }
 
 .qkit-icon-plus {
@@ -608,6 +621,52 @@ ul.qkit-group-list > li:has(.qkit-group) {
 .qkit-pagination > li:last-child {
   border-top-right-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
+}
+
+.qkit-column-choices ul {
+  list-style: none;
+  margin: 0;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 768px;
+}
+
+.qkit-column-choice {
+  display: flex;
+}
+.qkit-column-choice > *:first-child {
+  color: white;
+  background: var(--qkit-color-primary);
+  padding: 0.5rem;
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+.qkit-column-choice > *:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.qkit-column-choice > :not(:first-child):not(:last-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.qkit-column-add {
+  display: flex;
+}
+.qkit-column-add > *:first-child:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.qkit-column-add > *:last-child:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 @media (max-width: 576px) {

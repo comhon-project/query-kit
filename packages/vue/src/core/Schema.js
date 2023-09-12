@@ -55,7 +55,8 @@ async function computeLocales(schema, create) {
         target.name.value = fallbackTranslations[target.id];
       }
       if (!target.name.value) {
-        target.name.value = 'undefined';
+        console.warn(`translation not found for property ${schema.name}.${target.id}`);
+        target.name.value = target.id;
       }
       let enumTarget = target;
       while (enumTarget.type == 'array') {
@@ -78,7 +79,8 @@ async function computeLocales(schema, create) {
             value = fallbackTranslations?.__enumerations__?.[target.id]?.[key];
           }
           if (!value) {
-            value = 'undefined';
+            console.warn(`translation not found for enumeration ${schema.name}.${target.id}.${key}`);
+            value = key;
           }
           enumTarget.enum[key] = value;
         }

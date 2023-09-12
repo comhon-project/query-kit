@@ -8,6 +8,11 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  label: {
+    // only if we want to have a different label than icon when there is no defined icon
+    type: String,
+    default: undefined,
+  },
 });
 
 const isIconObj = computed(() => typeof icons[props.icon] == 'object');
@@ -19,5 +24,5 @@ const component = computed(() =>
 
 <template>
   <component :is="component" v-if="icons[icon]" v-bind="bindings" />
-  <template v-else>{{ translate(icon) }}</template>
+  <template v-else>{{ translate(label || icon) }}</template>
 </template>

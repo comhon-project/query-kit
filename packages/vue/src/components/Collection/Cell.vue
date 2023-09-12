@@ -21,6 +21,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  property: {
+    type: Object,
+    default: undefined,
+  },
   flattened: {
     type: Boolean,
   },
@@ -32,13 +36,13 @@ const cellComponent = computed(() => {
 const renderer = computed(() => {
   return props.column.renderer
     ? props.column.renderer
-    : props.column.property
-    ? getRenderer(props.column.property.type, props.column.property.enum)
+    : props.property
+    ? getRenderer(props.property.type, props.property.enum)
     : null;
 });
 
 const value = computed(() => {
-  let cellValue = props.column.property
+  let cellValue = props.property
     ? props.flattened
       ? props.rowValue[props.column.id]
       : Utils.getNestedValue(props.rowValue, props.column.id)
@@ -63,7 +67,8 @@ const value = computed(() => {
       <component
         :is="cellComponent"
         :column="column"
-        :type="column.property"
+        :property="property"
+        :type="property"
         :value="value"
         :row-value="rowValue"
         :request-timezone="requestTimezone"
@@ -75,7 +80,8 @@ const value = computed(() => {
       <component
         :is="cellComponent"
         :column="column"
-        :type="column.property"
+        :property="property"
+        :type="property"
         :value="value"
         :row-value="rowValue"
         :request-timezone="requestTimezone"

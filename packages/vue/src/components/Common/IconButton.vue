@@ -18,6 +18,11 @@ const props = defineProps({
     type: String,
     default: 'button',
   },
+  label: {
+    // only if we want to have a different label than icon
+    type: String,
+    default: undefined,
+  },
   ariaLabel: {
     type: String,
     default: undefined,
@@ -25,12 +30,13 @@ const props = defineProps({
 });
 
 const computedAriaLabel = computed(() => {
-  return props.ariaLabel ? translate(props.icon) + ' ' + props.ariaLabel : translate(props.icon);
+  const label = props.label || props.icon;
+  return props.ariaLabel ? translate(label) + ' ' + props.ariaLabel : translate(label);
 });
 </script>
 
 <template>
   <button :class="classes[btnClass]" :type="type" :aria-label="computedAriaLabel" @click="$emit('click')">
-    <Icon :icon="icon" />
+    <Icon :icon="icon" :label="label" />
   </button>
 </template>

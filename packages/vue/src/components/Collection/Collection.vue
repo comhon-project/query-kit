@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, toRaw, shallowRef, computed } from 'vue';
+import { ref, watch, onMounted, shallowRef, computed } from 'vue';
 import { requester as baseRequester } from '../../core/Requester';
 import { classes } from '../../core/ClassManager';
 import { resolve, getPropertyPath } from '../../core/Schema';
@@ -8,8 +8,9 @@ import IconButton from '../Common/IconButton.vue';
 import Pagination from '../Pagination/Pagination.vue';
 import Cell from './Cell.vue';
 import Header from './Header.vue';
+import ColumnChoices from './ColumnChoices.vue';
 
-defineEmits(['rowClick', 'export']);
+const emit = defineEmits(['rowClick', 'export', 'update:columns']);
 const props = defineProps({
   model: {
     type: String,
@@ -72,6 +73,9 @@ const props = defineProps({
     type: String,
     default: 'UTC',
   },
+  editColumns: {
+    type: Boolean,
+  },
   requester: {
     type: [Object, Function],
     validator(value) {
@@ -82,10 +86,10 @@ const props = defineProps({
 });
 
 let movingOffset = 0;
-let computedProperties = [];
+let requestProperties = [];
 const requesting = ref(false);
-const schema = shallowRef(null);
-const computedColumns = shallowRef([]);
+const copiedColumns = shallowRef([]);
+const propertyColumns = shallowRef([]);
 const collection = shallowRef([]);
 const count = ref(0);
 const end = ref(false);
@@ -94,6 +98,7 @@ const order = ref(null);
 const page = ref(1);
 const infiniteScroll = ref(isInfiniteAccordingProps());
 const collectionContent = ref(null);
+const showColumnsModal = ref(false);
 
 const observered = ref(null);
 let observer;
@@ -102,48 +107,44 @@ const isResultFlattened = computed(() => {
   return props.requester && typeof props.requester == 'object' ? props.requester.flattened : baseRequester.flattened;
 });
 
-async function init() {
-  schema.value = await resolve(props.model);
-  if (!schema.value) {
+async function init(chosenColumns = null) {
+  if (!(await resolve(props.model))) {
     throw new Error(`invalid model "${props.model}"`);
   }
-  const tempColumns = [];
-  computedProperties = [];
+  const loopColumns = chosenColumns || props.columns;
+  const columns = [];
+  const properties = [];
+  requestProperties = [];
 
-  for (const column of props.columns) {
-    const computedColumn = typeof column == 'object' ? Object.assign({}, column) : { id: column };
-    tempColumns.push(computedColumn);
+  for (const column of loopColumns) {
+    const copiedColumn = typeof column == 'object' ? { ...column } : { id: column };
+    columns.push(copiedColumn);
 
-    if (computedColumn.id) {
-      const propertyPath = await getPropertyPath(props.model, computedColumn.id);
-      computedColumn.property = propertyPath[propertyPath.length - 1];
-    }
-    if (computedColumn.renderer) {
-      computedColumn.renderer = toRaw(computedColumn.renderer);
-    }
-    if (computedColumn.property) {
-      if (props.quickSort && computedColumn.order && ['asc', 'desc'].includes(computedColumn.order.toLowerCase())) {
-        active.value = computedColumn.id;
-        order.value = computedColumn.order.toLowerCase();
+    const propertyPath = copiedColumn.id ? await getPropertyPath(props.model, copiedColumn.id) : undefined;
+    const property = propertyPath?.[propertyPath.length - 1];
+    properties.push(property);
+
+    if (property) {
+      if (props.quickSort && copiedColumn.order && ['asc', 'desc'].includes(copiedColumn.order.toLowerCase())) {
+        active.value = copiedColumn.id;
+        order.value = copiedColumn.order.toLowerCase();
       }
 
-      if (computedColumn.property.type != 'relationship') {
-        computedProperties.push(computedColumn.id);
-      } else if (
-        computedColumn.property.relationship_type == 'belongs_to' ||
-        computedColumn.property.relationship_type == 'has_one'
-      ) {
-        const propertySchema = await resolve(computedColumn.property.model);
-        computedProperties.push(computedColumn.id + '.' + (propertySchema.unique_identifier || 'id'));
+      if (property.type != 'relationship') {
+        requestProperties.push(copiedColumn.id);
+      } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
+        const propertySchema = await resolve(property.model);
+        requestProperties.push(copiedColumn.id + '.' + (propertySchema.unique_identifier || 'id'));
         if (propertySchema.primary_identifiers) {
           for (const propertyId of propertySchema.primary_identifiers) {
-            computedProperties.push(computedColumn.id + '.' + propertyId);
+            requestProperties.push(copiedColumn.id + '.' + propertyId);
           }
         }
       }
     }
   }
-  computedColumns.value = tempColumns;
+  propertyColumns.value = properties;
+  copiedColumns.value = columns;
 }
 
 async function shiftThenRequestServer() {
@@ -181,7 +182,7 @@ async function requestServer(reset = false) {
     offset: movingOffset,
     limit: props.limit,
     filter: props.filter,
-    properties: computedProperties,
+    properties: requestProperties,
   });
   if (typeof response != 'object' || !Array.isArray(response.collection)) {
     throw new Error(
@@ -245,9 +246,26 @@ function isInfiniteAccordingProps() {
   return props.allowedCollectionTypes[0] == 'infinite';
 }
 
+function initColumnsModal() {
+  showColumnsModal.value = true;
+}
+
+async function updateColumns(columns) {
+  emit('update:columns', columns);
+  setTimeout(async () => {
+    if (!requesting.value) {
+      // we init only if the collection is not requesting.
+      // if requesting that means columns are used with v-model
+      // and initialization has been made through the columns watcher
+      await init(columns);
+      requestServer(true);
+    }
+  }, 0);
+}
+
 onMounted(async () => {
   movingOffset = props.offset;
-  await init(true);
+  await init();
   observer = new IntersectionObserver(shiftThenRequestServer);
   observer.observe(observered.value);
   if (props.directQuery) {
@@ -256,11 +274,14 @@ onMounted(async () => {
 });
 watch(
   () => props.model,
-  () => init(true)
+  () => init()
 );
 watch(
   () => props.columns,
-  () => init(false)
+  async () => {
+    await init();
+    requestServer(true);
+  }
 );
 watch(
   () => props.filter,
@@ -298,6 +319,7 @@ watch(
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
+          <IconButton v-if="editColumns" icon="columns" @click="initColumnsModal" />
         </div>
       </div>
     </div>
@@ -312,12 +334,12 @@ watch(
           <thead>
             <tr>
               <Header
-                v-for="computedColumn in computedColumns"
-                :key="computedColumn.id"
+                v-for="copiedColumn in copiedColumns"
+                :key="copiedColumn.id"
                 :model="model"
-                :property-id="computedColumn.id"
-                :label="computedColumn.label"
-                :active="active == computedColumn.id"
+                :property-id="copiedColumn.id"
+                :label="copiedColumn.label"
+                :active="active == copiedColumn.id"
                 :order="order"
                 @click="updateOrder"
               />
@@ -330,9 +352,10 @@ watch(
               :class="onRowClick ? classes.collection_clickable_row : ''"
               @click="(e) => $emit('rowClick', object, e)"
             >
-              <template v-for="computedColumn in computedColumns" :key="computedColumn.id">
+              <template v-for="(copiedColumn, index) in copiedColumns" :key="copiedColumn.id">
                 <Cell
-                  :column="computedColumn"
+                  :column="copiedColumn"
+                  :property="propertyColumns[index]"
                   :row-value="object"
                   :flattened="isResultFlattened"
                   :user-timezone="userTimezone"
@@ -345,5 +368,12 @@ watch(
         <div v-show="infiniteScroll && !end && !requesting" ref="observered" style="height: 1px" />
       </div>
     </div>
+    <ColumnChoices
+      v-if="editColumns"
+      v-model:show="showColumnsModal"
+      :columns="copiedColumns"
+      :model="model"
+      @update:columns="updateColumns"
+    />
   </div>
 </template>

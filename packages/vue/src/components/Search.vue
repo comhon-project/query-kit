@@ -9,7 +9,7 @@ import Utils from '../core/Utils';
 import Shortcuts from './Filter/Shortcuts.vue';
 import { getContainerOperators } from '../core/OperatorManager';
 
-const emit = defineEmits(['rowClick', 'export', 'computed', 'updated']);
+const emit = defineEmits(['rowClick', 'export', 'computed', 'updated', 'update:columns']);
 const props = defineProps({
   model: {
     type: String,
@@ -103,6 +103,9 @@ const props = defineProps({
   displayCount: {
     type: Boolean,
   },
+  editColumns: {
+    type: Boolean,
+  },
   onExport: {
     type: Function,
     default: undefined,
@@ -180,7 +183,13 @@ watch(computedFilter, () => {
         <Shortcuts @go-to-collection="goToCollection" />
       </template>
     </FilterBuilder>
-    <Collection v-if="computedFilter !== false" v-bind="props" :id="collectionId" :filter="computedFilter">
+    <Collection
+      v-if="computedFilter !== false"
+      v-bind="props"
+      :id="collectionId"
+      :filter="computedFilter"
+      @update:columns="(columns) => emit('update:columns', columns)"
+    >
       <template #loading="loadingProps">
         <slot name="loading" v-bind="loadingProps" />
       </template>

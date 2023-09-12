@@ -6,6 +6,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  property: {
+    type: Object,
+    required: true,
+  },
   type: {
     type: Object,
     required: true,
