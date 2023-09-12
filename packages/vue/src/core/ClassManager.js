@@ -41,9 +41,6 @@ const classList = {
   column_choices: 'qkit-column-choices',
   column_choice: 'qkit-column-choice',
   column_add: 'qkit-column-add',
-  order_asc: 'qkit-asc',
-  order_desc: 'qkit-desc',
-  active: 'qkit-active',
   spinner: 'qkit-spinner',
   pagination: 'qkit-pagination',
 };

@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
 import { usePropertyPath } from '../Filter/Composable/PropertyPath';
+import Icon from '../Common/Icon.vue';
 
 defineEmits(['click']);
 const props = defineProps({
@@ -27,20 +27,20 @@ const props = defineProps({
 });
 
 const { label, sortable } = usePropertyPath(props);
-
-const buttonClass = computed(() => {
-  return (
-    classes.btn +
-    ' ' +
-    (props.active ? classes.active + ' ' + (props.order == 'asc' ? classes.order_asc : classes.order_desc) : '')
-  );
-});
 </script>
 
 <template>
   <th>
-    <button v-if="sortable" type="button" :class="buttonClass" @click="$emit('click', propertyId)">
+    <button
+      v-if="sortable"
+      type="button"
+      :class="classes.btn"
+      :active="props.active ? '' : undefined"
+      :desc="props.active && props.order == 'desc' ? '' : undefined"
+      @click="$emit('click', propertyId)"
+    >
       {{ label }}
+      <Icon icon="down" />
     </button>
     <div v-else>
       {{ label }}

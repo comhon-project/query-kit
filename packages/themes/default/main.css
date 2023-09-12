@@ -1,5 +1,4 @@
 :root {
-  --qkit-icon-size: 0.75rem;
   --qkit-color-primary: hsl(263, 45%, 55%);
   --qkit-color-primary-darken: hsl(263, 45%, 45%);
   --qkit-color-secondary: hsl(9, 57%, 50%);
@@ -186,59 +185,6 @@ ul.qkit-group-list > li:has(.qkit-group) {
 }
 .qkit-group-resume[collapsed] {
   opacity: 30%;
-}
-
-.qkit-icon {
-  position: relative;
-  display: block;
-  width: var(--qkit-icon-size);
-  height: var(--qkit-icon-size);
-}
-
-.qkit-icon-minus {
-  background: currentColor;
-  clip-path: polygon(0% 35%, 100% 35%, 100% 65%, 0% 65%);
-}
-
-.qkit-icon-plus {
-  background: currentColor;
-  clip-path: polygon(
-    0% 35%,
-    35% 35%,
-    35% 0%,
-    65% 0%,
-    65% 35%,
-    100% 35%,
-    100% 65%,
-    65% 65%,
-    65% 100%,
-    35% 100%,
-    35% 65%,
-    0% 65%
-  );
-}
-
-.qkit-icon-cross {
-  background: currentColor;
-  clip-path: polygon(
-    20% 0%,
-    0% 20%,
-    30% 50%,
-    0% 80%,
-    20% 100%,
-    50% 70%,
-    80% 100%,
-    100% 80%,
-    70% 50%,
-    100% 20%,
-    80% 0%,
-    50% 30%
-  );
-}
-
-.qkit-icon-arrow-down {
-  background: currentColor;
-  clip-path: polygon(25% 15%, 50% 50%, 75% 15%, 100% 15%, 50% 85%, 0 15%);
 }
 
 .qkit-condition-container {
@@ -458,31 +404,21 @@ ul.qkit-group-list > li:has(.qkit-group) {
   font-size: inherit;
 }
 
-.qkit-collection-table thead .qkit-btn:after {
-  content: '';
-  display: block;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 0;
-  width: 0.5em;
-  height: 0.5em;
-  background: black;
-  clip-path: polygon(0 0, 50% 100%, 100% 0);
-  transition: transform 0.1s ease-in-out;
+.qkit-collection-table thead .qkit-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
 }
-
-.qkit-collection-table thead .qkit-btn.qkit-active {
+.qkit-collection-table thead .qkit-btn[active] {
   color: grey;
 }
-
-.qkit-collection-table thead .qkit-btn.qkit-active:after {
-  color: grey;
-  background: grey;
+.qkit-collection-table thead button > *:last-child {
+  transition: transform 0.2s ease-in-out;
 }
-
-.qkit-collection-table thead .qkit-btn.qkit-active.qkit-desc:after {
-  transform: translateY(-50%) rotate(180deg);
+.qkit-collection-table thead button[desc] > *:last-child {
+  transform: rotate(-180deg);
 }
 
 .qkit-collection-table tbody tr {
@@ -604,7 +540,7 @@ ul.qkit-group-list > li:has(.qkit-group) {
   color: inherit;
 }
 
-.qkit-pagination > li.qkit-active {
+.qkit-pagination > [active] {
   background-color: var(--qkit-color-primary-darken);
 }
 

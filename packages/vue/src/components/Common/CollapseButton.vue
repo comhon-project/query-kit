@@ -47,9 +47,9 @@ const computedAriaLabel = computed(() => {
 
 <style>
 .qkit-collapse-icon-wrapper {
-  transition: transform 0.1s ease;
+  transition: transform 0.2s ease;
 }
 .qkit-collapse-icon-wrapper[upsidedown] {
-  transform: rotate(180deg);
+  transform: rotate(-180deg);
 }
 </style>

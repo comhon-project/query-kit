@@ -52,14 +52,14 @@ watchEffect(() => (currentPage.value = props.page));
           <Icon icon="previous" />
         </a>
       </li>
-      <li :class="1 == currentPage ? classes.active : ''" @click="(e) => updatePage(1, e)">
+      <li :active="1 == currentPage ? '' : undefined" @click="(e) => updatePage(1, e)">
         <a href="#">1</a>
       </li>
       <li v-if="currentPage > 4">...</li>
       <li
         v-for="index in nearPages"
         :key="index"
-        :class="index == currentPage ? classes.active : ''"
+        :active="index == currentPage ? '' : undefined"
         @click="(e) => updatePage(index, e)"
       >
         <a href="#">{{ index }}</a>
@@ -67,7 +67,7 @@ watchEffect(() => (currentPage.value = props.page));
       <li v-if="currentPage < count - 3">...</li>
       <li
         v-if="count && count != 1"
-        :class="count == currentPage ? classes.active : ''"
+        :active="count == currentPage ? '' : undefined"
         @click="(e) => updatePage(count, e)"
       >
         <a href="#">{{ count }}</a>
