@@ -14,7 +14,7 @@ import Utils from '../../core/Utils';
 import { classes } from '../../core/ClassManager';
 import { translate } from '../../i18n/i18n';
 
-const emit = defineEmits(['remove', 'goToRootGroup']);
+const emit = defineEmits(['remove', 'goToRootGroup', 'transitionGroup']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -105,6 +105,15 @@ async function initSchema() {
 
 async function addFilter(filter) {
   const endQueuePropertySchema = await resolve(endQueuePropertyModel.value);
+
+  /**
+   * polyfill for browser that don't support css pseudo-class :has() like firefox.
+   * remove following emit value when all browser support :has().
+   * remove it from list of defined emits too.
+   */
+  if (filter.type == 'group') {
+    emit('transitionGroup');
+  }
   queue.value[queue.value.length - 1].value.filter = filter;
   if (filter.type == 'relationship_condition') {
     queue.value.push({
@@ -127,6 +136,14 @@ function removeQueueFilter() {
 }
 
 function removeEndFilter() {
+  /**
+   * polyfill for browser that don't support css pseudo-class :has() like firefox.
+   * remove following emit value when all browser support :has().
+   * remove it from list of defined emits too.
+   */
+  if (queue.value[queue.value.length - 1].value.filter.type == 'group') {
+    emit('transitionGroup');
+  }
   queue.value[queue.value.length - 1].value.filter = null;
   endQueueFilter.value = null;
 }
@@ -187,89 +204,92 @@ watch(() => props.modelValue.filter, initSchema);
     <IconButton icon="delete" btn-class="btn_secondary" @click="$emit('remove')" />
   </div>
   <template v-else-if="queue">
-    <div
-      v-if="!endQueueFilter"
-      :class="classes.relationship_container"
-      tabindex="0"
-      :aria-label="translate('relationship_condition')"
-    >
-      <div :class="classes.relationship_queue_and_action">
-        <slot name="shortcuts" />
-        <div :class="classes.relationship_queue">
-          <RelationshipQueueElement
-            v-for="elmnt in queue"
-            :key="elmnt.key"
-            v-bind="props"
-            :model-value="elmnt.value"
-            :model="elmnt.schema.name"
+    <Transition name="qkit-collapse-horizontal-list" mode="out-in">
+      <div v-if="!endQueueFilter" :class="classes.grid_container_for_transition">
+        <div :class="classes.relationship_container" tabindex="0" :aria-label="translate('relationship_condition')">
+          <div :class="classes.relationship_queue_and_action">
+            <slot name="shortcuts" />
+            <div :class="classes.relationship_queue">
+              <RelationshipQueueElement
+                v-for="elmnt in queue"
+                :key="elmnt.key"
+                v-bind="props"
+                :model-value="elmnt.value"
+                :model="elmnt.schema.name"
+              />
+            </div>
+            <RelationshipAction
+              v-bind="props"
+              :model="endQueuePropertyModel"
+              :model-value="queue[queue.length - 1].value"
+              @remove="removeQueueFilter"
+              @add="addFilter"
+            />
+          </div>
+          <IconButton
+            v-if="!(queue[queue.length - 1].value.removable === false)"
+            icon="delete"
+            btn-class="btn_secondary"
+            :aria-label="
+              translate('condition') + ' ' + (typeof childAriaLabel == 'object' ? childAriaLabel.value : childAriaLabel)
+            "
+            @click="$emit('remove')"
           />
         </div>
-        <RelationshipAction
+      </div>
+      <div
+        v-else
+        :class="classes.grid_container_for_transition"
+        :has-group="endQueueFilter.type == 'group' ? '' : undefined"
+      >
+        <Condition
+          v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'"
           v-bind="props"
           :model="endQueuePropertyModel"
-          :model-value="queue[queue.length - 1].value"
-          @remove="removeQueueFilter"
-          @add="addFilter"
-        />
+          :model-value="endQueueFilter"
+          :aria-label="translate('relationship_condition_with_condition')"
+          @remove="removeEndFilter"
+        >
+          <template #relationship>
+            <div :class="classes.relationship_queue">
+              <RelationshipQueueElement
+                v-for="elmnt in queue"
+                :key="elmnt.key"
+                v-bind="props"
+                :model-value="elmnt.value"
+                :model="elmnt.schema.name"
+              />
+            </div>
+          </template>
+          <template #shortcuts="shortcutsProps">
+            <slot name="shortcuts" v-bind="shortcutsProps" />
+          </template>
+        </Condition>
+        <Group
+          v-else-if="endQueueFilter.type == 'group'"
+          v-bind="props"
+          :model="endQueuePropertyModel"
+          :model-value="endQueueFilter"
+          :aria-label="translate('relationship_condition_with_group')"
+          @remove="removeEndFilter"
+          @go-to-root-group="$emit('goToRootGroup')"
+        >
+          <template #relationship>
+            <div :class="classes.relationship_queue">
+              <RelationshipQueueElement
+                v-for="elmnt in queue"
+                :key="elmnt.key"
+                v-bind="props"
+                v-model="elmnt.value"
+                :model="elmnt.schema.name"
+              />
+            </div>
+          </template>
+          <template #shortcuts="shortcutsProps">
+            <slot name="shortcuts" v-bind="shortcutsProps" />
+          </template>
+        </Group>
       </div>
-      <IconButton
-        v-if="!(queue[queue.length - 1].value.removable === false)"
-        icon="delete"
-        btn-class="btn_secondary"
-        :aria-label="
-          translate('condition') + ' ' + (typeof childAriaLabel == 'object' ? childAriaLabel.value : childAriaLabel)
-        "
-        @click="$emit('remove')"
-      />
-    </div>
-    <template v-else>
-      <Condition
-        v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'"
-        v-bind="props"
-        :model="endQueuePropertyModel"
-        :model-value="endQueueFilter"
-        :aria-label="translate('relationship_condition_with_condition')"
-        @remove="removeEndFilter"
-      >
-        <template #relationship>
-          <div :class="classes.relationship_queue">
-            <RelationshipQueueElement
-              v-for="elmnt in queue"
-              :key="elmnt.key"
-              v-bind="props"
-              :model-value="elmnt.value"
-              :model="elmnt.schema.name"
-            />
-          </div>
-        </template>
-        <template #shortcuts="shortcutsProps">
-          <slot name="shortcuts" v-bind="shortcutsProps" />
-        </template>
-      </Condition>
-      <Group
-        v-else-if="endQueueFilter.type == 'group'"
-        v-bind="props"
-        :model="endQueuePropertyModel"
-        :model-value="endQueueFilter"
-        :aria-label="translate('relationship_condition_with_group')"
-        @remove="removeEndFilter"
-        @go-to-root-group="$emit('goToRootGroup')"
-      >
-        <template #relationship>
-          <div :class="classes.relationship_queue">
-            <RelationshipQueueElement
-              v-for="elmnt in queue"
-              :key="elmnt.key"
-              v-bind="props"
-              v-model="elmnt.value"
-              :model="elmnt.schema.name"
-            />
-          </div>
-        </template>
-        <template #shortcuts="shortcutsProps">
-          <slot name="shortcuts" v-bind="shortcutsProps" />
-        </template>
-      </Group>
-    </template>
+    </Transition>
   </template>
 </template>

@@ -1,9 +1,10 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import Shortcuts from './Shortcuts.vue';
 import Condition from './Condition.vue';
 import RelationshipCondition from './RelationshipCondition.vue';
 import Group from './Group.vue';
+import { classes } from '../../core/ClassManager';
 
 const emit = defineEmits([
   'remove',
@@ -66,6 +67,12 @@ const props = defineProps({
   },
 });
 
+/**
+ * polyfill for browser that don't support css pseudo-class :has() like firefox.
+ * remove this following ref when all browser support :has().
+ */
+const isTogglingGroup = ref(false);
+
 const shortcutEvents = {
   goToNext: () => emit('goToNext', props.modelValue.key),
   goToPrevious: () => emit('goToPrevious', props.modelValue.key),
@@ -89,18 +96,7 @@ const filteredShortcutEvents = computed(() => {
   }
   return values;
 });
-/**
- * TODO remove this function call when firefox will support css :has pseudo class
- *
- * @param {Object} filter
- */
-const hasGroup = computed(() => {
-  let filter = props.modelValue;
-  while (filter && filter.type == 'relationship_condition') {
-    filter = filter.filter;
-  }
-  return filter && filter.type == 'group';
-});
+
 const component = computed(() => {
   return props.modelValue.type == 'condition' || props.modelValue.type == 'scope'
     ? Condition
@@ -110,16 +106,42 @@ const component = computed(() => {
     ? Group
     : null;
 });
+
+/**
+ * polyfill for browser that don't support css pseudo-class :has() like firefox.
+ * remove following computed value when all browser support :has().
+ */
+const hasGroup = computed(() => {
+  let filter = props.modelValue;
+  while (filter && filter.type == 'relationship_condition') {
+    filter = filter.filter;
+  }
+  const has = filter && filter.type == 'group';
+  return isTogglingGroup.value ? !has : has;
+});
+
+/**
+ * polyfill for browser that don't support css pseudo-class :has() like firefox.
+ * remove following function when all browser support :has().
+ * remove the event listeners too (@transition-group)
+ */
+function polyfillTransitionGroup() {
+  isTogglingGroup.value = true;
+  setTimeout(() => {
+    isTogglingGroup.value = false;
+  }, 600); // the time of transition (2 * 0.3s)
+}
 </script>
 
 <template>
-  <li :style="hasGroup ? { flexBasis: '100%' } : {}">
+  <li :class="classes.group_list_element" :has-group="hasGroup ? '' : undefined">
     <component
       :is="component"
       v-bind="props"
       :model-value="modelValue"
       @remove="$emit('remove', modelValue.key)"
       @go-to-root-group="$emit('goToRootGroup')"
+      @transition-group="polyfillTransitionGroup"
     >
       <template #shortcuts>
         <Shortcuts v-on="filteredShortcutEvents" />

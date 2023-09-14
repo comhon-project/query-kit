@@ -157,12 +157,16 @@
   margin-top: 0rem;
 }
 
-ul.qkit-group-list > li > .qkit-condition-container {
-  height: 100%;
+@supports selector(:has(*)) {
+  .qkit-group-list-element:has(.qkit-group) {
+    flex-basis: 100%;
+  }
 }
 
-ul.qkit-group-list > li:has(.qkit-group) {
-  flex-basis: 100%;
+@supports not selector(:has(*)) {
+  .qkit-group-list-element[has-group] {
+    flex-basis: 100%;
+  }
 }
 
 .qkit-group-header {
@@ -570,14 +574,6 @@ ul.qkit-group-list > li:has(.qkit-group) {
   max-width: 768px;
 }
 
-.qkit-column-choices > ul > li {
-  display: grid;
-}
-
-.qkit-column-choices > ul > li > div {
-  overflow: hidden;
-}
-
 .qkit-column-choice {
   display: flex;
 }
@@ -614,25 +610,77 @@ ul.qkit-group-list > li:has(.qkit-group) {
   border-bottom-left-radius: 0;
 }
 
+.qkit-grid-container-for-transition {
+  display: grid;
+}
+
+.qkit-grid-container-for-transition > div {
+  overflow: hidden;
+}
+
 .qkit-collapse-horizontal-list-enter-active,
 .qkit-collapse-horizontal-list-leave-active {
   grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
   margin-right: 0;
-  white-space: nowrap;
+  margin-top: 0;
 }
 .qkit-collapse-horizontal-list-enter-active {
-  transition: opacity 0.25s 0.25s ease, grid-template-columns 0.25s ease, margin-right 0.25s ease;
+  transition: opacity 0.3s 0.3s ease, grid-template-columns 0.3s ease, grid-template-rows 0.3s ease,
+    margin-right 0.3s ease, margin-top 0.3s 0.3s ease;
 }
 .qkit-collapse-horizontal-list-leave-active {
-  transition: opacity 0.25s ease, grid-template-columns 0.25s 0.25s ease, margin-right 0.25s 0.25s ease;
+  transition: opacity 0.3s ease, grid-template-columns 0.3s 0.3s ease, grid-template-rows 0.3s 0.3s ease,
+    margin-right 0.3s 0.3s ease, margin-top 0.3s 0.3s ease;
 }
 
 .qkit-collapse-horizontal-list-enter-from,
 .qkit-collapse-horizontal-list-leave-to {
-  grid-template-columns: 0fr;
   opacity: 0;
-  margin-right: calc(-1 * var(--qkit-gap-spacer));
-  white-space: nowrap;
+}
+
+@supports selector(:has(*)) {
+  .qkit-collapse-horizontal-list-enter-from:has(.qkit-group),
+  .qkit-collapse-horizontal-list-leave-to:has(.qkit-group) {
+    grid-template-rows: 0fr;
+    margin-top: calc(-1 * var(--qkit-gap-spacer));
+  }
+
+  .qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)),
+  .qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) {
+    grid-template-columns: 0fr;
+    margin-right: calc(-1 * var(--qkit-gap-spacer));
+  }
+
+  .qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)) *,
+  .qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) *,
+  .qkit-collapse-horizontal-list-enter-active:not(:has(.qkit-group)) *,
+  .qkit-collapse-horizontal-list-leave-active:not(:has(.qkit-group)) * {
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
+}
+
+@supports not selector(:has(*)) {
+  .qkit-collapse-horizontal-list-enter-from[has-group],
+  .qkit-collapse-horizontal-list-leave-to[has-group] {
+    grid-template-rows: 0fr;
+    margin-top: calc(-1 * var(--qkit-gap-spacer));
+  }
+
+  .qkit-collapse-horizontal-list-enter-from:not([has-group]),
+  .qkit-collapse-horizontal-list-leave-to:not([has-group]) {
+    grid-template-columns: 0fr;
+    margin-right: calc(-1 * var(--qkit-gap-spacer));
+  }
+
+  .qkit-collapse-horizontal-list-enter-from:not([has-group]) *,
+  .qkit-collapse-horizontal-list-leave-to:not([has-group]) *,
+  .qkit-collapse-horizontal-list-enter-active:not([has-group]) *,
+  .qkit-collapse-horizontal-list-leave-active:not([has-group]) * {
+    white-space: nowrap;
+    flex-wrap: nowrap;
+  }
 }
 
 @media (max-width: 576px) {

@@ -116,7 +116,7 @@ watch(isVisible, () => {
       <div :class="classes.column_choices">
         <ul>
           <TransitionGroup name="qkit-collapse-horizontal-list">
-            <li v-for="(column, index) in newColumns" :key="column._key">
+            <li v-for="(column, index) in newColumns" :key="column._key" :class="classes.grid_container_for_transition">
               <ColumnChoice
                 v-model:property-id="column.id"
                 :model="model"

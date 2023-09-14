@@ -206,19 +206,21 @@ watchEffect(() => {
     <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined">
       <div style="overflow: hidden">
         <ul ref="listRef" :class="classes.group_list">
-          <GroupFilter
-            v-for="(filter, displayIndex) in visibleFilters"
-            :key="filter.key"
-            v-bind="props"
-            :model-value="filter"
-            :root="undefined"
-            :aria-label="undefined"
-            :except-add-filter-to-parent-group="!canAddFilter"
-            :except-go-to-previous="displayIndex == 0"
-            :except-go-to-next="displayIndex == visibleFilters.length - 1"
-            @remove="() => removeFilter(filter.key)"
-            v-on="shortcutEvents"
-          />
+          <TransitionGroup name="qkit-collapse-horizontal-list">
+            <GroupFilter
+              v-for="(filter, displayIndex) in visibleFilters"
+              :key="filter.key"
+              v-bind="props"
+              :model-value="filter"
+              :root="undefined"
+              :aria-label="undefined"
+              :except-add-filter-to-parent-group="!canAddFilter"
+              :except-go-to-previous="displayIndex == 0"
+              :except-go-to-next="displayIndex == visibleFilters.length - 1"
+              @remove="() => removeFilter(filter.key)"
+              v-on="shortcutEvents"
+            />
+          </TransitionGroup>
         </ul>
       </div>
     </div>

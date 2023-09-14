@@ -28,6 +28,7 @@ const classList = {
   group_actions: 'qkit-group-actions',
   group_resume: 'qkit-group-resume',
   group_list: 'qkit-group-list',
+  group_list_element: 'qkit-group-list-element qkit-grid-container-for-transition',
   operator: 'qkit-operator',
   collection: 'qkit-collection',
   collection_header: 'qkit-collection-header',
@@ -43,6 +44,7 @@ const classList = {
   column_add: 'qkit-column-add',
   spinner: 'qkit-spinner',
   pagination: 'qkit-pagination',
+  grid_container_for_transition: 'qkit-grid-container-for-transition',
 };
 
 const registerClasses = (custom) => {
