@@ -63,16 +63,16 @@ function expandProperty() {
 }
 
 function reduceProperty() {
-  const end = -propertyPath.value[propertyPath.value.length - 1].id.length - 1;
-  emit('update:propertyId', props.propertyId.slice(0, end));
-}
-
-function remove() {
   if (editing.value) {
     editing.value = false;
   } else {
-    emit('remove');
+    const end = -propertyPath.value[propertyPath.value.length - 1].id.length - 1;
+    emit('update:propertyId', props.propertyId.slice(0, end));
   }
+}
+
+function remove() {
+  emit('remove');
 }
 
 watch(propertyPath, async () => {
@@ -82,8 +82,11 @@ watch(propertyPath, async () => {
   }
 });
 watch(selectedProperty, () => {
-  emit('update:propertyId', props.propertyId + '.' + selectedProperty.value);
-  editing.value = false;
+  if (selectedProperty.value) {
+    emit('update:propertyId', props.propertyId + '.' + selectedProperty.value);
+    selectedProperty.value = null;
+    editing.value = false;
+  }
 });
 </script>
 
@@ -99,7 +102,7 @@ watch(selectedProperty, () => {
       </select>
       <IconButton v-else icon="add" @click="expandProperty" />
     </template>
-    <IconButton v-if="propertyPath.length > 1" icon="minus" label="remove" @click="reduceProperty" />
+    <IconButton v-if="propertyPath.length > 1 || editing" icon="minus" label="remove" @click="reduceProperty" />
     <IconButton icon="delete" @click="remove" />
   </div>
 </template>

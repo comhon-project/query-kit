@@ -9,6 +9,7 @@ import Pagination from '../Pagination/Pagination.vue';
 import Cell from './Cell.vue';
 import Header from './Header.vue';
 import ColumnChoices from './ColumnChoices.vue';
+import Utils from '../../core/Utils';
 
 const emit = defineEmits(['rowClick', 'export', 'update:columns']);
 const props = defineProps({
@@ -118,6 +119,7 @@ async function init(chosenColumns = null) {
 
   for (const column of loopColumns) {
     const copiedColumn = typeof column == 'object' ? { ...column } : { id: column };
+    copiedColumn._key = copiedColumn._key || Utils.getUniqueId(true);
     columns.push(copiedColumn);
 
     const propertyPath = copiedColumn.id ? await getPropertyPath(props.model, copiedColumn.id) : undefined;
@@ -335,7 +337,7 @@ watch(
             <tr>
               <Header
                 v-for="copiedColumn in copiedColumns"
-                :key="copiedColumn.id"
+                :key="copiedColumn._key"
                 :model="model"
                 :property-id="copiedColumn.id"
                 :label="copiedColumn.label"
@@ -352,7 +354,7 @@ watch(
               :class="onRowClick ? classes.collection_clickable_row : ''"
               @click="(e) => $emit('rowClick', object, e)"
             >
-              <template v-for="(copiedColumn, index) in copiedColumns" :key="copiedColumn.id">
+              <template v-for="(copiedColumn, index) in copiedColumns" :key="copiedColumn._key">
                 <Cell
                   :column="copiedColumn"
                   :property="propertyColumns[index]"

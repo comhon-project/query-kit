@@ -6,6 +6,7 @@ import Modal from '../Common/Modal.vue';
 import ColumnChoice from './ColumnChoice.vue';
 import { resolve } from '../../core/Schema';
 import IconButton from '../Common/IconButton.vue';
+import Utils from '../../core/Utils';
 
 const emit = defineEmits(['update:show', 'update:columns']);
 const props = defineProps({
@@ -80,7 +81,7 @@ function removeColumn(index) {
 
 function addColumn() {
   if (selectedProperty.value) {
-    newColumns.value.push({ id: selectedProperty.value });
+    newColumns.value.push({ id: selectedProperty.value, _key: Utils.getUniqueId(true) });
     selectedProperty.value = null;
   }
 }
@@ -114,15 +115,17 @@ watch(isVisible, () => {
     <template #body>
       <div :class="classes.column_choices">
         <ul>
-          <li v-for="(column, index) in newColumns" :key="column.id">
-            <ColumnChoice
-              v-model:property-id="column.id"
-              :model="model"
-              :label="column.label"
-              :columns="newColumns"
-              @remove="() => removeColumn(index)"
-            />
-          </li>
+          <TransitionGroup name="qkit-collapse-horizontal-list">
+            <li v-for="(column, index) in newColumns" :key="column._key">
+              <ColumnChoice
+                v-model:property-id="column.id"
+                :model="model"
+                :label="column.label"
+                :columns="newColumns"
+                @remove="() => removeColumn(index)"
+              />
+            </li>
+          </TransitionGroup>
           <div v-if="schema" :class="classes.column_add">
             <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
               <option value="" disabled hidden />
