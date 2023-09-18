@@ -369,9 +369,11 @@ watch(
                 />
               </template>
             </tr>
+            <tr v-show="infiniteScroll && !end && !requesting" ref="observered" style="opacity: 0">
+              <td :colspan="copiedColumns.length" />
+            </tr>
           </tbody>
         </table>
-        <div v-show="infiniteScroll && !end && !requesting" ref="observered" style="height: 1px" />
       </div>
     </div>
     <ColumnChoices
