@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
-import { getRenderer } from '../../core/CellRendererManager';
+import { getPropertyRenderer } from '../../core/CellRendererManager';
 import Utils from '../../core/Utils';
 
 const props = defineProps({
@@ -34,11 +34,7 @@ const cellComponent = computed(() => {
 });
 
 const renderer = computed(() => {
-  return props.column.renderer
-    ? props.column.renderer
-    : props.property
-    ? getRenderer(props.property.type, props.property.enum)
-    : null;
+  return props.column.renderer || (props.property ? getPropertyRenderer(props.property) : null);
 });
 
 const value = computed(() => {

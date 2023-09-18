@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { getRenderer } from '../../../core/CellRendererManager';
+import { getTypeRenderer } from '../../../core/CellRendererManager';
 
 const props = defineProps({
   column: {
@@ -36,7 +36,7 @@ const elementComponent = computed(() => {
   return typeof renderer.value == 'function' ? null : renderer.value;
 });
 const renderer = computed(() => {
-  return getRenderer(props.type.children.type, props.type.children.enum);
+  return getTypeRenderer(props.type.children);
 });
 const subValues = computed(() => {
   return props.value

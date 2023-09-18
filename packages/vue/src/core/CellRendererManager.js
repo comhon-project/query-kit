@@ -7,7 +7,7 @@ import Time from '../components/Common/Renderers/Time.vue';
 import ForeignModel from '../components/Common/Renderers/ForeignModel.vue';
 import Array from '../components/Common/Renderers/Array.vue';
 
-const renderers = {
+const typeRenderers = {
   string: null,
   integer: null,
   float: null,
@@ -21,12 +21,22 @@ const renderers = {
   array: Array,
 };
 
-const registerRenderers = (custom) => {
-  Object.assign(renderers, custom);
+const propertyRenderers = {};
+
+const registerTypeRenderers = (custom) => {
+  Object.assign(typeRenderers, custom);
 };
 
-const getRenderer = (type, enumeration) => {
-  return enumeration ? renderers.enum : renderers[type] || null;
+const registerPropertyRenderers = (custom) => {
+  Object.assign(propertyRenderers, custom);
 };
 
-export { registerRenderers, getRenderer };
+const getTypeRenderer = (typeContainer) => {
+  return typeContainer.enum ? typeRenderers.enum : typeRenderers[typeContainer.type] || null;
+};
+
+const getPropertyRenderer = (property) => {
+  return propertyRenderers[property.owner]?.[property.id] ?? getTypeRenderer(property);
+};
+
+export { registerTypeRenderers, registerPropertyRenderers, getPropertyRenderer, getTypeRenderer };

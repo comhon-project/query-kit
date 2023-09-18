@@ -2,7 +2,7 @@ import { locale, fallback } from '../i18n/i18n';
 import { registerClasses } from './ClassManager';
 import { registerIcons } from './IconManager';
 import { registerComponents } from './InputManager';
-import { registerRenderers } from './CellRendererManager';
+import { registerPropertyRenderers, registerTypeRenderers } from './CellRendererManager';
 import { registerLoader, registerLocaleLoader } from './Schema';
 import { config } from '../config/config';
 import { registerRequester } from './Requester';
@@ -26,8 +26,11 @@ export default {
     if (options.inputs) {
       registerComponents(options.inputs);
     }
-    if (options.cellRenderers) {
-      registerRenderers(options.cellRenderers);
+    if (options.cellTypeRenderers) {
+      registerTypeRenderers(options.cellTypeRenderers);
+    }
+    if (options.cellPropertyRenderers) {
+      registerPropertyRenderers(options.cellPropertyRenderers);
     }
     if (options.defaultLocale) {
       locale.value = options.defaultLocale;

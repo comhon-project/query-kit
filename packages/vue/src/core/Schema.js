@@ -12,6 +12,7 @@ async function compute(name) {
   const loadedSchema = structuredClone(await schemaLoader.load(name));
   if (loadedSchema) {
     for (const property of loadedSchema.properties) {
+      property.owner = name;
       mapProperties[property.id] = property;
     }
     if (loadedSchema.search && loadedSchema.search.scopes && Array.isArray(loadedSchema.search.scopes)) {
