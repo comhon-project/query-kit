@@ -5,7 +5,7 @@ import IconButton from '../Common/IconButton.vue';
 import { usePropertyPath } from '../Filter/Composable/PropertyPath';
 import { resolve } from '../../core/Schema';
 
-const emit = defineEmits(['remove', 'update:propertyId']);
+const emit = defineEmits(['remove', 'update:columnId']);
 const props = defineProps({
   model: {
     type: String,
@@ -13,6 +13,10 @@ const props = defineProps({
   },
   columns: {
     type: Array,
+    required: true,
+  },
+  columnId: {
+    type: String,
     required: true,
   },
   propertyId: {
@@ -67,7 +71,7 @@ function reduceProperty() {
     editing.value = false;
   } else {
     const end = -propertyPath.value[propertyPath.value.length - 1].id.length - 1;
-    emit('update:propertyId', props.propertyId.slice(0, end));
+    emit('update:columnId', props.propertyId.slice(0, end));
   }
 }
 
@@ -83,7 +87,7 @@ watch(propertyPath, async () => {
 });
 watch(selectedProperty, () => {
   if (selectedProperty.value) {
-    emit('update:propertyId', props.propertyId + '.' + selectedProperty.value);
+    emit('update:columnId', props.propertyId + '.' + selectedProperty.value);
     selectedProperty.value = null;
     editing.value = false;
   }

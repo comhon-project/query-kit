@@ -3,9 +3,8 @@ class Utils {
     this.uniqueId = 0;
   }
 
-  getUniqueId(useRandomSuffix) {
-    this.uniqueId++;
-    return useRandomSuffix ? this.uniqueId + '-' + Math.floor(Math.random() * 1000000000000000) : this.uniqueId;
+  getUniqueId() {
+    return ++this.uniqueId;
   }
 
   /**

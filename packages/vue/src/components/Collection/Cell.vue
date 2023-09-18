@@ -4,9 +4,10 @@ import { classes } from '../../core/ClassManager';
 import { getPropertyRenderer } from '../../core/CellRendererManager';
 import Utils from '../../core/Utils';
 
+const emit = defineEmits(['click']);
 const props = defineProps({
-  column: {
-    type: Object,
+  columnId: {
+    type: String,
     required: true,
   },
   rowValue: {
@@ -28,24 +29,32 @@ const props = defineProps({
   flattened: {
     type: Boolean,
   },
+  renderer: {
+    type: [Object, Function, String],
+    default: undefined,
+  },
+  onClick: {
+    type: Function,
+    default: undefined,
+  },
 });
 const cellComponent = computed(() => {
   return typeof renderer.value == 'function' ? null : renderer.value;
 });
 
 const renderer = computed(() => {
-  return props.column.renderer || (props.property ? getPropertyRenderer(props.property) : null);
+  return props.renderer || (props.property ? getPropertyRenderer(props.property) : null);
 });
 
 const value = computed(() => {
   let cellValue = props.property
     ? props.flattened
-      ? props.rowValue[props.column.id]
-      : Utils.getNestedValue(props.rowValue, props.column.id)
+      ? props.rowValue[props.columnId]
+      : Utils.getNestedValue(props.rowValue, props.columnId)
     : undefined;
 
   if (typeof renderer.value == 'function') {
-    cellValue = renderer.value(cellValue, props.rowValue, props.column.id);
+    cellValue = renderer.value(cellValue, props.rowValue, props.columnId);
   }
   return cellValue;
 });
@@ -54,15 +63,15 @@ const value = computed(() => {
 <template>
   <td>
     <button
-      v-if="column.onCellClick"
+      v-if="onClick"
       type="button"
       :class="classes.collection_clickable_cell"
-      @click="(e) => (column.onCellClick ? column.onCellClick(value, rowValue, column.id, e) : null)"
+      @click="(e) => emit('click', value, rowValue, columnId, e)"
     >
       <template v-if="cellComponent == null">{{ value }}</template>
       <component
         :is="cellComponent"
-        :column="column"
+        :column-id="columnId"
         :property="property"
         :type="property"
         :value="value"
@@ -75,7 +84,7 @@ const value = computed(() => {
       <template v-if="cellComponent == null">{{ value }}</template>
       <component
         :is="cellComponent"
-        :column="column"
+        :column-id="columnId"
         :property="property"
         :type="property"
         :value="value"

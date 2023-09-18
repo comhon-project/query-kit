@@ -3,8 +3,8 @@ import { computed } from 'vue';
 import { getTypeRenderer } from '../../../core/CellRendererManager';
 
 const props = defineProps({
-  column: {
-    type: Object,
+  columnId: {
+    type: String,
     required: true,
   },
   property: {
@@ -53,7 +53,7 @@ const subValues = computed(() => {
     <template v-if="elementComponent == null">{{ subValue }}</template>
     <component
       :is="elementComponent"
-      :column="column"
+      :column-id="columnId"
       :property="property"
       :type="type.children"
       :value="subValue"

@@ -19,6 +19,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  customColumns: {
+    type: Object,
+    default: undefined,
+  },
   filter: {
     type: Object,
     default: null,

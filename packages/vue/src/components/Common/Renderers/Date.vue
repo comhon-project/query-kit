@@ -3,8 +3,8 @@ import { computed } from 'vue';
 import { locale } from '../../../i18n/i18n';
 
 const props = defineProps({
-  column: {
-    type: Object,
+  columnId: {
+    type: String,
     required: true,
   },
   property: {

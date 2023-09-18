@@ -2,8 +2,8 @@
 import { translate } from '../../../i18n/i18n';
 
 defineProps({
-  column: {
-    type: Object,
+  columnId: {
+    type: String,
     required: true,
   },
   property: {

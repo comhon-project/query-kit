@@ -3,8 +3,8 @@ import { computed, onBeforeMount, ref } from 'vue';
 import { resolve } from '../../../core/Schema';
 
 const props = defineProps({
-  column: {
-    type: Object,
+  columnId: {
+    type: String,
     required: true,
   },
   property: {
@@ -39,13 +39,13 @@ const computedValue = computed(() => {
     ? schema.value.primary_identifiers
         .map((property) => {
           const object = props.value || props.rowValue;
-          const key = props.value ? property : props.column.id + '.' + property;
+          const key = props.value ? property : props.columnId + '.' + property;
           return object[key];
         })
         .join(' ')
     : props.value
     ? props.value[idProp]
-    : props.rowValue[props.column.id + '.' + idProp];
+    : props.rowValue[props.columnId + '.' + idProp];
 });
 
 onBeforeMount(async () => {

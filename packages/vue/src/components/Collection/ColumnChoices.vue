@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
+import { locale, translate } from '../../i18n/i18n';
 import Modal from '../Common/Modal.vue';
 import ColumnChoice from './ColumnChoice.vue';
 import { resolve } from '../../core/Schema';
@@ -22,6 +22,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  customColumns: {
+    type: Object,
+    default: undefined,
+  },
 });
 
 const schema = ref(null);
@@ -40,15 +44,42 @@ const isVisible = computed({
 const options = computed(() => {
   const options = [];
   for (const property of schema.value.properties) {
+    let selectableProperty = null;
     if (property.type != 'relationship') {
       const column = newColumns.value.find((column) => {
         return property.id == column.id;
       });
       if (!column) {
-        options.push(property);
+        selectableProperty = property;
       }
     } else if (isOneToOneRelationship(property)) {
-      options.push(property);
+      selectableProperty = property;
+    }
+    if (selectableProperty) {
+      const customLabel = props.customColumns?.[selectableProperty.id]?.label;
+      const label = customLabel
+        ? typeof customLabel == 'function'
+          ? customLabel(locale.value)
+          : customLabel
+        : property.name;
+      options.push({ value: property.id, label: label });
+    }
+  }
+  if (props.customColumns) {
+    for (const customColumnId in props.customColumns) {
+      const customColumn = props.customColumns[customColumnId];
+      if (customColumn.open !== true) {
+        continue;
+      }
+      const column = newColumns.value.find((column) => {
+        return customColumnId == column.id;
+      });
+      if (!column) {
+        options.push({
+          value: customColumnId,
+          label: typeof customColumn.label == 'function' ? customColumn.label(locale.value) : customColumn.label,
+        });
+      }
     }
   }
 
@@ -69,10 +100,17 @@ function updateColumns() {
     return;
   }
   if (confirmed.value) {
-    emit('update:columns', [...newColumns.value]);
+    emit(
+      'update:columns',
+      newColumns.value.map((column) => column.id)
+    );
   } else {
-    newColumns.value = props.columns.map((column) => ({ ...column }));
+    newColumns.value = props.columns.map((columnId) => getKeyedColumn(columnId));
   }
+}
+
+function getKeyedColumn(columnId) {
+  return { id: columnId, key: Utils.getUniqueId() };
 }
 
 function removeColumn(index) {
@@ -81,14 +119,14 @@ function removeColumn(index) {
 
 function addColumn() {
   if (selectedProperty.value) {
-    newColumns.value.push({ id: selectedProperty.value, _key: Utils.getUniqueId(true) });
+    newColumns.value.push(getKeyedColumn(selectedProperty.value));
     selectedProperty.value = null;
   }
 }
 
 watch(
   () => props.columns,
-  () => (newColumns.value = props.columns.map((column) => ({ ...column }))),
+  () => (newColumns.value = props.columns.map((columnId) => getKeyedColumn(columnId))),
   { immediate: true }
 );
 
@@ -116,11 +154,12 @@ watch(isVisible, () => {
       <div :class="classes.column_choices">
         <ul>
           <TransitionGroup name="qkit-collapse-horizontal-list">
-            <li v-for="(column, index) in newColumns" :key="column._key" :class="classes.grid_container_for_transition">
+            <li v-for="(column, index) in newColumns" :key="column.key" :class="classes.grid_container_for_transition">
               <ColumnChoice
-                v-model:property-id="column.id"
+                v-model:column-id="column.id"
+                :property-id="customColumns?.[column.id]?.open === true ? undefined : column.id"
                 :model="model"
-                :label="column.label"
+                :label="customColumns?.[column.id]?.label"
                 :columns="newColumns"
                 @remove="() => removeColumn(index)"
               />
@@ -129,8 +168,8 @@ watch(isVisible, () => {
           <div v-if="schema" :class="classes.column_add">
             <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
               <option value="" disabled hidden />
-              <option v-for="property in options" :key="property" :value="property.id">
-                {{ property.name }}
+              <option v-for="option in options" :key="option.value" :value="option.value">
+                {{ option.label }}
               </option>
             </select>
             <IconButton icon="add" :disabled="!options.length" @click="addColumn" />

@@ -9,7 +9,6 @@ import Pagination from '../Pagination/Pagination.vue';
 import Cell from './Cell.vue';
 import Header from './Header.vue';
 import ColumnChoices from './ColumnChoices.vue';
-import Utils from '../../core/Utils';
 
 const emit = defineEmits(['rowClick', 'export', 'update:columns']);
 const props = defineProps({
@@ -20,6 +19,10 @@ const props = defineProps({
   columns: {
     type: Array,
     required: true,
+  },
+  customColumns: {
+    type: Object,
+    default: undefined,
   },
   filter: {
     type: Object,
@@ -113,40 +116,37 @@ async function init(chosenColumns = null) {
     throw new Error(`invalid model "${props.model}"`);
   }
   const loopColumns = chosenColumns || props.columns;
-  const columns = [];
   const properties = [];
   requestProperties = [];
 
-  for (const column of loopColumns) {
-    const copiedColumn = typeof column == 'object' ? { ...column } : { id: column };
-    copiedColumn._key = copiedColumn._key || Utils.getUniqueId(true);
-    columns.push(copiedColumn);
-
-    const propertyPath = copiedColumn.id ? await getPropertyPath(props.model, copiedColumn.id) : undefined;
+  for (const columnId of loopColumns) {
+    const propertyPath = props.customColumns?.[columnId]?.open
+      ? undefined
+      : await getPropertyPath(props.model, columnId);
     const property = propertyPath?.[propertyPath.length - 1];
     properties.push(property);
 
     if (property) {
-      if (props.quickSort && copiedColumn.order && ['asc', 'desc'].includes(copiedColumn.order.toLowerCase())) {
-        active.value = copiedColumn.id;
+      /*if (props.quickSort && copiedColumn.order && ['asc', 'desc'].includes(copiedColumn.order.toLowerCase())) {
+        active.value = columnId;
         order.value = copiedColumn.order.toLowerCase();
-      }
+      }*/
 
       if (property.type != 'relationship') {
-        requestProperties.push(copiedColumn.id);
+        requestProperties.push(columnId);
       } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
         const propertySchema = await resolve(property.model);
-        requestProperties.push(copiedColumn.id + '.' + (propertySchema.unique_identifier || 'id'));
+        requestProperties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
         if (propertySchema.primary_identifiers) {
           for (const propertyId of propertySchema.primary_identifiers) {
-            requestProperties.push(copiedColumn.id + '.' + propertyId);
+            requestProperties.push(columnId + '.' + propertyId);
           }
         }
       }
     }
   }
+  copiedColumns.value = [...loopColumns];
   propertyColumns.value = properties;
-  copiedColumns.value = columns;
 }
 
 async function shiftThenRequestServer() {
@@ -254,6 +254,7 @@ function initColumnsModal() {
 
 async function updateColumns(columns) {
   emit('update:columns', columns);
+
   setTimeout(async () => {
     if (!requesting.value) {
       // we init only if the collection is not requesting.
@@ -336,12 +337,13 @@ watch(
           <thead>
             <tr>
               <Header
-                v-for="copiedColumn in copiedColumns"
-                :key="copiedColumn._key"
+                v-for="columnId in copiedColumns"
+                :key="columnId"
                 :model="model"
-                :property-id="copiedColumn.id"
-                :label="copiedColumn.label"
-                :active="active == copiedColumn.id"
+                :column-id="columnId"
+                :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
+                :label="customColumns?.[columnId]?.label"
+                :active="active == columnId"
                 :order="order"
                 @click="updateOrder"
               />
@@ -354,14 +356,16 @@ watch(
               :class="onRowClick ? classes.collection_clickable_row : ''"
               @click="(e) => $emit('rowClick', object, e)"
             >
-              <template v-for="(copiedColumn, index) in copiedColumns" :key="copiedColumn._key">
+              <template v-for="(columnId, index) in copiedColumns" :key="columnId">
                 <Cell
-                  :column="copiedColumn"
+                  :column-id="columnId"
                   :property="propertyColumns[index]"
                   :row-value="object"
                   :flattened="isResultFlattened"
                   :user-timezone="userTimezone"
                   :request-timezone="requestTimezone"
+                  :renderer="customColumns?.[columnId]?.renderer"
+                  @click="customColumns?.[columnId]?.onCellClick"
                 />
               </template>
             </tr>
@@ -374,6 +378,7 @@ watch(
       v-if="editColumns"
       v-model:show="showColumnsModal"
       :columns="copiedColumns"
+      :custom-columns="customColumns"
       :model="model"
       @update:columns="updateColumns"
     />

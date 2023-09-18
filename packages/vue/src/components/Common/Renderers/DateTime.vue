@@ -4,8 +4,8 @@ import { locale } from '../../../i18n/i18n';
 import { DateTime } from 'luxon';
 
 const props = defineProps({
-  column: {
-    type: Object,
+  columnId: {
+    type: String,
     required: true,
   },
   property: {

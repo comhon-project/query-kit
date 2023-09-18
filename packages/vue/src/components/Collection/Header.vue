@@ -9,6 +9,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  columnId: {
+    type: String,
+    default: undefined,
+  },
   propertyId: {
     type: String,
     default: undefined,
@@ -37,7 +41,7 @@ const { label, sortable } = usePropertyPath(props);
       :class="classes.btn"
       :active="props.active ? '' : undefined"
       :desc="props.active && props.order == 'desc' ? '' : undefined"
-      @click="$emit('click', propertyId)"
+      @click="$emit('click', columnId)"
     >
       {{ label }}
       <Icon icon="down" />
