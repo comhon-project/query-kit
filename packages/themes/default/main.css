@@ -418,14 +418,18 @@
   align-items: center;
   gap: var(--qkit-gap-spacer);
 }
-.qkit-collection-table thead .qkit-btn[active] {
+.qkit-collection-table thead button[active] {
   color: grey;
 }
 .qkit-collection-table thead button > *:last-child {
+  transform: rotate(-90deg);
   transition: transform 0.2s ease-in-out;
 }
 .qkit-collection-table thead button[desc] > *:last-child {
   transform: rotate(-180deg);
+}
+.qkit-collection-table thead button[asc] > *:last-child {
+  transform: rotate(0deg);
 }
 
 .qkit-collection-table tbody tr {

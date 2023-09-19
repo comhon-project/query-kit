@@ -30,17 +30,17 @@ describe('test schemas', async () => {
     expect(schema).toBeDefined();
     expect(schema.name).toBe('user');
     expect(schema.mapProperties).toStrictEqual({
-      id: { id: 'id', name: 'identifier', type: 'string' },
-      first_name: { id: 'first_name', name: 'first name', type: 'string' },
-      last_name: { id: 'last_name', name: 'last name', type: 'string' },
-      age: { id: 'age', name: 'the age', type: 'integer' },
-      weight: { id: 'weight', name: 'the weight', type: 'float' },
-      married: { id: 'married', name: 'is married', type: 'boolean' },
-      gender: { id: 'gender', name: 'the gender', type: 'string', enum: { male: 'Mr.', female: 'Ms.' } },
-      'birth.birth_date': { id: 'birth.birth_date', name: 'birth date', type: 'datetime' },
-      'birth.birth_day': { id: 'birth.birth_day', name: 'birth day', type: 'date' },
-      'birth.birth_hour': { id: 'birth.birth_hour', name: 'birth hour', type: 'time' },
-      country: { id: 'country', name: 'the country', type: 'choice' },
+      id: { id: 'id', name: 'identifier', type: 'string', owner: 'user' },
+      first_name: { id: 'first_name', name: 'first name', type: 'string', owner: 'user' },
+      last_name: { id: 'last_name', name: 'last name', type: 'string', owner: 'user' },
+      age: { id: 'age', name: 'the age', type: 'integer', owner: 'user' },
+      weight: { id: 'weight', name: 'the weight', type: 'float', owner: 'user' },
+      married: { id: 'married', name: 'is married', type: 'boolean', owner: 'user' },
+      gender: { id: 'gender', name: 'the gender', type: 'string', enum: { male: 'Mr.', female: 'Ms.' }, owner: 'user' },
+      'birth.birth_date': { id: 'birth.birth_date', name: 'birth date', type: 'datetime', owner: 'user' },
+      'birth.birth_day': { id: 'birth.birth_day', name: 'birth day', type: 'date', owner: 'user' },
+      'birth.birth_hour': { id: 'birth.birth_hour', name: 'birth hour', type: 'time', owner: 'user' },
+      country: { id: 'country', name: 'the country', type: 'choice', owner: 'user' },
       favorite_fruits: {
         id: 'favorite_fruits',
         name: 'favorite fruits',
@@ -49,6 +49,7 @@ describe('test schemas', async () => {
           type: 'string',
           enum: ['1', '2', '3'],
         },
+        owner: 'user',
       },
       company: {
         id: 'company',
@@ -56,6 +57,7 @@ describe('test schemas', async () => {
         type: 'relationship',
         relationship_type: 'belongs_to',
         model: 'organization',
+        owner: 'user',
       },
       friend: {
         id: 'friend',
@@ -63,6 +65,7 @@ describe('test schemas', async () => {
         type: 'relationship',
         relationship_type: 'belongs_to',
         model: 'user',
+        owner: 'user',
       },
     });
     expect(schema.mapScopes).toStrictEqual({

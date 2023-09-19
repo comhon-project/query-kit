@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, shallowRef, computed } from 'vue';
+import { ref, watch, onMounted, shallowRef, computed, toRaw } from 'vue';
 import { requester as baseRequester } from '../../core/Requester';
 import { classes } from '../../core/ClassManager';
 import { resolve, getPropertyPath } from '../../core/Schema';
@@ -10,7 +10,7 @@ import Cell from './Cell.vue';
 import Header from './Header.vue';
 import ColumnChoices from './ColumnChoices.vue';
 
-const emit = defineEmits(['rowClick', 'export', 'update:columns']);
+const emit = defineEmits(['rowClick', 'export', 'update:columns', 'update:orderBy']);
 const props = defineProps({
   model: {
     type: String,
@@ -52,6 +52,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  orderBy: {
+    type: Array,
+    default: undefined,
+  },
   postRequest: {
     type: Function,
     default: undefined,
@@ -89,6 +93,7 @@ const props = defineProps({
   },
 });
 
+let hasExecFirstQuery = false;
 let movingOffset = 0;
 let requestProperties = [];
 const requesting = ref(false);
@@ -97,8 +102,7 @@ const propertyColumns = shallowRef([]);
 const collection = shallowRef([]);
 const count = ref(0);
 const end = ref(false);
-const active = ref(null);
-const order = ref(null);
+const copiedOrderBy = ref([]);
 const page = ref(1);
 const infiniteScroll = ref(isInfiniteAccordingProps());
 const collectionContent = ref(null);
@@ -111,15 +115,26 @@ const isResultFlattened = computed(() => {
   return props.requester && typeof props.requester == 'object' ? props.requester.flattened : baseRequester.flattened;
 });
 
-async function init(chosenColumns = null) {
+const indexedOrderBy = computed(() => {
+  const indexed = {};
+  for (const order of copiedOrderBy.value) {
+    indexed[order.column] = order.order;
+  }
+  return indexed;
+});
+
+async function init(fetch = true) {
+  await initColumns(props.columns, props.orderBy, fetch);
+}
+
+async function initColumns(columns, orderBy, fetch = true) {
   if (!(await resolve(props.model))) {
     throw new Error(`invalid model "${props.model}"`);
   }
-  const loopColumns = chosenColumns || props.columns;
   const properties = [];
   requestProperties = [];
 
-  for (const columnId of loopColumns) {
+  for (const columnId of columns) {
     const propertyPath = props.customColumns?.[columnId]?.open
       ? undefined
       : await getPropertyPath(props.model, columnId);
@@ -127,11 +142,6 @@ async function init(chosenColumns = null) {
     properties.push(property);
 
     if (property) {
-      /*if (props.quickSort && copiedColumn.order && ['asc', 'desc'].includes(copiedColumn.order.toLowerCase())) {
-        active.value = columnId;
-        order.value = copiedColumn.order.toLowerCase();
-      }*/
-
       if (property.type != 'relationship') {
         requestProperties.push(columnId);
       } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
@@ -145,12 +155,73 @@ async function init(chosenColumns = null) {
       }
     }
   }
-  copiedColumns.value = [...loopColumns];
+  copiedColumns.value = [...columns];
   propertyColumns.value = properties;
+  initOrderBy(orderBy, fetch);
+}
+
+function initOrderBy(orderBy, fetch = true) {
+  copiedOrderBy.value = orderBy
+    ? orderBy
+        .map((value) => {
+          const column = typeof value == 'string' ? value : value.column;
+          return copiedColumns.value.includes(column)
+            ? typeof value == 'string'
+              ? { column: column, order: 'asc' }
+              : { column: column, order: value.order?.toLowerCase() || 'asc' }
+            : null;
+        })
+        .filter((value) => value != null)
+    : [];
+
+  if (fetch) {
+    requestServer(true);
+  }
+}
+
+async function updateColumns(columns) {
+  emit('update:columns', columns);
+
+  setTimeout(async () => {
+    if (!requesting.value) {
+      // we init only if the collection is not requesting.
+      // if requesting that means props.columns is used with v-model
+      // and initialization has been made through the props.columns watcher
+      await initColumns(columns, copiedOrderBy.value);
+    }
+  }, 0);
+}
+
+function updateOrder(columnId, multi) {
+  if (!requesting.value) {
+    let orderBy = structuredClone(toRaw(copiedOrderBy.value));
+    const newOrder = indexedOrderBy.value[columnId] == 'asc' && (orderBy.length <= 1 || multi) ? 'desc' : 'asc';
+    const newColumnOrder = { column: columnId, order: newOrder };
+    if (multi) {
+      const index = orderBy.findIndex((value) => value.column == columnId);
+      if (index != -1) {
+        orderBy[index] = newColumnOrder;
+      } else {
+        orderBy.push(newColumnOrder);
+      }
+    } else {
+      orderBy = [newColumnOrder];
+    }
+
+    emit('update:orderBy', orderBy);
+    setTimeout(async () => {
+      if (!requesting.value) {
+        // we init only if the collection is not requesting.
+        // if requesting that means props.orderBy is used with v-model
+        // and initialization has been made through the props.orderBy watcher
+        initOrderBy(orderBy);
+      }
+    }, 0);
+  }
 }
 
 async function shiftThenRequestServer() {
-  if (!requesting.value) {
+  if (!requesting.value && (hasExecFirstQuery || props.directQuery)) {
     movingOffset += props.limit;
     requestServer();
   }
@@ -171,6 +242,7 @@ async function requestServer(reset = false) {
     page.value = 1;
     collectionContent.value.scrollTop = 0;
   }
+  hasExecFirstQuery = true;
   requesting.value = true;
   const fetch = props.requester
     ? typeof props.requester == 'function'
@@ -180,7 +252,7 @@ async function requestServer(reset = false) {
 
   const response = await fetch({
     model: props.model,
-    order: active.value ? await getRequestOrder() : undefined,
+    order: copiedOrderBy.value.length ? await getRequestOrder() : undefined,
     offset: movingOffset,
     limit: props.limit,
     filter: props.filter,
@@ -211,29 +283,37 @@ async function requestServer(reset = false) {
   requesting.value = false;
 }
 
-function updateOrder(property) {
-  if (!requesting.value) {
-    order.value = active.value != property || order.value == 'desc' ? 'asc' : 'desc';
-    active.value = property;
-    requestServer(true);
-  }
-}
-
 async function getRequestOrder() {
-  const propertyPath = await getPropertyPath(props.model, active.value);
-  const property = propertyPath[propertyPath.length - 1];
+  const orderBy = [];
+  for (const order of copiedOrderBy.value) {
+    if (props.customColumns?.[order.column]?.order) {
+      orderBy.push(
+        ...props.customColumns[order.column].order.map((customOrderProperty) => {
+          return { property: customOrderProperty, order: order.order };
+        })
+      );
+    } else {
+      const propertyPath = await getPropertyPath(props.model, order.column);
+      const property = propertyPath[propertyPath.length - 1];
 
-  if (property.type != 'relationship') {
-    return [{ property: active.value, order: order.value }];
+      if (property.type != 'relationship') {
+        orderBy.push({ property: order.column, order: order.order });
+        continue;
+      }
+      const schema = await resolve(property.model);
+      if (schema.natural_sort) {
+        orderBy.push(
+          ...schema.natural_sort.map((property) => {
+            return { property: order.column + '.' + property, order: order.order };
+          })
+        );
+        continue;
+      }
+      const idProperty = schema.unique_identifier || 'id';
+      orderBy.push({ property: order.column + '.' + idProperty, order: order.order });
+    }
   }
-  const schema = await resolve(property.model);
-  if (schema.natural_sort) {
-    return schema.natural_sort.map((property) => {
-      return { property: active.value + '.' + property, order: order.value };
-    });
-  }
-  const idProperty = schema.unique_identifier || 'id';
-  return [{ property: active.value + '.' + idProperty, order: order.value }];
+  return orderBy;
 }
 
 function isInfiniteAccordingProps() {
@@ -252,38 +332,32 @@ function initColumnsModal() {
   showColumnsModal.value = true;
 }
 
-async function updateColumns(columns) {
-  emit('update:columns', columns);
-
-  setTimeout(async () => {
-    if (!requesting.value) {
-      // we init only if the collection is not requesting.
-      // if requesting that means columns are used with v-model
-      // and initialization has been made through the columns watcher
-      await init(columns);
-      requestServer(true);
-    }
-  }, 0);
-}
-
 onMounted(async () => {
-  movingOffset = props.offset;
-  await init();
   observer = new IntersectionObserver(shiftThenRequestServer);
   observer.observe(observered.value);
+
+  movingOffset = props.offset;
+  await init(false);
   if (props.directQuery) {
     requestServer();
   }
 });
 watch(
   () => props.model,
-  () => init()
+  async () => {
+    await init(true);
+  }
 );
 watch(
   () => props.columns,
   async () => {
-    await init();
-    requestServer(true);
+    await initColumns(props.columns, copiedOrderBy.value);
+  }
+);
+watch(
+  () => props.orderBy,
+  () => {
+    initOrderBy(props.orderBy);
   }
 );
 watch(
@@ -343,8 +417,8 @@ watch(
                 :column-id="columnId"
                 :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
                 :label="customColumns?.[columnId]?.label"
-                :active="active == columnId"
-                :order="order"
+                :order="indexedOrderBy[columnId]"
+                :has-custom-order="customColumns?.[columnId]?.order != null"
                 @click="updateOrder"
               />
             </tr>

@@ -2,8 +2,9 @@
 import { classes } from '../../core/ClassManager';
 import { usePropertyPath } from '../Filter/Composable/PropertyPath';
 import Icon from '../Common/Icon.vue';
+import { computed } from 'vue';
 
-defineEmits(['click']);
+const emit = defineEmits(['click']);
 const props = defineProps({
   model: {
     type: String,
@@ -21,27 +22,29 @@ const props = defineProps({
     type: [String, Function],
     default: undefined,
   },
-  active: {
-    type: Boolean,
-  },
   order: {
     type: String,
     default: undefined,
   },
+  hasCustomOrder: {
+    type: Boolean,
+  },
 });
 
 const { label, sortable } = usePropertyPath(props);
+const isColumnSortable = computed(() => sortable.value || props.hasCustomOrder);
 </script>
 
 <template>
   <th>
     <button
-      v-if="sortable"
+      v-if="isColumnSortable"
       type="button"
       :class="classes.btn"
-      :active="props.active ? '' : undefined"
-      :desc="props.active && props.order == 'desc' ? '' : undefined"
-      @click="$emit('click', columnId)"
+      :active="props.order ? '' : undefined"
+      :desc="props.order == 'desc' ? '' : undefined"
+      :asc="props.order == 'asc' ? '' : undefined"
+      @click="(e) => emit('click', columnId, e.ctrlKey)"
     >
       {{ label }}
       <Icon icon="down" />

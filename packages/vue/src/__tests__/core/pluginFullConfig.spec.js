@@ -47,7 +47,7 @@ describe('plugin', () => {
       renderHtml: true,
     });
     expect(icons.add).toEqual('icon_add');
-    expect(icons.add_filter).toBeUndefined();
+    expect(icons.columns).toBeUndefined();
     expect(icons.delete).toEqual('icon_delete');
 
     expect(classes.modal).toEqual('my-modal');

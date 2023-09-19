@@ -9,7 +9,7 @@ import Utils from '../core/Utils';
 import Shortcuts from './Filter/Shortcuts.vue';
 import { getContainerOperators } from '../core/OperatorManager';
 
-const emit = defineEmits(['rowClick', 'export', 'computed', 'updated', 'update:columns']);
+const emit = defineEmits(['rowClick', 'export', 'computed', 'updated', 'update:columns', 'update:orderBy']);
 const props = defineProps({
   model: {
     type: String,
@@ -93,6 +93,10 @@ const props = defineProps({
   quickSort: {
     type: Boolean,
     default: true,
+  },
+  orderBy: {
+    type: Array,
+    default: undefined,
   },
   postRequest: {
     type: Function,
@@ -193,6 +197,7 @@ watch(computedFilter, () => {
       :id="collectionId"
       :filter="computedFilter"
       @update:columns="(columns) => emit('update:columns', columns)"
+      @update:order-by="(orderBy) => emit('update:orderBy', orderBy)"
     >
       <template #loading="loadingProps">
         <slot name="loading" v-bind="loadingProps" />
