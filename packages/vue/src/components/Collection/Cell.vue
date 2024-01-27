@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { classes } from '../../core/ClassManager';
 import { getPropertyRenderer } from '../../core/CellRendererManager';
 import Utils from '../../core/Utils';
+import { locale } from '../../i18n/i18n';
 
 const emit = defineEmits(['click']);
 const props = defineProps({
@@ -54,7 +55,7 @@ const value = computed(() => {
     : undefined;
 
   if (typeof renderer.value == 'function') {
-    cellValue = renderer.value(cellValue, props.rowValue, props.columnId);
+    cellValue = renderer.value(cellValue, props.rowValue, props.columnId, locale.value);
   }
   return cellValue;
 });

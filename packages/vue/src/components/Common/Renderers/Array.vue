@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { getTypeRenderer } from '../../../core/CellRendererManager';
+import { locale } from '../../../i18n/i18n';
 
 const props = defineProps({
   columnId: {
@@ -41,7 +42,7 @@ const renderer = computed(() => {
 const subValues = computed(() => {
   return props.value
     ? typeof renderer.value == 'function'
-      ? props.value.map((subValue) => renderer.value(subValue))
+      ? props.value.map((subValue) => renderer.value(subValue, locale.value))
       : props.value
     : [];
 });
