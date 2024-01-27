@@ -1,6 +1,6 @@
 {
   "name": "@query-kit/themes",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": false,
   "exports": {
     "./package.json": "./package.json",

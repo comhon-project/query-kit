@@ -221,7 +221,7 @@ function updateOrder(columnId, multi) {
 }
 
 async function shiftThenRequestServer() {
-  if (!requesting.value && (hasExecFirstQuery || props.directQuery)) {
+  if (!requesting.value && hasExecFirstQuery) {
     movingOffset += props.limit;
     requestServer();
   }
