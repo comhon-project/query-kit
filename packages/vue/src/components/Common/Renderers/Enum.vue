@@ -1,4 +1,6 @@
 <script setup>
+import { getEnumTranslation } from '../../../core/Schema';
+
 const props = defineProps({
   columnId: {
     type: String,
@@ -32,5 +34,5 @@ const props = defineProps({
 </script>
 
 <template>
-  {{ type.enum[props.value] }}
+  {{ getEnumTranslation(props.property, props.value) }}
 </template>

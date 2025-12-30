@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, watchEffect, computed } from 'vue';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyTranslation } from '../../core/Schema';
 import Group from './Group.vue';
 import Condition from './Condition.vue';
 import RelationshipQueueElement from './RelationshipQueueElement.vue';
@@ -84,7 +84,11 @@ let schema = null;
 const invalidModel = ref(null);
 const invalidProperty = ref(null);
 const invalidOperator = ref(null);
-const childAriaLabel = ref('');
+const childAriaLabelProperty = ref(null);
+const childAriaLabel = computed(() => {
+  if (!childAriaLabelProperty.value) return '';
+  return getPropertyTranslation(childAriaLabelProperty.value);
+});
 const queue = ref(null);
 const endQueueFilter = ref(null);
 
@@ -170,7 +174,7 @@ async function setChild() {
       childFilter = null;
       return;
     }
-    childAriaLabel.value = childSchema.mapProperties[childFilter.property].name;
+    childAriaLabelProperty.value = childSchema.mapProperties[childFilter.property];
 
     const childModelName = childSchema.mapProperties[childFilter.property].model;
     childSchema = await resolve(childModelName);

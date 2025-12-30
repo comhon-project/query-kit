@@ -4,7 +4,7 @@ import { classes } from '../../core/ClassManager';
 import { locale, translate } from '../../i18n/i18n';
 import Modal from '../Common/Modal.vue';
 import ColumnChoice from './ColumnChoice.vue';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyTranslation } from '../../core/Schema';
 import IconButton from '../Common/IconButton.vue';
 import Utils from '../../core/Utils';
 
@@ -61,7 +61,7 @@ const options = computed(() => {
         ? typeof customLabel == 'function'
           ? customLabel(locale.value)
           : customLabel
-        : property.name;
+        : getPropertyTranslation(property);
       options.push({ value: property.id, label: label });
     }
   }

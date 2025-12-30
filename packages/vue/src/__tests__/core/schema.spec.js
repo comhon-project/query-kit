@@ -69,15 +69,16 @@ describe('test schemas', async () => {
       },
     });
     expect(schema.mapScopes).toStrictEqual({
-      scope_string_definition: { id: 'scope_string_definition', name: 'scope_string_definition' },
-      scope: { id: 'scope', name: 'scope without value' },
-      string_scope: { id: 'string_scope', name: 'string scope', type: 'string', useOperator: true },
-      datetime_scope: { id: 'datetime_scope', name: 'datetime scope', type: 'datetime' },
+      scope_string_definition: { id: 'scope_string_definition', name: 'scope_string_definition', owner: 'user' },
+      scope: { id: 'scope', name: 'scope without value', owner: 'user' },
+      string_scope: { id: 'string_scope', name: 'string scope', type: 'string', useOperator: true, owner: 'user' },
+      datetime_scope: { id: 'datetime_scope', name: 'datetime scope', type: 'datetime', owner: 'user' },
       enum_scope: {
         id: 'enum_scope',
         name: 'enum scope',
         type: 'string',
         enum: { one: 'value one', two: 'value two' },
+        owner: 'user',
       },
     });
     expect(schema.search.properties).toStrictEqual([

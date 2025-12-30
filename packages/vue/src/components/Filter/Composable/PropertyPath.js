@@ -1,5 +1,5 @@
 import { computed, ref, shallowRef, watch } from 'vue';
-import { getPropertyPath, resolve } from '../../../core/Schema';
+import { getPropertyPath, getPropertyTranslation, resolve } from '../../../core/Schema';
 import { locale } from '../../../i18n/i18n';
 
 const usePropertyPath = (props) => {
@@ -14,7 +14,7 @@ const usePropertyPath = (props) => {
         ? props.label(currentLocale)
         : props.label
       : path
-      ? path.map((property) => property.name.value).join(' ')
+      ? path.map((property) => getPropertyTranslation(property)).join(' ')
       : undefined;
   });
 

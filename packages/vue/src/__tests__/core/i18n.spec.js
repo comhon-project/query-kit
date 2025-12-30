@@ -1,10 +1,26 @@
 import { describe, it, expect, beforeAll } from 'vitest';
+import { watch } from 'vue';
 import { locale, translate, translations } from '../../i18n/i18n';
 
 beforeAll(() => {
   translate('add');
   translate('search');
 });
+
+function waitForTranslation(key, expected) {
+  return new Promise((resolve) => {
+    const unwatch = watch(
+      translations,
+      (val) => {
+        if (val[key] === expected) {
+          unwatch();
+          resolve();
+        }
+      },
+      { immediate: true }
+    );
+  });
+}
 
 describe('i18n', () => {
   it('translate with default locale', () => {
@@ -15,14 +31,10 @@ describe('i18n', () => {
   });
   it('translate with locale fr', async () => {
     locale.value = 'fr';
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        expect(translations.value.add).toBe('ajouter');
-        expect(translations.value.search).toBe('rechercher');
-        expect(translate('add')).toBe('ajouter');
-        expect(translate('search')).toBe('rechercher');
-        resolve();
-      }, 10);
-    });
+    await waitForTranslation('add', 'ajouter');
+    expect(translations.value.add).toBe('ajouter');
+    expect(translations.value.search).toBe('rechercher');
+    expect(translate('add')).toBe('ajouter');
+    expect(translate('search')).toBe('rechercher');
   });
 });

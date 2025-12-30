@@ -1,93 +1,130 @@
-import { reactive, ref, watch } from 'vue';
+import { reactive, watch } from 'vue';
 import { fallback, locale } from '../i18n/i18n';
 
 let schemaLoader;
 let schemaLocaleLoader;
 const computedSchemas = {};
+const loadedTranslations = reactive({});
+const loadingTranslations = {};
+let previousLocale = locale.value;
 
-async function compute(name) {
-  let computed = null;
-  const mapProperties = {};
-  const mapScopes = {};
-  const loadedSchema = structuredClone(await schemaLoader.load(name));
-  if (loadedSchema) {
-    for (const property of loadedSchema.properties) {
-      property.owner = name;
-      mapProperties[property.id] = property;
-    }
-    if (loadedSchema.search && loadedSchema.search.scopes && Array.isArray(loadedSchema.search.scopes)) {
-      const scopes = [];
-      for (let scope of loadedSchema.search.scopes) {
-        scope = typeof scope == 'object' ? scope : { id: scope, name: scope };
-        mapScopes[scope.id] = scope;
-        scopes.push(scope);
-      }
-      loadedSchema.search.scopes = scopes;
-    }
-    computed = Object.assign({ mapProperties, mapScopes }, loadedSchema);
-    computed.name = name;
+watch(
+  locale,
+  (_, oldLocale) => {
+    previousLocale = oldLocale;
+  },
+  { flush: 'sync' }
+);
 
-    if (schemaLocaleLoader) {
-      computed.translations = {};
-      await computeLocales(computed, true);
-    }
+function ensureTranslationsLoaded(schemaName) {
+  const cacheKey = `${schemaName}.${locale.value}`;
+  if (!loadedTranslations[cacheKey] && !loadingTranslations[cacheKey] && schemaLocaleLoader) {
+    loadingTranslations[cacheKey] = true;
+    loadRawTranslations(schemaName, locale.value);
   }
-  return computed;
 }
 
-async function computeLocales(schema, create) {
-  const translations = await getTranslations(schema, locale.value);
-  let fallbackTranslations = null;
+function getPropertyTranslationForLocale(property, targetLocale) {
+  const current = loadedTranslations[`${property.owner}.${targetLocale}`];
+  if (current?.[property.id]) return current[property.id];
 
-  for (const map of [schema.mapProperties, schema.mapScopes]) {
-    for (const key in map) {
-      if (!Object.hasOwnProperty.call(map, key)) {
-        continue;
-      }
-      const target = map[key];
-      if (create) {
-        target.name = ref(null);
-      }
-      target.name.value = translations[target.id];
-      if (!target.name.value) {
-        if (!fallbackTranslations) {
-          fallbackTranslations = await getTranslations(schema, fallback.value);
-        }
-        target.name.value = fallbackTranslations[target.id];
-      }
-      if (!target.name.value) {
-        console.warn(`translation not found for property ${schema.name}.${target.id}`);
-        target.name.value = target.id;
-      }
-      let enumTarget = target;
-      while (enumTarget.type == 'array') {
-        enumTarget = target.children;
-      }
-      if (enumTarget.enum) {
-        if (create) {
-          const enumKeys = Array.isArray(enumTarget.enum) ? enumTarget.enum : Object.keys(enumTarget.enum);
-          enumTarget.enum = reactive({});
-          for (const key of enumKeys) {
-            enumTarget.enum[key] = null;
-          }
-        }
-        for (const key in enumTarget.enum) {
-          let value = translations?.__enumerations__?.[target.id]?.[key];
-          if (!value) {
-            if (!fallbackTranslations) {
-              fallbackTranslations = await getTranslations(schema, fallback.value);
-            }
-            value = fallbackTranslations?.__enumerations__?.[target.id]?.[key];
-          }
-          if (!value) {
-            console.warn(`translation not found for enumeration ${schema.name}.${target.id}.${key}`);
-            value = key;
-          }
-          enumTarget.enum[key] = value;
-        }
-      }
+  const fallbackTranslations = loadedTranslations[`${property.owner}.${fallback.value}`];
+  if (fallbackTranslations?.[property.id]) return fallbackTranslations[property.id];
+
+  return property.name;
+}
+
+function getPropertyTranslation(property) {
+  ensureTranslationsLoaded(property.owner);
+
+  const cacheKey = `${property.owner}.${locale.value}`;
+  const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
+
+  return getPropertyTranslationForLocale(property, targetLocale);
+}
+
+function getEnumTranslationForLocale(property, enumKey, targetLocale) {
+  const current = loadedTranslations[`${property.owner}.${targetLocale}`];
+  const currentValue = current?.__enumerations__?.[property.id]?.[enumKey];
+  if (currentValue) return currentValue;
+
+  const fallbackTranslations = loadedTranslations[`${property.owner}.${fallback.value}`];
+  const fallbackValue = fallbackTranslations?.__enumerations__?.[property.id]?.[enumKey];
+  if (fallbackValue) return fallbackValue;
+
+  const enumDef = property.enum;
+  return enumDef?.[enumKey] ?? enumKey;
+}
+
+function getEnumTranslation(property, enumKey) {
+  ensureTranslationsLoaded(property.owner);
+
+  const cacheKey = `${property.owner}.${locale.value}`;
+  const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
+
+  return getEnumTranslationForLocale(property, enumKey, targetLocale);
+}
+
+function getEnumTranslations(property, enumDef = property.enum) {
+  const enumKeys = Array.isArray(enumDef) ? enumDef : Object.keys(enumDef);
+  const result = {};
+  for (const key of enumKeys) {
+    result[key] = getEnumTranslation(property, key);
+  }
+  return result;
+}
+
+async function compute(name) {
+  const translationPromises = [];
+  if (schemaLocaleLoader) {
+    translationPromises.push(loadRawTranslations(name, locale.value));
+    if (locale.value !== fallback.value) {
+      translationPromises.push(loadRawTranslations(name, fallback.value));
     }
   }
+
+  const [loadedSchema] = await Promise.all([schemaLoader.load(name), ...translationPromises]);
+  const schema = structuredClone(loadedSchema);
+
+  if (!schema) return null;
+
+  const mapProperties = {};
+  const mapScopes = {};
+
+  for (const property of schema.properties) {
+    property.owner = name;
+    mapProperties[property.id] = property;
+  }
+
+  if (schema.search?.scopes && Array.isArray(schema.search.scopes)) {
+    const scopes = [];
+    for (let scope of schema.search.scopes) {
+      scope = typeof scope == 'object' ? scope : { id: scope, name: scope };
+      scope.owner = name;
+      mapScopes[scope.id] = scope;
+      scopes.push(scope);
+    }
+    schema.search.scopes = scopes;
+  }
+
+  schema.mapProperties = mapProperties;
+  schema.mapScopes = mapScopes;
+  schema.name = name;
+
+  return schema;
+}
+
+async function loadRawTranslations(schemaName, targetLocale) {
+  const cacheKey = `${schemaName}.${targetLocale}`;
+  if (!loadedTranslations[cacheKey]) {
+    try {
+      loadedTranslations[cacheKey] = await schemaLocaleLoader.load(schemaName, targetLocale);
+    } catch (error) {
+      loadedTranslations[cacheKey] = {};
+    }
+    delete loadingTranslations[cacheKey];
+  }
+  return loadedTranslations[cacheKey];
 }
 
 async function getPropertyPath(model, nestedProperty) {
@@ -117,17 +154,6 @@ async function getPropertyPath(model, nestedProperty) {
   return propertyPath;
 }
 
-async function getTranslations(schema, targetLocale) {
-  if (!schema.translations[targetLocale]) {
-    try {
-      schema.translations[targetLocale] = await schemaLocaleLoader.load(schema.name, targetLocale);
-    } catch (error) {
-      schema.translations[targetLocale] = {};
-    }
-  }
-  return schema.translations[targetLocale];
-}
-
 const registerLoader = (config) => {
   schemaLoader = config;
 };
@@ -143,15 +169,13 @@ const resolve = (name) => {
   return computedSchemas[name];
 };
 
-watch(locale, () => {
-  if (schemaLocaleLoader) {
-    for (const name in computedSchemas) {
-      if (!Object.hasOwnProperty.call(computedSchemas, name)) {
-        continue;
-      }
-      computedSchemas[name].then((schema) => computeLocales(schema, false));
-    }
-  }
-});
-
-export { registerLoader, registerLocaleLoader, resolve, getPropertyPath };
+export {
+  registerLoader,
+  registerLocaleLoader,
+  resolve,
+  getPropertyPath,
+  getPropertyTranslation,
+  getEnumTranslation,
+  getEnumTranslations,
+  loadRawTranslations,
+};

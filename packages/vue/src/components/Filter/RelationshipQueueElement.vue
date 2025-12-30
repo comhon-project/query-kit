@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watchEffect } from 'vue';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyTranslation } from '../../core/Schema';
 import { useBaseFilter } from './Composable/BaseFilter';
 import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
 import { classes } from '../../core/ClassManager';
@@ -39,7 +39,10 @@ const props = defineProps({
 });
 const schema = ref(null);
 const { canEditOperator, operatorOptions } = useBaseFilter(props, schema, 'relationship_condition');
-const label = computed(() => schema.value.mapProperties[props.modelValue.property].name);
+const label = computed(() => {
+  const property = schema.value.mapProperties[props.modelValue.property];
+  return getPropertyTranslation(property);
+});
 
 async function initSchema() {
   schema.value = await resolve(props.model);

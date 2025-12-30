@@ -3,6 +3,7 @@ import { ref, computed, watchEffect, watch } from 'vue';
 import { DateTime } from 'luxon';
 import { classes } from '../../core/ClassManager';
 import { getComponent, isNativeHtmlComponent } from '../../core/InputManager';
+import { getEnumTranslations } from '../../core/Schema';
 
 const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
@@ -50,6 +51,10 @@ const containerType = computed(() => {
   return container;
 });
 const isVueComponent = computed(() => !isNativeHtmlComponent(inputType.value));
+const enumOptions = computed(() => {
+  if (!containerType.value.enum) return null;
+  return getEnumTranslations(props.target, containerType.value.enum);
+});
 
 function getConditionValueFromModelValue() {
   if (props.modelValue == null) {
@@ -103,12 +108,12 @@ watch(conditionValue, () => {
     :disabled="!editable"
   />
   <select
-    v-else-if="inputType == 'select' && containerType.enum"
+    v-else-if="inputType == 'select' && enumOptions"
     v-model="conditionValue"
     :class="classes.input"
     :disabled="!editable"
   >
-    <option v-for="(label, value) in containerType.enum" :key="value" :value="value">
+    <option v-for="(label, value) in enumOptions" :key="value" :value="value">
       {{ label }}
     </option>
   </select>

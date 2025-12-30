@@ -2,7 +2,7 @@
 import { ref, watch, computed, watchEffect } from 'vue';
 import { useBaseFilter } from './Composable/BaseFilter';
 import { isValidOperator } from '../../core/OperatorManager';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyTranslation } from '../../core/Schema';
 import InvalidProperty from '../Messages/InvalidProperty.vue';
 import InvalidScope from '../Messages/InvalidScope.vue';
 import InvalidOperator from '../Messages/InvalidOperator.vue';
@@ -96,7 +96,10 @@ const target = computed(() => {
 });
 const targetName = computed(() => {
   const currentLocale = locale.value;
-  return target.value.translation ? target.value.translation(currentLocale) : target.value.name;
+  if (target.value.translation) {
+    return target.value.translation(currentLocale);
+  }
+  return getPropertyTranslation(target.value);
 });
 const isUniqueIn = computed(() => {
   return isUniqueComponentIn(containerType.value.type);

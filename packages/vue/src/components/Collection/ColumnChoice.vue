@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { classes } from '../../core/ClassManager';
 import IconButton from '../Common/IconButton.vue';
 import { usePropertyPath } from '../Filter/Composable/PropertyPath';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyTranslation } from '../../core/Schema';
 
 const emit = defineEmits(['remove', 'update:columnId']);
 const props = defineProps({
@@ -101,7 +101,7 @@ watch(selectedProperty, () => {
       <select v-if="editing" v-model="selectedProperty" :class="classes.input">
         <option value="" disabled hidden />
         <option v-for="property in options" :key="property" :value="property.id">
-          {{ property.name }}
+          {{ getPropertyTranslation(property) }}
         </option>
       </select>
       <IconButton v-else icon="add" @click="expandProperty" />

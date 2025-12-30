@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
 import { classes } from '../../core/ClassManager';
-import { resolve } from '../../core/Schema';
+import { resolve, getPropertyTranslation } from '../../core/Schema';
 import Utils from '../../core/Utils';
 import { translate, locale } from '../../i18n/i18n';
 import { getConditionOperators, getContainerOperators } from '../../core/OperatorManager';
@@ -48,10 +48,10 @@ const { searchableProperties, searchableScopes, searchableComputedScopes } = use
 const options = computed(() => {
   const options = {};
   for (const property of searchableProperties.value) {
-    options[property.id] = property.name;
+    options[property.id] = getPropertyTranslation(property);
   }
   for (const scope of searchableScopes.value) {
-    options[scope.id] = scope.name;
+    options[scope.id] = getPropertyTranslation(scope);
   }
   for (const scope of searchableComputedScopes.value) {
     if (scope.translation) {
