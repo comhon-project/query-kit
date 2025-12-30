@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@components/*": ["./src/components/*"],
+      "@i18n/*": ["./src/i18n/*"],
+      "@config/*": ["./src/config/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "playground"]
+}
