@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeMount, ref } from 'vue';
-import { resolve } from '../../../core/Schema';
+import { resolve } from '@core/Schema';
 
 const props = defineProps({
   columnId: {

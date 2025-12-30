@@ -1,10 +1,10 @@
 <script setup>
 import { ref, watch, toRaw, watchEffect } from 'vue';
-import { resolve } from '../../core/Schema';
-import Group from './Group.vue';
-import IconButton from '../Common/IconButton.vue';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
+import { resolve } from '@core/Schema';
+import Group from '@components/Filter/Group.vue';
+import IconButton from '@components/Common/IconButton.vue';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
 
 const emit = defineEmits(['computed']);
 const props = defineProps({

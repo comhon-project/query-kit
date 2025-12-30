@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import { getConditionOperators, getContainerOperators } from '../../../core/OperatorManager';
+import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
 
 const useSearchable = (props, schema) => {
   const searchableProperties = computed(() => {

@@ -1,12 +1,12 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
-import { classes } from '../../core/ClassManager';
-import { resolve, getPropertyTranslation } from '../../core/Schema';
-import Utils from '../../core/Utils';
-import { translate, locale } from '../../i18n/i18n';
-import { getConditionOperators, getContainerOperators } from '../../core/OperatorManager';
-import { useSearchable } from './Composable/Searchable';
-import Modal from '../Common/Modal.vue';
+import { classes } from '@core/ClassManager';
+import { resolve, getPropertyTranslation } from '@core/Schema';
+import Utils from '@core/Utils';
+import { translate, locale } from '@i18n/i18n';
+import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
+import { useSearchable } from '@components/Filter/Composable/Searchable';
+import Modal from '@components/Common/Modal.vue';
 
 const emit = defineEmits(['update:show', 'validate']);
 const props = defineProps({

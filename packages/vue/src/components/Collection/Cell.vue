@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue';
-import { classes } from '../../core/ClassManager';
-import { getPropertyRenderer } from '../../core/CellRendererManager';
-import Utils from '../../core/Utils';
-import { locale } from '../../i18n/i18n';
+import { classes } from '@core/ClassManager';
+import { getPropertyRenderer } from '@core/CellRendererManager';
+import Utils from '@core/Utils';
+import { locale } from '@i18n/i18n';
 
 const emit = defineEmits(['click']);
 const props = defineProps({

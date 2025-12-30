@@ -1,5 +1,5 @@
 import { reactive, watch } from 'vue';
-import { fallback, locale } from '../i18n/i18n';
+import { fallback, locale } from '@i18n/i18n';
 
 let schemaLoader;
 let schemaLocaleLoader;

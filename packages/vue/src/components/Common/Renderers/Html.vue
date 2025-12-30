@@ -1,5 +1,5 @@
 <script setup>
-import { config } from '../../../config/config';
+import { config } from '@config/config';
 
 defineProps({
   columnId: {

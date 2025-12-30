@@ -1,5 +1,5 @@
 import { reactive, ref, shallowRef, watch } from 'vue';
-import en from './locales/en';
+import en from '@i18n/locales/en';
 
 // set english as default language
 const locales = ref({ en });

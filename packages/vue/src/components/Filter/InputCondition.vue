@@ -1,9 +1,9 @@
 <script setup>
 import { ref, computed, watchEffect, watch } from 'vue';
 import { DateTime } from 'luxon';
-import { classes } from '../../core/ClassManager';
-import { getComponent, isNativeHtmlComponent } from '../../core/InputManager';
-import { getEnumTranslations } from '../../core/Schema';
+import { classes } from '@core/ClassManager';
+import { getComponent, isNativeHtmlComponent } from '@core/InputManager';
+import { getEnumTranslations } from '@core/Schema';
 
 const emit = defineEmits(['update:modelValue']);
 const props = defineProps({

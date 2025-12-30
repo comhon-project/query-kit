@@ -1,4 +1,4 @@
-import BooleanInput from '../components/Common/BooleanInput.vue';
+import BooleanInput from '@components/Common/BooleanInput.vue';
 
 const nativeHtmlComponents = {
   // input types

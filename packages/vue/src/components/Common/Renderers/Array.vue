@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
-import { getTypeRenderer } from '../../../core/CellRendererManager';
-import { locale } from '../../../i18n/i18n';
+import { getTypeRenderer } from '@core/CellRendererManager';
+import { locale } from '@i18n/i18n';
 
 const props = defineProps({
   columnId: {

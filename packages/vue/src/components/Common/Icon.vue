@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
-import { icons, iconComponent, iconPropName } from '../../core/IconManager';
-import { translate } from '../../i18n/i18n';
+import { icons, iconComponent, iconPropName } from '@core/IconManager';
+import { translate } from '@i18n/i18n';
 
 const props = defineProps({
   icon: {

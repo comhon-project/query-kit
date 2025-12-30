@@ -1,7 +1,7 @@
 <script setup>
-import { classes } from '../../core/ClassManager';
-import { usePropertyPath } from '../Filter/Composable/PropertyPath';
-import Icon from '../Common/Icon.vue';
+import { classes } from '@core/ClassManager';
+import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
+import Icon from '@components/Common/Icon.vue';
 import { computed } from 'vue';
 
 const emit = defineEmits(['click']);

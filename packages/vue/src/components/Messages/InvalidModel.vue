@@ -1,5 +1,5 @@
 <script setup>
-import { classes } from '../../core/ClassManager';
+import { classes } from '@core/ClassManager';
 
 const props = defineProps({
   model: {

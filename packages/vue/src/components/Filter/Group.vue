@@ -1,18 +1,18 @@
 <script setup>
 import { ref, computed, watchEffect } from 'vue';
-import Utils from '../../core/Utils.js';
-import ConditionChoice from './ConditionChoice.vue';
-import { resolve } from '../../core/Schema';
-import { useBaseFilter } from './Composable/BaseFilter';
-import { isValidOperator } from '../../core/OperatorManager';
-import InvalidOperator from '../Messages/InvalidOperator.vue';
-import InvalidModel from '../Messages/InvalidModel.vue';
-import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
-import IconButton from '../Common/IconButton.vue';
-import CollapseButton from '../Common/CollapseButton.vue';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
-import GroupFilter from './GroupFilter.vue';
+import Utils from '@core/Utils.js';
+import ConditionChoice from '@components/Filter/ConditionChoice.vue';
+import { resolve } from '@core/Schema';
+import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
+import { isValidOperator } from '@core/OperatorManager';
+import InvalidOperator from '@components/Messages/InvalidOperator.vue';
+import InvalidModel from '@components/Messages/InvalidModel.vue';
+import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
+import IconButton from '@components/Common/IconButton.vue';
+import CollapseButton from '@components/Common/CollapseButton.vue';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
+import GroupFilter from '@components/Filter/GroupFilter.vue';
 
 const emit = defineEmits(['remove', 'goToRootGroup']);
 const props = defineProps({

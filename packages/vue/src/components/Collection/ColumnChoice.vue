@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { classes } from '../../core/ClassManager';
-import IconButton from '../Common/IconButton.vue';
-import { usePropertyPath } from '../Filter/Composable/PropertyPath';
-import { resolve, getPropertyTranslation } from '../../core/Schema';
+import { classes } from '@core/ClassManager';
+import IconButton from '@components/Common/IconButton.vue';
+import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
+import { resolve, getPropertyTranslation } from '@core/Schema';
 
 const emit = defineEmits(['remove', 'update:columnId']);
 const props = defineProps({

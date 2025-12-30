@@ -1,14 +1,14 @@
 <script setup>
 import { ref, watch, onMounted, shallowRef, computed, toRaw } from 'vue';
-import { requester as baseRequester } from '../../core/Requester';
-import { classes } from '../../core/ClassManager';
-import { resolve, getPropertyPath } from '../../core/Schema';
-import { translate } from '../../i18n/i18n';
-import IconButton from '../Common/IconButton.vue';
-import Pagination from '../Pagination/Pagination.vue';
-import Cell from './Cell.vue';
-import Header from './Header.vue';
-import ColumnChoices from './ColumnChoices.vue';
+import { requester as baseRequester } from '@core/Requester';
+import { classes } from '@core/ClassManager';
+import { resolve, getPropertyPath } from '@core/Schema';
+import { translate } from '@i18n/i18n';
+import IconButton from '@components/Common/IconButton.vue';
+import Pagination from '@components/Pagination/Pagination.vue';
+import Cell from '@components/Collection/Cell.vue';
+import Header from '@components/Collection/Header.vue';
+import ColumnChoices from '@components/Collection/ColumnChoices.vue';
 
 const emit = defineEmits(['rowClick', 'export', 'update:columns', 'update:orderBy']);
 const props = defineProps({

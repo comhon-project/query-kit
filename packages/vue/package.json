@@ -2,6 +2,22 @@
   "name": "@query-kit/vue",
   "version": "0.8.0",
   "private": false,
+  "type": "module",
+  "main": "./index.js",
+  "module": "./index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.js"
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "index.js",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

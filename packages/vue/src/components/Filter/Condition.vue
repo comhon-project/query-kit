@@ -1,20 +1,20 @@
 <script setup>
 import { ref, watch, computed, watchEffect } from 'vue';
-import { useBaseFilter } from './Composable/BaseFilter';
-import { isValidOperator } from '../../core/OperatorManager';
-import { resolve, getPropertyTranslation } from '../../core/Schema';
-import InvalidProperty from '../Messages/InvalidProperty.vue';
-import InvalidScope from '../Messages/InvalidScope.vue';
-import InvalidOperator from '../Messages/InvalidOperator.vue';
-import InvalidType from '../Messages/InvalidType.vue';
-import InvalidModel from '../Messages/InvalidModel.vue';
-import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
-import InputCollection from './InputCollection.vue';
-import InputCondition from './InputCondition.vue';
-import IconButton from '../Common/IconButton.vue';
-import { classes } from '../../core/ClassManager';
-import { getComponent, isUniqueComponentIn } from '../../core/InputManager';
-import { locale, translate } from '../../i18n/i18n';
+import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
+import { isValidOperator } from '@core/OperatorManager';
+import { resolve, getPropertyTranslation } from '@core/Schema';
+import InvalidProperty from '@components/Messages/InvalidProperty.vue';
+import InvalidScope from '@components/Messages/InvalidScope.vue';
+import InvalidOperator from '@components/Messages/InvalidOperator.vue';
+import InvalidType from '@components/Messages/InvalidType.vue';
+import InvalidModel from '@components/Messages/InvalidModel.vue';
+import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
+import InputCollection from '@components/Filter/InputCollection.vue';
+import InputCondition from '@components/Filter/InputCondition.vue';
+import IconButton from '@components/Common/IconButton.vue';
+import { classes } from '@core/ClassManager';
+import { getComponent, isUniqueComponentIn } from '@core/InputManager';
+import { locale, translate } from '@i18n/i18n';
 
 defineEmits(['remove']);
 const props = defineProps({

@@ -1,5 +1,5 @@
 <script setup>
-import { translate } from '../../../i18n/i18n';
+import { translate } from '@i18n/i18n';
 
 defineProps({
   columnId: {

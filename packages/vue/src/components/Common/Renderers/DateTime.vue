@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue';
-import { locale } from '../../../i18n/i18n';
+import { locale } from '@i18n/i18n';
 import { DateTime } from 'luxon';
 
 const props = defineProps({

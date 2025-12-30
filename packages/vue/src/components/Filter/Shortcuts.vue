@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
 
 defineEmits([
   'goToNext',

@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref, watchEffect } from 'vue';
-import { resolve, getPropertyTranslation } from '../../core/Schema';
-import { useBaseFilter } from './Composable/BaseFilter';
-import AdaptativeSelect from '../Common/AdaptativeSelect.vue';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
+import { resolve, getPropertyTranslation } from '@core/Schema';
+import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
+import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
 
 defineEmits(['remove', 'end:relationship']);
 const props = defineProps({

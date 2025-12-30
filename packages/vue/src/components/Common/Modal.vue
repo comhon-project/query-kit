@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import IconButton from '../Common/IconButton.vue';
-import { classes } from '../../core/ClassManager';
+import IconButton from '@components/Common/IconButton.vue';
+import { classes } from '@core/ClassManager';
 
 const emit = defineEmits(['update:show', 'confirm', 'closed']);
 const props = defineProps({

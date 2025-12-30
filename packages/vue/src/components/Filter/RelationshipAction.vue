@@ -1,9 +1,9 @@
 <script setup>
 import { ref, watchEffect } from 'vue';
-import { resolve } from '../../core/Schema';
-import { useBaseFilter } from './Composable/BaseFilter';
-import ConditionChoice from './ConditionChoice.vue';
-import IconButton from '../Common/IconButton.vue';
+import { resolve } from '@core/Schema';
+import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
+import ConditionChoice from '@components/Filter/ConditionChoice.vue';
+import IconButton from '@components/Common/IconButton.vue';
 
 const emit = defineEmits(['remove', 'add']);
 const props = defineProps({

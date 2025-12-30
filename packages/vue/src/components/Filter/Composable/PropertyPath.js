@@ -1,6 +1,6 @@
 import { computed, ref, shallowRef, watch } from 'vue';
-import { getPropertyPath, getPropertyTranslation, resolve } from '../../../core/Schema';
-import { locale } from '../../../i18n/i18n';
+import { getPropertyPath, getPropertyTranslation, resolve } from '@core/Schema';
+import { locale } from '@i18n/i18n';
 
 const usePropertyPath = (props) => {
   const sortable = ref(false);

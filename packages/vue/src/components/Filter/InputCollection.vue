@@ -1,8 +1,8 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { classes } from '../../core/ClassManager';
-import IconButton from '../Common/IconButton.vue';
-import InputCondition from './InputCondition.vue';
+import { classes } from '@core/ClassManager';
+import IconButton from '@components/Common/IconButton.vue';
+import InputCondition from '@components/Filter/InputCondition.vue';
 
 const emit = defineEmits(['update:modelValue']);
 const props = defineProps({

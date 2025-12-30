@@ -1,5 +1,5 @@
 <script setup>
-import { getEnumTranslation } from '../../../core/Schema';
+import { getEnumTranslation } from '@core/Schema';
 
 const props = defineProps({
   columnId: {

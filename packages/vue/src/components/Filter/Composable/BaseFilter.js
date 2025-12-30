@@ -1,6 +1,6 @@
 import { computed } from 'vue';
-import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '../../../core/OperatorManager';
-import { useSearchable } from './Searchable';
+import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '@core/OperatorManager';
+import { useSearchable } from '@components/Filter/Composable/Searchable';
 
 const useBaseFilter = (props, schema, filterType) => {
   const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(props, schema);

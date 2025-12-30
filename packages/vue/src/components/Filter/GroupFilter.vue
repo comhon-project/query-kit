@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue';
-import Shortcuts from './Shortcuts.vue';
-import Condition from './Condition.vue';
-import RelationshipCondition from './RelationshipCondition.vue';
-import Group from './Group.vue';
-import { classes } from '../../core/ClassManager';
+import Shortcuts from '@components/Filter/Shortcuts.vue';
+import Condition from '@components/Filter/Condition.vue';
+import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
+import Group from '@components/Filter/Group.vue';
+import { classes } from '@core/ClassManager';
 
 const emit = defineEmits([
   'remove',

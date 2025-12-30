@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
-import { icons } from '../../core/IconManager';
-import Icon from './Icon.vue';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
+import { icons } from '@core/IconManager';
+import Icon from '@components/Common/Icon.vue';
 
 defineEmits(['update:collapsed']);
 const props = defineProps({

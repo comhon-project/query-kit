@@ -1,13 +1,13 @@
 <script setup>
 import { ref, shallowRef, toRaw, watch, watchEffect } from 'vue';
-import Collection from './Collection/Collection.vue';
-import FilterBuilder from './Filter/Builder.vue';
-import { resolve } from '../core/Schema';
-import IconButton from './Common/IconButton.vue';
-import { classes } from '../core/ClassManager';
-import Utils from '../core/Utils';
-import Shortcuts from './Filter/Shortcuts.vue';
-import { getContainerOperators } from '../core/OperatorManager';
+import Collection from '@components/Collection/Collection.vue';
+import FilterBuilder from '@components/Filter/Builder.vue';
+import { resolve } from '@core/Schema';
+import IconButton from '@components/Common/IconButton.vue';
+import { classes } from '@core/ClassManager';
+import Utils from '@core/Utils';
+import Shortcuts from '@components/Filter/Shortcuts.vue';
+import { getContainerOperators } from '@core/OperatorManager';
 
 const emit = defineEmits(['rowClick', 'export', 'computed', 'updated', 'update:columns', 'update:orderBy']);
 const props = defineProps({

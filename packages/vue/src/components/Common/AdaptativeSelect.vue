@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { translations } from '../../i18n/i18n';
+import { translations } from '@i18n/i18n';
 
 const emit = defineEmits(['update:modelValue']);
 const props = defineProps({

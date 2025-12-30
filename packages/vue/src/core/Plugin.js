@@ -1,16 +1,16 @@
-import { locale, fallback } from '../i18n/i18n';
-import { registerClasses } from './ClassManager';
-import { registerIcons } from './IconManager';
-import { registerComponents } from './InputManager';
-import { registerPropertyRenderers, registerTypeRenderers } from './CellRendererManager';
-import { registerLoader, registerLocaleLoader } from './Schema';
-import { config } from '../config/config';
-import { registerRequester } from './Requester';
-import { registerAllowedOperators } from './OperatorManager';
+import { locale, fallback } from '@i18n/i18n';
+import { registerClasses } from '@core/ClassManager';
+import { registerIcons } from '@core/IconManager';
+import { registerComponents } from '@core/InputManager';
+import { registerPropertyRenderers, registerTypeRenderers } from '@core/CellRendererManager';
+import { registerLoader, registerLocaleLoader } from '@core/Schema';
+import { config } from '@config/config';
+import { registerRequester } from '@core/Requester';
+import { registerAllowedOperators } from '@core/OperatorManager';
 
-import Search from '../components/Search.vue';
-import Builder from '../components/Filter/Builder.vue';
-import Collection from '../components/Collection/Collection.vue';
+import Search from '@components/Search.vue';
+import Builder from '@components/Filter/Builder.vue';
+import Collection from '@components/Collection/Collection.vue';
 
 export default {
   install: (app, options) => {

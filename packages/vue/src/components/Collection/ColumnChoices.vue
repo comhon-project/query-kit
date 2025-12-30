@@ -1,12 +1,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { classes } from '../../core/ClassManager';
-import { locale, translate } from '../../i18n/i18n';
-import Modal from '../Common/Modal.vue';
-import ColumnChoice from './ColumnChoice.vue';
-import { resolve, getPropertyTranslation } from '../../core/Schema';
-import IconButton from '../Common/IconButton.vue';
-import Utils from '../../core/Utils';
+import { classes } from '@core/ClassManager';
+import { locale, translate } from '@i18n/i18n';
+import Modal from '@components/Common/Modal.vue';
+import ColumnChoice from '@components/Collection/ColumnChoice.vue';
+import { resolve, getPropertyTranslation } from '@core/Schema';
+import IconButton from '@components/Common/IconButton.vue';
+import Utils from '@core/Utils';
 
 const emit = defineEmits(['update:show', 'update:columns']);
 const props = defineProps({

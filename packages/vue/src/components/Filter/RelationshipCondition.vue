@@ -1,18 +1,18 @@
 <script setup>
 import { ref, watch, watchEffect, computed } from 'vue';
-import { resolve, getPropertyTranslation } from '../../core/Schema';
-import Group from './Group.vue';
-import Condition from './Condition.vue';
-import RelationshipQueueElement from './RelationshipQueueElement.vue';
-import { isValidOperator } from '../../core/OperatorManager';
-import InvalidModel from '../Messages/InvalidModel.vue';
-import InvalidProperty from '../Messages/InvalidProperty.vue';
-import InvalidOperator from '../Messages/InvalidOperator.vue';
-import IconButton from '../Common/IconButton.vue';
-import RelationshipAction from './RelationshipAction.vue';
-import Utils from '../../core/Utils';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
+import { resolve, getPropertyTranslation } from '@core/Schema';
+import Group from '@components/Filter/Group.vue';
+import Condition from '@components/Filter/Condition.vue';
+import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
+import { isValidOperator } from '@core/OperatorManager';
+import InvalidModel from '@components/Messages/InvalidModel.vue';
+import InvalidProperty from '@components/Messages/InvalidProperty.vue';
+import InvalidOperator from '@components/Messages/InvalidOperator.vue';
+import IconButton from '@components/Common/IconButton.vue';
+import RelationshipAction from '@components/Filter/RelationshipAction.vue';
+import Utils from '@core/Utils';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
 
 const emit = defineEmits(['remove', 'goToRootGroup', 'transitionGroup']);
 const props = defineProps({

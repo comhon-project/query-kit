@@ -1,8 +1,8 @@
 <script setup>
 import { computed, watchEffect, ref } from 'vue';
-import { classes } from '../../core/ClassManager';
-import { translate } from '../../i18n/i18n';
-import Icon from '../Common/Icon.vue';
+import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
+import Icon from '@components/Common/Icon.vue';
 
 const emit = defineEmits(['update']);
 const props = defineProps({

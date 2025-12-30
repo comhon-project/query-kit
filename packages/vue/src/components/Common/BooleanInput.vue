@@ -1,7 +1,7 @@
 <script setup>
-import { classes } from '../../core/ClassManager';
-import Utils from '../../core/Utils';
-import { translate } from '../../i18n/i18n';
+import { classes } from '@core/ClassManager';
+import Utils from '@core/Utils';
+import { translate } from '@i18n/i18n';
 
 const emit = defineEmits(['update:modelValue']);
 defineProps({
