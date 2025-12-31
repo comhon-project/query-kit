@@ -1,9 +1,35 @@
 {
   "name": "@query-kit/themes",
   "version": "0.9.0",
+  "description": "CSS themes for @query-kit/vue components",
+  "author": "Jean-Philippe Perrotton <jeanphilippe.perrotton@gmail.com>",
+  "license": "MIT",
   "private": false,
   "exports": {
     "./package.json": "./package.json",
     "./default": "./default/main.css"
+  },
+  "files": [
+    "default",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "query-kit",
+    "theme",
+    "css",
+    "styles",
+    "query-builder-theme"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/comhon-project/query-kit.git",
+    "directory": "packages/themes"
+  },
+  "homepage": "https://github.com/comhon-project/query-kit",
+  "bugs": {
+    "url": "https://github.com/comhon-project/query-kit/issues"
   }
 }
