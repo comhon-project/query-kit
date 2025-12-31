@@ -43,7 +43,7 @@ const translation = (key) => {
     if (current) {
       return current[localeKey];
     }
-  }, locales.value[locale.value]);
+  }, locales.value[locale.value]) ?? key;
 };
 
 const translate = (key) => {

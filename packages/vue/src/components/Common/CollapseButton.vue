@@ -44,12 +44,3 @@ const computedAriaLabel = computed(() => {
     <template v-else>{{ stateTranslation }}</template>
   </button>
 </template>
-
-<style>
-.qkit-collapse-icon-wrapper {
-  transition: transform 0.2s ease;
-}
-.qkit-collapse-icon-wrapper[upsidedown] {
-  transform: rotate(-180deg);
-}
-</style>

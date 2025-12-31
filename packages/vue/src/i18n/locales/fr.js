@@ -53,4 +53,6 @@ export default {
   go_to_collection: 'aller aux resultats de la recherche',
   go_to_filter: 'aller au filtre',
   add_filter_on_parent_group: 'ajouter un filtre au groupe parent',
+  asc: 'crois.',
+  desc: 'décrois.',
 };

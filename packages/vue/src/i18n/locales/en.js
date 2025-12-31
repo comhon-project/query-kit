@@ -53,4 +53,6 @@ export default {
   go_to_collection: 'go to search results',
   go_to_filter: 'go to filter',
   add_filter_on_parent_group: 'add a filter to the parent group',
+  asc: 'asc.',
+  desc: 'desc.',
 };

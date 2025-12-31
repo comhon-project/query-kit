@@ -1,21 +1,22 @@
 {
   "name": "@query-kit/vue",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Vue 3 library for building complex queries and displaying object collections with an intuitive user interface",
   "author": "Jean-Philippe Perrotton <jeanphilippe.perrotton@gmail.com>",
   "license": "MIT",
   "private": false,
   "type": "module",
-  "main": "./index.js",
-  "module": "./index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./index.js",
-      "require": "./index.js"
-    }
+      "source": "./index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./dist/style.css": "./dist/style.css"
   },
   "files": [
-    "src",
     "dist",
     "index.js",
     "LICENSE",

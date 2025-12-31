@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [vue()],
   root: './playground',
   resolve: {
+    conditions: ['source'],
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@core': fileURLToPath(new URL('./src/core', import.meta.url)),
@@ -14,6 +15,18 @@ export default defineConfig({
       '@i18n': fileURLToPath(new URL('./src/i18n', import.meta.url)),
       '@config': fileURLToPath(new URL('./src/config', import.meta.url)),
       '@tests': fileURLToPath(new URL('./src/__tests__', import.meta.url)),
+    },
+  },
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true,
+    lib: {
+      entry: fileURLToPath(new URL('./index.js', import.meta.url)),
+      fileName: 'index',
+      formats: ['es', 'cjs'],
+    },
+    rollupOptions: {
+      external: ['vue', 'luxon'],
     },
   },
 });

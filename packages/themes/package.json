@@ -1,6 +1,6 @@
 {
   "name": "@query-kit/themes",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "CSS themes for @query-kit/vue components",
   "author": "Jean-Philippe Perrotton <jeanphilippe.perrotton@gmail.com>",
   "license": "MIT",

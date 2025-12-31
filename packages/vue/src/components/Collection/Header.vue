@@ -2,6 +2,7 @@
 import { classes } from '@core/ClassManager';
 import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
 import Icon from '@components/Common/Icon.vue';
+import { translate } from '@i18n/i18n';
 import { computed } from 'vue';
 
 const emit = defineEmits(['click']);
@@ -33,6 +34,7 @@ const props = defineProps({
 
 const { label, sortable } = usePropertyPath(props);
 const isColumnSortable = computed(() => sortable.value || props.hasCustomOrder);
+const orderLabel = computed(() => props.order ? `(${translate(props.order)})` : '');
 </script>
 
 <template>
@@ -47,7 +49,7 @@ const isColumnSortable = computed(() => sortable.value || props.hasCustomOrder);
       @click="(e) => emit('click', columnId, e.ctrlKey)"
     >
       {{ label }}
-      <Icon icon="down" />
+      <Icon icon="down" :label="orderLabel" />
     </button>
     <div v-else>
       {{ label }}

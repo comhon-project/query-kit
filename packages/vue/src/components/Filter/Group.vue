@@ -227,14 +227,3 @@ watchEffect(() => {
     <ConditionChoice v-model:show="showConditionChoice" v-bind="props" @validate="setNewFilter" />
   </div>
 </template>
-
-<style>
-.qkit-collapse-wrapper {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows 0.3s ease;
-}
-.qkit-collapse-wrapper[collapsed] {
-  grid-template-rows: 0fr;
-}
-</style>
