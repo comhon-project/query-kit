@@ -48,13 +48,18 @@ const registerComponents = (custom) => {
 const getComponent = (type, enumeration) => {
   return componentList[type] && enumeration
     ? componentList.enum
-    : typeof componentList[type] != 'object' || componentList[type].render // if there is render method it's a Vue component
+    : typeof componentList[type] != 'object' || componentList[type].render || componentList[type].setup // if there is render or setup method it's a Vue component
     ? componentList[type] // the component is directly defined
     : componentList[type].component; // the component is encapsulted
 };
 
 const isUniqueComponentIn = (type) => {
-  return componentList[type] && !componentList[type].render && componentList[type].unique == true;
+  return (
+    componentList[type] &&
+    !componentList[type].render &&
+    !componentList[type].setup &&
+    componentList[type].unique == true
+  );
 };
 
 const isNativeHtmlComponent = (component) => nativeHtmlComponents[component];
