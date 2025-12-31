@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { watch } from 'vue';
-import { locale, translate, translations } from '../../i18n/i18n';
+import { locale, translate, translations } from '@i18n/i18n';
 
 beforeAll(() => {
   translate('add');

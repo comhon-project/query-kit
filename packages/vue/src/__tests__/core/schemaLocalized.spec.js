@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { schemaLoader, schemaLocaleLoader } from '../assets/SchemaLoader';
-import { resolve, registerLoader, registerLocaleLoader, getPropertyTranslation, loadRawTranslations } from '../../core/Schema';
-import { locale, fallback } from '../../i18n/i18n';
+import { schemaLoader, schemaLocaleLoader } from '@tests/assets/SchemaLoader';
+import { resolve, registerLoader, registerLocaleLoader, getPropertyTranslation, loadRawTranslations } from '@core/Schema';
+import { locale, fallback } from '@i18n/i18n';
 
 beforeAll(() => {
   registerLoader(schemaLoader);

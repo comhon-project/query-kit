@@ -1,12 +1,12 @@
-import userEn from './schemas/user/en';
-import userFr from './schemas/user/fr';
-import userEs from './schemas/user/es';
-import user from './schemas/user/schema';
+import userEn from '@tests/assets/schemas/user/en';
+import userFr from '@tests/assets/schemas/user/fr';
+import userEs from '@tests/assets/schemas/user/es';
+import user from '@tests/assets/schemas/user/schema';
 
-import orgaEn from './schemas/organization/en';
-import orgaFr from './schemas/organization/fr';
-import orgaEs from './schemas/organization/es';
-import organization from './schemas/organization/schema';
+import orgaEn from '@tests/assets/schemas/organization/en';
+import orgaFr from '@tests/assets/schemas/organization/fr';
+import orgaEs from '@tests/assets/schemas/organization/es';
+import organization from '@tests/assets/schemas/organization/schema';
 
 const schemas = {
   user,

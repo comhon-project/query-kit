@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { schemaLoader } from '../assets/SchemaLoader';
-import { resolve, registerLoader } from '../../core/Schema';
+import { schemaLoader } from '@tests/assets/SchemaLoader';
+import { resolve, registerLoader } from '@core/Schema';
 
 beforeAll(() => {
   registerLoader(schemaLoader);

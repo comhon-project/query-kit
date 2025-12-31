@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import Utils from '../../core/Utils';
+import Utils from '@core/Utils';
 
 describe('utils', () => {
   it('get unique id', () => {

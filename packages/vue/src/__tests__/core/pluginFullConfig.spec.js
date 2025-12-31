@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
 
-import plugin from '../../core/Plugin';
-import { requester } from '../../core/Requester';
-import { icons } from '../../core/IconManager';
-import { classes } from '../../core/ClassManager';
-import { getComponent } from '../../core/InputManager';
-import { config } from '../../config/config';
-import { locale, fallback } from '../../i18n/i18n';
-import { schemaLoader, schemaLocaleLoader } from '../assets/SchemaLoader';
-import requesterConfig from '../assets/Requester';
-import { resolve } from '../../core/Schema';
+import plugin from '@core/Plugin';
+import { requester } from '@core/Requester';
+import { icons } from '@core/IconManager';
+import { classes } from '@core/ClassManager';
+import { getComponent } from '@core/InputManager';
+import { config } from '@config/config';
+import { locale, fallback } from '@i18n/i18n';
+import { schemaLoader, schemaLocaleLoader } from '@tests/assets/SchemaLoader';
+import requesterConfig from '@tests/assets/Requester';
+import { resolve } from '@core/Schema';
 
 const appMock = {
   component: () => {},

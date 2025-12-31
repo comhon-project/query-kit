@@ -6,7 +6,8 @@
       "@core/*": ["./src/core/*"],
       "@components/*": ["./src/components/*"],
       "@i18n/*": ["./src/i18n/*"],
-      "@config/*": ["./src/config/*"]
+      "@config/*": ["./src/config/*"],
+      "@tests/*": ["./src/__tests__/*"]
     }
   },
   "exclude": ["node_modules", "dist", "playground"]
