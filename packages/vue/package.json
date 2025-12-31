@@ -51,25 +51,25 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "luxon": "^3.2.1",
-    "vue": "^3.3.2"
+    "luxon": "^3.7.2",
+    "vue": "^3.5.26"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.11",
-    "@babel/eslint-parser": "^7.22.11",
-    "@fortawesome/fontawesome-svg-core": "^6.3.0",
-    "@fortawesome/free-solid-svg-icons": "^6.3.0",
+    "@babel/core": "^7.28.5",
+    "@babel/eslint-parser": "^7.28.5",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.3",
     "@query-kit/themes": "*",
-    "@rushstack/eslint-patch": "^1.1.4",
-    "@vitejs/plugin-vue": "^4.2.3",
-    "@vue/eslint-config-prettier": "^7.0.0",
+    "@rushstack/eslint-patch": "^1.15.0",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/test-utils": "^2.2.4",
-    "eslint": "^8.48.0",
-    "eslint-plugin-vue": "^9.3.0",
-    "jsdom": "^20.0.3",
-    "prettier": "^2.7.1",
-    "vite": "^4.3.5",
-    "vitest": "^0.25.3"
+    "eslint": "^9.39.2",
+    "eslint-plugin-vue": "^10.6.2",
+    "jsdom": "^27.4.0",
+    "prettier": "^3.7.4",
+    "vite": "^7.3.0",
+    "vitest": "^4.0.16"
   }
 }
