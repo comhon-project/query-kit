@@ -1,6 +1,9 @@
 {
   "name": "@query-kit/vue",
   "version": "0.8.0",
+  "description": "Vue 3 library for building complex queries and displaying object collections with an intuitive user interface",
+  "author": "Jean-Philippe Perrotton <jeanphilippe.perrotton@gmail.com>",
+  "license": "MIT",
   "private": false,
   "type": "module",
   "main": "./index.js",
@@ -18,6 +21,27 @@
     "LICENSE",
     "README.md"
   ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "query",
+    "filter",
+    "search",
+    "collection",
+    "query-builder",
+    "data-table",
+    "filtering",
+    "ui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/comhon-project/query-kit.git",
+    "directory": "packages/vue"
+  },
+  "homepage": "https://github.com/comhon-project/query-kit",
+  "bugs": {
+    "url": "https://github.com/comhon-project/query-kit/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
