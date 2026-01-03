@@ -123,7 +123,7 @@ describe('minimal plugin', () => {
       grid_container_for_transition: 'qkit-grid-container-for-transition',
     });
     for (const key in componentList) {
-      if (Object.hasOwnProperty.call(componentList, key)) {
+      if (Object.hasOwn(componentList, key)) {
         expect(getComponent(key)).toBe(componentList[key]);
       }
     }

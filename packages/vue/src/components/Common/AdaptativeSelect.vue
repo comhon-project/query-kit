@@ -1,13 +1,9 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { translations } from '@i18n/i18n';
 
-const emit = defineEmits(['update:modelValue']);
+const modelValue = defineModel({ type: [String, Number], required: true });
 const props = defineProps({
-  modelValue: {
-    type: [String, Number],
-    required: true,
-  },
   options: {
     type: Array,
     required: true,
@@ -26,9 +22,9 @@ const props = defineProps({
   },
 });
 const style = ref({});
-const select = ref(null);
+const select = useTemplateRef('select');
 const selectedLabel = computed(() => {
-  const option = props.options.find((opt) => opt.value == props.modelValue);
+  const option = props.options.find((opt) => opt.value == modelValue.value);
   return option ? option.label : '';
 });
 
@@ -43,26 +39,21 @@ function updateWidth() {
   select.value.nextElementSibling.remove();
 }
 
-function updateValue(event) {
-  emit('update:modelValue', event.target.value);
-}
-
 watch(translations, updateWidth, { flush: 'post' });
-watch(() => props.modelValue, updateWidth, { flush: 'post' });
+watch(modelValue, updateWidth, { flush: 'post' });
 onMounted(updateWidth);
 </script>
 
 <template>
   <select
     ref="select"
-    :value="modelValue"
+    v-model="modelValue"
     :style="style"
     :class="props.class"
     :disabled="disabled"
     :aria-label="ariaLabel"
-    @change="updateValue"
   >
-    <option v-for="(option, index) in options" :key="index" :value="option.value">
+    <option v-for="(option, index) in props.options" :key="index" :value="option.value">
       {{ option.label }}
     </option>
   </select>

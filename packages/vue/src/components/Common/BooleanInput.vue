@@ -3,11 +3,8 @@ import { classes } from '@core/ClassManager';
 import Utils from '@core/Utils';
 import { translate } from '@i18n/i18n';
 
-const emit = defineEmits(['update:modelValue']);
+const modelValue = defineModel({ type: Boolean });
 defineProps({
-  modelValue: {
-    type: Boolean,
-  },
   target: {
     type: Object,
     required: true,
@@ -26,10 +23,6 @@ defineProps({
   },
 });
 const uniqueId = Utils.getUniqueId();
-
-function update(value) {
-  emit('update:modelValue', value);
-}
 </script>
 
 <template>
@@ -39,7 +32,7 @@ function update(value) {
       :name="`boolean-input-filter-${uniqueId}`"
       :checked="modelValue === true"
       :disabled="disabled"
-      @input="() => update(true)"
+      @input="modelValue = true"
     />
     <span>{{ translate('yes') }}</span>
     <input
@@ -47,7 +40,7 @@ function update(value) {
       :name="`boolean-input-filter-${uniqueId}`"
       :checked="modelValue === false"
       :disabled="disabled"
-      @input="() => update(false)"
+      @input="modelValue = false"
     />
     <span>{{ translate('no') }}</span>
   </div>

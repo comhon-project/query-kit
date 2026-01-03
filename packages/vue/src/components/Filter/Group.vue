@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watchEffect, useTemplateRef } from 'vue';
 import Utils from '@core/Utils.js';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import { resolve } from '@core/Schema';
@@ -62,8 +62,8 @@ const props = defineProps({
   },
 });
 
-const listRef = ref(null);
-const groupRef = ref(null);
+const listRef = useTemplateRef('listRef');
+const groupRef = useTemplateRef('groupRef');
 const validOperator = ref(true);
 const validModel = ref(true);
 const schema = ref(null);

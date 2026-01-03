@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 
@@ -44,7 +44,7 @@ const props = defineProps({
 });
 
 const isUsingShortcuts = ref(false);
-const firstShortcut = ref(null);
+const firstShortcut = useTemplateRef('firstShortcut');
 const actions = {
   goToNext: 'go_to_next_condition',
   goToPrevious: 'go_to_previous_condition',

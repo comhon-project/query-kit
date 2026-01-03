@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, onMounted, computed, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyTranslation } from '@core/Schema';
 import Utils from '@core/Utils';
@@ -8,12 +8,9 @@ import { getConditionOperators, getContainerOperators } from '@core/OperatorMana
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import Modal from '@components/Common/Modal.vue';
 
-const emit = defineEmits(['update:show', 'validate']);
+const emit = defineEmits(['validate']);
+const show = defineModel('show', { type: Boolean, required: true });
 const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true,
-  },
   model: {
     type: String,
     required: true,
@@ -37,7 +34,7 @@ const props = defineProps({
 });
 
 let condition = null;
-const form = ref(false);
+const form = useTemplateRef('form');
 const uniqueName = ref(`choice-${Utils.getUniqueId()}`);
 const uniqueIdCondition = ref(`choice-${Utils.getUniqueId()}`);
 const uniqueIdGroup = ref(`choice-${Utils.getUniqueId()}`);
@@ -64,14 +61,6 @@ const options = computed(() => {
 });
 const displayGroup = computed(() => {
   return getContainerOperators('group', props.allowedOperators).length;
-});
-const isVisible = computed({
-  get() {
-    return props.show;
-  },
-  set(value) {
-    emit('update:show', value);
-  },
 });
 
 function validate(e) {
@@ -116,7 +105,7 @@ function validate(e) {
     condition.filters = [];
   }
   condition.key = Utils.getUniqueId();
-  isVisible.value = false;
+  show.value = false;
   e.preventDefault();
 }
 
@@ -147,7 +136,7 @@ watch(
 </script>
 
 <template>
-  <Modal v-if="schema" v-model:show="isVisible" @confirm="submitForm" @closed="onClosed">
+  <Modal v-if="schema" v-model:show="show" @confirm="submitForm" @closed="onClosed">
     <template #body>
       <form ref="form" :class="classes.condition_choice_form" @submit="validate">
         <div>

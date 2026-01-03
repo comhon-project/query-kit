@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, toRaw, watchEffect } from 'vue';
+import { ref, watch, toRaw, watchEffect, onUnmounted } from 'vue';
 import { resolve } from '@core/Schema';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -62,12 +62,16 @@ let timeoutId;
 let originalFilter;
 const schema = ref(null);
 
+onUnmounted(() => {
+  if (timeoutId) clearTimeout(timeoutId);
+});
+
 async function initSchema() {
   schema.value = await resolve(props.model);
 }
 
 function reset() {
-  for (var member in props.modelValue) delete props.modelValue[member];
+  for (const member of Object.keys(props.modelValue)) delete props.modelValue[member];
   Object.assign(props.modelValue, structuredClone(originalFilter));
 }
 

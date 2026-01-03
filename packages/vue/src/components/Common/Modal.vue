@@ -1,14 +1,11 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 
-const emit = defineEmits(['update:show', 'confirm', 'closed']);
+const emit = defineEmits(['confirm', 'closed']);
+const show = defineModel('show', { type: Boolean, required: true });
 const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true,
-  },
   closeOnConfirm: {
     type: Boolean,
     default: false,
@@ -18,20 +15,12 @@ const props = defineProps({
     default: false,
   },
 });
-const modal = ref(null);
+const modal = useTemplateRef('modal');
 const closing = ref(null);
-const isVisible = computed({
-  get() {
-    return props.show;
-  },
-  set(value) {
-    emit('update:show', value);
-  },
-});
 
 function confirm() {
   if (props.closeOnConfirm) {
-    isVisible.value = false;
+    show.value = false;
   }
   emit('confirm');
 }
@@ -53,27 +42,24 @@ onMounted(() => {
   };
 });
 
-watch(
-  () => props.show,
-  async (isVisible) => {
-    if (isVisible) {
-      modal.value.showModal();
-    } else {
-      closing.value = true;
-      await nextTick();
-      if (!modal.value.getAnimations().length) {
-        close();
-      }
+watch(show, async (visible) => {
+  if (visible) {
+    modal.value.showModal();
+  } else {
+    closing.value = true;
+    await nextTick();
+    if (!modal.value.getAnimations().length) {
+      close();
     }
   }
-);
+});
 </script>
 
 <template>
-  <dialog ref="modal" :class="classes.modal" :visible="isVisible && !closing ? '' : undefined">
+  <dialog ref="modal" :class="classes.modal" :visible="show && !closing ? '' : undefined" @cancel.prevent="show = false">
     <div :class="classes.modal_header">
       <div><slot name="header" /></div>
-      <IconButton icon="close" btn-class="btn" @click="() => (isVisible = false)" />
+      <IconButton icon="close" btn-class="btn" @click="() => (show = false)" />
     </div>
     <div :class="classes.modal_body"><slot name="body" /></div>
     <div :class="classes.modal_footer">

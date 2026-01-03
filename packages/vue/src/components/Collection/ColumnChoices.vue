@@ -8,12 +8,9 @@ import { resolve, getPropertyTranslation } from '@core/Schema';
 import IconButton from '@components/Common/IconButton.vue';
 import Utils from '@core/Utils';
 
-const emit = defineEmits(['update:show', 'update:columns']);
+const emit = defineEmits(['update:columns']);
+const show = defineModel('show', { type: Boolean, required: true });
 const props = defineProps({
-  show: {
-    type: Boolean,
-    required: true,
-  },
   model: {
     type: String,
     required: true,
@@ -33,14 +30,6 @@ const newColumns = ref([]);
 const confirmed = ref(false);
 const updated = ref(false);
 const selectedProperty = ref(null);
-const isVisible = computed({
-  get() {
-    return props.show;
-  },
-  set(value) {
-    emit('update:show', value);
-  },
-});
 const options = computed(() => {
   const options = [];
   for (const property of schema.value.properties) {
@@ -92,7 +81,7 @@ function isOneToOneRelationship(property) {
 
 function confirm() {
   confirmed.value = true;
-  isVisible.value = false;
+  show.value = false;
 }
 
 function updateColumns() {
@@ -136,8 +125,8 @@ watch(
   { immediate: true }
 );
 watch(newColumns, () => (updated.value = true), { deep: true });
-watch(isVisible, () => {
-  if (isVisible.value) {
+watch(show, () => {
+  if (show.value) {
     // reset states only when displaying modal
     updated.value = false;
     confirmed.value = false;
@@ -146,7 +135,7 @@ watch(isVisible, () => {
 </script>
 
 <template>
-  <Modal v-model:show="isVisible" :disable-confirm="newColumns.length === 0" @confirm="confirm" @closed="updateColumns">
+  <Modal v-model:show="show" :disable-confirm="newColumns.length === 0" @confirm="confirm" @closed="updateColumns">
     <template #header>
       <h1>{{ translate('columns') }}</h1>
     </template>

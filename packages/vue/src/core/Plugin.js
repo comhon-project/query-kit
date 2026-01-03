@@ -77,7 +77,7 @@ export default {
     }
 
     for (const key in config) {
-      if (Object.hasOwnProperty.call(config, key) && Object.hasOwnProperty.call(options, key)) {
+      if (Object.hasOwn(config, key) && Object.hasOwn(options, key)) {
         config[key] = options[key];
       }
     }

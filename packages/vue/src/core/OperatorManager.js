@@ -139,7 +139,7 @@ const isValidOperator = (container, operator, caseSensitive = true) => {
 const registerAllowedOperators = (allowedOperators) => {
   if (allowedOperators.condition) {
     for (const key in allowedOperators.condition) {
-      if (!Object.hasOwnProperty.call(allowedOperators.condition, key)) {
+      if (!Object.hasOwn(allowedOperators.condition, key)) {
         continue;
       }
       operators.condition[key] = allowedOperators.condition[key].map((op) => op.toLowerCase());

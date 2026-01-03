@@ -21,7 +21,7 @@ watch(locale, async () => {
     }
     translations.value = locales.value[locale.value];
     for (const key in reactiveLocales) {
-      if (Object.hasOwnProperty.call(reactiveLocales, key)) {
+      if (Object.hasOwn(reactiveLocales, key)) {
         reactiveLocales[key] = translation(key);
       }
     }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, shallowRef, computed, toRaw } from 'vue';
+import { ref, watch, onMounted, onUnmounted, shallowRef, computed, toRaw, useTemplateRef } from 'vue';
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyPath } from '@core/Schema';
@@ -105,10 +105,10 @@ const end = ref(false);
 const copiedOrderBy = ref([]);
 const page = ref(1);
 const infiniteScroll = ref(isInfiniteAccordingProps());
-const collectionContent = ref(null);
+const collectionContent = useTemplateRef('collectionContent');
 const showColumnsModal = ref(false);
 
-const observered = ref(null);
+const observered = useTemplateRef('observered');
 let observer;
 
 const isResultFlattened = computed(() => {
@@ -341,6 +341,9 @@ onMounted(async () => {
   if (props.directQuery) {
     requestServer();
   }
+});
+onUnmounted(() => {
+  observer?.disconnect();
 });
 watch(
   () => props.model,

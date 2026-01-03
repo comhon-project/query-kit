@@ -5,12 +5,8 @@ import { translate } from '@i18n/i18n';
 import { icons } from '@core/IconManager';
 import Icon from '@components/Common/Icon.vue';
 
-defineEmits(['update:collapsed']);
+const collapsed = defineModel('collapsed', { type: Boolean, required: true });
 const props = defineProps({
-  collapsed: {
-    type: Boolean,
-    required: true,
-  },
   btnClass: {
     type: String,
     default: 'btn_primary',
@@ -25,7 +21,7 @@ const props = defineProps({
   },
 });
 
-const stateTranslation = computed(() => translate(props.collapsed ? 'expande' : 'collapse'));
+const stateTranslation = computed(() => translate(collapsed.value ? 'expande' : 'collapse'));
 const computedAriaLabel = computed(() => {
   return props.ariaLabel ? stateTranslation.value + ' ' + props.ariaLabel : stateTranslation.value;
 });
@@ -36,7 +32,7 @@ const computedAriaLabel = computed(() => {
     :class="classes[btnClass]"
     :type="type"
     :aria-label="computedAriaLabel"
-    @click="$emit('update:collapsed', !collapsed)"
+    @click="collapsed = !collapsed"
   >
     <div v-if="icons['collapse']" class="qkit-collapse-icon-wrapper" :upsidedown="collapsed ? '' : undefined">
       <Icon icon="collapse" />
