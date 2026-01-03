@@ -13,7 +13,7 @@ watch(
   (_, oldLocale) => {
     previousLocale = oldLocale;
   },
-  { flush: 'sync' }
+  { flush: 'sync' },
 );
 
 function ensureTranslationsLoaded(schemaName) {
@@ -98,8 +98,8 @@ async function compute(name) {
 
   if (schema.search?.scopes && Array.isArray(schema.search.scopes)) {
     const scopes = [];
-    for (let scope of schema.search.scopes) {
-      scope = typeof scope == 'object' ? scope : { id: scope, name: scope };
+    for (let current of schema.search.scopes) {
+      const scope = typeof current == 'object' ? current : { id: current, name: current };
       scope.owner = name;
       mapScopes[scope.id] = scope;
       scopes.push(scope);
@@ -119,7 +119,7 @@ async function loadRawTranslations(schemaName, targetLocale) {
   if (!loadedTranslations[cacheKey]) {
     try {
       loadedTranslations[cacheKey] = await schemaLocaleLoader.load(schemaName, targetLocale);
-    } catch (error) {
+    } catch {
       loadedTranslations[cacheKey] = {};
     }
     delete loadingTranslations[cacheKey];

@@ -41,8 +41,8 @@ function update(event) {
 </script>
 
 <template>
-  <select @change="update" :disabled="disabled">
-    <option value=""></option>
+  <select :disabled="disabled" @change="update">
+    <option value="" />
     <option value="1" :selected="computedValue == '1'">
       {{ locale == "fr" ? "angleterre" : "england" }}
     </option>

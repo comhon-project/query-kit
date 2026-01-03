@@ -367,21 +367,22 @@ watch(columns, () => {
         justify-content: end;
       "
     >
-      <button @click="() => (locale = 'fr')" class="qkit-btn qkit-btn-primary">
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">
         fr
       </button>
-      <button @click="() => (locale = 'en')" class="qkit-btn qkit-btn-primary">
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">
         en
       </button>
-      <button @click="() => (locale = 'es')" class="qkit-btn qkit-btn-primary">
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">
         es
       </button>
-      <button @click="() => (locale = 'de')" class="qkit-btn qkit-btn-primary">
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">
         de
       </button>
     </div>
     <div style="height: 90vh">
       <Search
+        v-model:order-by="orderBy"
         :model="model"
         :columns="columns"
         :filter="filter"
@@ -394,7 +395,7 @@ watch(columns, () => {
             integer: ['not_null', 'in'],
           },
         }"
-        :allowReset="true"
+        :allow-reset="true"
         user-timezone="Europe/Paris"
         :display-operator="{
           group: true,
@@ -411,11 +412,6 @@ watch(columns, () => {
         :display-count="true"
         :edit-columns="true"
         :custom-columns="customColumns"
-        v-model:order-by="orderBy"
-        @row-click="printRow"
-        @export="exportResults"
-        @updated="handleUpdatedFilters"
-        @computed="handleComputedFilters"
         :computed-scopes="{
           user: [
             {
@@ -430,10 +426,14 @@ watch(columns, () => {
           organization: [{ id: 'quick_search', name: 'quick search company' }],
         }"
         :requester="requester"
+        @row-click="printRow"
+        @export="exportResults"
+        @updated="handleUpdatedFilters"
+        @computed="handleComputedFilters"
       >
-        <template #loadings="{ requesting }"
-          ><div v-show="requesting">loading...</div></template
-        >
+        <template #loadings="{ requesting }">
+          <div v-show="requesting">loading...</div>
+        </template>
       </Search>
     </div>
   </div>
