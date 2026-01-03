@@ -1,5 +1,5 @@
 <script setup>
-import { markRaw, ref, toRaw, watch } from "vue";
+import { markRaw, ref, watch } from "vue";
 import CellFirstName from "./components/CellFirstName.vue";
 import { locale } from "@query-kit/vue";
 
@@ -323,13 +323,14 @@ let requester = {
           case "age":
             element[name] = Math.floor(Math.random() * 100);
             break;
-          case "favorite_fruits":
+          case "favorite_fruits": {
             const count = Math.floor(Math.random() * 10);
             element[name] = [];
             for (let index = 0; index < count; index++) {
               element[name].push(Math.floor(Math.random() * 3 + 1));
             }
             break;
+          }
           default:
             element[name] = name + Math.random().toString(36);
             break;

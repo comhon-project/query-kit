@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps({
+defineProps({
   columnId: {
     type: String,
     required: true,
@@ -13,6 +13,7 @@ const props = defineProps({
     required: true,
   },
   value: {
+    type: null,
     required: true,
   },
   rowValue: {

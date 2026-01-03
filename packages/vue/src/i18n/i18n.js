@@ -25,7 +25,7 @@ watch(locale, async () => {
         reactiveLocales[key] = translation(key);
       }
     }
-  } catch (error) {
+  } catch {
     if (locale.value == fallback.value) {
       // if locale and fallback config are invalid (translation doesn't exists)
       // we set the fallback to a trusted value

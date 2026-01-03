@@ -13,6 +13,7 @@ const props = defineProps({
     required: true,
   },
   value: {
+    type: null,
     required: true,
   },
   rowValue: {

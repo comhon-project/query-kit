@@ -7,7 +7,6 @@ import {
   faRotateLeft,
   faBackward,
   faForward,
-  faArrowDown,
   faChevronDown,
   faCheck,
 } from '@fortawesome/free-solid-svg-icons';
@@ -18,7 +17,6 @@ import '@query-kit/themes/default';
 import { plugin } from '@query-kit/vue';
 import { schemaLoader, schemaLocaleLoader } from './core/SchemaLoader';
 import CellInteger from './components/CellInteger.vue';
-import CellDate from './components/CellDate.vue';
 import CountryInput from './components/CountryInput.vue';
 
 library.add([faPlus, faXmark, faRotateLeft, faBackward, faForward, faChevronDown, faCheck]);
@@ -48,7 +46,7 @@ createApp(App)
       delete: { class: 'qkit-icon qkit-icon-cross', component: 'i' },
       close: { class: 'qkit-icon qkit-icon-cross', component: 'i' },
       previous: { class: 'qkit-icon qkit-icon-double-arrow-left', component: 'i' },
-      next: { class: 'qkit-icon qkit-icon-double-arrow-right', component: 'i' },
+      //next: { class: 'qkit-icon qkit-icon-double-arrow-right', component: 'i' },
       collapse: { class: 'qkit-icon qkit-icon-arrow-full-down', component: 'i' },
       down: { class: 'qkit-icon qkit-icon-arrow-full-down', component: 'i' },
       minus: { class: 'qkit-icon qkit-icon-minus', component: 'i' },
@@ -107,18 +105,19 @@ createApp(App)
                 container[property] = Math.random() > 0.5 ? 'male' : 'female';
                 break;
               case 'married':
-                container[property] = Math.random() > 0.5 ? true : false;
+                container[property] = Math.random() > 0.5;
                 break;
               case 'age':
                 container[property] = Math.floor(Math.random() * 100);
                 break;
-              case 'favorite_fruits':
+              case 'favorite_fruits': {
                 const count = Math.floor(Math.random() * 10);
                 container[property] = [];
                 for (let index = 0; index < count; index++) {
                   container[property].push(Math.floor(Math.random() * 3 + 1));
                 }
                 break;
+              }
               default:
                 container[property] = name + Math.random().toString(36);
                 break;
