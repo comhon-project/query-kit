@@ -82,8 +82,8 @@ export default {
       }
     }
 
-    app.component('Search', Search);
-    app.component('Collection', Collection);
-    app.component('Builder', Builder);
+    app.component('QkitSearch', Search);
+    app.component('QkitCollection', Collection);
+    app.component('QkitBuilder', Builder);
   },
 };

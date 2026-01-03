@@ -382,7 +382,7 @@ watch(columns, () => {
       </button>
     </div>
     <div style="height: 90vh">
-      <Search
+      <QkitSearch
         v-model:order-by="orderBy"
         :model="model"
         :columns="columns"
@@ -435,7 +435,7 @@ watch(columns, () => {
         <template #loadings="{ requesting }">
           <div v-show="requesting">loading...</div>
         </template>
-      </Search>
+      </QkitSearch>
     </div>
   </div>
 </template>
