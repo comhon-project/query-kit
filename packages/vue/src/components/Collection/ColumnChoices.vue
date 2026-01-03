@@ -11,7 +11,7 @@ import Utils from '@core/Utils';
 const emit = defineEmits(['update:columns']);
 const show = defineModel('show', { type: Boolean, required: true });
 const props = defineProps({
-  model: {
+  entity: {
     type: String,
     required: true,
   },
@@ -120,8 +120,8 @@ watch(
 );
 
 watch(
-  () => props.model,
-  async () => (schema.value = await resolve(props.model)),
+  () => props.entity,
+  async () => (schema.value = await resolve(props.entity)),
   { immediate: true }
 );
 watch(newColumns, () => (updated.value = true), { deep: true });
@@ -147,7 +147,7 @@ watch(show, () => {
               <ColumnChoice
                 v-model:column-id="column.id"
                 :property-id="customColumns?.[column.id]?.open === true ? undefined : column.id"
-                :model="model"
+                :entity="entity"
                 :label="customColumns?.[column.id]?.label"
                 :columns="newColumns"
                 @remove="() => removeColumn(index)"

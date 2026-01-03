@@ -12,20 +12,20 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },
   computedScopes: {
-    type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
-    type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
     default: undefined,
   },
   allowedProperties: {
-    type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
     default: undefined,
   },
   allowedOperators: {
@@ -45,7 +45,7 @@ const label = computed(() => {
 });
 
 async function initSchema() {
-  schema.value = await resolve(props.model);
+  schema.value = await resolve(props.entity);
 }
 
 watchEffect(initSchema);

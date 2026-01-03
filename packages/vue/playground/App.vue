@@ -1,229 +1,225 @@
 <script setup>
-import { markRaw, ref, watch } from "vue";
-import CellFirstName from "./components/CellFirstName.vue";
-import { locale } from "@query-kit/vue";
+import { markRaw, ref, watch } from 'vue';
+import CellFirstName from './components/CellFirstName.vue';
+import { locale } from '@query-kit/vue';
 
-const model = ref("user");
+const entity = ref('user');
 const columns = ref([
-  "first_name",
-  "last_name",
-  "weight",
-  "age",
-  "gender",
-  "married",
-  "favorite_fruits",
-  "birth.birth_date",
-  "birth.birth_day",
-  "birth.birth_hour",
-  "friend",
-  "company",
-  "company.description",
-  "company.address",
-  "no_property",
+  'first_name',
+  'last_name',
+  'weight',
+  'age',
+  'gender',
+  'married',
+  'favorite_fruits',
+  'birth.birth_date',
+  'birth.birth_day',
+  'birth.birth_hour',
+  'friend',
+  'company',
+  'company.description',
+  'company.address',
+  'no_property',
 ]);
 
 const customColumns = ref({
   first_name: {
-    label: "overrided first name",
+    label: 'overrided first name',
     renderer: markRaw(CellFirstName),
   },
   last_name: {
-    label: (localeValue) =>
-      localeValue == "fr"
-        ? "nom surchargé localisé"
-        : "name overrided localized",
+    label: (localeValue) => (localeValue == 'fr' ? 'nom surchargé localisé' : 'name overrided localized'),
   },
-  "company.description": {
+  'company.description': {
     onCellClick: (value, row, property, event) => {
       event.stopPropagation();
-      console.log("cell click", property);
+      console.log('cell click', property);
       console.log(value);
       console.log(row);
     },
   },
   no_property: {
-    label: (localeValue) =>
-      localeValue == "fr" ? "non propriété" : "no property",
+    label: (localeValue) => (localeValue == 'fr' ? 'non propriété' : 'no property'),
     open: true,
     renderer: (cellValue, rowValue) => {
-      return rowValue["first_name"] + " func";
+      return rowValue['first_name'] + ' func';
     },
   },
   no_property_two: {
-    label: "no property two",
+    label: 'no property two',
     open: true,
-    order: ["age", "weight"],
+    order: ['age', 'weight'],
     renderer: (cellValue, rowValue, columnId, locale) => {
-      return rowValue["age"] + (locale == "fr" ? " ans" : " years");
+      return rowValue['age'] + (locale == 'fr' ? ' ans' : ' years');
     },
   },
 });
 
-const orderBy = ref(["first_name"]);
+const orderBy = ref(['first_name']);
 
 const group = {
-  type: "group",
-  operator: "and",
+  type: 'group',
+  operator: 'and',
   filters: [
     {
-      type: "condition",
-      property: "last_name",
-      operator: "in",
+      type: 'condition',
+      property: 'last_name',
+      operator: 'in',
     },
     {
-      type: "condition",
-      property: "last_name",
-      operator: "in",
-      value: ["one", undefined],
+      type: 'condition',
+      property: 'last_name',
+      operator: 'in',
+      value: ['one', undefined],
       editable: false,
     },
     {
-      type: "condition",
-      property: "last_name",
-      operator: "=",
-      value: "one",
+      type: 'condition',
+      property: 'last_name',
+      operator: '=',
+      value: 'one',
       editable: false,
     },
     {
-      type: "condition",
-      property: "first_name",
-      value: "azeaze",
-      operator: "like",
+      type: 'condition',
+      property: 'first_name',
+      value: 'azeaze',
+      operator: 'like',
       removable: false,
     },
     {
-      type: "condition",
-      property: "first_name",
-      value: "end",
-      operator: "ends_with",
+      type: 'condition',
+      property: 'first_name',
+      value: 'end',
+      operator: 'ends_with',
     },
     {
-      type: "condition",
-      property: "first_name",
-      value: "not_end",
-      operator: "doesnt_end_with",
+      type: 'condition',
+      property: 'first_name',
+      value: 'not_end',
+      operator: 'doesnt_end_with',
     },
     {
-      type: "condition",
-      property: "first_name",
-      value: "begin",
-      operator: "begins_with",
+      type: 'condition',
+      property: 'first_name',
+      value: 'begin',
+      operator: 'begins_with',
     },
     {
-      type: "condition",
-      property: "first_name",
-      value: "not_begin",
-      operator: "doesnt_begin_with",
+      type: 'condition',
+      property: 'first_name',
+      value: 'not_begin',
+      operator: 'doesnt_begin_with',
     },
     {
-      type: "condition",
-      property: "birth.birth_date",
-      value: "2022-01-07T03:06:06.000Z",
-      operator: "=",
+      type: 'condition',
+      property: 'birth.birth_date',
+      value: '2022-01-07T03:06:06.000Z',
+      operator: '=',
     },
     {
-      type: "condition",
-      property: "age",
-      value: "20",
-      operator: "<",
+      type: 'condition',
+      property: 'age',
+      value: '20',
+      operator: '<',
     },
     {
-      type: "condition",
-      property: "married",
+      type: 'condition',
+      property: 'married',
       value: true,
-      operator: "=",
+      operator: '=',
       editable: false,
     },
     {
-      type: "condition",
-      property: "gender",
-      operator: "<>",
-      value: "female",
+      type: 'condition',
+      property: 'gender',
+      operator: '<>',
+      value: 'female',
     },
     {
-      type: "scope",
-      id: "enum_scope",
-      value: "two",
+      type: 'scope',
+      id: 'enum_scope',
+      value: 'two',
     },
     {
-      type: "scope",
-      id: "quick_search",
-      operator: "=",
-      value: "twozzzz",
+      type: 'scope',
+      id: 'quick_search',
+      operator: '=',
+      value: 'twozzzz',
     },
     {
-      type: "condition",
-      property: "country",
-      operator: "in",
-      value: ["3"],
+      type: 'condition',
+      property: 'country',
+      operator: 'in',
+      value: ['3'],
       editable: false,
     },
     {
-      type: "group",
-      operator: "or",
+      type: 'group',
+      operator: 'or',
       editable: false,
       filters: [
         {
-          type: "condition",
-          property: "first_name",
-          operator: "=",
-          value: "invisible",
+          type: 'condition',
+          property: 'first_name',
+          operator: '=',
+          value: 'invisible',
           visible: false,
         },
         {
-          type: "relationship_condition",
-          operator: "has",
-          property: "company",
+          type: 'relationship_condition',
+          operator: 'has',
+          property: 'company',
           filter: {
-            type: "condition",
-            property: "address",
-            operator: "=",
+            type: 'condition',
+            property: 'address',
+            operator: '=',
           },
         },
         {
-          type: "condition",
-          property: "first_name",
-          value: "aaaaaaaaaaa",
-          operator: "=",
+          type: 'condition',
+          property: 'first_name',
+          value: 'aaaaaaaaaaa',
+          operator: '=',
           editable: false,
         },
         {
-          type: "relationship_condition",
-          operator: "has",
-          property: "company",
+          type: 'relationship_condition',
+          operator: 'has',
+          property: 'company',
           filter: {
-            type: "relationship_condition",
-            operator: "has_not",
-            property: "contacts",
+            type: 'relationship_condition',
+            operator: 'has_not',
+            property: 'contacts',
             filter: {
-              type: "group",
-              operator: "or",
+              type: 'group',
+              operator: 'or',
               filters: [
                 {
-                  type: "condition",
-                  property: "first_name",
-                  operator: "=",
+                  type: 'condition',
+                  property: 'first_name',
+                  operator: '=',
                 },
                 {
-                  type: "condition",
-                  property: "first_name",
-                  operator: "=",
+                  type: 'condition',
+                  property: 'first_name',
+                  operator: '=',
                 },
                 {
-                  type: "condition",
-                  property: "first_name",
-                  operator: "=",
+                  type: 'condition',
+                  property: 'first_name',
+                  operator: '=',
                 },
                 {
-                  type: "condition",
-                  property: "first_name",
-                  operator: "=",
-                  value: "plop",
+                  type: 'condition',
+                  property: 'first_name',
+                  operator: '=',
+                  value: 'plop',
                 },
                 {
-                  type: "condition",
-                  property: "first_name",
-                  operator: "=",
+                  type: 'condition',
+                  property: 'first_name',
+                  operator: '=',
                 },
               ],
             },
@@ -236,52 +232,52 @@ const group = {
 const filter = ref(group);
 
 function printRow(object) {
-  console.log("row click");
+  console.log('row click');
   console.log(object);
 }
 
 async function completeCollection(collection) {
   for (const row of collection) {
-    if (row["company.description"]) {
+    if (row['company.description']) {
       // flattened
-      row["company.description"] += ' <span style="color: blue">lalala</span>';
+      row['company.description'] += ' <span style="color: blue">lalala</span>';
     } else if (row.company) {
       // not flattened
       row.company.description += ' <span style="color: blue">lalala</span>';
     }
-    if (row["first_name"]) {
-      row["first_name"] += " hehe";
+    if (row['first_name']) {
+      row['first_name'] += ' hehe';
     }
   }
 }
 
 async function exportResults(newFilter) {
-  console.log("export");
+  console.log('export');
   console.log(newFilter);
 }
 
 function handleComputedFilters(params) {
-  console.log("computed");
+  console.log('computed');
   console.log(params);
 }
 
 function handleUpdatedFilters(params) {
-  console.log("updated");
+  console.log('updated');
   console.log(params);
 }
 
 function computeQuickSearch(value, operator) {
   return {
-    type: "group",
-    operator: "or",
+    type: 'group',
+    operator: 'or',
     filters: [
       {
-        property: "first_name",
+        property: 'first_name',
         operator: operator,
         value: value,
       },
       {
-        property: "last_name",
+        property: 'last_name',
         operator: operator,
         value: value,
       },
@@ -290,40 +286,37 @@ function computeQuickSearch(value, operator) {
 }
 let requester = {
   request: (query) => {
-    console.log("prop-requester");
+    console.log('prop-requester');
     console.log(query);
     const lastCompleteBulk = 10;
-    const limit =
-      query.offset > lastCompleteBulk * query.limit
-        ? query.limit - 1
-        : query.limit;
+    const limit = query.offset > lastCompleteBulk * query.limit ? query.limit - 1 : query.limit;
     const collection = [];
     for (let index = 0; index < limit; index++) {
       const element = {};
       for (const name of query.properties) {
-        let leafProperty = name.replaceAll("friend.", "");
-        leafProperty = leafProperty.replaceAll("company.", "");
+        let leafProperty = name.replaceAll('friend.', '');
+        leafProperty = leafProperty.replaceAll('company.', '');
         switch (leafProperty) {
-          case "birth.birth_date":
-            element[name] = "2023-01-03T20:45:04Z";
+          case 'birth.birth_date':
+            element[name] = '2023-01-03T20:45:04Z';
             break;
-          case "birth.birth_day":
-            element[name] = "2023-01-03";
+          case 'birth.birth_day':
+            element[name] = '2023-01-03';
             break;
-          case "birth.birth_hour":
-            element[name] = "20:45:04";
+          case 'birth.birth_hour':
+            element[name] = '20:45:04';
             break;
-          case "gender":
-            element[name] = Math.random() > 0.5 ? "male" : "female";
+          case 'gender':
+            element[name] = Math.random() > 0.5 ? 'male' : 'female';
             break;
-          case "married":
+          case 'married':
             element[name] = Math.random() > 0.5 ? true : false;
             break;
-          case "weight":
-          case "age":
+          case 'weight':
+          case 'age':
             element[name] = Math.floor(Math.random() * 100);
             break;
-          case "favorite_fruits": {
+          case 'favorite_fruits': {
             const count = Math.floor(Math.random() * 10);
             element[name] = [];
             for (let index = 0; index < count; index++) {
@@ -351,7 +344,7 @@ let requester = {
 };
 
 watch(columns, () => {
-  console.log("------ app watch columns-------");
+  console.log('------ app watch columns-------');
 });
 
 // TODO export dist files and update main file in package.json
@@ -360,31 +353,16 @@ watch(columns, () => {
 
 <template>
   <div class="root-app">
-    <div
-      style="
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        justify-content: end;
-      "
-    >
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">
-        fr
-      </button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">
-        en
-      </button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">
-        es
-      </button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">
-        de
-      </button>
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: end">
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">fr</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">en</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">es</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
     </div>
     <div style="height: 90vh">
       <QkitSearch
         v-model:order-by="orderBy"
-        :model="model"
+        :entity="entity"
         :columns="columns"
         :filter="filter"
         :allowed-properties="{ user: null }"
@@ -417,8 +395,7 @@ watch(columns, () => {
           user: [
             {
               id: 'quick_search',
-              translation: (localeValue) =>
-                localeValue == 'fr' ? 'recherche rapide' : 'quick search user',
+              translation: (localeValue) => (localeValue == 'fr' ? 'recherche rapide' : 'quick search user'),
               type: 'string',
               useOperator: true,
               computed: computeQuickSearch,

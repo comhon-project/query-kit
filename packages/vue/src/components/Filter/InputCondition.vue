@@ -19,7 +19,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },
@@ -102,7 +102,7 @@ watch(conditionValue, () => {
     :is="inputType"
     v-if="isVueComponent"
     v-model="conditionValue"
-    :model="model"
+    :entity="entity"
     :target="target"
     :operator="operator"
     :disabled="!editable"

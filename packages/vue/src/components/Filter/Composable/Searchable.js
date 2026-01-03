@@ -3,7 +3,7 @@ import { getConditionOperators, getContainerOperators } from '@core/OperatorMana
 
 const useSearchable = (props, schema) => {
   const searchableProperties = computed(() => {
-    const filter = props.allowedProperties?.[props.model];
+    const filter = props.allowedProperties?.[props.entity];
     let propertyNames = schema.value.search?.properties || [];
     if (propertyNames.length && filter) {
       propertyNames = propertyNames.filter((value) => filter.includes(value));
@@ -24,7 +24,7 @@ const useSearchable = (props, schema) => {
   });
 
   const searchableScopes = computed(() => {
-    const filter = props.allowedScopes ? props.allowedScopes[props.model] : null;
+    const filter = props.allowedScopes ? props.allowedScopes[props.entity] : null;
     let scopes = schema.value.search && schema.value.search.scopes ? schema.value.search.scopes : [];
     if (scopes.length && filter) {
       scopes = scopes.filter((scope) => filter.includes(scope.id));
@@ -33,11 +33,11 @@ const useSearchable = (props, schema) => {
   });
 
   const searchableComputedScopes = computed(() => {
-    if (!props.computedScopes || !props.computedScopes[props.model]) {
+    if (!props.computedScopes || !props.computedScopes[props.entity]) {
       return [];
     }
-    const filter = props.allowedScopes ? props.allowedScopes[props.model] : null;
-    let scopes = props.computedScopes[props.model];
+    const filter = props.allowedScopes ? props.allowedScopes[props.entity] : null;
+    let scopes = props.computedScopes[props.entity];
     if (scopes.length && filter) {
       scopes = scopes.filter((scope) => filter.includes(scope.id));
     }

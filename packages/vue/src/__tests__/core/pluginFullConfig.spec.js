@@ -61,6 +61,6 @@ describe('plugin', () => {
 
     const schema = await resolve('user');
     expect(schema).toBeDefined();
-    expect(schema.name).toBe('user');
+    expect(schema.id).toBe('user');
   });
 });

@@ -2,7 +2,7 @@
 import { classes } from '@core/ClassManager';
 
 const props = defineProps({
-  model: {
+  entity: {
     type: String,
     required: true,
   },
@@ -11,6 +11,6 @@ const props = defineProps({
 
 <template>
   <span :class="classes.error_info">
-    invalid model <span>{{ props.model }}</span>
+    invalid entity <span>{{ props.entity }}</span>
   </span>
 </template>

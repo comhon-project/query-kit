@@ -16,11 +16,11 @@ watch(
   { flush: 'sync' },
 );
 
-function ensureTranslationsLoaded(schemaName) {
-  const cacheKey = `${schemaName}.${locale.value}`;
+function ensureTranslationsLoaded(schemaId) {
+  const cacheKey = `${schemaId}.${locale.value}`;
   if (!loadedTranslations[cacheKey] && !loadingTranslations[cacheKey] && schemaLocaleLoader) {
     loadingTranslations[cacheKey] = true;
-    loadRawTranslations(schemaName, locale.value);
+    loadRawTranslations(schemaId, locale.value);
   }
 }
 
@@ -74,16 +74,16 @@ function getEnumTranslations(property, enumDef = property.enum) {
   return result;
 }
 
-async function compute(name) {
+async function compute(id) {
   const translationPromises = [];
   if (schemaLocaleLoader) {
-    translationPromises.push(loadRawTranslations(name, locale.value));
+    translationPromises.push(loadRawTranslations(id, locale.value));
     if (locale.value !== fallback.value) {
-      translationPromises.push(loadRawTranslations(name, fallback.value));
+      translationPromises.push(loadRawTranslations(id, fallback.value));
     }
   }
 
-  const [loadedSchema] = await Promise.all([schemaLoader.load(name), ...translationPromises]);
+  const [loadedSchema] = await Promise.all([schemaLoader.load(id), ...translationPromises]);
   const schema = structuredClone(loadedSchema);
 
   if (!schema) return null;
@@ -92,7 +92,7 @@ async function compute(name) {
   const mapScopes = {};
 
   for (const property of schema.properties) {
-    property.owner = name;
+    property.owner = id;
     mapProperties[property.id] = property;
   }
 
@@ -100,7 +100,7 @@ async function compute(name) {
     const scopes = [];
     for (let current of schema.search.scopes) {
       const scope = typeof current == 'object' ? current : { id: current, name: current };
-      scope.owner = name;
+      scope.owner = id;
       mapScopes[scope.id] = scope;
       scopes.push(scope);
     }
@@ -109,16 +109,16 @@ async function compute(name) {
 
   schema.mapProperties = mapProperties;
   schema.mapScopes = mapScopes;
-  schema.name = name;
+  schema.id = id;
 
   return schema;
 }
 
-async function loadRawTranslations(schemaName, targetLocale) {
-  const cacheKey = `${schemaName}.${targetLocale}`;
+async function loadRawTranslations(schemaId, targetLocale) {
+  const cacheKey = `${schemaId}.${targetLocale}`;
   if (!loadedTranslations[cacheKey]) {
     try {
-      loadedTranslations[cacheKey] = await schemaLocaleLoader.load(schemaName, targetLocale);
+      loadedTranslations[cacheKey] = await schemaLocaleLoader.load(schemaId, targetLocale);
     } catch {
       loadedTranslations[cacheKey] = {};
     }
@@ -127,11 +127,11 @@ async function loadRawTranslations(schemaName, targetLocale) {
   return loadedTranslations[cacheKey];
 }
 
-async function getPropertyPath(model, nestedProperty) {
+async function getPropertyPath(schemaId, nestedProperty) {
   const propertyPath = [];
   const splited = nestedProperty.split('.');
   let propertyName = '';
-  let currentSchema = await resolve(model);
+  let currentSchema = await resolve(schemaId);
   for (let i = 0; i < splited.length - 1; i++) {
     propertyName = propertyName.length ? `${propertyName}.${splited[i]}` : splited[i];
     const property = currentSchema.mapProperties[propertyName];
@@ -141,7 +141,7 @@ async function getPropertyPath(model, nestedProperty) {
     propertyPath.push(property);
     currentSchema = await resolve(property.model);
     if (!currentSchema) {
-      throw new Error(`invalid model "${property.model}"`);
+      throw new Error(`invalid schema id "${property.schemaId}"`);
     }
     propertyName = '';
   }
@@ -162,11 +162,11 @@ const registerLocaleLoader = (config) => {
   schemaLocaleLoader = config;
 };
 
-const resolve = (name) => {
-  if (!computedSchemas[name]) {
-    computedSchemas[name] = compute(name);
+const resolve = (id) => {
+  if (!computedSchemas[id]) {
+    computedSchemas[id] = compute(id);
   }
-  return computedSchemas[name];
+  return computedSchemas[id];
 };
 
 export {

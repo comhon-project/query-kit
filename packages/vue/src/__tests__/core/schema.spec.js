@@ -11,14 +11,14 @@ describe('test schemas', async () => {
   it('test schema instance', async () => {
     const schema = await resolve('user');
     expect(schema).toBeDefined();
-    expect(schema.name).toBe('user');
+    expect(schema.id).toBe('user');
 
     const schemaTwo = await resolve('user');
     expect(schema).toBe(schemaTwo);
 
     const schemaOrga = await resolve('organization');
     expect(schemaOrga).toBeDefined();
-    expect(schemaOrga.name).toBe('organization');
+    expect(schemaOrga.id).toBe('organization');
 
     const schemaOrgaTwo = await resolve('organization');
     expect(schemaOrga).toBe(schemaOrgaTwo);
@@ -28,7 +28,7 @@ describe('test schemas', async () => {
   it('test computed schema without locales', async () => {
     const schema = await resolve('user');
     expect(schema).toBeDefined();
-    expect(schema.name).toBe('user');
+    expect(schema.id).toBe('user');
     expect(schema.mapProperties).toStrictEqual({
       id: { id: 'id', name: 'identifier', type: 'string', owner: 'user' },
       first_name: { id: 'first_name', name: 'first name', type: 'string', owner: 'user' },

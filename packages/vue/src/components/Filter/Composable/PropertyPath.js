@@ -19,7 +19,7 @@ const usePropertyPath = (props) => {
   });
 
   async function isSortable() {
-    let currentSchema = await resolve(props.model);
+    let currentSchema = await resolve(props.entity);
     for (let property of propertyPath.value) {
       if (
         !currentSchema.search ||
@@ -39,7 +39,7 @@ const usePropertyPath = (props) => {
   watch(
     () => props.propertyId,
     async () => {
-      propertyPath.value = props.propertyId ? await getPropertyPath(props.model, props.propertyId) : false;
+      propertyPath.value = props.propertyId ? await getPropertyPath(props.entity, props.propertyId) : false;
       sortable.value = props.propertyId ? await isSortable() : false;
     },
     { immediate: true }

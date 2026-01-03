@@ -7,7 +7,7 @@ import { computed } from 'vue';
 
 const emit = defineEmits(['click']);
 const props = defineProps({
-  model: {
+  entity: {
     type: String,
     required: true,
   },

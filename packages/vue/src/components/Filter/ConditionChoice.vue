@@ -11,20 +11,20 @@ import Modal from '@components/Common/Modal.vue';
 const emit = defineEmits(['validate']);
 const show = defineModel('show', { type: Boolean, required: true });
 const props = defineProps({
-  model: {
+  entity: {
     type: String,
     required: true,
   },
   computedScopes: {
-    type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
-    type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
     default: undefined,
   },
   allowedProperties: {
-    type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
     default: undefined,
   },
   allowedOperators: {
@@ -66,7 +66,7 @@ const displayGroup = computed(() => {
 function validate(e) {
   condition = {};
   if (selectedType.value == 'condition') {
-    const computedScope = props.computedScopes?.[props.model]?.find((scope) => scope.id == targetCondition.value);
+    const computedScope = props.computedScopes?.[props.entity]?.find((scope) => scope.id == targetCondition.value);
     const scope = computedScope || schema.value.mapScopes[targetCondition.value];
     if (scope) {
       condition.type = 'scope';
@@ -77,7 +77,7 @@ function validate(e) {
           condition.id,
           schema.value,
           props.allowedOperators,
-          props.computedScopes
+          props.computedScopes,
         );
         condition.operator = operators[0];
       }
@@ -91,7 +91,7 @@ function validate(e) {
           'condition',
           targetCondition.value,
           schema.value,
-          props.allowedOperators
+          props.allowedOperators,
         );
         condition.operator = operators[0];
         condition.type = 'condition';
@@ -125,13 +125,13 @@ function submitForm() {
 }
 
 onMounted(async () => {
-  schema.value = await resolve(props.model);
+  schema.value = await resolve(props.entity);
 });
 watch(
-  () => props.model,
+  () => props.entity,
   async () => {
-    schema.value = await resolve(props.model);
-  }
+    schema.value = await resolve(props.entity);
+  },
 );
 </script>
 

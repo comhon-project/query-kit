@@ -83,7 +83,7 @@ const getConditionOperators = (filterType, target, schema, allowedOperators = nu
   const targetObject =
     filterType == 'condition'
       ? schema.mapProperties[target]
-      : computedScopes?.[schema.name]?.find((scope) => scope.id == target) || schema.mapScopes[target];
+      : computedScopes?.[schema.id]?.find((scope) => scope.id == target) || schema.mapScopes[target];
 
   if (!targetObject) {
     throw new Error(`invalid target ${target}`);

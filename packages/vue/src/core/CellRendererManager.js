@@ -4,7 +4,7 @@ import Boolean from '@components/Common/Renderers/Boolean.vue';
 import Date from '@components/Common/Renderers/Date.vue';
 import DateTime from '@components/Common/Renderers/DateTime.vue';
 import Time from '@components/Common/Renderers/Time.vue';
-import ForeignModel from '@components/Common/Renderers/ForeignModel.vue';
+import ForeignEntity from '@components/Common/Renderers/ForeignEntity.vue';
 import Array from '@components/Common/Renderers/Array.vue';
 
 const typeRenderers = {
@@ -17,7 +17,7 @@ const typeRenderers = {
   datetime: DateTime,
   time: Time,
   boolean: Boolean,
-  relationship: ForeignModel,
+  relationship: ForeignEntity,
   array: Array,
 };
 

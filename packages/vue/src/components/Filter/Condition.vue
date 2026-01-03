@@ -7,7 +7,7 @@ import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidScope from '@components/Messages/InvalidScope.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidType from '@components/Messages/InvalidType.vue';
-import InvalidModel from '@components/Messages/InvalidModel.vue';
+import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import InputCollection from '@components/Filter/InputCollection.vue';
 import InputCondition from '@components/Filter/InputCondition.vue';
@@ -22,12 +22,12 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },
   computedScopes: {
-    type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedOperators: {
@@ -51,7 +51,7 @@ const props = defineProps({
     default: undefined,
   },
 });
-const validModel = ref(true);
+const validEntity = ref(true);
 const validOperator = ref(true);
 const validTarget = ref(true);
 const validType = ref(true);
@@ -59,7 +59,7 @@ const schema = ref(null);
 const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseFilter(
   props,
   schema,
-  props.modelValue.type
+  props.modelValue.type,
 );
 
 const inputType = computed(() => {
@@ -88,8 +88,8 @@ const target = computed(() => {
     return schema.value.mapProperties[props.modelValue.property];
   }
   const computedScope =
-    props.computedScopes && props.computedScopes[props.model]
-      ? props.computedScopes[props.model].find((scope) => scope.id == props.modelValue.id)
+    props.computedScopes && props.computedScopes[props.entity]
+      ? props.computedScopes[props.entity].find((scope) => scope.id == props.modelValue.id)
       : null;
 
   return computedScope ? computedScope : schema.value.mapScopes[props.modelValue.id];
@@ -106,9 +106,9 @@ const isUniqueIn = computed(() => {
 });
 
 async function initSchema() {
-  schema.value = await resolve(props.model);
+  schema.value = await resolve(props.entity);
   if (!schema.value) {
-    validModel.value = false;
+    validEntity.value = false;
     return;
   }
   verifyTarget();
@@ -165,21 +165,21 @@ watch(
         props.modelValue.value = [props.modelValue.value];
       }
     }
-  }
+  },
 );
 watch(
   () => props.modelValue.property,
   () => {
     verifyType();
     verifyTarget();
-  }
+  },
 );
 watch(
   () => props.modelValue.id,
   () => {
     verifyType();
     verifyTarget();
-  }
+  },
 );
 </script>
 
@@ -187,7 +187,7 @@ watch(
   <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
     <div>
       <slot name="shortcuts" />
-      <InvalidModel v-if="!validModel" :model="modelValue.model" />
+      <InvalidEntity v-if="!validEntity" :entity="modelValue.model" />
       <template v-else-if="!validTarget">
         <InvalidProperty v-if="modelValue.type == 'condition'" :property="modelValue.property" />
         <InvalidScope v-else :id="modelValue.id" />
@@ -231,7 +231,7 @@ watch(
       </template>
     </div>
     <IconButton
-      v-if="isRemovable || !validModel || !validTarget || !validOperator || !validType"
+      v-if="isRemovable || !validEntity || !validTarget || !validOperator || !validType"
       icon="delete"
       btn-class="btn_secondary"
       :aria-label="schema && target ? translate('condition') + ' ' + targetName : ''"

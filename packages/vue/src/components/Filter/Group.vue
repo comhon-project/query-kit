@@ -6,7 +6,7 @@ import { resolve } from '@core/Schema';
 import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
 import { isValidOperator } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
-import InvalidModel from '@components/Messages/InvalidModel.vue';
+import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import CollapseButton from '@components/Common/CollapseButton.vue';
@@ -20,20 +20,20 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },
   computedScopes: {
-    type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
-    type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
     default: undefined,
   },
   allowedProperties: {
-    type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
     default: undefined,
   },
   allowedOperators: {
@@ -65,7 +65,7 @@ const props = defineProps({
 const listRef = useTemplateRef('listRef');
 const groupRef = useTemplateRef('groupRef');
 const validOperator = ref(true);
-const validModel = ref(true);
+const validEntity = ref(true);
 const schema = ref(null);
 const showConditionChoice = ref(false);
 const collapsed = ref(false);
@@ -120,9 +120,9 @@ async function initFilter() {
 }
 
 async function initSchema() {
-  schema.value = await resolve(props.model);
+  schema.value = await resolve(props.entity);
   if (!schema.value) {
-    validModel.value = false;
+    validEntity.value = false;
   }
 }
 
@@ -159,13 +159,13 @@ watchEffect(() => {
 
 <template>
   <div
-    v-if="!validModel || !validOperator"
+    v-if="!validEntity || !validOperator"
     :class="classes.condition_error_container"
     tabindex="0"
     :aria-label="ariaLabel ?? translate('group')"
   >
     <div>
-      <InvalidModel v-if="!validModel" :model="props.model" />
+      <InvalidEntity v-if="!validEntity" :entity="props.entity" />
       <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator" />
     </div>
     <IconButton icon="delete" btn-class="btn_secondary" :aria-label="translate('group')" @click="$emit('remove')" />

@@ -12,7 +12,7 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },
@@ -21,15 +21,15 @@ const props = defineProps({
     default: true,
   },
   computedScopes: {
-    type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
-    type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
     default: undefined,
   },
   allowedProperties: {
-    type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
     default: undefined,
   },
   allowedOperators: {
@@ -67,7 +67,7 @@ onUnmounted(() => {
 });
 
 async function initSchema() {
-  schema.value = await resolve(props.model);
+  schema.value = await resolve(props.entity);
 }
 
 function reset() {
@@ -77,8 +77,8 @@ function reset() {
 
 function getScopeDefinition(scopeId, schema) {
   let scope =
-    props.computedScopes && props.computedScopes[props.model]
-      ? props.computedScopes[props.model].find((scope) => scope.id == scopeId)
+    props.computedScopes && props.computedScopes[props.entity]
+      ? props.computedScopes[props.entity].find((scope) => scope.id == scopeId)
       : null;
   return (scope = scope || schema.mapScopes[scopeId]);
 }
@@ -107,8 +107,8 @@ async function getComputedFilter() {
     const [currentFilter, currentSchema] = stack.pop();
     if (currentFilter.type == 'relationship_condition') {
       if (currentFilter.filter) {
-        const modelName = currentSchema.mapProperties[currentFilter.property].model;
-        const childSchema = await resolve(modelName);
+        const schemaId = currentSchema.mapProperties[currentFilter.property].model;
+        const childSchema = await resolve(schemaId);
         if (mustKeepFilter(currentFilter.filter, childSchema)) {
           stack.push([currentFilter.filter, childSchema]);
         } else {

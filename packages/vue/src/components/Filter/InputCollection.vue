@@ -22,7 +22,7 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },

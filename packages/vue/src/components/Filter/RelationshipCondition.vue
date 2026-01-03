@@ -5,7 +5,7 @@ import Group from '@components/Filter/Group.vue';
 import Condition from '@components/Filter/Condition.vue';
 import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
 import { isValidOperator } from '@core/OperatorManager';
-import InvalidModel from '@components/Messages/InvalidModel.vue';
+import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -20,20 +20,20 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  model: {
+  entity: {
     type: String,
     required: true,
   },
   computedScopes: {
-    type: Object, // {modelname: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
-    type: Object, // {modelname: ['scope_one', 'scope_two', ...], ...}
+    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
     default: undefined,
   },
   allowedProperties: {
-    type: Object, // {modelname: ['property_name_one', 'property_name_two', ...], ...}
+    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
     default: undefined,
   },
   allowedOperators: {
@@ -81,7 +81,7 @@ const props = defineProps({
 });
 
 let schema = null;
-const invalidModel = ref(null);
+const invalidEntity = ref(null);
 const invalidProperty = ref(null);
 const invalidOperator = ref(null);
 const childAriaLabelProperty = ref(null);
@@ -92,23 +92,23 @@ const childAriaLabel = computed(() => {
 const queue = ref(null);
 const endQueueFilter = ref(null);
 
-const endQueuePropertyModel = computed(() => {
+const endQueuePropertySchemaId = computed(() => {
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
   return lastQueueSchema.mapProperties[lastQueueElement.value.property].model;
 });
 
 async function initSchema() {
-  schema = await resolve(props.model);
+  schema = await resolve(props.entity);
   if (!schema) {
-    invalidModel.value = props.model;
+    invalidEntity.value = props.entity;
     return;
   }
   setChild();
 }
 
 async function addFilter(filter) {
-  const endQueuePropertySchema = await resolve(endQueuePropertyModel.value);
+  const endQueuePropertySchema = await resolve(endQueuePropertySchemaId.value);
 
   /**
    * polyfill for browser that don't support css pseudo-class :has() like firefox.
@@ -176,10 +176,10 @@ async function setChild() {
     }
     childAriaLabelProperty.value = childSchema.mapProperties[childFilter.property];
 
-    const childModelName = childSchema.mapProperties[childFilter.property].model;
-    childSchema = await resolve(childModelName);
+    const childSchemaId = childSchema.mapProperties[childFilter.property].model;
+    childSchema = await resolve(childSchemaId);
     if (!childSchema) {
-      invalidModel.value = childModelName;
+      invalidEntity.value = childSchemaId;
       childFilter = null;
       return;
     }
@@ -195,13 +195,13 @@ watch(() => props.modelValue.filter, initSchema);
 
 <template>
   <div
-    v-if="invalidModel || invalidProperty || invalidOperator"
+    v-if="invalidEntity || invalidProperty || invalidOperator"
     :class="classes.condition_error_container"
     tabindex="0"
     :aria-label="translate('relationship_condition')"
   >
     <div>
-      <InvalidModel v-if="invalidModel" :model="invalidModel" />
+      <InvalidEntity v-if="invalidEntity" :entity="invalidEntity" />
       <InvalidProperty v-else-if="invalidProperty" :property="invalidProperty" />
       <InvalidOperator v-else-if="invalidOperator" :operator="invalidOperator" />
     </div>
@@ -219,12 +219,12 @@ watch(() => props.modelValue.filter, initSchema);
                 :key="elmnt.key"
                 v-bind="props"
                 :model-value="elmnt.value"
-                :model="elmnt.schema.name"
+                :entity="elmnt.schema.id"
               />
             </div>
             <RelationshipAction
               v-bind="props"
-              :model="endQueuePropertyModel"
+              :entity="endQueuePropertySchemaId"
               :model-value="queue[queue.length - 1].value"
               @remove="removeQueueFilter"
               @add="addFilter"
@@ -249,7 +249,7 @@ watch(() => props.modelValue.filter, initSchema);
         <Condition
           v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'"
           v-bind="props"
-          :model="endQueuePropertyModel"
+          :entity="endQueuePropertySchemaId"
           :model-value="endQueueFilter"
           :aria-label="translate('relationship_condition_with_condition')"
           @remove="removeEndFilter"
@@ -261,7 +261,7 @@ watch(() => props.modelValue.filter, initSchema);
                 :key="elmnt.key"
                 v-bind="props"
                 :model-value="elmnt.value"
-                :model="elmnt.schema.name"
+                :entity="elmnt.schema.id"
               />
             </div>
           </template>
@@ -272,7 +272,7 @@ watch(() => props.modelValue.filter, initSchema);
         <Group
           v-else-if="endQueueFilter.type == 'group'"
           v-bind="props"
-          :model="endQueuePropertyModel"
+          :entity="endQueuePropertySchemaId"
           :model-value="endQueueFilter"
           :aria-label="translate('relationship_condition_with_group')"
           @remove="removeEndFilter"
@@ -285,7 +285,7 @@ watch(() => props.modelValue.filter, initSchema);
                 :key="elmnt.key"
                 v-bind="props"
                 v-model="elmnt.value"
-                :model="elmnt.schema.name"
+                :entity="elmnt.schema.id"
               />
             </div>
           </template>

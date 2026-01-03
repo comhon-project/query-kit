@@ -12,7 +12,7 @@ import ColumnChoices from '@components/Collection/ColumnChoices.vue';
 
 const emit = defineEmits(['rowClick', 'export', 'update:columns', 'update:orderBy']);
 const props = defineProps({
-  model: {
+  entity: {
     type: String,
     required: true,
   },
@@ -128,8 +128,8 @@ async function init(fetch = true) {
 }
 
 async function initColumns(columns, orderBy, fetch = true) {
-  if (!(await resolve(props.model))) {
-    throw new Error(`invalid model "${props.model}"`);
+  if (!(await resolve(props.entity))) {
+    throw new Error(`invalid entity "${props.entity}"`);
   }
   const properties = [];
   requestProperties = [];
@@ -137,7 +137,7 @@ async function initColumns(columns, orderBy, fetch = true) {
   for (const columnId of columns) {
     const propertyPath = props.customColumns?.[columnId]?.open
       ? undefined
-      : await getPropertyPath(props.model, columnId);
+      : await getPropertyPath(props.entity, columnId);
     const property = propertyPath?.[propertyPath.length - 1];
     properties.push(property);
 
@@ -251,7 +251,7 @@ async function requestServer(reset = false) {
     : baseRequester.request;
 
   const response = await fetch({
-    model: props.model,
+    entity: props.entity,
     order: copiedOrderBy.value.length ? await getRequestOrder() : undefined,
     offset: movingOffset,
     limit: props.limit,
@@ -293,7 +293,7 @@ async function getRequestOrder() {
         })
       );
     } else {
-      const propertyPath = await getPropertyPath(props.model, order.column);
+      const propertyPath = await getPropertyPath(props.entity, order.column);
       const property = propertyPath[propertyPath.length - 1];
 
       if (property.type != 'relationship') {
@@ -346,7 +346,7 @@ onUnmounted(() => {
   observer?.disconnect();
 });
 watch(
-  () => props.model,
+  () => props.entity,
   async () => {
     await init(true);
   }
@@ -416,7 +416,7 @@ watch(
               <Header
                 v-for="columnId in copiedColumns"
                 :key="columnId"
-                :model="model"
+                :entity="entity"
                 :column-id="columnId"
                 :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
                 :label="customColumns?.[columnId]?.label"
@@ -458,7 +458,7 @@ watch(
       v-model:show="showColumnsModal"
       :columns="copiedColumns"
       :custom-columns="customColumns"
-      :model="model"
+      :entity="entity"
       @update:columns="updateColumns"
     />
   </div>

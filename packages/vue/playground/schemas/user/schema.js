@@ -1,4 +1,5 @@
 export default {
+  id: "user",
   name: "user",
   properties: [
     {

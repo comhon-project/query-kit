@@ -7,7 +7,7 @@ import { resolve, getPropertyTranslation } from '@core/Schema';
 
 const emit = defineEmits(['remove', 'update:columnId']);
 const props = defineProps({
-  model: {
+  entity: {
     type: String,
     required: true,
   },
@@ -80,9 +80,9 @@ function remove() {
 }
 
 watch(propertyPath, async () => {
-  const model = propertyPath.value?.[propertyPath.value.length - 1].model;
-  if (model) {
-    schema.value = await resolve(model);
+  const schemaId = propertyPath.value?.[propertyPath.value.length - 1].model;
+  if (schemaId) {
+    schema.value = await resolve(schemaId);
   }
 });
 watch(selectedProperty, () => {
