@@ -31,19 +31,20 @@ describe('minimal plugin', () => {
   });
   it('missing required config', () => {
     expect(() => plugin.install(appMock)).toThrowError('must have at least required configs');
-    expect(() => plugin.install(appMock, {})).toThrowError('requester config is required');
     expect(() => plugin.install(appMock, { requester: 1 })).toThrowError(
-      'invalid requester. it must be a function or an object containing a property "request" with a function value'
+      'invalid requester. it must be a function or an object containing a property "request" with a function value',
     );
     expect(() => plugin.install(appMock, { requester: {} })).toThrowError(
-      'invalid requester. it must be a function or an object containing a property "request" with a function value'
+      'invalid requester. it must be a function or an object containing a property "request" with a function value',
     );
-    expect(() => plugin.install(appMock, { requester: () => {} })).toThrowError('entitySchemaLoader config is required');
+    expect(() => plugin.install(appMock, { requester: () => {} })).toThrowError(
+      'entitySchemaLoader config is required',
+    );
     expect(() => plugin.install(appMock, { requester: { request: () => {} }, entitySchemaLoader: 1 })).toThrowError(
-      'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value'
+      'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value',
     );
     expect(() => plugin.install(appMock, { requester: { request: () => {} }, entitySchemaLoader: {} })).toThrowError(
-      'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value'
+      'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value',
     );
   });
   it('minimal config', () => {

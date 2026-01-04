@@ -111,8 +111,16 @@ const showColumnsModal = ref(false);
 const observered = useTemplateRef('observered');
 let observer;
 
+const activeRequester = computed(() => {
+  const requester = props.requester ?? baseRequester;
+  if (!requester) {
+    throw new Error('requester is required, either as a prop or registered globally via plugin options');
+  }
+  return requester;
+});
+
 const isResultFlattened = computed(() => {
-  return props.requester && typeof props.requester == 'object' ? props.requester.flattened : baseRequester.flattened;
+  return typeof activeRequester.value == 'object' ? activeRequester.value.flattened : false;
 });
 
 const indexedOrderBy = computed(() => {
@@ -244,11 +252,8 @@ async function requestServer(reset = false) {
   }
   hasExecFirstQuery = true;
   requesting.value = true;
-  const fetch = props.requester
-    ? typeof props.requester == 'function'
-      ? props.requester
-      : props.requester.request
-    : baseRequester.request;
+  const requesterValue = activeRequester.value;
+  const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
 
   const response = await fetch({
     entity: props.entity,
