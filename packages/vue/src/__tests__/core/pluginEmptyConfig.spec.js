@@ -38,17 +38,17 @@ describe('minimal plugin', () => {
     expect(() => plugin.install(appMock, { requester: {} })).toThrowError(
       'invalid requester. it must be a function or an object containing a property "request" with a function value'
     );
-    expect(() => plugin.install(appMock, { requester: () => {} })).toThrowError('schemaLoader config is required');
-    expect(() => plugin.install(appMock, { requester: { request: () => {} }, schemaLoader: 1 })).toThrowError(
-      'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
+    expect(() => plugin.install(appMock, { requester: () => {} })).toThrowError('entitySchemaLoader config is required');
+    expect(() => plugin.install(appMock, { requester: { request: () => {} }, entitySchemaLoader: 1 })).toThrowError(
+      'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value'
     );
-    expect(() => plugin.install(appMock, { requester: { request: () => {} }, schemaLoader: {} })).toThrowError(
-      'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
+    expect(() => plugin.install(appMock, { requester: { request: () => {} }, entitySchemaLoader: {} })).toThrowError(
+      'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value'
     );
   });
   it('minimal config', () => {
     expect(plugin).toBeDefined();
-    const options = { requester: { request: () => {} }, schemaLoader: { load: () => {} } };
+    const options = { requester: { request: () => {} }, entitySchemaLoader: () => {} };
     plugin.install(appMock, options);
     expect(locale.value).toBe('en');
     expect(fallback.value).toBe('en');
@@ -91,6 +91,8 @@ describe('minimal plugin', () => {
       in_list: 'qkit-in-list',
       in_value_container: 'qkit-in-value-container',
       property_name_container: 'qkit-property-name-container',
+      scope_parameters: 'qkit-scope-parameters',
+      scope_parameter: 'qkit-scope-parameter',
       error_info: 'qkit-error-info',
       relationship_container: 'qkit-condition-container',
       relationship_queue: 'qkit-relationship-queue',

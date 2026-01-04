@@ -2,7 +2,7 @@
 import { ref, shallowRef, toRaw, watch, watchEffect } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
 import FilterBuilder from '@components/Filter/Builder.vue';
-import { resolve } from '@core/Schema';
+import { resolve } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import Utils from '@core/Utils';
@@ -32,7 +32,7 @@ const props = defineProps({
     default: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {

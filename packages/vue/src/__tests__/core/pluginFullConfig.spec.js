@@ -7,9 +7,9 @@ import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
 import { config } from '@config/config';
 import { locale, fallback } from '@i18n/i18n';
-import { schemaLoader, schemaLocaleLoader } from '@tests/assets/SchemaLoader';
+import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader } from '@tests/assets/SchemaLoader';
 import requesterConfig from '@tests/assets/Requester';
-import { resolve } from '@core/Schema';
+import { resolve } from '@core/EntitySchema';
 
 const appMock = {
   component: () => {},
@@ -34,8 +34,10 @@ describe('plugin', () => {
       defaultLocale: 'es',
       fallbackLocale: 'fr',
       requester: requesterConfig,
-      schemaLoader,
-      schemaLocaleLoader,
+      entitySchemaLoader,
+      entityTranslationsLoader,
+      enumSchemaLoader,
+      enumTranslationsLoader,
       renderHtml: true,
     };
     plugin.install(appMock, options);

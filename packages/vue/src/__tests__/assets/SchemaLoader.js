@@ -8,12 +8,25 @@ import orgaFr from '@tests/assets/schemas/organization/fr';
 import orgaEs from '@tests/assets/schemas/organization/es';
 import organization from '@tests/assets/schemas/organization/schema';
 
-const schemas = {
+import genderSchema from '@tests/assets/schemas/enums/gender/schema';
+import genderEn from '@tests/assets/schemas/enums/gender/en';
+import genderFr from '@tests/assets/schemas/enums/gender/fr';
+import genderEs from '@tests/assets/schemas/enums/gender/es';
+
+import fruitSchema from '@tests/assets/schemas/enums/fruit/schema';
+import fruitEn from '@tests/assets/schemas/enums/fruit/en';
+import fruitFr from '@tests/assets/schemas/enums/fruit/fr';
+
+import enumScopeValuesSchema from '@tests/assets/schemas/enums/enum_scope_values/schema';
+import enumScopeValuesEn from '@tests/assets/schemas/enums/enum_scope_values/en';
+import enumScopeValuesFr from '@tests/assets/schemas/enums/enum_scope_values/fr';
+
+const entitySchemas = {
   user,
   organization,
 };
 
-const locales = {
+const entityLocales = {
   user: {
     en: userEn,
     fr: userFr,
@@ -26,16 +39,50 @@ const locales = {
   },
 };
 
-const schemaLoader = {
+const enumSchemas = {
+  gender: genderSchema,
+  fruit: fruitSchema,
+  enum_scope_values: enumScopeValuesSchema,
+};
+
+const enumLocales = {
+  gender: {
+    en: genderEn,
+    fr: genderFr,
+    es: genderEs,
+  },
+  fruit: {
+    en: fruitEn,
+    fr: fruitFr,
+  },
+  enum_scope_values: {
+    en: enumScopeValuesEn,
+    fr: enumScopeValuesFr,
+  },
+};
+
+const entitySchemaLoader = {
   load: async (name) => {
-    return schemas[name];
+    return entitySchemas[name];
   },
 };
 
-const schemaLocaleLoader = {
+const entityTranslationsLoader = {
   load: async (name, locale) => {
-    return locales[name] ? locales[name][locale] : null;
+    return entityLocales[name]?.[locale] ?? null;
   },
 };
 
-export { schemaLoader, schemaLocaleLoader };
+const enumSchemaLoader = {
+  load: async (name) => {
+    return enumSchemas[name];
+  },
+};
+
+const enumTranslationsLoader = {
+  load: async (name, locale) => {
+    return enumLocales[name]?.[locale] ?? null;
+  },
+};
+
+export { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader };

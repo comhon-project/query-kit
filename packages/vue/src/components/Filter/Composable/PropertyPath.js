@@ -1,5 +1,6 @@
 import { computed, ref, shallowRef, watch } from 'vue';
-import { getPropertyPath, getPropertyTranslation, resolve } from '@core/Schema';
+import { getPropertyPath, getPropertyTranslation } from '@core/EntitySchema';
+import { getSortableProperties } from '@core/RequestSchema';
 import { locale } from '@i18n/i18n';
 
 const usePropertyPath = (props) => {
@@ -19,18 +20,14 @@ const usePropertyPath = (props) => {
   });
 
   async function isSortable() {
-    let currentSchema = await resolve(props.entity);
+    let currentEntity = props.entity;
     for (let property of propertyPath.value) {
-      if (
-        !currentSchema.search ||
-        !Array.isArray(currentSchema.search.sort) ||
-        !currentSchema.search.sort.includes(property.id)
-      ) {
+      const sortableProperties = await getSortableProperties(currentEntity);
+      if (!sortableProperties.includes(property.id)) {
         return false;
       }
-      if (property.model) {
-        // add condition just for the very last property that probably don't have model
-        currentSchema = await resolve(property.model);
+      if (property.related) {
+        currentEntity = property.related;
       }
     }
     return true;

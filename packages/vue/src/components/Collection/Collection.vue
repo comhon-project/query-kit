@@ -2,7 +2,7 @@
 import { ref, watch, onMounted, onUnmounted, shallowRef, computed, toRaw, useTemplateRef } from 'vue';
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyPath } from '@core/Schema';
+import { resolve, getPropertyPath } from '@core/EntitySchema';
 import { translate } from '@i18n/i18n';
 import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
@@ -145,7 +145,7 @@ async function initColumns(columns, orderBy, fetch = true) {
       if (property.type != 'relationship') {
         requestProperties.push(columnId);
       } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
-        const propertySchema = await resolve(property.model);
+        const propertySchema = await resolve(property.related);
         requestProperties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
         if (propertySchema.primary_identifiers) {
           for (const propertyId of propertySchema.primary_identifiers) {
@@ -300,7 +300,7 @@ async function getRequestOrder() {
         orderBy.push({ property: order.column, order: order.order });
         continue;
       }
-      const schema = await resolve(property.model);
+      const schema = await resolve(property.related);
       if (schema.natural_sort) {
         orderBy.push(
           ...schema.natural_sort.map((property) => {

@@ -36,10 +36,7 @@ export default {
       id: 'gender',
       name: 'the gender',
       type: 'string',
-      enum: {
-        male: 'Mr.',
-        female: 'Ms.',
-      },
+      enum: 'gender',
     },
     {
       id: 'birth.birth_date',
@@ -67,7 +64,7 @@ export default {
       type: 'array',
       children: {
         type: 'string',
-        enum: ['1', '2', '3'],
+        enum: 'fruit',
       },
     },
     {
@@ -75,60 +72,60 @@ export default {
       name: 'the company',
       type: 'relationship',
       relationship_type: 'belongs_to',
-      model: 'organization',
+      related: 'organization',
     },
     {
       id: 'friend',
       name: 'the friend',
       type: 'relationship',
       relationship_type: 'belongs_to',
-      model: 'user',
+      related: 'user',
     },
   ],
   unique_identifier: 'id',
   primary_identifiers: ['last_name', 'first_name'],
-  search: {
-    properties: [
-      'first_name',
-      'age',
-      'weight',
-      'gender',
-      'married',
-      'birth.birth_date',
-      'birth.birth_day',
-      'birth.birth_hour',
-      'company',
-      'friend',
-      'country',
-      'favorite_fruits',
-    ],
-    sort: ['first_name', 'company'],
-    scopes: [
-      'scope_string_definition',
-      {
-        id: 'scope',
-        name: 'scope without value',
-      },
-      {
-        id: 'string_scope',
-        name: 'string scope',
-        type: 'string',
-        useOperator: true,
-      },
-      {
-        id: 'datetime_scope',
-        name: 'datetime scope',
-        type: 'datetime',
-      },
-      {
-        id: 'enum_scope',
-        name: 'enum scope',
-        type: 'string',
-        enum: {
-          one: 'value one',
-          two: 'value two',
+  scopes: [
+    {
+      id: 'scope_string_definition',
+      parameters: [],
+    },
+    {
+      id: 'scope',
+      parameters: [],
+    },
+    {
+      id: 'string_scope',
+      parameters: [
+        {
+          id: 'value',
+          name: 'string scope',
+          type: 'string',
+          nullable: false,
         },
-      },
-    ],
-  },
+      ],
+    },
+    {
+      id: 'datetime_scope',
+      parameters: [
+        {
+          id: 'value',
+          name: 'datetime scope',
+          type: 'datetime',
+          nullable: false,
+        },
+      ],
+    },
+    {
+      id: 'enum_scope',
+      parameters: [
+        {
+          id: 'value',
+          name: 'enum scope',
+          type: 'string',
+          enum: 'enum_scope_values',
+          nullable: false,
+        },
+      ],
+    },
+  ],
 };

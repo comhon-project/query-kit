@@ -4,7 +4,7 @@ import { classes } from '@core/ClassManager';
 import { locale, translate } from '@i18n/i18n';
 import Modal from '@components/Common/Modal.vue';
 import ColumnChoice from '@components/Collection/ColumnChoice.vue';
-import { resolve, getPropertyTranslation } from '@core/Schema';
+import { resolve, getPropertyTranslation } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
 import Utils from '@core/Utils';
 

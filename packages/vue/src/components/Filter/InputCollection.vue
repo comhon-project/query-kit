@@ -12,7 +12,7 @@ const props = defineProps({
   },
   operator: {
     type: String,
-    required: true,
+    default: undefined,
   },
   target: {
     type: Object,

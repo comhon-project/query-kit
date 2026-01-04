@@ -2,7 +2,7 @@
 import { ref, computed, watchEffect, useTemplateRef } from 'vue';
 import Utils from '@core/Utils.js';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
-import { resolve } from '@core/Schema';
+import { resolve } from '@core/EntitySchema';
 import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
 import { isValidOperator } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
@@ -25,7 +25,7 @@ const props = defineProps({
     required: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {

@@ -27,13 +27,9 @@ export default {
       name: 'the contacts',
       type: 'relationship',
       relationship_type: 'has_many',
-      model: 'user',
+      related: 'user',
     },
   ],
   unique_identifier: 'id',
   primary_identifiers: ['brand_name'],
-  search: {
-    properties: ['address', 'brand_name', 'contacts', 'description'],
-    sort: ['brand_name'],
-  },
 };

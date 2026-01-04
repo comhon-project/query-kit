@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, toRaw, watchEffect, onUnmounted } from 'vue';
-import { resolve } from '@core/Schema';
+import { resolve } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
@@ -21,7 +21,7 @@ const props = defineProps({
     default: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
@@ -83,21 +83,38 @@ function getScopeDefinition(scopeId, schema) {
   return (scope = scope || schema.mapScopes[scopeId]);
 }
 
+function isScopeFilled(scope, filter) {
+  if (!scope.parameters?.length) {
+    return true;
+  }
+  for (let i = 0; i < scope.parameters.length; i++) {
+    const param = scope.parameters[i];
+    if (param.nullable !== false) continue;
+    const paramValue = filter.parameters?.[i];
+    const isParamEmpty =
+      paramValue === undefined ||
+      paramValue === null ||
+      (Array.isArray(paramValue) && paramValue.filter((v) => v !== undefined).length === 0);
+    if (isParamEmpty) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function mustKeepFilter(filter, schema) {
   if (filter.operator == 'null' || filter.operator == 'not_null') {
     return true;
   }
   if (filter.type == 'scope') {
     const scope = getScopeDefinition(filter.id, schema);
-    if (scope && !scope.type) {
-      return true; // a scope without type is a scope without value and must be kept
-    }
+    return scope && isScopeFilled(scope, filter);
   }
   const isEmpty =
     filter.value === undefined ||
     (Array.isArray(filter.value) && filter.value.filter((value) => value !== undefined).length == 0);
 
-  return !(isEmpty && (filter.type == 'condition' || filter.type == 'scope'));
+  return !(isEmpty && filter.type == 'condition');
 }
 
 async function getComputedFilter() {
@@ -107,7 +124,7 @@ async function getComputedFilter() {
     const [currentFilter, currentSchema] = stack.pop();
     if (currentFilter.type == 'relationship_condition') {
       if (currentFilter.filter) {
-        const schemaId = currentSchema.mapProperties[currentFilter.property].model;
+        const schemaId = currentSchema.mapProperties[currentFilter.property].related;
         const childSchema = await resolve(schemaId);
         if (mustKeepFilter(currentFilter.filter, childSchema)) {
           stack.push([currentFilter.filter, childSchema]);
@@ -138,10 +155,17 @@ async function getComputedFilter() {
         currentFilter.value = `%${currentFilter.value}`;
       }
       if (currentFilter.type == 'scope') {
+        if (currentFilter.parameters?.length) {
+          for (let i = 0; i < currentFilter.parameters.length; i++) {
+            if (Array.isArray(currentFilter.parameters[i])) {
+              currentFilter.parameters[i] = currentFilter.parameters[i].filter((v) => v !== undefined);
+            }
+          }
+        }
         const scope = getScopeDefinition(currentFilter.id, currentSchema);
         if (scope.computed) {
           delete currentFilter.id;
-          const computedScopeValue = scope.computed(currentFilter.value, currentFilter.operator);
+          const computedScopeValue = scope.computed(currentFilter.parameters);
           if (typeof computedScopeValue != 'object') {
             throw new Error(`invalid computed value for scope ${scope.id}, value must be an object`);
           }

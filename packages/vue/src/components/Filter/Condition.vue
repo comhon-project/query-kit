@@ -2,9 +2,8 @@
 import { ref, watch, computed, watchEffect } from 'vue';
 import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
 import { isValidOperator } from '@core/OperatorManager';
-import { resolve, getPropertyTranslation } from '@core/Schema';
+import { resolve, getPropertyTranslation } from '@core/EntitySchema';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
-import InvalidScope from '@components/Messages/InvalidScope.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidType from '@components/Messages/InvalidType.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
@@ -14,7 +13,7 @@ import InputCondition from '@components/Filter/InputCondition.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { getComponent, isUniqueComponentIn } from '@core/InputManager';
-import { locale, translate } from '@i18n/i18n';
+import { translate } from '@i18n/i18n';
 
 defineEmits(['remove']);
 const props = defineProps({
@@ -25,10 +24,6 @@ const props = defineProps({
   entity: {
     type: String,
     required: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
-    default: undefined,
   },
   allowedOperators: {
     type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
@@ -53,7 +48,7 @@ const props = defineProps({
 });
 const validEntity = ref(true);
 const validOperator = ref(true);
-const validTarget = ref(true);
+const validProperty = ref(true);
 const validType = ref(true);
 const schema = ref(null);
 const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseFilter(
@@ -66,7 +61,7 @@ const inputType = computed(() => {
   return getComponent(containerType.value.type, containerType.value.enum);
 });
 const containerType = computed(() => {
-  let container = target.value;
+  let container = property.value;
   if (container) {
     while (container.type == 'array') {
       container = container.children;
@@ -74,32 +69,14 @@ const containerType = computed(() => {
   }
   return container;
 });
-const useOperator = computed(() => {
-  return props.modelValue.type == 'condition' || target.value.useOperator;
-});
 const mustDisplayOperator = computed(() => {
-  return (
-    useOperator.value && (props.displayOperator === true || (props.displayOperator && props.displayOperator.condition))
-  );
+  return props.displayOperator === true || (props.displayOperator && props.displayOperator.condition);
 });
-const target = computed(() => {
-  // may be condition, scope or computed scope
-  if (props.modelValue.type == 'condition') {
-    return schema.value.mapProperties[props.modelValue.property];
-  }
-  const computedScope =
-    props.computedScopes && props.computedScopes[props.entity]
-      ? props.computedScopes[props.entity].find((scope) => scope.id == props.modelValue.id)
-      : null;
-
-  return computedScope ? computedScope : schema.value.mapScopes[props.modelValue.id];
+const property = computed(() => {
+  return schema.value.mapProperties[props.modelValue.property];
 });
-const targetName = computed(() => {
-  const currentLocale = locale.value;
-  if (target.value.translation) {
-    return target.value.translation(currentLocale);
-  }
-  return getPropertyTranslation(target.value);
+const propertyName = computed(() => {
+  return getPropertyTranslation(property.value);
 });
 const isUniqueIn = computed(() => {
   return isUniqueComponentIn(containerType.value.type);
@@ -111,30 +88,25 @@ async function initSchema() {
     validEntity.value = false;
     return;
   }
-  verifyTarget();
+  verifyProperty();
   verifyOperator();
   verifyType();
 }
 
-function verifyTarget() {
-  if (schema.value && !target.value) {
-    validTarget.value = false;
+function verifyProperty() {
+  if (schema.value && !property.value) {
+    validProperty.value = false;
   }
 }
 
 function verifyOperator() {
-  if (schema.value && useOperator.value && !isValidOperator('condition', props.modelValue.operator)) {
+  if (schema.value && !isValidOperator('condition', props.modelValue.operator)) {
     validOperator.value = false;
   }
 }
 
 function verifyType() {
-  if (
-    schema.value &&
-    target.value &&
-    (props.modelValue.type == 'condition' || containerType.value.type) &&
-    !getComponent(containerType.value.type, containerType.value.enum)
-  ) {
+  if (schema.value && property.value && !getComponent(containerType.value.type, containerType.value.enum)) {
     validType.value = false;
   }
 }
@@ -171,14 +143,7 @@ watch(
   () => props.modelValue.property,
   () => {
     verifyType();
-    verifyTarget();
-  },
-);
-watch(
-  () => props.modelValue.id,
-  () => {
-    verifyType();
-    verifyTarget();
+    verifyProperty();
   },
 );
 </script>
@@ -188,53 +153,48 @@ watch(
     <div>
       <slot name="shortcuts" />
       <InvalidEntity v-if="!validEntity" :entity="modelValue.model" />
-      <template v-else-if="!validTarget">
-        <InvalidProperty v-if="modelValue.type == 'condition'" :property="modelValue.property" />
-        <InvalidScope v-else :id="modelValue.id" />
-      </template>
+      <InvalidProperty v-else-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
       <InvalidType v-else-if="!validType" :type="containerType.type" />
       <template v-else-if="schema">
         <div :class="classes.condition_header">
           <slot name="relationship" />
-          <label :class="classes.property_name_container">{{ targetName }}</label>
+          <label :class="classes.property_name_container">{{ propertyName }}</label>
           <template v-if="mustDisplayOperator">
             <AdaptativeSelect
               v-model="modelValue.operator"
               :class="classes.operator"
               :options="operatorOptions"
               :disabled="!canEditOperator"
-              :aria-label="targetName + ' ' + translate('operator')"
+              :aria-label="propertyName + ' ' + translate('operator')"
             />
           </template>
         </div>
-        <template v-if="inputType">
-          <template v-if="modelValue.operator != 'null' && modelValue.operator != 'not_null'">
-            <InputCollection
-              v-if="!isUniqueIn && (modelValue.operator == 'in' || modelValue.operator == 'not_in')"
-              v-bind="props"
-              v-model="modelValue.value"
-              :operator="modelValue.operator"
-              :target="target"
-              :editable="isEditable"
-            />
-            <InputCondition
-              v-else
-              v-bind="props"
-              v-model="modelValue.value"
-              :operator="modelValue.operator"
-              :target="target"
-              :editable="isEditable"
-            />
-          </template>
+        <template v-if="inputType && modelValue.operator != 'null' && modelValue.operator != 'not_null'">
+          <InputCollection
+            v-if="!isUniqueIn && (modelValue.operator == 'in' || modelValue.operator == 'not_in')"
+            v-bind="props"
+            v-model="modelValue.value"
+            :operator="modelValue.operator"
+            :target="property"
+            :editable="isEditable"
+          />
+          <InputCondition
+            v-else
+            v-bind="props"
+            v-model="modelValue.value"
+            :operator="modelValue.operator"
+            :target="property"
+            :editable="isEditable"
+          />
         </template>
       </template>
     </div>
     <IconButton
-      v-if="isRemovable || !validEntity || !validTarget || !validOperator || !validType"
+      v-if="isRemovable || !validEntity || !validProperty || !validOperator || !validType"
       icon="delete"
       btn-class="btn_secondary"
-      :aria-label="schema && target ? translate('condition') + ' ' + targetName : ''"
+      :aria-label="schema && property ? translate('condition') + ' ' + propertyName : ''"
       @click="$emit('remove')"
     />
   </div>

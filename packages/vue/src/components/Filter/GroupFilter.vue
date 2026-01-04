@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import Shortcuts from '@components/Filter/Shortcuts.vue';
 import Condition from '@components/Filter/Condition.vue';
+import Scope from '@components/Filter/Scope.vue';
 import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
 import Group from '@components/Filter/Group.vue';
 import { classes } from '@core/ClassManager';
@@ -24,7 +25,7 @@ const props = defineProps({
     required: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
@@ -98,13 +99,18 @@ const filteredShortcutEvents = computed(() => {
 });
 
 const component = computed(() => {
-  return props.modelValue.type == 'condition' || props.modelValue.type == 'scope'
-    ? Condition
-    : props.modelValue.type == 'relationship_condition'
-      ? RelationshipCondition
-      : props.modelValue.type == 'group'
-        ? Group
-        : null;
+  switch (props.modelValue.type) {
+    case 'condition':
+      return Condition;
+    case 'scope':
+      return Scope;
+    case 'relationship_condition':
+      return RelationshipCondition;
+    case 'group':
+      return Group;
+    default:
+      return null;
+  }
 });
 
 /**

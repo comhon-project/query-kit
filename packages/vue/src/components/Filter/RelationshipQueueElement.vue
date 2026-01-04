@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watchEffect } from 'vue';
-import { resolve, getPropertyTranslation } from '@core/Schema';
+import { resolve, getPropertyTranslation } from '@core/EntitySchema';
 import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import { classes } from '@core/ClassManager';
@@ -17,7 +17,7 @@ const props = defineProps({
     required: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {

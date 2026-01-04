@@ -15,6 +15,8 @@ const classList = {
   in_list: 'qkit-in-list',
   in_value_container: 'qkit-in-value-container',
   property_name_container: 'qkit-property-name-container',
+  scope_parameters: 'qkit-scope-parameters',
+  scope_parameter: 'qkit-scope-parameter',
   error_info: 'qkit-error-info',
   relationship_container: 'qkit-condition-container',
   relationship_queue: 'qkit-relationship-queue',

@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { schemaLoader } from '@tests/assets/SchemaLoader';
-import { resolve, registerLoader } from '@core/Schema';
+import { entitySchemaLoader } from '@tests/assets/SchemaLoader';
+import { resolve, registerLoader } from '@core/EntitySchema';
 
 beforeAll(() => {
-  registerLoader(schemaLoader);
+  registerLoader(entitySchemaLoader);
 });
 
 describe('test schemas', async () => {
@@ -36,7 +36,7 @@ describe('test schemas', async () => {
       age: { id: 'age', name: 'the age', type: 'integer', owner: 'user' },
       weight: { id: 'weight', name: 'the weight', type: 'float', owner: 'user' },
       married: { id: 'married', name: 'is married', type: 'boolean', owner: 'user' },
-      gender: { id: 'gender', name: 'the gender', type: 'string', enum: { male: 'Mr.', female: 'Ms.' }, owner: 'user' },
+      gender: { id: 'gender', name: 'the gender', type: 'string', enum: 'gender', owner: 'user' },
       'birth.birth_date': { id: 'birth.birth_date', name: 'birth date', type: 'datetime', owner: 'user' },
       'birth.birth_day': { id: 'birth.birth_day', name: 'birth day', type: 'date', owner: 'user' },
       'birth.birth_hour': { id: 'birth.birth_hour', name: 'birth hour', type: 'time', owner: 'user' },
@@ -47,7 +47,7 @@ describe('test schemas', async () => {
         type: 'array',
         children: {
           type: 'string',
-          enum: ['1', '2', '3'],
+          enum: 'fruit',
         },
         owner: 'user',
       },
@@ -56,7 +56,7 @@ describe('test schemas', async () => {
         name: 'the company',
         type: 'relationship',
         relationship_type: 'belongs_to',
-        model: 'organization',
+        related: 'organization',
         owner: 'user',
       },
       friend: {
@@ -64,37 +64,28 @@ describe('test schemas', async () => {
         name: 'the friend',
         type: 'relationship',
         relationship_type: 'belongs_to',
-        model: 'user',
+        related: 'user',
         owner: 'user',
       },
     });
     expect(schema.mapScopes).toStrictEqual({
-      scope_string_definition: { id: 'scope_string_definition', name: 'scope_string_definition', owner: 'user' },
-      scope: { id: 'scope', name: 'scope without value', owner: 'user' },
-      string_scope: { id: 'string_scope', name: 'string scope', type: 'string', useOperator: true, owner: 'user' },
-      datetime_scope: { id: 'datetime_scope', name: 'datetime scope', type: 'datetime', owner: 'user' },
+      scope_string_definition: { id: 'scope_string_definition', parameters: [], owner: 'user' },
+      scope: { id: 'scope', parameters: [], owner: 'user' },
+      string_scope: {
+        id: 'string_scope',
+        parameters: [{ id: 'value', name: 'string scope', type: 'string', nullable: false }],
+        owner: 'user',
+      },
+      datetime_scope: {
+        id: 'datetime_scope',
+        parameters: [{ id: 'value', name: 'datetime scope', type: 'datetime', nullable: false }],
+        owner: 'user',
+      },
       enum_scope: {
         id: 'enum_scope',
-        name: 'enum scope',
-        type: 'string',
-        enum: { one: 'value one', two: 'value two' },
+        parameters: [{ id: 'value', name: 'enum scope', type: 'string', enum: 'enum_scope_values', nullable: false }],
         owner: 'user',
       },
     });
-    expect(schema.search.properties).toStrictEqual([
-      'first_name',
-      'age',
-      'weight',
-      'gender',
-      'married',
-      'birth.birth_date',
-      'birth.birth_day',
-      'birth.birth_hour',
-      'company',
-      'friend',
-      'country',
-      'favorite_fruits',
-    ]);
-    expect(schema.search.sort).toStrictEqual(['first_name', 'company']);
   });
 });

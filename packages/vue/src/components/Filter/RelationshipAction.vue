@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watchEffect } from 'vue';
-import { resolve } from '@core/Schema';
+import { resolve } from '@core/EntitySchema';
 import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -16,7 +16,7 @@ const props = defineProps({
     required: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {

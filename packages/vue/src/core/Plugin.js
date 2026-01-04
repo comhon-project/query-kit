@@ -3,7 +3,9 @@ import { registerClasses } from '@core/ClassManager';
 import { registerIcons } from '@core/IconManager';
 import { registerComponents } from '@core/InputManager';
 import { registerPropertyRenderers, registerTypeRenderers } from '@core/CellRendererManager';
-import { registerLoader, registerLocaleLoader } from '@core/Schema';
+import { registerLoader as registerEntitySchemaLoader, registerTranslationsLoader as registerEntityTranslationsLoader } from '@core/EntitySchema';
+import { registerLoader as registerEnumSchemaLoader, registerTranslationsLoader as registerEnumTranslationsLoader } from '@core/EnumSchema';
+import { registerLoader as registerRequestSchemaLoader } from '@core/RequestSchema';
 import { config } from '@config/config';
 import { registerRequester } from '@core/Requester';
 import { registerAllowedOperators } from '@core/OperatorManager';
@@ -52,28 +54,61 @@ export default {
     } else {
       throw new Error('requester config is required');
     }
-    if (options.schemaLoader) {
-      const loader = typeof options.schemaLoader == 'function' ? { load: options.schemaLoader } : options.schemaLoader;
+    if (options.entitySchemaLoader) {
+      const loader =
+        typeof options.entitySchemaLoader == 'function' ? { load: options.entitySchemaLoader } : options.entitySchemaLoader;
       if (typeof loader != 'object' || typeof loader.load != 'function') {
         throw new Error(
-          'invalid schema loader. it must be a function or an object containing a property "load" with a function value'
+          'invalid entity schema loader. it must be a function or an object containing a property "load" with a function value'
         );
       }
-      registerLoader(loader);
+      registerEntitySchemaLoader(loader);
     } else {
-      throw new Error('schemaLoader config is required');
+      throw new Error('entitySchemaLoader config is required');
     }
-    if (options.schemaLocaleLoader) {
-      const localeLoader =
-        typeof options.schemaLocaleLoader == 'function'
-          ? { load: options.schemaLocaleLoader }
-          : options.schemaLocaleLoader;
-      if (typeof localeLoader != 'object' || typeof localeLoader.load != 'function') {
+    if (options.entityTranslationsLoader) {
+      const translationsLoader =
+        typeof options.entityTranslationsLoader == 'function'
+          ? { load: options.entityTranslationsLoader }
+          : options.entityTranslationsLoader;
+      if (typeof translationsLoader != 'object' || typeof translationsLoader.load != 'function') {
         throw new Error(
-          'invalid schema locale loader. it must be a function or an object containing a property "load" with a function value'
+          'invalid entity translations loader. it must be a function or an object containing a property "load" with a function value'
         );
       }
-      registerLocaleLoader(localeLoader);
+      registerEntityTranslationsLoader(translationsLoader);
+    }
+    if (options.enumSchemaLoader) {
+      const loader =
+        typeof options.enumSchemaLoader == 'function' ? { load: options.enumSchemaLoader } : options.enumSchemaLoader;
+      if (typeof loader != 'object' || typeof loader.load != 'function') {
+        throw new Error(
+          'invalid enum schema loader. it must be a function or an object containing a property "load" with a function value'
+        );
+      }
+      registerEnumSchemaLoader(loader);
+    }
+    if (options.enumTranslationsLoader) {
+      const translationsLoader =
+        typeof options.enumTranslationsLoader == 'function'
+          ? { load: options.enumTranslationsLoader }
+          : options.enumTranslationsLoader;
+      if (typeof translationsLoader != 'object' || typeof translationsLoader.load != 'function') {
+        throw new Error(
+          'invalid enum translations loader. it must be a function or an object containing a property "load" with a function value'
+        );
+      }
+      registerEnumTranslationsLoader(translationsLoader);
+    }
+    if (options.requestSchemaLoader) {
+      const loader =
+        typeof options.requestSchemaLoader == 'function' ? { load: options.requestSchemaLoader } : options.requestSchemaLoader;
+      if (typeof loader != 'object' || typeof loader.load != 'function') {
+        throw new Error(
+          'invalid request schema loader. it must be a function or an object containing a property "load" with a function value'
+        );
+      }
+      registerRequestSchemaLoader(loader);
     }
 
     for (const key in config) {

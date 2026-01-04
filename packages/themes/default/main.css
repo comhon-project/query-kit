@@ -299,6 +299,21 @@
   white-space: nowrap;
 }
 
+.qkit-scope-parameters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.qkit-scope-parameter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border: 1px solid var(--qkit-color-border);
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+}
+
 .qkit-collection {
   position: relative;
   border: 1px solid var(--qkit-color-border);
@@ -501,7 +516,9 @@
 
 .qkit-collection-spinner-enter-active,
 .qkit-collection-spinner-leave-active {
-  transition: opacity 0.2s ease, top 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    top 0.2s ease;
 }
 
 .qkit-collection-spinner-enter-from,
@@ -632,12 +649,20 @@
   margin-top: 0;
 }
 .qkit-collapse-horizontal-list-enter-active {
-  transition: opacity 0.3s 0.3s ease, grid-template-columns 0.3s ease, grid-template-rows 0.3s ease,
-    margin-right 0.3s ease, margin-top 0.3s 0.3s ease;
+  transition:
+    opacity 0.3s 0.3s ease,
+    grid-template-columns 0.3s ease,
+    grid-template-rows 0.3s ease,
+    margin-right 0.3s ease,
+    margin-top 0.3s 0.3s ease;
 }
 .qkit-collapse-horizontal-list-leave-active {
-  transition: opacity 0.3s ease, grid-template-columns 0.3s 0.3s ease, grid-template-rows 0.3s 0.3s ease,
-    margin-right 0.3s 0.3s ease, margin-top 0.3s 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    grid-template-columns 0.3s 0.3s ease,
+    grid-template-rows 0.3s 0.3s ease,
+    margin-right 0.3s 0.3s ease,
+    margin-top 0.3s 0.3s ease;
 }
 
 .qkit-collapse-horizontal-list-enter-from,

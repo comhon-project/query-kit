@@ -1,5 +1,6 @@
 <script setup>
-import { getEnumTranslation } from '@core/Schema';
+import { ref, computed, watchEffect } from 'vue';
+import { getTranslation, resolve } from '@core/EnumSchema';
 
 const props = defineProps({
   columnId: {
@@ -31,8 +32,18 @@ const props = defineProps({
     required: true,
   },
 });
+
+const schema = ref(null);
+
+watchEffect(async () => {
+  schema.value = await resolve(props.type.enum);
+});
+
+const translation = computed(() => {
+  return schema.value ? getTranslation(props.type.enum, props.value) : null;
+});
 </script>
 
 <template>
-  {{ getEnumTranslation(props.property, props.value) }}
+  {{ translation }}
 </template>

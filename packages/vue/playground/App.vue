@@ -139,13 +139,12 @@ const group = {
     {
       type: 'scope',
       id: 'enum_scope',
-      value: 'two',
+      parameters: ['two'],
     },
     {
       type: 'scope',
       id: 'quick_search',
-      operator: '=',
-      value: 'twozzzz',
+      parameters: ['twozzzz'],
     },
     {
       type: 'condition',
@@ -266,19 +265,20 @@ function handleUpdatedFilters(params) {
   console.log(params);
 }
 
-function computeQuickSearch(value, operator) {
+function computeQuickSearch(parameters) {
+  const value = parameters[0];
   return {
     type: 'group',
     operator: 'or',
     filters: [
       {
         property: 'first_name',
-        operator: operator,
+        operator: 'like',
         value: value,
       },
       {
         property: 'last_name',
-        operator: operator,
+        operator: 'like',
         value: value,
       },
     ],
@@ -396,12 +396,11 @@ watch(columns, () => {
             {
               id: 'quick_search',
               translation: (localeValue) => (localeValue == 'fr' ? 'recherche rapide' : 'quick search user'),
-              type: 'string',
-              useOperator: true,
+              parameters: [{ id: 'value', name: 'value', type: 'string' }],
               computed: computeQuickSearch,
             },
           ],
-          organization: [{ id: 'quick_search', name: 'quick search company' }],
+          organization: [{ id: 'quick_search', name: 'quick search company', parameters: [] }],
         }"
         :requester="requester"
         @row-click="printRow"

@@ -1,10 +1,14 @@
-import { computed } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
+import { getFiltrableProperties, getFiltrableScopes } from '@core/RequestSchema';
 
 const useSearchable = (props, schema) => {
-  const searchableProperties = computed(() => {
+  const searchableProperties = ref([]);
+  const searchableScopes = ref([]);
+
+  watchEffect(async () => {
     const filter = props.allowedProperties?.[props.entity];
-    let propertyNames = schema.value.search?.properties || [];
+    let propertyNames = await getFiltrableProperties(props.entity);
     if (propertyNames.length && filter) {
       propertyNames = propertyNames.filter((value) => filter.includes(value));
     }
@@ -20,16 +24,16 @@ const useSearchable = (props, schema) => {
         properties.push(property);
       }
     }
-    return properties;
+    searchableProperties.value = properties;
   });
 
-  const searchableScopes = computed(() => {
+  watchEffect(async () => {
     const filter = props.allowedScopes ? props.allowedScopes[props.entity] : null;
-    let scopes = schema.value.search && schema.value.search.scopes ? schema.value.search.scopes : [];
-    if (scopes.length && filter) {
-      scopes = scopes.filter((scope) => filter.includes(scope.id));
+    let scopeIds = await getFiltrableScopes(props.entity);
+    if (scopeIds.length && filter) {
+      scopeIds = scopeIds.filter((scopeId) => filter.includes(scopeId));
     }
-    return scopes;
+    searchableScopes.value = scopeIds.map((scopeId) => schema.value.mapScopes[scopeId]);
   });
 
   const searchableComputedScopes = computed(() => {

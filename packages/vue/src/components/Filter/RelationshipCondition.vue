@@ -1,8 +1,9 @@
 <script setup>
 import { ref, watch, watchEffect, computed } from 'vue';
-import { resolve, getPropertyTranslation } from '@core/Schema';
+import { resolve, getPropertyTranslation } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import Condition from '@components/Filter/Condition.vue';
+import Scope from '@components/Filter/Scope.vue';
 import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
 import { isValidOperator } from '@core/OperatorManager';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
@@ -25,7 +26,7 @@ const props = defineProps({
     required: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
@@ -95,7 +96,19 @@ const endQueueFilter = ref(null);
 const endQueuePropertySchemaId = computed(() => {
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
-  return lastQueueSchema.mapProperties[lastQueueElement.value.property].model;
+  return lastQueueSchema.mapProperties[lastQueueElement.value.property].related;
+});
+const endQueueComponent = computed(() => {
+  switch (endQueueFilter.value?.type) {
+    case 'condition':
+      return Condition;
+    case 'scope':
+      return Scope;
+    case 'group':
+      return Group;
+    default:
+      return null;
+  }
 });
 
 async function initSchema() {
@@ -176,7 +189,7 @@ async function setChild() {
     }
     childAriaLabelProperty.value = childSchema.mapProperties[childFilter.property];
 
-    const childSchemaId = childSchema.mapProperties[childFilter.property].model;
+    const childSchemaId = childSchema.mapProperties[childFilter.property].related;
     childSchema = await resolve(childSchemaId);
     if (!childSchema) {
       invalidEntity.value = childSchemaId;
@@ -246,13 +259,13 @@ watch(() => props.modelValue.filter, initSchema);
         :class="classes.grid_container_for_transition"
         :has-group="endQueueFilter.type == 'group' ? '' : undefined"
       >
-        <Condition
-          v-if="endQueueFilter.type == 'condition' || endQueueFilter.type == 'scope'"
+        <component
+          :is="endQueueComponent"
           v-bind="props"
           :entity="endQueuePropertySchemaId"
           :model-value="endQueueFilter"
-          :aria-label="translate('relationship_condition_with_condition')"
           @remove="removeEndFilter"
+          v-on="endQueueFilter.type == 'group' ? { goToRootGroup: () => $emit('goToRootGroup') } : {}"
         >
           <template #relationship>
             <div :class="classes.relationship_queue">
@@ -268,31 +281,7 @@ watch(() => props.modelValue.filter, initSchema);
           <template #shortcuts="shortcutsProps">
             <slot name="shortcuts" v-bind="shortcutsProps" />
           </template>
-        </Condition>
-        <Group
-          v-else-if="endQueueFilter.type == 'group'"
-          v-bind="props"
-          :entity="endQueuePropertySchemaId"
-          :model-value="endQueueFilter"
-          :aria-label="translate('relationship_condition_with_group')"
-          @remove="removeEndFilter"
-          @go-to-root-group="$emit('goToRootGroup')"
-        >
-          <template #relationship>
-            <div :class="classes.relationship_queue">
-              <RelationshipQueueElement
-                v-for="elmnt in queue"
-                :key="elmnt.key"
-                v-bind="props"
-                v-model="elmnt.value"
-                :entity="elmnt.schema.id"
-              />
-            </div>
-          </template>
-          <template #shortcuts="shortcutsProps">
-            <slot name="shortcuts" v-bind="shortcutsProps" />
-          </template>
-        </Group>
+        </component>
       </div>
     </Transition>
   </template>

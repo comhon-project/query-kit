@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, computed, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyTranslation } from '@core/Schema';
+import { resolve, getPropertyTranslation } from '@core/EntitySchema';
 import Utils from '@core/Utils';
 import { translate, locale } from '@i18n/i18n';
 import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
@@ -16,7 +16,7 @@ const props = defineProps({
     required: true,
   },
   computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', name: 'scope one', type: 'string', useOperator: true, computed: () => {...})}, ...], ...}
+    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
     default: undefined,
   },
   allowedScopes: {
@@ -71,16 +71,7 @@ function validate(e) {
     if (scope) {
       condition.type = 'scope';
       condition.id = targetCondition.value;
-      if (scope.useOperator) {
-        const operators = getConditionOperators(
-          'scope',
-          condition.id,
-          schema.value,
-          props.allowedOperators,
-          props.computedScopes,
-        );
-        condition.operator = operators[0];
-      }
+      condition.parameters = [];
     } else {
       if (schema.value.mapProperties[targetCondition.value].type == 'relationship') {
         const operators = getContainerOperators('relationship_condition', props.allowedOperators);

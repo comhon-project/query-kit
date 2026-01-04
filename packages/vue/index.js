@@ -1,4 +1,2 @@
-import plugin from './src/core/Plugin';
-import { locale } from './src/i18n/i18n';
-
-export { plugin, locale };
+export { default as plugin } from './src/core/Plugin';
+export { locale } from './src/i18n/i18n';

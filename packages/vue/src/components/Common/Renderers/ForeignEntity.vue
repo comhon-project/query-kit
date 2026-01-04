@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeMount, ref } from 'vue';
-import { resolve } from '@core/Schema';
+import { resolve } from '@core/EntitySchema';
 
 const props = defineProps({
   columnId: {
@@ -49,7 +49,7 @@ const computedValue = computed(() => {
 });
 
 onBeforeMount(async () => {
-  schema.value = await resolve(props.type.model);
+  schema.value = await resolve(props.type.related);
 });
 </script>
 

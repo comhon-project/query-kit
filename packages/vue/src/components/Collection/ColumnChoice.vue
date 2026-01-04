@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
 import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
-import { resolve, getPropertyTranslation } from '@core/Schema';
+import { resolve, getPropertyTranslation } from '@core/EntitySchema';
 
 const emit = defineEmits(['remove', 'update:columnId']);
 const props = defineProps({
@@ -80,7 +80,7 @@ function remove() {
 }
 
 watch(propertyPath, async () => {
-  const schemaId = propertyPath.value?.[propertyPath.value.length - 1].model;
+  const schemaId = propertyPath.value?.[propertyPath.value.length - 1].related;
   if (schemaId) {
     schema.value = await resolve(schemaId);
   }
