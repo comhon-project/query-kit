@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
-import { loadedTranslations } from '@i18n/i18n';
+import { loadedTranslations, locale } from '@i18n/i18n';
 
 const modelValue = defineModel({ type: [String, Number], required: true });
 const props = defineProps({
@@ -39,7 +39,7 @@ function updateWidth() {
   select.value.nextElementSibling.remove();
 }
 
-watch(loadedTranslations, updateWidth, { flush: 'post' });
+watch([locale, loadedTranslations], updateWidth, { flush: 'post', deep: true });
 watch(modelValue, updateWidth, { flush: 'post' });
 onMounted(updateWidth);
 </script>
