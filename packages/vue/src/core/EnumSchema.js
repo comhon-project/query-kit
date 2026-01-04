@@ -53,6 +53,7 @@ async function compute(id) {
 
   const mapCases = {};
   for (const caseItem of enumSchema.cases) {
+    caseItem.owner = id;
     mapCases[caseItem.id] = caseItem;
   }
 
@@ -61,23 +62,23 @@ async function compute(id) {
   return enumSchema;
 }
 
-function getCaseTranslationForLocale(enumId, caseId, targetLocale) {
-  const current = loadedTranslations[`${enumId}.${targetLocale}`];
-  if (current?.[caseId]) return current[caseId];
+function getCaseTranslationForLocale(enumCase, targetLocale) {
+  const current = loadedTranslations[`${enumCase.owner}.${targetLocale}`];
+  if (current?.[enumCase.id]) return current[enumCase.id];
 
-  const fallbackTranslations = loadedTranslations[`${enumId}.${fallback.value}`];
-  if (fallbackTranslations?.[caseId]) return fallbackTranslations[caseId];
+  const fallbackTranslations = loadedTranslations[`${enumCase.owner}.${fallback.value}`];
+  if (fallbackTranslations?.[enumCase.id]) return fallbackTranslations[enumCase.id];
 
-  return computedEnums[enumId]?.mapCases?.[caseId]?.name ?? caseId;
+  return enumCase.name ?? enumCase.id;
 }
 
-function getTranslation(enumId, caseId) {
-  ensureTranslationsLoaded(enumId);
+function getTranslation(enumCase) {
+  ensureTranslationsLoaded(enumCase.owner);
 
-  const cacheKey = `${enumId}.${locale.value}`;
+  const cacheKey = `${enumCase.owner}.${locale.value}`;
   const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
 
-  return getCaseTranslationForLocale(enumId, caseId, targetLocale);
+  return getCaseTranslationForLocale(enumCase, targetLocale);
 }
 
 async function getCases(enumId) {

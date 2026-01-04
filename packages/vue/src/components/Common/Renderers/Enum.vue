@@ -33,14 +33,16 @@ const props = defineProps({
   },
 });
 
-const schema = ref(null);
+const cases = ref({});
 
 watchEffect(async () => {
-  schema.value = await resolve(props.type.enum);
+  const schema = await resolve(props.type.enum);
+  cases.value = schema.mapCases;
 });
 
 const translation = computed(() => {
-  return schema.value ? getTranslation(props.type.enum, props.value) : null;
+  const caseItem = cases.value[props.value];
+  return caseItem ? getTranslation(caseItem) : null;
 });
 </script>
 

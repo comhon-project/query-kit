@@ -28,7 +28,7 @@ watchEffect(async () => {
 const options = computed(() => {
   const result = {};
   for (const caseItem of cases.value) {
-    result[caseItem.id] = getTranslation(props.enumId, caseItem.id);
+    result[caseItem.id] = getTranslation(caseItem);
   }
   return result;
 });
