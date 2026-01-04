@@ -44,6 +44,8 @@ export default {
   choose_condition_element: 'choisissez sur quel élément vous voulez appliquer la condition',
   infinite_list: 'liste infinie',
   paginated_list: 'liste paginée',
+  asc: 'crois.',
+  desc: 'décrois.',
 
   show_action_shortcuts: "afficher les raccourcis d'actions",
   go_to_next_condition: 'aller à la condition suivante',
@@ -53,6 +55,4 @@ export default {
   go_to_collection: 'aller aux resultats de la recherche',
   go_to_filter: 'aller au filtre',
   add_filter_on_parent_group: 'ajouter un filtre au groupe parent',
-  asc: 'crois.',
-  desc: 'décrois.',
 };

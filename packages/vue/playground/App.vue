@@ -353,10 +353,17 @@ watch(columns, () => {
 
 <template>
   <div class="root-app">
-    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: end">
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">fr</button>
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: end; flex-wrap: wrap">
       <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">en</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'zh')">zh</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'hi')">hi</button>
       <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">es</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">fr</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ar')">ar</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'bn')">bn</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'pt')">pt</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ru')">ru</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ja')">ja</button>
       <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
     </div>
     <div style="height: 90vh">

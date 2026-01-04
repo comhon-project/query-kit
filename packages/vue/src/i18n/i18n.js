@@ -1,56 +1,68 @@
-import { reactive, ref, shallowRef, watch } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import en from '@i18n/locales/en';
 
-// set english as default language
-const locales = ref({ en });
-const translations = shallowRef(locales.value.en);
 const locale = ref('en');
 const fallback = ref('en');
 
-const reactiveLocales = reactive({});
+const loadedTranslations = reactive({ en });
+const loadingTranslations = {};
+let previousLocale = 'en';
 
-async function loadLocale() {
-  const value = await import(`./locales/${locale.value}.js`);
-  locales.value[locale.value] = value.default;
+watch(
+  locale,
+  (_, oldLocale) => {
+    previousLocale = oldLocale;
+  },
+  { flush: 'sync' },
+);
+
+function ensureTranslationsLoaded() {
+  const targetLocale = locale.value;
+  if (!loadedTranslations[targetLocale] && !loadingTranslations[targetLocale]) {
+    loadingTranslations[targetLocale] = true;
+    loadRawTranslations(targetLocale);
+  }
+  const fallbackLocale = fallback.value;
+  if (fallbackLocale !== targetLocale && !loadedTranslations[fallbackLocale] && !loadingTranslations[fallbackLocale]) {
+    loadingTranslations[fallbackLocale] = true;
+    loadRawTranslations(fallbackLocale);
+  }
 }
 
-watch(locale, async () => {
-  try {
-    if (!locales.value[locale.value]) {
-      await loadLocale();
-    }
-    translations.value = locales.value[locale.value];
-    for (const key in reactiveLocales) {
-      if (Object.hasOwn(reactiveLocales, key)) {
-        reactiveLocales[key] = translation(key);
+async function loadRawTranslations(targetLocale) {
+  if (!loadedTranslations[targetLocale]) {
+    try {
+      const value = await import(`./locales/${targetLocale}.js`);
+      loadedTranslations[targetLocale] = value.default;
+    } catch {
+      if (targetLocale === fallback.value) {
+        fallback.value = 'en';
       }
+      loadedTranslations[targetLocale] = {};
     }
-  } catch {
-    if (locale.value == fallback.value) {
-      // if locale and fallback config are invalid (translation doesn't exists)
-      // we set the fallback to a trusted value
-      fallback.value = 'en';
-    }
-    locale.value = fallback.value;
+    delete loadingTranslations[targetLocale];
   }
-});
+  return loadedTranslations[targetLocale];
+}
 
-const translation = (key) => {
-  if (key == undefined) {
-    return undefined;
-  }
-  return key.split('.').reduce((current, localeKey) => {
-    if (current) {
-      return current[localeKey];
-    }
-  }, locales.value[locale.value]) ?? key;
-};
+function getTranslationForLocale(key, targetLocale) {
+  const translations = loadedTranslations[targetLocale];
+  if (translations?.[key]) return translations[key];
+
+  const fallbackTranslations = loadedTranslations[fallback.value];
+  if (fallbackTranslations?.[key]) return fallbackTranslations[key];
+
+  return key;
+}
 
 const translate = (key) => {
-  if (!reactiveLocales[key]) {
-    reactiveLocales[key] = translation(key);
+  if (key === undefined) {
+    return undefined;
   }
-  return reactiveLocales[key];
+  ensureTranslationsLoaded();
+
+  const targetLocale = loadingTranslations[locale.value] ? previousLocale : locale.value;
+  return getTranslationForLocale(key, targetLocale);
 };
 
-export { locale, fallback, translations, translate };
+export { locale, fallback, translate, loadedTranslations };

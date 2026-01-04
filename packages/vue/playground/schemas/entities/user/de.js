@@ -1,0 +1,6 @@
+export default {
+  properties: {
+    first_name: 'Vorname',
+    last_name: 'Nachname',
+  },
+};

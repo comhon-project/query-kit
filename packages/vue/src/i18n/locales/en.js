@@ -44,6 +44,8 @@ export default {
   choose_condition_element: 'choose on which element you want to apply the condition',
   infinite_list: 'infinite list',
   paginated_list: 'paginated list',
+  asc: 'asc.',
+  desc: 'desc.',
 
   show_action_shortcuts: 'show action shortcuts',
   go_to_next_condition: 'go to next condition',
@@ -53,6 +55,4 @@ export default {
   go_to_collection: 'go to search results',
   go_to_filter: 'go to filter',
   add_filter_on_parent_group: 'add a filter to the parent group',
-  asc: 'asc.',
-  desc: 'desc.',
 };
