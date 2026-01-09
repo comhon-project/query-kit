@@ -12,7 +12,7 @@ import InputCollection from '@components/Filter/InputCollection.vue';
 import InputCondition from '@components/Filter/InputCondition.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
-import { getComponent, isUniqueComponentIn } from '@core/InputManager';
+import { getComponent, isUniqueInComponent } from '@core/InputManager';
 import { translate } from '@i18n/i18n';
 
 defineEmits(['remove']);
@@ -79,7 +79,7 @@ const propertyName = computed(() => {
   return getPropertyTranslation(property.value);
 });
 const isUniqueIn = computed(() => {
-  return isUniqueComponentIn(containerType.value.type);
+  return isUniqueInComponent(containerType.value.type);
 });
 
 async function initSchema() {

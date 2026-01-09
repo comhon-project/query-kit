@@ -1,11 +1,13 @@
-import { reactive, ref, watch } from 'vue';
+import { reactive, ref, watch, type Ref } from 'vue';
 import en from '@i18n/locales/en';
 
-const locale = ref('en');
-const fallback = ref('en');
+export type Translations = Record<string, string>;
 
-const loadedTranslations = reactive({ en });
-const loadingTranslations = {};
+const locale: Ref<string> = ref('en');
+const fallback: Ref<string> = ref('en');
+
+const loadedTranslations: Record<string, Translations> = reactive({ en });
+const loadingTranslations: Record<string, boolean> = {};
 let previousLocale = 'en';
 
 watch(
@@ -16,7 +18,7 @@ watch(
   { flush: 'sync' },
 );
 
-function ensureTranslationsLoaded() {
+function ensureTranslationsLoaded(): void {
   const targetLocale = locale.value;
   if (!loadedTranslations[targetLocale] && !loadingTranslations[targetLocale]) {
     loadingTranslations[targetLocale] = true;
@@ -29,7 +31,7 @@ function ensureTranslationsLoaded() {
   }
 }
 
-async function loadRawTranslations(targetLocale) {
+async function loadRawTranslations(targetLocale: string): Promise<Translations> {
   if (!loadedTranslations[targetLocale]) {
     try {
       const value = await import(`./locales/${targetLocale}.js`);
@@ -45,7 +47,7 @@ async function loadRawTranslations(targetLocale) {
   return loadedTranslations[targetLocale];
 }
 
-function getTranslationForLocale(key, targetLocale) {
+function getTranslationForLocale(key: string, targetLocale: string): string {
   const translations = loadedTranslations[targetLocale];
   if (translations?.[key]) return translations[key];
 
@@ -55,7 +57,7 @@ function getTranslationForLocale(key, targetLocale) {
   return key;
 }
 
-const translate = (key) => {
+const translate = (key: string | undefined): string | undefined => {
   if (key === undefined) {
     return undefined;
   }

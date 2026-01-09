@@ -1,4 +1,56 @@
-const classList = {
+export type ClassName =
+  | 'modal'
+  | 'modal_header'
+  | 'modal_body'
+  | 'modal_footer'
+  | 'condition_choice_form'
+  | 'search'
+  | 'builder'
+  | 'condition_container'
+  | 'condition_header'
+  | 'condition_error_container'
+  | 'input'
+  | 'input_boolean'
+  | 'in_container'
+  | 'in_list'
+  | 'in_value_container'
+  | 'property_name_container'
+  | 'scope_parameters'
+  | 'scope_parameter'
+  | 'error_info'
+  | 'relationship_container'
+  | 'relationship_queue'
+  | 'relationship_queue_and_action'
+  | 'relationship_queue_element'
+  | 'btn'
+  | 'btn_primary'
+  | 'btn_secondary'
+  | 'group'
+  | 'group_header'
+  | 'group_actions'
+  | 'group_resume'
+  | 'group_list'
+  | 'group_list_element'
+  | 'operator'
+  | 'collection'
+  | 'collection_header'
+  | 'collection_content_wrapper'
+  | 'collection_content'
+  | 'collection_table'
+  | 'collection_clickable_row'
+  | 'collection_cell'
+  | 'collection_clickable_cell'
+  | 'collection_actions'
+  | 'column_choices'
+  | 'column_choice'
+  | 'column_add'
+  | 'spinner'
+  | 'pagination'
+  | 'grid_container_for_transition';
+
+export type ClassList = Record<ClassName, string>;
+
+const classList: ClassList = {
   modal: 'qkit-modal',
   modal_header: 'qkit-modal-header',
   modal_body: 'qkit-modal-body',
@@ -49,19 +101,19 @@ const classList = {
   grid_container_for_transition: 'qkit-grid-container-for-transition',
 };
 
-const registerClasses = (custom) => {
+const registerClasses = (custom: Partial<ClassList>): void => {
   Object.assign(classList, custom);
 };
 
-const handler = {
-  get(obj, prop) {
-    return obj[prop];
+const handler: ProxyHandler<ClassList> = {
+  get(obj: ClassList, prop: string): string {
+    return obj[prop as ClassName];
   },
-  set() {
+  set(): boolean {
     throw new Error('classes are read only');
   },
 };
 
-const classes = new Proxy(classList, handler);
+const classes = new Proxy(classList, handler) as Readonly<ClassList>;
 
 export { registerClasses, classes };
