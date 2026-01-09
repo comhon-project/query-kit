@@ -1,7 +1,9 @@
 import type { Component } from 'vue';
 import type { NativeHtmlComponent } from '@core/types';
+import type { TypeContainer } from '@core/EntitySchema';
 import { UniqueInComponent } from '@core/UniqueInComponent';
 import BooleanInput from '@components/Common/BooleanInput.vue';
+import SelectEnum from '@components/Common/SelectEnum.vue';
 
 const nativeHtmlComponents: Record<NativeHtmlComponent, true> = {
   // input types
@@ -44,7 +46,7 @@ const componentList: ComponentList = {
   date: 'date',
   datetime: 'datetime-local',
   time: 'time',
-  enum: 'select',
+  enum: new UniqueInComponent(SelectEnum),
   boolean: BooleanInput,
 };
 
@@ -52,14 +54,11 @@ const registerComponents = (custom: Partial<ComponentList>): void => {
   Object.assign(componentList, custom);
 };
 
-const getComponent = (type: string, enumeration?: string): NativeHtmlComponent | Component | undefined => {
+const getComponent = (container: TypeContainer): NativeHtmlComponent | Component | undefined => {
+  const type = container.enum ? 'enum' : container.type;
   const entry = componentList[type];
   if (!entry) {
     return undefined;
-  }
-  if (enumeration) {
-    const enumEntry = componentList.enum;
-    return enumEntry instanceof UniqueInComponent ? enumEntry.component : enumEntry;
   }
   if (entry instanceof UniqueInComponent) {
     return entry.component;
@@ -67,7 +66,8 @@ const getComponent = (type: string, enumeration?: string): NativeHtmlComponent |
   return entry;
 };
 
-const isUniqueInComponent = (type: string): boolean => {
+const isUniqueInComponent = (container: TypeContainer): boolean => {
+  const type = container.enum ? 'enum' : container.type;
   const entry = componentList[type];
   return entry instanceof UniqueInComponent;
 };

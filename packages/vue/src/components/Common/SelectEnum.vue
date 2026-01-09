@@ -3,15 +3,15 @@ import { ref, computed, watchEffect } from 'vue';
 import { getTranslation, getCases } from '@core/EnumSchema';
 import { classes } from '@core/ClassManager';
 
-const emit = defineEmits(['update:modelValue']);
+const model = defineModel();
 const props = defineProps({
-  modelValue: {
-    type: undefined,
-    default: undefined,
-  },
   enumId: {
     type: String,
     required: true,
+  },
+  operator: {
+    type: String,
+    default: undefined,
   },
   disabled: {
     type: Boolean,
@@ -33,13 +33,20 @@ const options = computed(() => {
   return result;
 });
 
-function onInput(event) {
-  emit('update:modelValue', event.target.value);
-}
+const isMultiple = computed(() => {
+  return props.operator === 'in' || props.operator === 'not_in';
+});
+
+const selectValue = computed({
+  get: () => (isMultiple.value && model.value == null ? [] : model.value),
+  set: (value) => {
+    model.value = value;
+  },
+});
 </script>
 
 <template>
-  <select :class="classes.input" :disabled="disabled" :value="modelValue" @input="onInput">
+  <select v-model="selectValue" :class="classes.input" :disabled="disabled" :multiple="isMultiple">
     <option v-for="(label, value) in options" :key="value" :value="value">
       {{ label }}
     </option>

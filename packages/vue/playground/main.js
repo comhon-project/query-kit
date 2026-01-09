@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 import '@query-kit/themes/default';
 
-import { plugin } from '@query-kit/vue';
+import { plugin, UniqueInComponent } from '@query-kit/vue';
 import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader, requestSchemaLoader } from './core/SchemaLoader';
 import CellInteger from './components/CellInteger.vue';
 import CountryInput from './components/CountryInput.vue';
@@ -32,7 +32,7 @@ createApp(App)
     requestSchemaLoader,
     classes: {},
     inputs: {
-      choice: { component: 'CountryInput', unique: true },
+      choice: new UniqueInComponent(CountryInput),
     },
     cellTypeRenderers: {
       integer: CellInteger,

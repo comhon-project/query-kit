@@ -3,7 +3,6 @@ import { ref, computed, watchEffect, watch } from 'vue';
 import { DateTime } from 'luxon';
 import { classes } from '@core/ClassManager';
 import { getComponent, isNativeHtmlComponent } from '@core/InputManager';
-import SelectEnum from '@components/Common/SelectEnum.vue';
 
 const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
@@ -39,7 +38,7 @@ const props = defineProps({
 
 const conditionValue = ref(null);
 const inputType = computed(() => {
-  return getComponent(containerType.value.type, containerType.value.enum);
+  return getComponent(containerType.value);
 });
 const containerType = computed(() => {
   let container = props.target;
@@ -101,11 +100,6 @@ watch(conditionValue, () => {
     :entity="entity"
     :target="target"
     :operator="operator"
-    :disabled="!editable"
-  />
-  <SelectEnum
-    v-else-if="inputType == 'select' && containerType.enum"
-    v-model="conditionValue"
     :enum-id="containerType.enum"
     :disabled="!editable"
   />

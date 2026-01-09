@@ -58,7 +58,7 @@ const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseFil
 );
 
 const inputType = computed(() => {
-  return getComponent(containerType.value.type, containerType.value.enum);
+  return getComponent(containerType.value);
 });
 const containerType = computed(() => {
   let container = property.value;
@@ -79,7 +79,7 @@ const propertyName = computed(() => {
   return getPropertyTranslation(property.value);
 });
 const isUniqueIn = computed(() => {
-  return isUniqueInComponent(containerType.value.type);
+  return isUniqueInComponent(containerType.value);
 });
 
 async function initSchema() {
@@ -106,7 +106,7 @@ function verifyOperator() {
 }
 
 function verifyType() {
-  if (schema.value && property.value && !getComponent(containerType.value.type, containerType.value.enum)) {
+  if (schema.value && property.value && !getComponent(containerType.value)) {
     validType.value = false;
   }
 }
@@ -131,10 +131,10 @@ watch(
 
     if (hasToggleOperatorIn) {
       if (isOldOperatorIn && Array.isArray(props.modelValue.value)) {
-        props.modelValue.value = props.modelValue?.value?.[0];
+        props.modelValue.value = props.modelValue.value.length > 0 ? props.modelValue.value[0] : undefined;
       }
       if (isNewOperatorIn && !Array.isArray(props.modelValue.value)) {
-        props.modelValue.value = [props.modelValue.value];
+        props.modelValue.value = props.modelValue.value !== undefined ? [props.modelValue.value] : undefined;
       }
     }
   },

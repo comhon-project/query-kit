@@ -7,6 +7,7 @@ import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
 import { config } from '@config/config';
 import BooleanInput from '@components/Common/BooleanInput.vue';
+import SelectEnum from '@components/Common/SelectEnum.vue';
 import { locale, fallback } from '@i18n/i18n';
 
 const componentList = {
@@ -17,7 +18,7 @@ const componentList = {
   date: 'date',
   datetime: 'datetime-local',
   time: 'time',
-  enum: 'select',
+  enum: SelectEnum,
   boolean: BooleanInput,
 };
 const appMock = {
@@ -127,9 +128,9 @@ describe('minimal plugin', () => {
     });
     for (const key in componentList) {
       if (Object.hasOwn(componentList, key)) {
-        expect(getComponent(key)).toBe(componentList[key]);
+        expect(getComponent({ type: key })).toBe(componentList[key]);
       }
     }
-    expect(getComponent('string', true)).toEqual('select');
+    expect(getComponent({ type: 'string', enum: 'gender' })).toEqual(SelectEnum);
   });
 });

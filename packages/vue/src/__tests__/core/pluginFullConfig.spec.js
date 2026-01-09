@@ -5,6 +5,7 @@ import { requester } from '@core/Requester';
 import { icons } from '@core/IconManager';
 import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
+import SelectEnum from '@components/Common/SelectEnum.vue';
 import { config } from '@config/config';
 import { locale, fallback } from '@i18n/i18n';
 import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -56,10 +57,10 @@ describe('plugin', () => {
     expect(classes.search).toEqual('my-search');
     expect(classes.builder).toEqual('qkit-builder');
 
-    expect(getComponent('integer')).toBe('my_integer');
-    expect(getComponent('date')).toBe('my_date');
-    expect(getComponent('string')).toBe('text');
-    expect(getComponent('string', true)).toEqual('select');
+    expect(getComponent({ type: 'integer' })).toBe('my_integer');
+    expect(getComponent({ type: 'date' })).toBe('my_date');
+    expect(getComponent({ type: 'string' })).toBe('text');
+    expect(getComponent({ type: 'string', enum: 'gender' })).toEqual(SelectEnum);
 
     const schema = await resolve('user');
     expect(schema).toBeDefined();
