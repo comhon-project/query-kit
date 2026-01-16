@@ -1,117 +1,73 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted, shallowRef, computed, toRaw, useTemplateRef } from 'vue';
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyPath } from '@core/EntitySchema';
+import { resolve, getPropertyPath, type Property } from '@core/EntitySchema';
 import { translate } from '@i18n/i18n';
 import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
 import ColumnChoices from '@components/Collection/ColumnChoices.vue';
+import type { CustomColumnConfig, OrderByItem, CollectionType, Requester, RequesterFunction } from '@core/types';
 
-const emit = defineEmits(['rowClick', 'export', 'update:columns', 'update:orderBy']);
-const props = defineProps({
-  entity: {
-    type: String,
-    required: true,
-  },
-  columns: {
-    type: Array,
-    required: true,
-  },
-  customColumns: {
-    type: Object,
-    default: undefined,
-  },
-  filter: {
-    type: Object,
-    default: undefined,
-  },
-  directQuery: {
-    type: Boolean,
-    required: true,
-  },
-  limit: {
-    type: Number,
-    required: true,
-  },
-  offset: {
-    type: Number,
-    default: 0,
-  },
-  id: {
-    type: String,
-    default: undefined,
-  },
-  onRowClick: {
-    type: Function,
-    default: undefined,
-  },
-  quickSort: {
-    type: Boolean,
-    default: true,
-  },
-  orderBy: {
-    type: Array,
-    default: undefined,
-  },
-  postRequest: {
-    type: Function,
-    default: undefined,
-  },
-  allowedCollectionTypes: {
-    type: Array,
-    default() {
-      return ['pagination'];
-    },
-  },
-  displayCount: {
-    type: Boolean,
-  },
-  onExport: {
-    type: Function,
-    default: undefined,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  editColumns: {
-    type: Boolean,
-  },
-  requester: {
-    type: [Object, Function],
-    validator(value) {
-      return typeof value == 'function' || (typeof value == 'object' && typeof value.request == 'function');
-    },
-    default: undefined,
-  },
+interface Props {
+  entity: string;
+  columns: string[];
+  customColumns?: Record<string, CustomColumnConfig>;
+  filter?: Record<string, unknown>;
+  directQuery: boolean;
+  limit: number;
+  offset?: number;
+  id?: string;
+  onRowClick?: (row: Record<string, unknown>, event: MouseEvent) => void;
+  quickSort?: boolean;
+  orderBy?: (string | OrderByItem)[];
+  postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
+  allowedCollectionTypes?: CollectionType[];
+  displayCount?: boolean;
+  onExport?: (filter?: Record<string, unknown>) => void;
+  userTimezone?: string;
+  requestTimezone?: string;
+  editColumns?: boolean;
+  requester?: Requester | RequesterFunction;
+}
+
+interface Emits {
+  rowClick: [row: Record<string, unknown>, event: MouseEvent];
+  export: [filter?: Record<string, unknown>];
+  'update:columns': [columns: string[]];
+  'update:orderBy': [orderBy: OrderByItem[]];
+}
+
+const emit = defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
+  offset: 0,
+  quickSort: true,
+  allowedCollectionTypes: () => ['pagination'],
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
 });
 
 let hasExecFirstQuery = false;
 let movingOffset = 0;
-let requestProperties = [];
-const requesting = ref(false);
-const copiedColumns = shallowRef([]);
-const propertyColumns = shallowRef([]);
-const collection = shallowRef([]);
-const count = ref(0);
-const end = ref(false);
-const copiedOrderBy = ref([]);
-const page = ref(1);
-const infiniteScroll = ref(isInfiniteAccordingProps());
-const collectionContent = useTemplateRef('collectionContent');
-const showColumnsModal = ref(false);
+let requestProperties: string[] = [];
+const requesting = ref<boolean>(false);
+const copiedColumns = shallowRef<string[]>([]);
+const propertyColumns = shallowRef<(Property | undefined)[]>([]);
+const collection = shallowRef<Record<string, unknown>[]>([]);
+const count = ref<number>(0);
+const end = ref<boolean>(false);
+const copiedOrderBy = ref<OrderByItem[]>([]);
+const page = ref<number>(1);
+const infiniteScroll = ref<boolean>(isInfiniteAccordingProps());
+const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
+const showColumnsModal = ref<boolean>(false);
 
-const observered = useTemplateRef('observered');
-let observer;
+const observered = useTemplateRef<HTMLTableRowElement>('observered');
+let observer: IntersectionObserver | undefined;
 
-const activeRequester = computed(() => {
+const activeRequester = computed<Requester | RequesterFunction>(() => {
   const requester = props.requester ?? baseRequester;
   if (!requester) {
     throw new Error('requester is required, either as a prop or registered globally via plugin options');
@@ -119,27 +75,25 @@ const activeRequester = computed(() => {
   return requester;
 });
 
-const isResultFlattened = computed(() => {
-  return typeof activeRequester.value == 'object' ? activeRequester.value.flattened : false;
+const isResultFlattened = computed<boolean>(() => {
+  return typeof activeRequester.value == 'object' ? !!activeRequester.value.flattened : false;
 });
 
-const indexedOrderBy = computed(() => {
-  const indexed = {};
+const indexedOrderBy = computed<Record<string, 'asc' | 'desc'>>(() => {
+  const indexed: Record<string, 'asc' | 'desc'> = {};
   for (const order of copiedOrderBy.value) {
     indexed[order.column] = order.order;
   }
   return indexed;
 });
 
-async function init(fetch = true) {
+async function init(fetch = true): Promise<void> {
   await initColumns(props.columns, props.orderBy, fetch);
 }
 
-async function initColumns(columns, orderBy, fetch = true) {
-  if (!(await resolve(props.entity))) {
-    throw new Error(`invalid entity "${props.entity}"`);
-  }
-  const properties = [];
+async function initColumns(columns: string[], orderBy?: (string | OrderByItem)[], fetch = true): Promise<void> {
+  await resolve(props.entity);
+  const properties: (Property | undefined)[] = [];
   requestProperties = [];
 
   for (const columnId of columns) {
@@ -153,7 +107,7 @@ async function initColumns(columns, orderBy, fetch = true) {
       if (property.type != 'relationship') {
         requestProperties.push(columnId);
       } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
-        const propertySchema = await resolve(property.related);
+        const propertySchema = await resolve(property.related!);
         requestProperties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
         if (propertySchema.primary_identifiers) {
           for (const propertyId of propertySchema.primary_identifiers) {
@@ -168,18 +122,18 @@ async function initColumns(columns, orderBy, fetch = true) {
   initOrderBy(orderBy, fetch);
 }
 
-function initOrderBy(orderBy, fetch = true) {
+function initOrderBy(orderBy?: (string | OrderByItem)[], fetch = true): void {
   copiedOrderBy.value = orderBy
-    ? orderBy
+    ? (orderBy
         .map((value) => {
           const column = typeof value == 'string' ? value : value.column;
           return copiedColumns.value.includes(column)
             ? typeof value == 'string'
-              ? { column: column, order: 'asc' }
-              : { column: column, order: value.order?.toLowerCase() || 'asc' }
+              ? { column: column, order: 'asc' as const }
+              : { column: column, order: (value.order?.toLowerCase() || 'asc') as 'asc' | 'desc' }
             : null;
         })
-        .filter((value) => value != null)
+        .filter((value): value is OrderByItem => value != null))
     : [];
 
   if (fetch) {
@@ -187,7 +141,7 @@ function initOrderBy(orderBy, fetch = true) {
   }
 }
 
-async function updateColumns(columns) {
+async function updateColumns(columns: string[]): Promise<void> {
   emit('update:columns', columns);
 
   setTimeout(async () => {
@@ -200,11 +154,11 @@ async function updateColumns(columns) {
   }, 0);
 }
 
-function updateOrder(columnId, multi) {
-  if (!requesting.value) {
+function updateOrder(columnId: string | undefined, multi: boolean): void {
+  if (!requesting.value && columnId) {
     let orderBy = structuredClone(toRaw(copiedOrderBy.value));
-    const newOrder = indexedOrderBy.value[columnId] == 'asc' && (orderBy.length <= 1 || multi) ? 'desc' : 'asc';
-    const newColumnOrder = { column: columnId, order: newOrder };
+    const newOrder: 'asc' | 'desc' = indexedOrderBy.value[columnId] == 'asc' && (orderBy.length <= 1 || multi) ? 'desc' : 'asc';
+    const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
     if (multi) {
       const index = orderBy.findIndex((value) => value.column == columnId);
       if (index != -1) {
@@ -228,14 +182,14 @@ function updateOrder(columnId, multi) {
   }
 }
 
-async function shiftThenRequestServer() {
+async function shiftThenRequestServer(): Promise<void> {
   if (!requesting.value && hasExecFirstQuery) {
     movingOffset += props.limit;
     requestServer();
   }
 }
 
-async function updatePage(newPage) {
+async function updatePage(newPage: number): Promise<void> {
   if (!requesting.value) {
     page.value = newPage;
     movingOffset = (page.value - 1) * props.limit;
@@ -243,12 +197,14 @@ async function updatePage(newPage) {
   }
 }
 
-async function requestServer(reset = false) {
+async function requestServer(reset = false): Promise<void> {
   if (reset) {
     end.value = false;
     movingOffset = 0;
     page.value = 1;
-    collectionContent.value.scrollTop = 0;
+    if (collectionContent.value) {
+      collectionContent.value.scrollTop = 0;
+    }
   }
   hasExecFirstQuery = true;
   requesting.value = true;
@@ -288,12 +244,12 @@ async function requestServer(reset = false) {
   requesting.value = false;
 }
 
-async function getRequestOrder() {
-  const orderBy = [];
+async function getRequestOrder(): Promise<{ property: string; order: string }[]> {
+  const orderBy: { property: string; order: string }[] = [];
   for (const order of copiedOrderBy.value) {
     if (props.customColumns?.[order.column]?.order) {
       orderBy.push(
-        ...props.customColumns[order.column].order.map((customOrderProperty) => {
+        ...props.customColumns[order.column].order!.map((customOrderProperty) => {
           return { property: customOrderProperty, order: order.order };
         })
       );
@@ -305,11 +261,11 @@ async function getRequestOrder() {
         orderBy.push({ property: order.column, order: order.order });
         continue;
       }
-      const schema = await resolve(property.related);
-      if (schema.natural_sort) {
+      const schema = await resolve(property.related!);
+      if (schema.default_sort) {
         orderBy.push(
-          ...schema.natural_sort.map((property) => {
-            return { property: order.column + '.' + property, order: order.order };
+          ...schema.default_sort.map((prop) => {
+            return { property: order.column + '.' + prop, order: order.order };
           })
         );
         continue;
@@ -321,7 +277,7 @@ async function getRequestOrder() {
   return orderBy;
 }
 
-function isInfiniteAccordingProps() {
+function isInfiniteAccordingProps(): boolean {
   if (!props.allowedCollectionTypes.length) {
     throw new Error('allowedCollectionTypes prop must be not empty array');
   }
@@ -333,13 +289,15 @@ function isInfiniteAccordingProps() {
   return props.allowedCollectionTypes[0] == 'infinite';
 }
 
-function initColumnsModal() {
+function initColumnsModal(): void {
   showColumnsModal.value = true;
 }
 
 onMounted(async () => {
   observer = new IntersectionObserver(shiftThenRequestServer);
-  observer.observe(observered.value);
+  if (observered.value) {
+    observer.observe(observered.value);
+  }
 
   movingOffset = props.offset;
   await init(false);
@@ -433,8 +391,8 @@ watch(
           </thead>
           <tbody>
             <tr
-              v-for="object in collection"
-              :key="object.id"
+              v-for="(object, rowIndex) in collection"
+              :key="(object.id as string | number) ?? rowIndex"
               :class="onRowClick ? classes.collection_clickable_row : ''"
               @click="(e) => $emit('rowClick', object, e)"
             >

@@ -1,27 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { classes } from '@core/ClassManager';
 import Utils from '@core/Utils';
 import { translate } from '@i18n/i18n';
 
-const modelValue = defineModel({ type: Boolean });
-defineProps({
-  target: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  operator: {
-    type: String,
-    required: true,
-  },
-  disabled: {
-    type: Boolean,
-    required: true,
-  },
-});
+interface Props {
+  disabled: boolean;
+}
+
+const modelValue = defineModel<boolean>();
+
+defineProps<Props>();
+
 const uniqueId = Utils.getUniqueId();
 </script>
 

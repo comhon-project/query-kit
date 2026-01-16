@@ -1,39 +1,43 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { classes } from '@core/ClassManager';
 import { locale, translate } from '@i18n/i18n';
 import Modal from '@components/Common/Modal.vue';
 import ColumnChoice from '@components/Collection/ColumnChoice.vue';
-import { resolve, getPropertyTranslation } from '@core/EntitySchema';
+import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
 import Utils from '@core/Utils';
+import type { CustomColumnConfig, SelectOption } from '@core/types';
 
-const emit = defineEmits(['update:columns']);
-const show = defineModel('show', { type: Boolean, required: true });
-const props = defineProps({
-  entity: {
-    type: String,
-    required: true,
-  },
-  columns: {
-    type: Array,
-    required: true,
-  },
-  customColumns: {
-    type: Object,
-    default: undefined,
-  },
-});
+interface KeyedColumn {
+  id: string;
+  key: string | number;
+}
 
-const schema = ref(null);
-const newColumns = ref([]);
-const confirmed = ref(false);
-const updated = ref(false);
-const selectedProperty = ref(null);
-const options = computed(() => {
-  const options = [];
+interface Props {
+  entity: string;
+  columns: string[];
+  customColumns?: Record<string, CustomColumnConfig>;
+}
+
+interface Emits {
+  'update:columns': [columns: string[]];
+}
+
+const emit = defineEmits<Emits>();
+const show = defineModel<boolean>('show', { required: true });
+const props = defineProps<Props>();
+
+const schema = ref<EntitySchema | null>(null);
+const newColumns = ref<KeyedColumn[]>([]);
+const confirmed = ref<boolean>(false);
+const updated = ref<boolean>(false);
+const selectedProperty = ref<string | null>(null);
+const options = computed<SelectOption<string>[]>(() => {
+  if (!schema.value) return [];
+  const opts: SelectOption<string>[] = [];
   for (const property of schema.value.properties) {
-    let selectableProperty = null;
+    let selectableProperty: Property | null = null;
     if (property.type != 'relationship') {
       const column = newColumns.value.find((column) => {
         return property.id == column.id;
@@ -51,7 +55,7 @@ const options = computed(() => {
           ? customLabel(locale.value)
           : customLabel
         : getPropertyTranslation(property);
-      options.push({ value: property.id, label: label });
+      opts.push({ value: property.id, label: label });
     }
   }
   if (props.customColumns) {
@@ -64,7 +68,7 @@ const options = computed(() => {
         return customColumnId == column.id;
       });
       if (!column) {
-        options.push({
+        opts.push({
           value: customColumnId,
           label: typeof customColumn.label == 'function' ? customColumn.label(locale.value) : customColumn.label,
         });
@@ -72,41 +76,41 @@ const options = computed(() => {
     }
   }
 
-  return options;
+  return opts;
 });
 
-function isOneToOneRelationship(property) {
+function isOneToOneRelationship(property: Property): boolean {
   return property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one';
 }
 
-function confirm() {
+function confirm(): void {
   confirmed.value = true;
   show.value = false;
 }
 
-function updateColumns() {
+function updateColumns(): void {
   if (!updated.value) {
     return;
   }
   if (confirmed.value) {
     emit(
       'update:columns',
-      newColumns.value.map((column) => column.id)
+      newColumns.value.map((column) => column.id),
     );
   } else {
     newColumns.value = props.columns.map((columnId) => getKeyedColumn(columnId));
   }
 }
 
-function getKeyedColumn(columnId) {
+function getKeyedColumn(columnId: string): KeyedColumn {
   return { id: columnId, key: Utils.getUniqueId() };
 }
 
-function removeColumn(index) {
+function removeColumn(index: number): void {
   newColumns.value.splice(index, 1);
 }
 
-function addColumn() {
+function addColumn(): void {
   if (selectedProperty.value) {
     newColumns.value.push(getKeyedColumn(selectedProperty.value));
     selectedProperty.value = null;
@@ -116,13 +120,13 @@ function addColumn() {
 watch(
   () => props.columns,
   () => (newColumns.value = props.columns.map((columnId) => getKeyedColumn(columnId))),
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
   () => props.entity,
   async () => (schema.value = await resolve(props.entity)),
-  { immediate: true }
+  { immediate: true },
 );
 watch(newColumns, () => (updated.value = true), { deep: true });
 watch(show, () => {

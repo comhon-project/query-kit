@@ -1,50 +1,41 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watchEffect } from 'vue';
-import { resolve } from '@core/EntitySchema';
-import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
+import { resolve, type EntitySchema } from '@core/EntitySchema';
+import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import IconButton from '@components/Common/IconButton.vue';
+import type { AllowedOperators, ComputedScopes } from '@core/OperatorManager';
+import type { RelationshipConditionFilter, Filter, AllowedScopes, AllowedProperties } from '@core/types';
 
-const emit = defineEmits(['remove', 'add']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-});
-const schema = ref(null);
-const showConditionChoice = ref(false);
-const { canAddFilter } = useBaseFilter(props, schema, 'relationship_condition');
+interface Props {
+  modelValue: RelationshipConditionFilter;
+  entity: string;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+}
 
-async function initSchema() {
+interface Emits {
+  remove: [];
+  add: [filter: Filter];
+}
+
+const emit = defineEmits<Emits>();
+const props = defineProps<Props>();
+const schema = ref<EntitySchema | null>(null);
+const showConditionChoice = ref<boolean>(false);
+const { canAddFilter } = useFilterWithOperator(props, schema);
+
+async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
 }
 
-function addFilter() {
+function addFilter(): void {
   showConditionChoice.value = true;
 }
 
-async function setNewFilter(data) {
+function setNewFilter(data: Filter): void {
   emit('add', data);
 }
 

@@ -1,7 +1,7 @@
 import type { Component } from 'vue';
 import type { NativeHtmlComponent } from '@core/types';
 import type { TypeContainer } from '@core/EntitySchema';
-import { UniqueInComponent } from '@core/UniqueInComponent';
+import { MultipleCapableComponent } from '@core/MultipleCapableComponent';
 import BooleanInput from '@components/Common/BooleanInput.vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
 
@@ -34,7 +34,7 @@ const nativeHtmlComponents: Record<NativeHtmlComponent, true> = {
   select: true,
 };
 
-export type ComponentEntry = NativeHtmlComponent | Component | UniqueInComponent;
+export type ComponentEntry = NativeHtmlComponent | Component | MultipleCapableComponent;
 
 export type ComponentList = Record<string, ComponentEntry>;
 
@@ -46,7 +46,7 @@ const componentList: ComponentList = {
   date: 'date',
   datetime: 'datetime-local',
   time: 'time',
-  enum: new UniqueInComponent(SelectEnum),
+  enum: new MultipleCapableComponent(SelectEnum),
   boolean: BooleanInput,
 };
 
@@ -54,26 +54,26 @@ const registerComponents = (custom: Partial<ComponentList>): void => {
   Object.assign(componentList, custom);
 };
 
-const getComponent = (container: TypeContainer): NativeHtmlComponent | Component | undefined => {
+const getComponent = (container: TypeContainer): NativeHtmlComponent | Component => {
   const type = container.enum ? 'enum' : container.type;
   const entry = componentList[type];
   if (!entry) {
-    return undefined;
+    throw new Error('invalid type ' + type);
   }
-  if (entry instanceof UniqueInComponent) {
+  if (entry instanceof MultipleCapableComponent) {
     return entry.component;
   }
   return entry;
 };
 
-const isUniqueInComponent = (container: TypeContainer): boolean => {
+const supportsMultiple = (container: TypeContainer): boolean => {
   const type = container.enum ? 'enum' : container.type;
   const entry = componentList[type];
-  return entry instanceof UniqueInComponent;
+  return entry instanceof MultipleCapableComponent;
 };
 
 const isNativeHtmlComponent = (component: string | Component): boolean => {
   return typeof component === 'string' && component in nativeHtmlComponents;
 };
 
-export { registerComponents, getComponent, isUniqueInComponent, isNativeHtmlComponent };
+export { registerComponents, getComponent, supportsMultiple, isNativeHtmlComponent, MultipleCapableComponent };

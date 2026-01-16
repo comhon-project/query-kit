@@ -2,18 +2,10 @@ import { computed, type Ref, type ComputedRef } from 'vue';
 import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '@core/OperatorManager';
 import { useSearchable, type SearchableProps } from '@components/Filter/Composable/Searchable';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { FilterType } from '@core/types';
+import type { FilterWithOperator, ConditionFilter } from '@core/types';
 
-export interface FilterModelValue {
-  operator?: string;
-  property?: string;
-  id?: string;
-  removable?: boolean;
-  editable?: boolean;
-}
-
-export interface BaseFilterProps extends SearchableProps {
-  modelValue: FilterModelValue;
+export interface FilterWithOperatorProps extends SearchableProps {
+  modelValue: FilterWithOperator;
 }
 
 export interface OperatorOption {
@@ -21,7 +13,7 @@ export interface OperatorOption {
   value: string;
 }
 
-export interface UseBaseFilterReturn {
+export interface UseFilterWithOperatorReturn {
   isRemovable: ComputedRef<boolean>;
   isEditable: ComputedRef<boolean>;
   canAddFilter: ComputedRef<boolean>;
@@ -29,11 +21,10 @@ export interface UseBaseFilterReturn {
   operatorOptions: ComputedRef<OperatorOption[]>;
 }
 
-const useBaseFilter = (
-  props: BaseFilterProps,
+const useFilterWithOperator = (
+  props: FilterWithOperatorProps,
   schema: Ref<EntitySchema | null>,
-  filterType: FilterType,
-): UseBaseFilterReturn => {
+): UseFilterWithOperatorReturn => {
   const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(props, schema);
   const isRemovable = computed(() => !(props.modelValue.removable === false));
   const isEditable = computed(() => !(props.modelValue.editable === false));
@@ -45,24 +36,21 @@ const useBaseFilter = (
       throw new Error('schema must be loaded before calling operatorOptions');
     }
 
+    const filterType = props.modelValue.type;
     const options: OperatorOption[] = [];
-    const operatorKey = filterType === 'scope' ? 'condition' : filterType;
     const currentOperators =
       filterType === 'condition'
-        ? getConditionOperators(filterType, props.modelValue.property!, schema.value, props.allowedOperators)
-        : filterType === 'scope'
-          ? getConditionOperators(
-              filterType,
-              props.modelValue.id!,
-              schema.value,
-              props.allowedOperators,
-              props.computedScopes,
-            )
-          : getContainerOperators(filterType, props.allowedOperators);
+        ? getConditionOperators(
+            filterType,
+            (props.modelValue as ConditionFilter).property,
+            schema.value,
+            props.allowedOperators,
+          )
+        : getContainerOperators(filterType, props.allowedOperators);
 
     for (const operator of currentOperators) {
       options.push({
-        label: getOperatorTranslation(operatorKey, operator),
+        label: getOperatorTranslation(filterType, operator),
         value: operator,
       });
     }
@@ -75,7 +63,7 @@ const useBaseFilter = (
     }
     if (!has && props.modelValue.operator) {
       options.push({
-        label: getOperatorTranslation(operatorKey, props.modelValue.operator),
+        label: getOperatorTranslation(filterType, props.modelValue.operator),
         value: props.modelValue.operator,
       });
     }
@@ -91,4 +79,4 @@ const useBaseFilter = (
   return { isRemovable, isEditable, canAddFilter, canEditOperator, operatorOptions };
 };
 
-export { useBaseFilter };
+export { useFilterWithOperator };

@@ -12,9 +12,7 @@ export interface RawEnumSchema {
 }
 
 // Computed types - after compute()
-export interface EnumCase {
-  id: string;
-  name?: string;
+export interface EnumCase extends RawEnumCase {
   owner: string;
 }
 
@@ -33,7 +31,7 @@ export interface EnumTranslationsLoader {
 
 let schemaLoader: EnumSchemaLoader | undefined;
 let translationsLoader: EnumTranslationsLoader | undefined;
-const computedEnums: Record<string, Promise<EnumSchema | null>> = {};
+const computedEnums: Record<string, Promise<EnumSchema>> = {};
 const loadedTranslations: Record<string, Record<string, string> | null> = reactive({});
 const loadingTranslations: Record<string, boolean> = {};
 let previousLocale = locale.value;
@@ -55,10 +53,13 @@ function ensureTranslationsLoaded(enumId: string): void {
 }
 
 async function loadRawTranslations(enumId: string, targetLocale: string): Promise<Record<string, string>> {
+  if (!translationsLoader) {
+    throw new Error('Enum translations loader not configured');
+  }
   const cacheKey = `${enumId}.${targetLocale}`;
   if (!loadedTranslations[cacheKey]) {
     try {
-      loadedTranslations[cacheKey] = await translationsLoader!.load(enumId, targetLocale);
+      loadedTranslations[cacheKey] = await translationsLoader.load(enumId, targetLocale);
     } catch {
       loadedTranslations[cacheKey] = {};
     }
@@ -67,7 +68,10 @@ async function loadRawTranslations(enumId: string, targetLocale: string): Promis
   return loadedTranslations[cacheKey] ?? {};
 }
 
-async function compute(id: string): Promise<EnumSchema | null> {
+async function compute(id: string): Promise<EnumSchema> {
+  if (!schemaLoader) {
+    throw new Error('Enum schema loader not configured');
+  }
   const translationPromises: Promise<Record<string, string>>[] = [];
   if (translationsLoader) {
     translationPromises.push(loadRawTranslations(id, locale.value));
@@ -76,9 +80,9 @@ async function compute(id: string): Promise<EnumSchema | null> {
     }
   }
 
-  const [rawEnum] = await Promise.all([schemaLoader!.load(id), ...translationPromises]);
+  const [rawEnum] = await Promise.all([schemaLoader.load(id), ...translationPromises]);
 
-  if (!rawEnum) return null;
+  if (!rawEnum) throw new Error(`Enum schema "${id}" not found`);
 
   const cases: EnumCase[] = [];
   const mapCases: Record<string, EnumCase> = {};
@@ -113,7 +117,7 @@ function getTranslation(enumCase: EnumCase): string {
 
 async function getCases(enumId: string): Promise<EnumCase[]> {
   const enumSchema = await resolve(enumId);
-  return enumSchema?.cases ?? [];
+  return enumSchema.cases;
 }
 
 const registerLoader = (config: EnumSchemaLoader): void => {
@@ -124,7 +128,7 @@ const registerTranslationsLoader = (config: EnumTranslationsLoader): void => {
   translationsLoader = config;
 };
 
-const resolve = (id: string): Promise<EnumSchema | null> => {
+const resolve = (id: string): Promise<EnumSchema> => {
   if (!computedEnums[id]) {
     computedEnums[id] = compute(id);
   }

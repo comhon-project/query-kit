@@ -1,135 +1,137 @@
-<script setup>
-import { ref, watch, onMounted, computed, useTemplateRef } from 'vue';
+<script setup lang="ts">
+import { ref, watchEffect, computed, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyTranslation } from '@core/EntitySchema';
+import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema } from '@core/EntitySchema';
 import Utils from '@core/Utils';
 import { translate, locale } from '@i18n/i18n';
-import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
+import {
+  getConditionOperators,
+  getContainerOperators,
+  type AllowedOperators,
+  type ComputedScopes,
+  type ComputedScope,
+} from '@core/OperatorManager';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import Modal from '@components/Common/Modal.vue';
+import type { Filter, AllowedScopes, AllowedProperties } from '@core/types';
 
-const emit = defineEmits(['validate']);
-const show = defineModel('show', { type: Boolean, required: true });
-const props = defineProps({
-  entity: {
-    type: String,
-    required: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-});
+interface Props {
+  entity: string;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+}
 
-let condition = null;
-const form = useTemplateRef('form');
-const uniqueName = ref(`choice-${Utils.getUniqueId()}`);
-const uniqueIdCondition = ref(`choice-${Utils.getUniqueId()}`);
-const uniqueIdGroup = ref(`choice-${Utils.getUniqueId()}`);
-const schema = ref(null);
-const targetCondition = ref(null);
-const selectedType = ref('condition');
+interface Emits {
+  validate: [condition: Filter];
+}
+
+const emit = defineEmits<Emits>();
+const show = defineModel<boolean>('show', { required: true });
+const props = defineProps<Props>();
+
+let condition: Filter | null = null;
+const form = useTemplateRef<HTMLFormElement>('form');
+const uniqueName = ref<string>(`choice-${Utils.getUniqueId()}`);
+const uniqueIdCondition = ref<string>(`choice-${Utils.getUniqueId()}`);
+const uniqueIdGroup = ref<string>(`choice-${Utils.getUniqueId()}`);
+const schema = ref<EntitySchema | null>(null);
+const targetCondition = ref<string | null>(null);
+const selectedType = ref<'condition' | 'group'>('condition');
 const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(props, schema);
-const options = computed(() => {
-  const options = {};
+
+const options = computed<Record<string, string>>(() => {
+  const opts: Record<string, string> = {};
   for (const property of searchableProperties.value) {
-    options[property.id] = getPropertyTranslation(property);
+    opts[property.id] = getPropertyTranslation(property);
   }
   for (const scope of searchableScopes.value) {
-    options[scope.id] = getPropertyTranslation(scope);
+    opts[scope.id] = getScopeTranslation(scope);
   }
   for (const scope of searchableComputedScopes.value) {
-    if (scope.translation) {
-      options[scope.id] = scope.translation(locale.value);
+    if ((scope as ComputedScope & { translation?: (locale: string) => string }).translation) {
+      opts[scope.id] = (scope as ComputedScope & { translation: (locale: string) => string }).translation(locale.value);
     } else if (scope.name) {
-      options[scope.id] = scope.name;
+      opts[scope.id] = scope.name;
     }
   }
-  return options;
+  return opts;
 });
-const displayGroup = computed(() => {
+
+const displayGroup = computed<number>(() => {
   return getContainerOperators('group', props.allowedOperators).length;
 });
 
-function validate(e) {
-  condition = {};
+function validate(): void {
+  if (!schema.value || (selectedType.value === 'condition' && !targetCondition.value)) return;
+
   if (selectedType.value == 'condition') {
-    const computedScope = props.computedScopes?.[props.entity]?.find((scope) => scope.id == targetCondition.value);
-    const scope = computedScope || schema.value.mapScopes[targetCondition.value];
+    const target = targetCondition.value!;
+    const computedScope = props.computedScopes?.[props.entity]?.find((scope) => scope.id == target);
+    const scope = computedScope || schema.value.mapScopes[target];
     if (scope) {
-      condition.type = 'scope';
-      condition.id = targetCondition.value;
-      condition.parameters = [];
+      condition = {
+        type: 'scope',
+        id: target,
+        parameters: [],
+        key: Utils.getUniqueId(),
+      };
     } else {
-      if (schema.value.mapProperties[targetCondition.value].type == 'relationship') {
+      if (schema.value.mapProperties[target]?.type == 'relationship') {
         const operators = getContainerOperators('relationship_condition', props.allowedOperators);
-        condition.operator = operators[0];
-        condition.type = 'relationship_condition';
+        condition = {
+          type: 'relationship_condition',
+          operator: operators[0],
+          property: target,
+          key: Utils.getUniqueId(),
+        };
       } else {
-        const operators = getConditionOperators(
-          'condition',
-          targetCondition.value,
-          schema.value,
-          props.allowedOperators,
-        );
-        condition.operator = operators[0];
-        condition.type = 'condition';
+        const operators = getConditionOperators('condition', target, schema.value, props.allowedOperators);
+        condition = {
+          type: 'condition',
+          operator: operators[0],
+          property: target,
+          key: Utils.getUniqueId(),
+        };
       }
-      condition.property = targetCondition.value;
     }
   } else {
     const operators = getContainerOperators('group', props.allowedOperators);
-    condition.type = 'group';
-    condition.operator = operators[0];
-    condition.filters = [];
+    condition = {
+      type: 'group',
+      operator: operators[0],
+      filters: [],
+      key: Utils.getUniqueId(),
+    };
   }
-  condition.key = Utils.getUniqueId();
   show.value = false;
-  e.preventDefault();
 }
 
-function onClosed() {
+function onClosed(): void {
   if (condition) {
     emit('validate', { ...condition });
     condition = null;
   }
 }
 
-function selectType(type) {
+function selectType(type: 'condition' | 'group'): void {
   selectedType.value = type;
 }
 
-function submitForm() {
-  form.value.requestSubmit();
+function submitForm(): void {
+  form.value?.requestSubmit();
 }
 
-onMounted(async () => {
+watchEffect(async () => {
   schema.value = await resolve(props.entity);
 });
-watch(
-  () => props.entity,
-  async () => {
-    schema.value = await resolve(props.entity);
-  },
-);
 </script>
 
 <template>
   <Modal v-if="schema" v-model:show="show" @confirm="submitForm" @closed="onClosed">
     <template #body>
-      <form ref="form" :class="classes.condition_choice_form" @submit="validate">
+      <form ref="form" :class="classes.condition_choice_form" @submit.prevent="validate">
         <div>
           <input
             :id="uniqueIdCondition"

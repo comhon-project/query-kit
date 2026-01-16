@@ -1,42 +1,39 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { loadedTranslations, locale } from '@i18n/i18n';
+import type { SelectOption } from '@core/types';
 
-const modelValue = defineModel({ type: [String, Number], required: true });
-const props = defineProps({
-  options: {
-    type: Array,
-    required: true,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  ariaLabel: {
-    type: String,
-    default: undefined,
-  },
-  class: {
-    type: String,
-    default: undefined,
-  },
+interface Props {
+  options: SelectOption[];
+  disabled?: boolean;
+  ariaLabel?: string;
+  class?: string;
+}
+
+const modelValue = defineModel<string | number>({ required: true });
+
+const props = withDefaults(defineProps<Props>(), {
+  disabled: false,
 });
-const style = ref({});
-const select = useTemplateRef('select');
-const selectedLabel = computed(() => {
+
+const style = ref<Record<string, string>>({});
+const select = useTemplateRef<HTMLSelectElement>('select');
+
+const selectedLabel = computed<string>(() => {
   const option = props.options.find((opt) => opt.value == modelValue.value);
   return option ? option.label : '';
 });
 
-function updateWidth() {
+function updateWidth(): void {
+  if (!select.value) return;
   select.value.insertAdjacentHTML(
     'afterend',
     `<select :disabled="disabled" class="${props.class}">
       <option selected>${selectedLabel.value}</option>
-    </select>`
+    </select>`,
   );
-  style.value = { width: select.value.nextElementSibling.offsetWidth + 'px' };
-  select.value.nextElementSibling.remove();
+  style.value = { width: (select.value.nextElementSibling as HTMLElement).offsetWidth + 'px' };
+  select.value.nextElementSibling?.remove();
 }
 
 watch([locale, loadedTranslations], updateWidth, { flush: 'post', deep: true });

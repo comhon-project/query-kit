@@ -1,19 +1,6 @@
-export interface RequesterQuery {
-  entity: string;
-  filter?: Record<string, unknown>;
-  limit: number;
-  offset: number;
-  orderBy?: string[];
-}
+import type { Requester, RequestParams, RequestResponse } from '@core/types';
 
-export interface RequesterResponse {
-  count: number;
-  collection: Record<string, unknown>[];
-}
-
-export interface Requester {
-  request: (query: RequesterQuery) => Promise<RequesterResponse>;
-}
+export type { Requester, RequestParams, RequestResponse };
 
 let requester: Requester | undefined;
 

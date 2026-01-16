@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watchEffect, useTemplateRef } from 'vue';
 import Utils from '@core/Utils.js';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
-import { resolve } from '@core/EntitySchema';
-import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
-import { isValidOperator } from '@core/OperatorManager';
+import { resolve, type EntitySchema } from '@core/EntitySchema';
+import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
+import { isValidOperator, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
@@ -12,66 +12,46 @@ import IconButton from '@components/Common/IconButton.vue';
 import CollapseButton from '@components/Common/CollapseButton.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import GroupFilter from '@components/Filter/GroupFilter.vue';
+import GroupElement from '@components/Filter/GroupElement.vue';
+import type { GroupFilter, Filter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
 
-const emit = defineEmits(['remove', 'goToRootGroup']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-  displayOperator: {
-    type: [Boolean, Object],
-    default: true,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  root: {
-    type: Boolean,
-    default: false,
-  },
-  ariaLabel: {
-    type: String,
-    default: undefined,
-  },
+interface Props {
+  modelValue: GroupFilter;
+  entity: string;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+  userTimezone?: string;
+  requestTimezone?: string;
+  root?: boolean;
+  ariaLabel?: string;
+}
+
+interface Emits {
+  remove: [];
+  goToRootGroup: [];
+}
+
+const emit = defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
+  displayOperator: true,
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
+  root: false,
 });
 
-const listRef = useTemplateRef('listRef');
-const groupRef = useTemplateRef('groupRef');
-const validOperator = ref(true);
-const validEntity = ref(true);
-const schema = ref(null);
-const showConditionChoice = ref(false);
-const collapsed = ref(false);
-const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useBaseFilter(props, schema, 'group');
+const listRef = useTemplateRef<HTMLUListElement>('listRef');
+const groupRef = useTemplateRef<HTMLDivElement>('groupRef');
+const validOperator = ref<boolean>(true);
+const validEntity = ref<boolean>(true);
+const schema = ref<EntitySchema | null>(null);
+const showConditionChoice = ref<boolean>(false);
+const collapsed = ref<boolean>(false);
+const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
 
-const visibleFilters = computed(() => {
+const visibleFilters = computed<Filter[]>(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
 });
 
@@ -83,32 +63,32 @@ const shortcutEvents = {
   addFilterToParentGroup: addFilter,
 };
 
-function goToNext(key) {
+function goToNext(key: string | number): void {
   const index = visibleFilters.value.findIndex((filter) => filter.key == key);
   goToCondition(index + 1);
 }
 
-function goToPrevious(key) {
+function goToPrevious(key: string | number): void {
   const index = visibleFilters.value.findIndex((filter) => filter.key == key);
   goToCondition(index - 1);
 }
 
-function goToCondition(index) {
-  const next = listRef.value.children[index];
+function goToCondition(index: number): void {
+  const next = listRef.value?.children[index];
   if (next && next.children[0]) {
-    next.children[0].focus();
+    (next.children[0] as HTMLElement).focus();
   }
 }
 
-function focusGroup() {
-  groupRef.value.focus();
+function focusGroup(): void {
+  groupRef.value?.focus();
 }
 
-function goToRootGroup() {
-  props.root ? groupRef.value.focus() : emit('goToRootGroup');
+function goToRootGroup(): void {
+  props.root ? groupRef.value?.focus() : emit('goToRootGroup');
 }
 
-async function initFilter() {
+function initFilter(): void {
   if (!props.modelValue.filters) {
     props.modelValue.filters = [];
   }
@@ -119,28 +99,28 @@ async function initFilter() {
   }
 }
 
-async function initSchema() {
+async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
   if (!schema.value) {
     validEntity.value = false;
   }
 }
 
-function isVisible(filter) {
+function isVisible(filter: Filter): boolean {
   return !(filter.visible === false);
 }
 
-function removeFilter(key) {
-  const index = props.modelValue.filters.findIndex((filter) => filter.key == key);
+function removeFilter(filter: Filter): void {
+  const index = props.modelValue.filters.findIndex((current) => current === filter);
   props.modelValue.filters.splice(index, 1);
 }
 
-function addFilter() {
+function addFilter(): void {
   collapsed.value = false;
   showConditionChoice.value = true;
 }
 
-async function setNewFilter(data) {
+function setNewFilter(data: Filter): void {
   props.modelValue.filters.push(data);
 }
 
@@ -207,7 +187,7 @@ watchEffect(() => {
       <div style="overflow: hidden">
         <ul ref="listRef" :class="classes.group_list">
           <TransitionGroup name="qkit-collapse-horizontal-list">
-            <GroupFilter
+            <GroupElement
               v-for="(filter, displayIndex) in visibleFilters"
               :key="filter.key"
               v-bind="props"
@@ -217,7 +197,7 @@ watchEffect(() => {
               :except-add-filter-to-parent-group="!canAddFilter"
               :except-go-to-previous="displayIndex == 0"
               :except-go-to-next="displayIndex == visibleFilters.length - 1"
-              @remove="() => removeFilter(filter.key)"
+              @remove="() => removeFilter(filter)"
               v-on="shortcutEvents"
             />
           </TransitionGroup>

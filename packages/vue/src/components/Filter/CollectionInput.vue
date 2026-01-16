@@ -1,54 +1,44 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
-import InputCondition from '@components/Filter/InputCondition.vue';
+import UniqueInput from '@components/Filter/UniqueInput.vue';
+import type { ArrayableTypeContainer } from '@core/EntitySchema';
 
-const emit = defineEmits(['update:modelValue']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: undefined,
-  },
-  operator: {
-    type: String,
-    default: undefined,
-  },
-  target: {
-    type: Object,
-    required: true,
-  },
-  editable: {
-    type: Boolean,
-    default: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
+interface Props {
+  modelValue?: unknown[];
+  target: ArrayableTypeContainer;
+  editable?: boolean;
+  entity: string;
+  userTimezone?: string;
+  requestTimezone?: string;
+}
+
+interface Emits {
+  'update:modelValue': [value: unknown[]];
+}
+
+const emit = defineEmits<Emits>();
+
+const props = withDefaults(defineProps<Props>(), {
+  editable: true,
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
 });
 
-const arrayValues = ref(props.modelValue ? [...props.modelValue] : [undefined]);
+const arrayValues = ref<unknown[]>(props.modelValue ? [...props.modelValue] : [undefined]);
 
-function addValue() {
+function addValue(): void {
   arrayValues.value.push(undefined);
   emit('update:modelValue', arrayValues.value);
 }
 
-function removeValue(index) {
+function removeValue(index: number): void {
   arrayValues.value.splice(index, 1);
   emit('update:modelValue', arrayValues.value);
 }
 
-function updateValue(value, index) {
+function updateValue(value: unknown, index: number): void {
   arrayValues.value[index] = value;
   emit('update:modelValue', arrayValues.value);
 }
@@ -65,11 +55,12 @@ watch(
   <div :class="classes.in_container">
     <ul :class="classes.in_list">
       <li v-for="(value, index) in arrayValues" :key="index" :class="classes.in_value_container">
-        <InputCondition
+        <UniqueInput
           v-bind="props"
           :model-value="value"
           :editable="editable"
-          @update:model-value="(newValue) => updateValue(newValue, index)"
+          :multiple="false"
+          @update:model-value="(newValue: unknown) => updateValue(newValue, index)"
         />
         <IconButton v-if="editable" icon="delete" btn-class="btn_secondary" @click="() => removeValue(index)" />
       </li>

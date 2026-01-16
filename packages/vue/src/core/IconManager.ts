@@ -13,7 +13,9 @@ export type IconName =
   | 'search'
   | 'confirm'
   | 'export'
-  | 'columns';
+  | 'columns'
+  | 'paginated_list'
+  | 'infinite_list';
 
 export interface IconConfig {
   class?: string;
@@ -39,6 +41,8 @@ const iconList: IconList = {
   confirm: undefined,
   export: undefined,
   columns: undefined,
+  paginated_list: undefined,
+  infinite_list: undefined,
 };
 
 let iconComponent: string = 'i';

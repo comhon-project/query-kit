@@ -1,47 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue';
-import { getTranslation, resolve } from '@core/EnumSchema';
+import { getTranslation, resolve, type EnumCase } from '@core/EnumSchema';
+import type { CellRendererProps } from '@core/types';
 
-const props = defineProps({
-  columnId: {
-    type: String,
-    required: true,
-  },
-  property: {
-    type: Object,
-    required: true,
-  },
-  type: {
-    type: Object,
-    required: true,
-  },
-  value: {
-    type: undefined,
-    required: true,
-  },
-  rowValue: {
-    type: Object,
-    required: true,
-  },
-  requestTimezone: {
-    type: String,
-    required: true,
-  },
-  userTimezone: {
-    type: String,
-    required: true,
-  },
-});
+const props = defineProps<CellRendererProps>();
 
-const cases = ref({});
+const cases = ref<Record<string, EnumCase>>({});
 
 watchEffect(async () => {
-  const schema = await resolve(props.type.enum);
+  const schema = await resolve(props.type.enum!);
   cases.value = schema.mapCases;
 });
 
-const translation = computed(() => {
-  const caseItem = cases.value[props.value];
+const translation = computed<string | null>(() => {
+  const caseItem = cases.value[props.value as string];
   return caseItem ? getTranslation(caseItem) : null;
 });
 </script>

@@ -1,49 +1,25 @@
-<script setup>
-import { computed } from 'vue';
+<script setup lang="ts">
+import { computed, type Component } from 'vue';
 import { getTypeRenderer } from '@core/CellRendererManager';
 import { locale } from '@i18n/i18n';
+import type { CellRendererProps, RenderFunction } from '@core/types';
 
-const props = defineProps({
-  columnId: {
-    type: String,
-    required: true,
-  },
-  property: {
-    type: Object,
-    required: true,
-  },
-  type: {
-    type: Object,
-    required: true,
-  },
-  value: {
-    type: undefined,
-    required: true,
-  },
-  rowValue: {
-    type: Object,
-    required: true,
-  },
-  requestTimezone: {
-    type: String,
-    required: true,
-  },
-  userTimezone: {
-    type: String,
-    required: true,
-  },
+const props = defineProps<CellRendererProps>();
+
+const elementComponent = computed<Component | null>(() => {
+  return typeof renderer.value == 'function' ? null : (renderer.value as Component);
 });
-const elementComponent = computed(() => {
-  return typeof renderer.value == 'function' ? null : renderer.value;
+
+const renderer = computed<Component | RenderFunction | null>(() => {
+  return getTypeRenderer(props.type.children!);
 });
-const renderer = computed(() => {
-  return getTypeRenderer(props.type.children);
-});
-const subValues = computed(() => {
-  return props.value
+
+const subValues = computed<unknown[]>(() => {
+  const valueArray = props.value as unknown[] | null;
+  return valueArray
     ? typeof renderer.value == 'function'
-      ? props.value.map((subValue) => renderer.value(subValue, locale.value))
-      : props.value
+      ? valueArray.map((subValue) => (renderer.value as RenderFunction)(subValue, {}, '', locale.value))
+      : valueArray
     : [];
 });
 </script>

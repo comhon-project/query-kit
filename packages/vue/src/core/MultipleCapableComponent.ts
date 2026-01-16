@@ -1,6 +1,6 @@
 import type { Component } from 'vue';
 import type { NativeHtmlComponent } from '@core/types';
 
-export class UniqueInComponent {
+export class MultipleCapableComponent {
   constructor(public component: Component | NativeHtmlComponent) {}
 }

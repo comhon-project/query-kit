@@ -1,50 +1,41 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import { resolve, getPropertyTranslation } from '@core/EntitySchema';
-import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
+import { resolve, getPropertyTranslation, type EntitySchema } from '@core/EntitySchema';
+import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
+import type { AllowedOperators, ComputedScopes } from '@core/OperatorManager';
+import type { RelationshipConditionFilter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
 
-defineEmits(['remove', 'end:relationship']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-  displayOperator: {
-    type: [Boolean, Object],
-    default: true,
-  },
+interface Props {
+  modelValue: RelationshipConditionFilter;
+  entity: string;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+}
+
+interface Emits {
+  remove: [];
+  'end:relationship': [];
+}
+
+defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
+  displayOperator: true,
 });
-const schema = ref(null);
-const { canEditOperator, operatorOptions } = useBaseFilter(props, schema, 'relationship_condition');
-const label = computed(() => {
+const schema = ref<EntitySchema | null>(null);
+const { canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
+const label = computed<string>(() => {
+  if (!schema.value) return '';
   const property = schema.value.mapProperties[props.modelValue.property];
   return getPropertyTranslation(property);
 });
 
-async function initSchema() {
+async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
 }
 

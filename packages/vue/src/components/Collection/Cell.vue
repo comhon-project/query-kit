@@ -1,61 +1,47 @@
-<script setup>
-import { computed } from 'vue';
+<script setup lang="ts">
+import { computed, type Component } from 'vue';
 import { classes } from '@core/ClassManager';
 import { getPropertyRenderer } from '@core/CellRendererManager';
 import Utils from '@core/Utils';
 import { locale } from '@i18n/i18n';
+import type { Property } from '@core/EntitySchema';
+import type { RenderFunction } from '@core/types';
 
-const emit = defineEmits(['click']);
-const props = defineProps({
-  columnId: {
-    type: String,
-    required: true,
-  },
-  rowValue: {
-    type: Object,
-    required: true,
-  },
-  requestTimezone: {
-    type: String,
-    required: true,
-  },
-  userTimezone: {
-    type: String,
-    required: true,
-  },
-  property: {
-    type: Object,
-    default: undefined,
-  },
-  flattened: {
-    type: Boolean,
-  },
-  renderer: {
-    type: [Object, Function, String],
-    default: undefined,
-  },
-  onClick: {
-    type: Function,
-    default: undefined,
-  },
-});
-const cellComponent = computed(() => {
-  return typeof renderer.value == 'function' ? null : renderer.value;
-});
+interface Props {
+  columnId: string;
+  rowValue: Record<string, unknown>;
+  requestTimezone: string;
+  userTimezone: string;
+  property?: Property;
+  flattened?: boolean;
+  renderer?: Component | RenderFunction | string;
+  onClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
+}
 
-const renderer = computed(() => {
+interface Emits {
+  click: [value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent];
+}
+
+const emit = defineEmits<Emits>();
+const props = defineProps<Props>();
+
+const renderer = computed<Component | RenderFunction | string | null>(() => {
   return props.renderer || (props.property ? getPropertyRenderer(props.property) : null);
 });
 
-const value = computed(() => {
-  let cellValue = props.property
+const cellComponent = computed<Component | string | null>(() => {
+  return typeof renderer.value == 'function' ? null : renderer.value;
+});
+
+const value = computed<unknown>(() => {
+  let cellValue: unknown = props.property
     ? props.flattened
       ? props.rowValue[props.columnId]
       : Utils.getNestedValue(props.rowValue, props.columnId)
     : undefined;
 
   if (typeof renderer.value == 'function') {
-    cellValue = renderer.value(cellValue, props.rowValue, props.columnId, locale.value);
+    cellValue = (renderer.value as RenderFunction)(cellValue, props.rowValue, props.columnId, locale.value);
   }
   return cellValue;
 });

@@ -1,55 +1,33 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onBeforeMount, ref } from 'vue';
-import { resolve } from '@core/EntitySchema';
+import { resolve, type EntitySchema } from '@core/EntitySchema';
+import type { CellRendererProps } from '@core/types';
 
-const props = defineProps({
-  columnId: {
-    type: String,
-    required: true,
-  },
-  property: {
-    type: Object,
-    required: true,
-  },
-  type: {
-    type: Object,
-    required: true,
-  },
-  value: {
-    type: undefined,
-    required: true,
-  },
-  rowValue: {
-    type: Object,
-    required: true,
-  },
-  requestTimezone: {
-    type: String,
-    required: true,
-  },
-  userTimezone: {
-    type: String,
-    required: true,
-  },
-});
-const schema = ref(null);
-const computedValue = computed(() => {
+const props = defineProps<CellRendererProps>();
+
+const schema = ref<EntitySchema | null>(null);
+
+const computedValue = computed<unknown>(() => {
+  if (!schema.value) return null;
   const idProp = schema.value.unique_identifier || 'id';
   return schema.value.primary_identifiers
     ? schema.value.primary_identifiers
-        .map((property) => {
-          const object = props.value || props.rowValue;
+        .map((property: string) => {
+          const object = (props.value || props.rowValue) as Record<string, unknown>;
           const key = props.value ? property : props.columnId + '.' + property;
           return object[key];
         })
         .join(' ')
     : props.value
-    ? props.value[idProp]
+    ? (props.value as Record<string, unknown>)[idProp]
     : props.rowValue[props.columnId + '.' + idProp];
 });
 
 onBeforeMount(async () => {
-  schema.value = await resolve(props.type.related);
+  const related = props.property.related;
+  if (related) {
+    schema.value = await resolve(related);
+  }
 });
 </script>
 

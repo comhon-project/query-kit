@@ -1,89 +1,85 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch, toRaw, watchEffect, onUnmounted } from 'vue';
-import { resolve } from '@core/EntitySchema';
+import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
+import type { AllowedOperators, ComputedScopes, ComputedScope } from '@core/OperatorManager';
+import type {
+  GroupFilter,
+  Filter,
+  DisplayOperator,
+  AllowedScopes,
+  AllowedProperties,
+  ScopeFilter,
+} from '@core/types';
 
-const emit = defineEmits(['computed']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  allowReset: {
-    type: Boolean,
-    default: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-  displayOperator: {
-    type: [Boolean, Object],
-    default: true,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  deferred: {
-    type: Number,
-    default: 1000,
-  },
-  id: {
-    type: String,
-    default: undefined,
-  },
+/**
+ * Mutable filter type for dynamic manipulation in getComputedFilter().
+ * We use Record<string, unknown> because:
+ * - structuredClone returns a runtime object without TypeScript guarantees
+ * - We delete properties dynamically (key, editable, removable, id)
+ * - We use Object.assign with computed scope values
+ * The double-cast (as unknown as) is the standard TypeScript pattern for this.
+ */
+type MutableFilter = Record<string, unknown>;
+
+interface Props {
+  modelValue: GroupFilter;
+  entity: string;
+  allowReset?: boolean;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+  userTimezone?: string;
+  requestTimezone?: string;
+  deferred?: number;
+  id?: string;
+}
+
+interface Emits {
+  computed: [filter: MutableFilter];
+}
+
+const emit = defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
+  allowReset: true,
+  displayOperator: true,
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
+  deferred: 1000,
 });
 
-let timeoutId;
-let originalFilter;
-const schema = ref(null);
+let timeoutId: ReturnType<typeof setTimeout> | undefined;
+let originalFilter: GroupFilter;
+const schema = ref<EntitySchema | null>(null);
 
 onUnmounted(() => {
   if (timeoutId) clearTimeout(timeoutId);
 });
 
-async function initSchema() {
+async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
 }
 
-function reset() {
-  for (const member of Object.keys(props.modelValue)) delete props.modelValue[member];
+function reset(): void {
+  const mutableModel = props.modelValue as unknown as MutableFilter;
+  for (const member of Object.keys(mutableModel)) delete mutableModel[member];
   Object.assign(props.modelValue, structuredClone(originalFilter));
 }
 
-function getScopeDefinition(scopeId, schema) {
-  let scope =
+function getScopeDefinition(scopeId: string, entitySchema: EntitySchema): Scope | ComputedScope | undefined {
+  const computedScope =
     props.computedScopes && props.computedScopes[props.entity]
       ? props.computedScopes[props.entity].find((scope) => scope.id == scopeId)
-      : null;
-  return (scope = scope || schema.mapScopes[scopeId]);
+      : undefined;
+  return computedScope || entitySchema.mapScopes[scopeId];
 }
 
-function isScopeFilled(scope, filter) {
+function isScopeFilled(scope: Scope | ComputedScope, filter: ScopeFilter): boolean {
   if (!scope.parameters?.length) {
     return true;
   }
@@ -102,40 +98,42 @@ function isScopeFilled(scope, filter) {
   return true;
 }
 
-function mustKeepFilter(filter, schema) {
-  if (filter.operator == 'null' || filter.operator == 'not_null') {
+function mustKeepFilter(filter: Filter, entitySchema: EntitySchema): boolean {
+  if ('operator' in filter && (filter.operator == 'null' || filter.operator == 'not_null')) {
     return true;
   }
   if (filter.type == 'scope') {
-    const scope = getScopeDefinition(filter.id, schema);
-    return scope && isScopeFilled(scope, filter);
+    const scope = getScopeDefinition(filter.id, entitySchema);
+    return !!scope && isScopeFilled(scope, filter);
   }
-  const isEmpty =
-    filter.value === undefined ||
-    (Array.isArray(filter.value) && filter.value.filter((value) => value !== undefined).length == 0);
-
-  return !(isEmpty && filter.type == 'condition');
+  if (filter.type == 'condition') {
+    const isEmpty =
+      filter.value === undefined ||
+      (Array.isArray(filter.value) && filter.value.filter((value) => value !== undefined).length == 0);
+    return !isEmpty;
+  }
+  return true;
 }
 
-async function getComputedFilter() {
-  const computedFilter = structuredClone(toRaw(props.modelValue));
-  const stack = [[computedFilter, schema.value]];
+async function getComputedFilter(): Promise<MutableFilter> {
+  const computedFilter = structuredClone(toRaw(props.modelValue)) as unknown as MutableFilter;
+  const stack: Array<[MutableFilter, EntitySchema]> = [[computedFilter, schema.value!]];
   while (stack.length) {
-    const [currentFilter, currentSchema] = stack.pop();
+    const [currentFilter, currentSchema] = stack.pop()!;
     if (currentFilter.type == 'relationship_condition') {
       if (currentFilter.filter) {
-        const schemaId = currentSchema.mapProperties[currentFilter.property].related;
+        const schemaId = currentSchema.mapProperties[currentFilter.property as string]?.related!;
         const childSchema = await resolve(schemaId);
-        if (mustKeepFilter(currentFilter.filter, childSchema)) {
-          stack.push([currentFilter.filter, childSchema]);
+        if (mustKeepFilter(currentFilter.filter as Filter, childSchema)) {
+          stack.push([currentFilter.filter as MutableFilter, childSchema]);
         } else {
           delete currentFilter.filter;
         }
       }
     } else if (currentFilter.type == 'group') {
-      const filters = [];
-      for (const filter of currentFilter.filters) {
-        if (!mustKeepFilter(filter, currentSchema)) {
+      const filters: MutableFilter[] = [];
+      for (const filter of currentFilter.filters as MutableFilter[]) {
+        if (!mustKeepFilter(filter as unknown as Filter, currentSchema)) {
           continue;
         }
         stack.push([filter, currentSchema]);
@@ -144,7 +142,7 @@ async function getComputedFilter() {
       currentFilter.filters = filters;
     } else {
       if (Array.isArray(currentFilter.value)) {
-        currentFilter.value = currentFilter.value.filter((value) => value !== undefined);
+        currentFilter.value = (currentFilter.value as unknown[]).filter((value) => value !== undefined);
       } else if (currentFilter.operator == 'like' || currentFilter.operator == 'not_like') {
         currentFilter.value = `%${currentFilter.value}%`;
       } else if (currentFilter.operator == 'begins_with' || currentFilter.operator == 'doesnt_begin_with') {
@@ -155,17 +153,18 @@ async function getComputedFilter() {
         currentFilter.value = `%${currentFilter.value}`;
       }
       if (currentFilter.type == 'scope') {
-        if (currentFilter.parameters?.length) {
-          for (let i = 0; i < currentFilter.parameters.length; i++) {
-            if (Array.isArray(currentFilter.parameters[i])) {
-              currentFilter.parameters[i] = currentFilter.parameters[i].filter((v) => v !== undefined);
+        const parameters = currentFilter.parameters as unknown[] | undefined;
+        if (parameters?.length) {
+          for (let i = 0; i < parameters.length; i++) {
+            if (Array.isArray(parameters[i])) {
+              parameters[i] = (parameters[i] as unknown[]).filter((v) => v !== undefined);
             }
           }
         }
-        const scope = getScopeDefinition(currentFilter.id, currentSchema);
-        if (scope.computed) {
+        const scope = getScopeDefinition(currentFilter.id as string, currentSchema);
+        if (scope && (scope as ComputedScope).computed) {
           delete currentFilter.id;
-          const computedScopeValue = scope.computed(currentFilter.parameters);
+          const computedScopeValue = (scope as ComputedScope).computed!(parameters || []);
           if (typeof computedScopeValue != 'object') {
             throw new Error(`invalid computed value for scope ${scope.id}, value must be an object`);
           }

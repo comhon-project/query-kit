@@ -1,88 +1,90 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch, computed, watchEffect } from 'vue';
-import { useBaseFilter } from '@components/Filter/Composable/BaseFilter';
-import { isValidOperator } from '@core/OperatorManager';
-import { resolve, getPropertyTranslation } from '@core/EntitySchema';
+import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
+import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
+import {
+  resolve,
+  getPropertyTranslation,
+  type EntitySchema,
+  type Property,
+  type ArrayableTypeContainer,
+} from '@core/EntitySchema';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidType from '@components/Messages/InvalidType.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
-import InputCollection from '@components/Filter/InputCollection.vue';
-import InputCondition from '@components/Filter/InputCondition.vue';
+import ArrayableInput from '@components/Filter/ArrayableInput.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
-import { getComponent, isUniqueInComponent } from '@core/InputManager';
+import { getComponent } from '@core/InputManager';
 import { translate } from '@i18n/i18n';
+import type { ConditionFilter, DisplayOperator } from '@core/types';
 
-defineEmits(['remove']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-  displayOperator: {
-    type: [Boolean, Object],
-    default: true,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  ariaLabel: {
-    type: String,
-    default: undefined,
-  },
+interface Props {
+  modelValue: ConditionFilter;
+  entity: string;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+  userTimezone?: string;
+  requestTimezone?: string;
+  ariaLabel?: string;
+}
+
+interface Emits {
+  remove: [];
+}
+
+defineEmits<Emits>();
+
+const props = withDefaults(defineProps<Props>(), {
+  displayOperator: true,
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
 });
-const validEntity = ref(true);
-const validOperator = ref(true);
-const validProperty = ref(true);
-const validType = ref(true);
-const schema = ref(null);
-const { isRemovable, isEditable, canEditOperator, operatorOptions } = useBaseFilter(
-  props,
-  schema,
-  props.modelValue.type,
-);
+
+const validEntity = ref<boolean>(true);
+const validOperator = ref<boolean>(true);
+const validProperty = ref<boolean>(true);
+const validType = ref<boolean>(true);
+const schema = ref<EntitySchema | null>(null);
+
+const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
 
 const inputType = computed(() => {
+  if (!containerType.value) return undefined;
   return getComponent(containerType.value);
 });
-const containerType = computed(() => {
-  let container = property.value;
+
+const containerType = computed<ArrayableTypeContainer | undefined>(() => {
+  let container: ArrayableTypeContainer | undefined = property.value;
   if (container) {
-    while (container.type == 'array') {
+    while (container.type == 'array' && container.children) {
       container = container.children;
     }
   }
   return container;
 });
-const mustDisplayOperator = computed(() => {
-  return props.displayOperator === true || (props.displayOperator && props.displayOperator.condition);
-});
-const property = computed(() => {
-  return schema.value.mapProperties[props.modelValue.property];
-});
-const propertyName = computed(() => {
-  return getPropertyTranslation(property.value);
-});
-const isUniqueIn = computed(() => {
-  return isUniqueInComponent(containerType.value);
+
+const mustDisplayOperator = computed<boolean>(() => {
+  return (
+    props.displayOperator === true || (typeof props.displayOperator === 'object' && !!props.displayOperator.condition)
+  );
 });
 
-async function initSchema() {
+const property = computed<Property | undefined>(() => {
+  return schema.value?.mapProperties[props.modelValue.property];
+});
+
+const propertyName = computed<string>(() => {
+  return property.value ? getPropertyTranslation(property.value) : '';
+});
+
+const isArrayOperator = computed<boolean>(() => {
+  return props.modelValue.operator === 'in' || props.modelValue.operator === 'not_in';
+});
+
+async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
   if (!schema.value) {
     validEntity.value = false;
@@ -93,31 +95,33 @@ async function initSchema() {
   verifyType();
 }
 
-function verifyProperty() {
+function verifyProperty(): void {
   if (schema.value && !property.value) {
     validProperty.value = false;
   }
 }
 
-function verifyOperator() {
+function verifyOperator(): void {
   if (schema.value && !isValidOperator('condition', props.modelValue.operator)) {
     validOperator.value = false;
   }
 }
 
-function verifyType() {
-  if (schema.value && property.value && !getComponent(containerType.value)) {
+function verifyType(): void {
+  if (schema.value && property.value && containerType.value && !getComponent(containerType.value)) {
     validType.value = false;
   }
 }
 
 watchEffect(initSchema);
+
 watchEffect(() => {
-  if (props.modelValue.operator && !isValidOperator('condition', props.modelValue.operator)) {
+  if (!isValidOperator('condition', props.modelValue.operator)) {
     props.modelValue.operator = props.modelValue.operator.toLowerCase();
   }
   verifyOperator();
 });
+
 watch(
   () => props.modelValue.operator,
   (newOperator, oldOperator) => {
@@ -127,7 +131,7 @@ watch(
     }
     const isOldOperatorIn = oldOperator == 'in' || oldOperator == 'not_in';
     const isNewOperatorIn = newOperator == 'in' || newOperator == 'not_in';
-    const hasToggleOperatorIn = isOldOperatorIn ^ isNewOperatorIn;
+    const hasToggleOperatorIn = isOldOperatorIn !== isNewOperatorIn;
 
     if (hasToggleOperatorIn) {
       if (isOldOperatorIn && Array.isArray(props.modelValue.value)) {
@@ -139,6 +143,7 @@ watch(
     }
   },
 );
+
 watch(
   () => props.modelValue.property,
   () => {
@@ -152,11 +157,11 @@ watch(
   <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
     <div>
       <slot name="shortcuts" />
-      <InvalidEntity v-if="!validEntity" :entity="modelValue.model" />
+      <InvalidEntity v-if="!validEntity" :entity="entity" />
       <InvalidProperty v-else-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
-      <InvalidType v-else-if="!validType" :type="containerType.type" />
-      <template v-else-if="schema">
+      <InvalidType v-else-if="!validType && containerType" :type="containerType.type" />
+      <template v-else-if="schema && property">
         <div :class="classes.condition_header">
           <slot name="relationship" />
           <label :class="classes.property_name_container">{{ propertyName }}</label>
@@ -170,24 +175,16 @@ watch(
             />
           </template>
         </div>
-        <template v-if="inputType && modelValue.operator != 'null' && modelValue.operator != 'not_null'">
-          <InputCollection
-            v-if="!isUniqueIn && (modelValue.operator == 'in' || modelValue.operator == 'not_in')"
-            v-bind="props"
-            v-model="modelValue.value"
-            :operator="modelValue.operator"
-            :target="property"
-            :editable="isEditable"
-          />
-          <InputCondition
-            v-else
-            v-bind="props"
-            v-model="modelValue.value"
-            :operator="modelValue.operator"
-            :target="property"
-            :editable="isEditable"
-          />
-        </template>
+        <ArrayableInput
+          v-if="inputType && modelValue.operator != 'null' && modelValue.operator != 'not_null'"
+          v-model="modelValue.value"
+          :target="property"
+          :entity="entity"
+          :editable="isEditable"
+          :user-timezone="userTimezone"
+          :request-timezone="requestTimezone"
+          :is-array="isArrayOperator"
+        />
       </template>
     </div>
     <IconButton

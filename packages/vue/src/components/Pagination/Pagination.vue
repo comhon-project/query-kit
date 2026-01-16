@@ -1,27 +1,27 @@
-<script setup>
+<script setup lang="ts">
 import { computed, watchEffect, ref } from 'vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import Icon from '@components/Common/Icon.vue';
 
-const emit = defineEmits(['update']);
-const props = defineProps({
-  page: {
-    type: Number,
-    required: true,
-  },
-  lock: {
-    type: Boolean,
-  },
-  count: {
-    type: Number,
-    required: true,
-  },
-});
-let timeoutId = null;
-const currentPage = ref(null);
-const nearPages = computed(() => {
-  const indexes = [];
+interface Props {
+  page: number;
+  lock?: boolean;
+  count: number;
+}
+
+interface Emits {
+  update: [page: number];
+}
+
+const emit = defineEmits<Emits>();
+const props = defineProps<Props>();
+
+let timeoutId: ReturnType<typeof setTimeout> | null = null;
+const currentPage = ref<number>(null!);
+
+const nearPages = computed<number[]>(() => {
+  const indexes: number[] = [];
   for (let index = currentPage.value - 2; index <= currentPage.value + 2; index++) {
     if (index > 1 && index < props.count) {
       indexes.push(index);
@@ -30,11 +30,11 @@ const nearPages = computed(() => {
   return indexes;
 });
 
-function updatePage(newPage, event) {
+function updatePage(newPage: number, event: Event): void {
   event.preventDefault();
   if (!props.lock && newPage >= 1 && newPage <= props.count) {
     currentPage.value = newPage;
-    clearTimeout(timeoutId);
+    if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       emit('update', currentPage.value);
     }, 300);
@@ -52,7 +52,7 @@ watchEffect(() => (currentPage.value = props.page));
           <Icon icon="previous" />
         </a>
       </li>
-      <li :active="1 == currentPage ? '' : undefined" @click="(e) => updatePage(1, e)">
+      <li :active="currentPage === 1 ? '' : undefined" @click="(e) => updatePage(1, e)">
         <a href="#">1</a>
       </li>
       <li v-if="currentPage > 4">...</li>

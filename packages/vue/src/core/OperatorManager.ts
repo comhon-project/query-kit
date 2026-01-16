@@ -175,9 +175,10 @@ const getOperatorTranslation = (
 
 const isValidOperator = (
   container: 'condition' | 'group' | 'relationship_condition',
-  operator: string,
+  operator: string | undefined | null,
   caseSensitive: boolean = true,
 ): boolean => {
+  if (!operator) return false;
   const names = operatorNames[container] as Record<string, string>;
   return !!(names[operator] || (!caseSensitive && names[operator.toLowerCase()]));
 };

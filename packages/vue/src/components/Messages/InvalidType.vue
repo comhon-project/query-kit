@@ -1,12 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { classes } from '@core/ClassManager';
 
-const props = defineProps({
-  type: {
-    type: String,
-    required: true,
-  },
-});
+interface Props {
+  type: string;
+}
+
+const props = defineProps<Props>();
 </script>
 
 <template>

@@ -1,38 +1,45 @@
-<script setup>
+<script setup lang="ts">
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 
-const emit = defineEmits(['confirm', 'closed']);
-const show = defineModel('show', { type: Boolean, required: true });
-const props = defineProps({
-  closeOnConfirm: {
-    type: Boolean,
-    default: false,
-  },
-  disableConfirm: {
-    type: Boolean,
-    default: false,
-  },
-});
-const modal = useTemplateRef('modal');
-const closing = ref(null);
+interface Props {
+  closeOnConfirm?: boolean;
+  disableConfirm?: boolean;
+}
 
-function confirm() {
+interface Emits {
+  confirm: [];
+  closed: [];
+}
+
+const emit = defineEmits<Emits>();
+const show = defineModel<boolean>('show', { required: true });
+
+const props = withDefaults(defineProps<Props>(), {
+  closeOnConfirm: false,
+  disableConfirm: false,
+});
+
+const modal = useTemplateRef<HTMLDialogElement>('modal');
+const closing = ref<boolean | null>(null);
+
+function confirm(): void {
   if (props.closeOnConfirm) {
     show.value = false;
   }
   emit('confirm');
 }
 
-function close() {
+function close(): void {
   closing.value = false;
-  modal.value.close();
+  modal.value?.close();
   emit('closed');
 }
 
 onMounted(() => {
-  modal.value.ontransitionend = (e) => {
+  if (!modal.value) return;
+  modal.value.ontransitionend = (e: TransitionEvent) => {
     if (e.target !== modal.value) {
       return;
     }
@@ -44,11 +51,11 @@ onMounted(() => {
 
 watch(show, async (visible) => {
   if (visible) {
-    modal.value.showModal();
+    modal.value?.showModal();
   } else {
     closing.value = true;
     await nextTick();
-    if (!modal.value.getAnimations().length) {
+    if (!modal.value?.getAnimations().length) {
       close();
     }
   }

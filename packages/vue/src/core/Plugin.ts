@@ -21,7 +21,7 @@ import {
 } from '@core/EnumSchema';
 import { registerLoader as registerRequestSchemaLoader, type SchemaLoader as RequestSchemaLoader, type RequestSchema } from '@core/RequestSchema';
 import { applyOptions } from '@config/config';
-import { registerRequester, type Requester, type RequesterQuery, type RequesterResponse } from '@core/Requester';
+import { registerRequester, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
 import { registerAllowedOperators, type AllowedOperators } from '@core/OperatorManager';
 
 import Search from '@components/Search.vue';
@@ -33,7 +33,7 @@ type EntityTranslationsLoaderFunction = (id: string, locale: string) => Promise<
 type EnumSchemaLoaderFunction = (id: string) => Promise<RawEnumSchema | null>;
 type EnumTranslationsLoaderFunction = (id: string, locale: string) => Promise<Record<string, string> | null>;
 type RequestSchemaLoaderFunction = (id: string) => Promise<RequestSchema | null>;
-type RequesterFunction = (query: RequesterQuery) => Promise<RequesterResponse>;
+type RequesterFunction = (params: RequestParams) => Promise<RequestResponse>;
 
 export interface PluginOptions {
   icons?: Partial<IconList>;

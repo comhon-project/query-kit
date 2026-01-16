@@ -1,86 +1,86 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
 import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
-import { resolve, getPropertyTranslation } from '@core/EntitySchema';
+import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 
-const emit = defineEmits(['remove', 'update:columnId']);
-const props = defineProps({
-  entity: {
-    type: String,
-    required: true,
-  },
-  columns: {
-    type: Array,
-    required: true,
-  },
-  columnId: {
-    type: String,
-    required: true,
-  },
-  propertyId: {
-    type: String,
-    default: undefined,
-  },
-  label: {
-    type: [String, Function],
-    default: undefined,
-  },
-});
+interface ColumnItem {
+  id: string;
+  key?: string | number;
+}
+
+interface Props {
+  entity: string;
+  columns: ColumnItem[];
+  columnId: string;
+  propertyId?: string;
+  label?: string | ((locale: string) => string);
+}
+
+interface Emits {
+  remove: [];
+  'update:columnId': [columnId: string];
+}
+
+const emit = defineEmits<Emits>();
+const props = defineProps<Props>();
 
 const { label, propertyPath } = usePropertyPath(props);
-const schema = ref(false);
-const editing = ref(false);
-const selectedProperty = ref(null);
-const expandable = computed(() => {
-  const property = propertyPath.value?.[propertyPath.value.length - 1];
+const schema = ref<EntitySchema | null>(null);
+const editing = ref<boolean>(false);
+const selectedProperty = ref<string | null>(null);
+const expandable = computed<boolean>(() => {
+  if (!propertyPath.value) return false;
+  const property = propertyPath.value[propertyPath.value.length - 1];
   return property?.type == 'relationship' && isOneToOneRelationship(property);
 });
-const options = computed(() => {
-  if (!editing.value) {
+
+const options = computed<Property[] | null>(() => {
+  if (!editing.value || !schema.value) {
     return null;
   }
-  const options = [];
+  const opts: Property[] = [];
   for (const property of schema.value.properties) {
     if (property.type != 'relationship') {
       const column = props.columns.find((column) => {
         return props.propertyId + '.' + property.id == column.id;
       });
       if (!column) {
-        options.push(property);
+        opts.push(property);
       }
     } else if (isOneToOneRelationship(property)) {
-      options.push(property);
+      opts.push(property);
     }
   }
 
-  return options;
+  return opts;
 });
 
-function isOneToOneRelationship(property) {
+function isOneToOneRelationship(property: Property): boolean {
   return property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one';
 }
 
-function expandProperty() {
+function expandProperty(): void {
   editing.value = true;
 }
 
-function reduceProperty() {
+function reduceProperty(): void {
   if (editing.value) {
     editing.value = false;
-  } else {
+  } else if (props.propertyId && propertyPath.value) {
     const end = -propertyPath.value[propertyPath.value.length - 1].id.length - 1;
     emit('update:columnId', props.propertyId.slice(0, end));
   }
 }
 
-function remove() {
+function remove(): void {
   emit('remove');
 }
 
 watch(propertyPath, async () => {
-  const schemaId = propertyPath.value?.[propertyPath.value.length - 1].related;
+  if (!propertyPath.value || !propertyPath.value.length) return;
+  const schemaId = propertyPath.value[propertyPath.value.length - 1].related;
   if (schemaId) {
     schema.value = await resolve(schemaId);
   }
@@ -100,13 +100,18 @@ watch(selectedProperty, () => {
     <template v-if="expandable && schema">
       <select v-if="editing" v-model="selectedProperty" :class="classes.input">
         <option value="" disabled hidden />
-        <option v-for="property in options" :key="property" :value="property.id">
+        <option v-for="property in options" :key="property.id" :value="property.id">
           {{ getPropertyTranslation(property) }}
         </option>
       </select>
       <IconButton v-else icon="add" @click="expandProperty" />
     </template>
-    <IconButton v-if="propertyPath.length > 1 || editing" icon="minus" label="remove" @click="reduceProperty" />
+    <IconButton
+      v-if="(propertyPath && propertyPath.length > 1) || editing"
+      icon="minus"
+      label="remove"
+      @click="reduceProperty"
+    />
     <IconButton icon="delete" @click="remove" />
   </div>
 </template>

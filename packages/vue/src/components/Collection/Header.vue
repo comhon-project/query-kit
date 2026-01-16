@@ -1,40 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { classes } from '@core/ClassManager';
 import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
 import Icon from '@components/Common/Icon.vue';
 import { translate } from '@i18n/i18n';
 import { computed } from 'vue';
 
-const emit = defineEmits(['click']);
-const props = defineProps({
-  entity: {
-    type: String,
-    required: true,
-  },
-  columnId: {
-    type: String,
-    default: undefined,
-  },
-  propertyId: {
-    type: String,
-    default: undefined,
-  },
-  label: {
-    type: [String, Function],
-    default: undefined,
-  },
-  order: {
-    type: String,
-    default: undefined,
-  },
-  hasCustomOrder: {
-    type: Boolean,
-  },
-});
+interface Props {
+  entity: string;
+  columnId?: string;
+  propertyId?: string;
+  label?: string | ((locale: string) => string);
+  order?: 'asc' | 'desc';
+  hasCustomOrder?: boolean;
+}
+
+interface Emits {
+  click: [columnId: string | undefined, ctrlKey: boolean];
+}
+
+const emit = defineEmits<Emits>();
+const props = defineProps<Props>();
 
 const { label, sortable } = usePropertyPath(props);
-const isColumnSortable = computed(() => sortable.value || props.hasCustomOrder);
-const orderLabel = computed(() => props.order ? `(${translate(props.order)})` : '');
+const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomOrder);
+const orderLabel = computed<string>(() => props.order ? `(${translate(props.order)})` : '');
 </script>
 
 <template>

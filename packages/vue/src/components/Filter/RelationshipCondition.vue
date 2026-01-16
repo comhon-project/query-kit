@@ -1,11 +1,11 @@
-<script setup>
-import { ref, watch, watchEffect, computed } from 'vue';
-import { resolve, getPropertyTranslation } from '@core/EntitySchema';
+<script setup lang="ts">
+import { ref, watch, watchEffect, computed, type Component } from 'vue';
+import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
 import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
-import { isValidOperator } from '@core/OperatorManager';
+import { isValidOperator, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
@@ -14,91 +14,67 @@ import RelationshipAction from '@components/Filter/RelationshipAction.vue';
 import Utils from '@core/Utils';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
+import type {
+  RelationshipConditionFilter,
+  Filter,
+  DisplayOperator,
+  AllowedScopes,
+  AllowedProperties,
+  ConditionFilter,
+  ScopeFilter,
+  GroupFilter,
+} from '@core/types';
 
-const emit = defineEmits(['remove', 'goToRootGroup', 'transitionGroup']);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  entity: {
-    type: String,
-    required: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-  displayOperator: {
-    type: [Boolean, Object],
-    default: true,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  // not used, just permit to avoid warning when parent component pass ariaLabel prop
-  ariaLabel: {
-    type: String,
-    default: undefined,
-  },
-  root: {
-    // not used, just permit to avoid warning when parent component pass ariaLabel prop
-    type: Boolean,
-  },
-  filter: {
-    // not used, just permit to avoid warning when parent component pass ariaLabel prop
-    type: Object,
-    default: undefined,
-  },
-  exceptAddFilterToParentGroup: {
-    // not used, just permit to avoid warning when parent component pass ariaLabel prop
-    type: Boolean,
-  },
-  exceptGoToPrevious: {
-    // not used, just permit to avoid warning when parent component pass ariaLabel prop
-    type: Boolean,
-  },
-  exceptGoToNext: {
-    // not used, just permit to avoid warning when parent component pass ariaLabel prop
-    type: Boolean,
-  },
+interface QueueElement {
+  key: string | number;
+  value: RelationshipConditionFilter;
+  schema: EntitySchema;
+}
+
+interface Props {
+  modelValue: RelationshipConditionFilter;
+  entity: string;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+  userTimezone?: string;
+  requestTimezone?: string;
+}
+
+interface Emits {
+  remove: [];
+  goToRootGroup: [];
+  transitionGroup: [];
+}
+
+const emit = defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
+  displayOperator: true,
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
 });
 
-let schema = null;
-const invalidEntity = ref(null);
-const invalidProperty = ref(null);
-const invalidOperator = ref(null);
-const childAriaLabelProperty = ref(null);
-const childAriaLabel = computed(() => {
+const invalidEntity = ref<string | null>(null);
+const invalidProperty = ref<string | null>(null);
+const invalidOperator = ref<string | null>(null);
+const childAriaLabelProperty = ref<Property | null>(null);
+const childAriaLabel = computed<string>(() => {
   if (!childAriaLabelProperty.value) return '';
   return getPropertyTranslation(childAriaLabelProperty.value);
 });
-const queue = ref(null);
-const endQueueFilter = ref(null);
+const queue = ref<QueueElement[] | null>(null);
+const endQueueFilter = ref<ConditionFilter | ScopeFilter | GroupFilter | null | undefined>(null);
 
-const endQueuePropertySchemaId = computed(() => {
+const endQueuePropertySchemaId = computed<string>(() => {
+  if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
-  return lastQueueSchema.mapProperties[lastQueueElement.value.property].related;
+  return lastQueueSchema.mapProperties[lastQueueElement.value.property].related!;
 });
-const endQueueComponent = computed(() => {
+
+const endQueueComponent = computed<Component | null>(() => {
   switch (endQueueFilter.value?.type) {
     case 'condition':
       return Condition;
@@ -111,16 +87,16 @@ const endQueueComponent = computed(() => {
   }
 });
 
-async function initSchema() {
-  schema = await resolve(props.entity);
-  if (!schema) {
+async function initSchema(): Promise<void> {
+  try {
+    setChild(await resolve(props.entity));
+  } catch {
     invalidEntity.value = props.entity;
-    return;
   }
-  setChild();
 }
 
-async function addFilter(filter) {
+async function addFilter(filter: Filter): Promise<void> {
+  if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   const endQueuePropertySchema = await resolve(endQueuePropertySchemaId.value);
 
   /**
@@ -143,7 +119,8 @@ async function addFilter(filter) {
   }
 }
 
-function removeQueueFilter() {
+function removeQueueFilter(): void {
+  if (!queue.value) return;
   queue.value.pop();
   if (queue.value.length) {
     removeEndFilter();
@@ -152,24 +129,25 @@ function removeQueueFilter() {
   }
 }
 
-function removeEndFilter() {
+function removeEndFilter(): void {
+  if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   /**
    * polyfill for browser that don't support css pseudo-class :has() like firefox.
    * remove following emit value when all browser support :has().
    * remove it from list of defined emits too.
    */
-  if (queue.value[queue.value.length - 1].value.filter.type == 'group') {
+  if (queue.value[queue.value.length - 1].value.filter?.type == 'group') {
     emit('transitionGroup');
   }
-  queue.value[queue.value.length - 1].value.filter = null;
+  queue.value[queue.value.length - 1].value.filter = undefined;
   endQueueFilter.value = null;
 }
 
-async function setChild() {
+async function setChild(schema: EntitySchema): Promise<void> {
   let childSchema = schema;
-  let childFilter = props.modelValue;
-  let tempQueue = [];
-  while (childFilter && childFilter.type == 'relationship_condition') {
+  let childFilter: Filter | undefined | null = props.modelValue;
+  const tempQueue: QueueElement[] = [];
+  while (childFilter?.type == 'relationship_condition') {
     tempQueue.push({
       key: Utils.getUniqueId(),
       value: childFilter,
@@ -179,21 +157,24 @@ async function setChild() {
       typeof childFilter.operator == 'string' ? childFilter.operator.toLowerCase() : childFilter.operator;
     if (!isValidOperator('relationship_condition', operator)) {
       invalidOperator.value = childFilter.operator;
-      childFilter = null;
       return;
     }
     if (!childSchema.mapProperties[childFilter.property]) {
       invalidProperty.value = childFilter.property;
-      childFilter = null;
       return;
     }
     childAriaLabelProperty.value = childSchema.mapProperties[childFilter.property];
 
-    const childSchemaId = childSchema.mapProperties[childFilter.property].related;
-    childSchema = await resolve(childSchemaId);
-    if (!childSchema) {
+    const property = childSchema.mapProperties[childFilter.property];
+    if (property.relationship_type == 'morph_to') {
+      throw new Error('not handle morph_to relationship');
+    }
+
+    const childSchemaId = property.related!;
+    try {
+      childSchema = await resolve(childSchemaId);
+    } catch {
       invalidEntity.value = childSchemaId;
-      childFilter = null;
       return;
     }
     childFilter = childFilter.filter;
@@ -247,9 +228,7 @@ watch(() => props.modelValue.filter, initSchema);
             v-if="!(queue[queue.length - 1].value.removable === false)"
             icon="delete"
             btn-class="btn_secondary"
-            :aria-label="
-              translate('condition') + ' ' + (typeof childAriaLabel == 'object' ? childAriaLabel.value : childAriaLabel)
-            "
+            :aria-label="translate('condition') + ' ' + childAriaLabel"
             @click="$emit('remove')"
           />
         </div>

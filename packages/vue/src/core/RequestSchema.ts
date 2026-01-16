@@ -11,16 +11,16 @@ export interface SchemaLoader {
 }
 
 let schemaLoader: SchemaLoader | undefined;
-const computedRequests: Record<string, Promise<RequestSchema | null>> = {};
+const computedRequests: Record<string, Promise<RequestSchema>> = {};
 
-async function compute(id: string): Promise<RequestSchema | null> {
+async function compute(id: string): Promise<RequestSchema> {
   if (!schemaLoader) {
-    return null;
+    throw new Error('Request schema loader not configured');
   }
   const loadedRequest = await schemaLoader.load(id);
   const requestSchema = structuredClone(loadedRequest);
 
-  if (!requestSchema) return null;
+  if (!requestSchema) throw new Error(`Request schema "${id}" not found`);
 
   return requestSchema;
 }
@@ -29,7 +29,7 @@ const registerLoader = (config: SchemaLoader): void => {
   schemaLoader = config;
 };
 
-const resolve = (id: string): Promise<RequestSchema | null> => {
+const resolve = (id: string): Promise<RequestSchema> => {
   if (!computedRequests[id]) {
     computedRequests[id] = compute(id);
   }
@@ -38,17 +38,17 @@ const resolve = (id: string): Promise<RequestSchema | null> => {
 
 const getFiltrableProperties = async (entityId: string): Promise<string[]> => {
   const request = await resolve(entityId);
-  return request?.filtrable?.properties ?? [];
+  return request.filtrable?.properties ?? [];
 };
 
 const getFiltrableScopes = async (entityId: string): Promise<string[]> => {
   const request = await resolve(entityId);
-  return request?.filtrable?.scopes ?? [];
+  return request.filtrable?.scopes ?? [];
 };
 
 const getSortableProperties = async (entityId: string): Promise<string[]> => {
   const request = await resolve(entityId);
-  return request?.sortable ?? [];
+  return request.sortable ?? [];
 };
 
 export {

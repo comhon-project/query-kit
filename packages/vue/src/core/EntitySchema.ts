@@ -27,6 +27,7 @@ export interface RawProperty extends ArrayableTypeContainer {
   id: string;
   name?: string;
   related?: string;
+  relationship_type?: 'belongs_to' | 'has_one' | 'has_many' | 'belongs_to_many' | 'morph_to' | 'morph_to_many';
 }
 
 export interface RawEntitySchema {
@@ -35,24 +36,14 @@ export interface RawEntitySchema {
 }
 
 // Computed types - after compute()
-export interface ScopeParameter extends ArrayableTypeContainer {
-  id: string;
-  name?: string;
-  nullable?: boolean;
+export interface ScopeParameter extends RawScopeParameter {}
+
+export interface Scope extends RawScope {
+  owner: string;
 }
 
-export interface Scope {
-  id: string;
-  name?: string;
+export interface Property extends RawProperty {
   owner: string;
-  parameters?: ScopeParameter[];
-}
-
-export interface Property extends ArrayableTypeContainer {
-  id: string;
-  name?: string;
-  owner: string;
-  related?: string;
 }
 
 export interface EntitySchema {
@@ -61,6 +52,9 @@ export interface EntitySchema {
   scopes?: Scope[];
   mapProperties: Record<string, Property>;
   mapScopes: Record<string, Scope>;
+  unique_identifier?: string;
+  primary_identifiers?: string[];
+  default_sort?: string[];
 }
 
 export interface EntityTranslations {
@@ -79,7 +73,7 @@ export interface EntityTranslationsLoader {
 
 let schemaLoader: EntitySchemaLoader | undefined;
 let translationsLoader: EntityTranslationsLoader | undefined;
-const computedSchemas: Record<string, Promise<EntitySchema | null>> = {};
+const computedSchemas: Record<string, Promise<EntitySchema>> = {};
 const loadedTranslations: Record<string, EntityTranslations | null> = reactive({});
 const loadingTranslations: Record<string, boolean> = {};
 let previousLocale = locale.value;
@@ -162,11 +156,15 @@ function getScopeParameterTranslation(schemaId: string, scopeId: string, paramet
 
   const cacheKey = `${schemaId}.${locale.value}`;
   const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
+  const translation = getParameterTranslationForLocale(schemaId, scopeId, parameter.id, targetLocale);
 
-  return getParameterTranslationForLocale(schemaId, scopeId, parameter.id, targetLocale) ?? parameter.name ?? parameter.id;
+  return translation ?? parameter.name ?? parameter.id;
 }
 
-async function compute(id: string): Promise<EntitySchema | null> {
+async function compute(id: string): Promise<EntitySchema> {
+  if (!schemaLoader) {
+    throw new Error('Entity schema loader not configured');
+  }
   const translationPromises: Promise<EntityTranslations>[] = [];
   if (translationsLoader) {
     translationPromises.push(loadRawTranslations(id, locale.value));
@@ -175,9 +173,9 @@ async function compute(id: string): Promise<EntitySchema | null> {
     }
   }
 
-  const [rawSchema] = await Promise.all([schemaLoader!.load(id), ...translationPromises]);
+  const [rawSchema] = await Promise.all([schemaLoader.load(id), ...translationPromises]);
 
-  if (!rawSchema) return null;
+  if (!rawSchema) throw new Error(`Entity schema "${id}" not found`);
 
   const mapProperties: Record<string, Property> = {};
   const mapScopes: Record<string, Scope> = {};
@@ -185,6 +183,7 @@ async function compute(id: string): Promise<EntitySchema | null> {
   const scopes: Scope[] = [];
 
   for (const rawProperty of rawSchema.properties) {
+    if (rawProperty.relationship_type === 'morph_to') continue;
     const property: Property = { ...structuredClone(rawProperty), owner: id };
     properties.push(property);
     mapProperties[property.id] = property;
@@ -211,10 +210,13 @@ async function compute(id: string): Promise<EntitySchema | null> {
 }
 
 async function loadRawTranslations(schemaId: string, targetLocale: string): Promise<EntityTranslations> {
+  if (!translationsLoader) {
+    throw new Error('Entity translations loader not configured');
+  }
   const cacheKey = `${schemaId}.${targetLocale}`;
   if (!loadedTranslations[cacheKey]) {
     try {
-      loadedTranslations[cacheKey] = await translationsLoader!.load(schemaId, targetLocale);
+      loadedTranslations[cacheKey] = await translationsLoader.load(schemaId, targetLocale);
     } catch {
       loadedTranslations[cacheKey] = {};
     }
@@ -230,23 +232,24 @@ async function getPropertyPath(schemaId: string, nestedProperty: string): Promis
   let currentSchema = await resolve(schemaId);
   for (let i = 0; i < splited.length - 1; i++) {
     propertyName = propertyName.length ? `${propertyName}.${splited[i]}` : splited[i];
-    const property = currentSchema!.mapProperties![propertyName];
+    const property = currentSchema.mapProperties[propertyName];
     if (!property) {
       continue;
     }
-    propertyPath.push(property);
-    currentSchema = await resolve(property.related!);
-    if (!currentSchema) {
-      throw new Error(`invalid schema id "${property.related}"`);
+    if (!property.related) {
+      throw new Error(`Property "${propertyName}" has no related schema`);
     }
+    propertyPath.push(property);
+    currentSchema = await resolve(property.related);
     propertyName = '';
   }
   const last = splited[splited.length - 1];
   propertyName = propertyName.length ? `${propertyName}.${last}` : last;
-  if (!currentSchema!.mapProperties![propertyName]) {
-    throw new Error(`invalid collection property "${nestedProperty}"`);
+  const finalProperty = currentSchema.mapProperties[propertyName];
+  if (!finalProperty) {
+    throw new Error(`Property "${nestedProperty}" not found in schema "${currentSchema.id}"`);
   }
-  propertyPath.push(currentSchema!.mapProperties![propertyName]);
+  propertyPath.push(finalProperty);
   return propertyPath;
 }
 
@@ -258,7 +261,7 @@ const registerTranslationsLoader = (config: EntityTranslationsLoader): void => {
   translationsLoader = config;
 };
 
-const resolve = (id: string): Promise<EntitySchema | null> => {
+const resolve = (id: string): Promise<EntitySchema> => {
   if (!computedSchemas[id]) {
     computedSchemas[id] = compute(id);
   }

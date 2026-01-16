@@ -1,139 +1,92 @@
-<script setup>
+<script setup lang="ts">
 import { ref, shallowRef, toRaw, watch, watchEffect } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
-import FilterBuilder from '@components/Filter/Builder.vue';
-import { resolve } from '@core/EntitySchema';
+import Builder from '@components/Filter/Builder.vue';
+import { resolve, type EntitySchema } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import Utils from '@core/Utils';
 import Shortcuts from '@components/Filter/Shortcuts.vue';
-import { getContainerOperators } from '@core/OperatorManager';
+import { getContainerOperators, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
+import type {
+  GroupFilter,
+  DisplayOperator,
+  AllowedScopes,
+  AllowedProperties,
+  CustomColumnConfig,
+  OrderByItem,
+  CollectionType,
+  Requester,
+  RequesterFunction,
+} from '@core/types';
 
-const emit = defineEmits(['rowClick', 'export', 'computed', 'updated', 'update:columns', 'update:orderBy']);
-const props = defineProps({
-  entity: {
-    type: String,
-    required: true,
-  },
-  columns: {
-    type: Array,
-    required: true,
-  },
-  customColumns: {
-    type: Object,
-    default: undefined,
-  },
-  filter: {
-    type: Object,
-    default: null,
-  },
-  allowReset: {
-    type: Boolean,
-    default: true,
-  },
-  computedScopes: {
-    type: Object, // {entity: [{id: 'scope_one', parameters: [...], computed: () => {...})}, ...], ...}
-    default: undefined,
-  },
-  allowedScopes: {
-    type: Object, // {entity: ['scope_one', 'scope_two', ...], ...}
-    default: undefined,
-  },
-  allowedProperties: {
-    type: Object, // {entity: ['property_name_one', 'property_name_two', ...], ...}
-    default: undefined,
-  },
-  allowedOperators: {
-    type: Object, // {condition: ['=', '<>', ...], group: ['AND', 'OR'], relationship_condition: ['HAS', 'HAS_NOT']}
-    default: undefined,
-  },
-  displayOperator: {
-    type: [Boolean, Object],
-    default: true,
-  },
-  userTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requestTimezone: {
-    type: String,
-    default: 'UTC',
-  },
-  requester: {
-    type: [Object, Function],
-    validator(value) {
-      return typeof value == 'function' || (typeof value == 'object' && typeof value.request == 'function');
-    },
-    default: undefined,
-  },
-  manually: {
-    type: Boolean,
-    default: true,
-  },
-  directQuery: {
-    type: Boolean,
-    default: true,
-  },
-  deferred: {
-    type: Number,
-    default: 1000,
-  },
-  limit: {
-    type: Number,
-    required: true,
-  },
-  offset: {
-    type: Number,
-    default: 0,
-  },
-  onRowClick: {
-    type: Function,
-    default: undefined,
-  },
-  quickSort: {
-    type: Boolean,
-    default: true,
-  },
-  orderBy: {
-    type: Array,
-    default: undefined,
-  },
-  postRequest: {
-    type: Function,
-    default: undefined,
-  },
-  allowedCollectionTypes: {
-    type: Array,
-    default() {
-      return ['pagination'];
-    },
-  },
-  displayCount: {
-    type: Boolean,
-  },
-  editColumns: {
-    type: Boolean,
-  },
-  onExport: {
-    type: Function,
-    default: undefined,
-  },
+interface Props {
+  entity: string;
+  columns: string[];
+  customColumns?: Record<string, CustomColumnConfig>;
+  filter?: GroupFilter | null;
+  allowReset?: boolean;
+  computedScopes?: ComputedScopes;
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+  userTimezone?: string;
+  requestTimezone?: string;
+  requester?: Requester | RequesterFunction;
+  manually?: boolean;
+  directQuery?: boolean;
+  deferred?: number;
+  limit: number;
+  offset?: number;
+  onRowClick?: (row: Record<string, unknown>, event: MouseEvent) => void;
+  quickSort?: boolean;
+  orderBy?: (string | OrderByItem)[];
+  postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
+  allowedCollectionTypes?: CollectionType[];
+  displayCount?: boolean;
+  editColumns?: boolean;
+  onExport?: (filter?: Record<string, unknown>) => void;
+}
+
+interface Emits {
+  rowClick: [row: Record<string, unknown>, event: MouseEvent];
+  export: [filter?: Record<string, unknown>];
+  computed: [filter: Record<string, unknown>];
+  updated: [filter: GroupFilter];
+  'update:columns': [columns: string[]];
+  'update:orderBy': [orderBy: OrderByItem[]];
+}
+
+const emit = defineEmits<Emits>();
+const props = withDefaults(defineProps<Props>(), {
+  filter: null,
+  allowReset: true,
+  displayOperator: true,
+  userTimezone: 'UTC',
+  requestTimezone: 'UTC',
+  manually: true,
+  directQuery: true,
+  deferred: 1000,
+  offset: 0,
+  quickSort: true,
+  allowedCollectionTypes: () => ['pagination'],
 });
 
-let tempFilter = null;
+let tempFilter: Record<string, unknown> | null = null;
 const uniqueId = Utils.getUniqueId();
 const filterId = 'qkit-filter-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
-const schema = ref();
-const builtFilter = ref(null);
-const computedFilter = shallowRef(false);
+const schema = ref<EntitySchema | null>(null);
+const builtFilter = ref<GroupFilter>(null!);
+const computedFilter = shallowRef<Record<string, unknown> | false>(false);
 
-async function initSchema() {
+async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
 }
 
-function getInitialFilter() {
-  const initialFilter = props.filter
+function getInitialFilter(): GroupFilter {
+  const initialFilter: GroupFilter = props.filter
     ? structuredClone(toRaw(props.filter))
     : {
         type: 'group',
@@ -145,13 +98,15 @@ function getInitialFilter() {
   return initialFilter;
 }
 
-async function applyQuery() {
+function applyQuery(): void {
   // we copy object filter if it didn't changed to force reload collection
-  computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
+  if (tempFilter) {
+    computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
+  }
   location.href = `#${collectionId}`;
 }
 
-function updateFilter(filter) {
+function updateFilter(filter: Record<string, unknown>): void {
   tempFilter = filter;
 
   // if computedFilter.value === false, this is the initialization of the computed filter
@@ -161,14 +116,14 @@ function updateFilter(filter) {
   }
 }
 
-function goToCollection() {
+function goToCollection(): void {
   location.href = `#${collectionId}`;
-  document.getElementById(collectionId).focus();
+  document.getElementById(collectionId)?.focus();
 }
 
-function goToFilter() {
+function goToFilter(): void {
   location.href = `#${filterId}`;
-  document.getElementById(filterId).focus();
+  document.getElementById(filterId)?.focus();
 }
 
 watchEffect(() => {
@@ -176,21 +131,21 @@ watchEffect(() => {
   builtFilter.value = getInitialFilter();
 });
 watch(computedFilter, () => {
-  emit('updated', structuredClone(toRaw(builtFilter.value)));
-  emit('computed', structuredClone(toRaw(computedFilter.value)));
+  emit('updated', structuredClone(toRaw(builtFilter.value!)));
+  emit('computed', structuredClone(toRaw(computedFilter.value as Record<string, unknown>)));
 });
 </script>
 
 <template>
   <div v-if="schema" :class="classes.search">
-    <FilterBuilder v-bind="props" :id="filterId" v-model="builtFilter" @computed="updateFilter">
+    <Builder v-bind="props" :id="filterId" v-model="builtFilter" @computed="updateFilter">
       <template #validate>
         <IconButton v-if="manually" icon="search" @click="applyQuery" />
       </template>
       <template #shortcuts>
         <Shortcuts @go-to-collection="goToCollection" />
       </template>
-    </FilterBuilder>
+    </Builder>
     <Collection
       v-if="computedFilter !== false"
       v-bind="props"

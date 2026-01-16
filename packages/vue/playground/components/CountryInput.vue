@@ -16,8 +16,8 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  operator: {
-    type: String,
+  multiple: {
+    type: Boolean,
     required: true,
   },
   disabled: {
@@ -33,10 +33,7 @@ const computedValue = computed(() => {
 
 function update(event) {
   const eventValue = event.target.value || null;
-  const value =
-    eventValue && (props.operator == "in" || props.operator == "not_in")
-      ? [eventValue]
-      : eventValue;
+  const value = eventValue && props.multiple ? [eventValue] : eventValue;
   emit("update:modelValue", value);
 }
 </script>
