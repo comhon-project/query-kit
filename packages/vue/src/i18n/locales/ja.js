@@ -12,7 +12,7 @@ export default {
   confirm: '確認',
   close: '閉じる',
   collapse: '折りたたむ',
-  expande: '展開',
+  expand: '展開',
   like: '含む',
   not_like: '含まない',
   ends_with: 'で終わる',

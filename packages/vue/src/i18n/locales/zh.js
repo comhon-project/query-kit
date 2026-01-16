@@ -12,7 +12,7 @@ export default {
   confirm: '确认',
   close: '关闭',
   collapse: '折叠',
-  expande: '展开',
+  expand: '展开',
   like: '包含',
   not_like: '不包含',
   ends_with: '以...结尾',

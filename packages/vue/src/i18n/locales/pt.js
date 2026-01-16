@@ -12,7 +12,7 @@ export default {
   confirm: 'confirmar',
   close: 'fechar',
   collapse: 'recolher',
-  expande: 'expandir',
+  expand: 'expandir',
   like: 'contém',
   not_like: 'não contém',
   ends_with: 'termina com',

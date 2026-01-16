@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'button',
 });
 
-const stateTranslation = computed<string>(() => translate(collapsed.value ? 'expande' : 'collapse') ?? '');
+const stateTranslation = computed<string>(() => translate(collapsed.value ? 'expand' : 'collapse') ?? '');
 const computedAriaLabel = computed<string>(() => {
   return props.ariaLabel ? stateTranslation.value + ' ' + props.ariaLabel : stateTranslation.value;
 });

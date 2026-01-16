@@ -12,7 +12,7 @@ export default {
   confirm: 'подтвердить',
   close: 'закрыть',
   collapse: 'свернуть',
-  expande: 'развернуть',
+  expand: 'развернуть',
   like: 'содержит',
   not_like: 'не содержит',
   ends_with: 'заканчивается на',

@@ -12,7 +12,7 @@ export default {
   confirm: 'تأكيد',
   close: 'إغلاق',
   collapse: 'طي',
-  expande: 'توسيع',
+  expand: 'توسيع',
   like: 'يحتوي',
   not_like: 'لا يحتوي',
   ends_with: 'ينتهي بـ',
