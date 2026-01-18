@@ -2,7 +2,7 @@
 import { ref, watchEffect, computed, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema } from '@core/EntitySchema';
-import Utils from '@core/Utils';
+import { getUniqueId } from '@core/Utils';
 import { translate, locale } from '@i18n/i18n';
 import {
   getConditionOperators,
@@ -33,9 +33,9 @@ const props = defineProps<Props>();
 
 let condition: Filter | null = null;
 const form = useTemplateRef<HTMLFormElement>('form');
-const uniqueName = ref<string>(`choice-${Utils.getUniqueId()}`);
-const uniqueIdCondition = ref<string>(`choice-${Utils.getUniqueId()}`);
-const uniqueIdGroup = ref<string>(`choice-${Utils.getUniqueId()}`);
+const uniqueName = ref<string>(`choice-${getUniqueId()}`);
+const uniqueIdCondition = ref<string>(`choice-${getUniqueId()}`);
+const uniqueIdGroup = ref<string>(`choice-${getUniqueId()}`);
 const schema = ref<EntitySchema | null>(null);
 const targetCondition = ref<string | null>(null);
 const selectedType = ref<'condition' | 'group'>('condition');
@@ -75,7 +75,7 @@ function validate(): void {
         type: 'scope',
         id: target,
         parameters: [],
-        key: Utils.getUniqueId(),
+        key: getUniqueId(),
       };
     } else {
       if (schema.value.mapProperties[target]?.type == 'relationship') {
@@ -84,7 +84,7 @@ function validate(): void {
           type: 'relationship_condition',
           operator: operators[0],
           property: target,
-          key: Utils.getUniqueId(),
+          key: getUniqueId(),
         };
       } else {
         const operators = getConditionOperators('condition', target, schema.value, props.allowedOperators);
@@ -92,7 +92,7 @@ function validate(): void {
           type: 'condition',
           operator: operators[0],
           property: target,
-          key: Utils.getUniqueId(),
+          key: getUniqueId(),
         };
       }
     }
@@ -102,7 +102,7 @@ function validate(): void {
       type: 'group',
       operator: operators[0],
       filters: [],
-      key: Utils.getUniqueId(),
+      key: getUniqueId(),
     };
   }
   show.value = false;

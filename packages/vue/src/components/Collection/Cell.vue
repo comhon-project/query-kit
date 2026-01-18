@@ -2,7 +2,7 @@
 import { computed, type Component } from 'vue';
 import { classes } from '@core/ClassManager';
 import { getPropertyRenderer } from '@core/CellRendererManager';
-import Utils from '@core/Utils';
+import { getNestedValue } from '@core/Utils';
 import { locale } from '@i18n/i18n';
 import type { Property } from '@core/EntitySchema';
 import type { RenderFunction } from '@core/types';
@@ -37,7 +37,7 @@ const value = computed<unknown>(() => {
   let cellValue: unknown = props.property
     ? props.flattened
       ? props.rowValue[props.columnId]
-      : Utils.getNestedValue(props.rowValue, props.columnId)
+      : getNestedValue(props.rowValue, props.columnId)
     : undefined;
 
   if (typeof renderer.value == 'function') {

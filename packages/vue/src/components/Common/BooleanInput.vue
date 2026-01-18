@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { classes } from '@core/ClassManager';
-import Utils from '@core/Utils';
+import { getUniqueId } from '@core/Utils';
 import { translate } from '@i18n/i18n';
 
 interface Props {
@@ -11,7 +11,7 @@ const modelValue = defineModel<boolean>();
 
 defineProps<Props>();
 
-const uniqueId = Utils.getUniqueId();
+const uniqueId = getUniqueId();
 </script>
 
 <template>

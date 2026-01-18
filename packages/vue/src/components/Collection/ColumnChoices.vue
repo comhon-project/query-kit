@@ -6,7 +6,7 @@ import Modal from '@components/Common/Modal.vue';
 import ColumnChoice from '@components/Collection/ColumnChoice.vue';
 import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
-import Utils from '@core/Utils';
+import { getUniqueId } from '@core/Utils';
 import type { CustomColumnConfig, SelectOption } from '@core/types';
 
 interface KeyedColumn {
@@ -103,7 +103,7 @@ function updateColumns(): void {
 }
 
 function getKeyedColumn(columnId: string): KeyedColumn {
-  return { id: columnId, key: Utils.getUniqueId() };
+  return { id: columnId, key: getUniqueId() };
 }
 
 function removeColumn(index: number): void {

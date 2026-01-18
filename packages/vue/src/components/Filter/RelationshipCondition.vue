@@ -11,7 +11,7 @@ import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import RelationshipAction from '@components/Filter/RelationshipAction.vue';
-import Utils from '@core/Utils';
+import { getUniqueId } from '@core/Utils';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import type {
@@ -110,7 +110,7 @@ async function addFilter(filter: Filter): Promise<void> {
   queue.value[queue.value.length - 1].value.filter = filter;
   if (filter.type == 'relationship_condition') {
     queue.value.push({
-      key: Utils.getUniqueId(),
+      key: getUniqueId(),
       value: filter,
       schema: endQueuePropertySchema,
     });
@@ -149,7 +149,7 @@ async function setChild(schema: EntitySchema): Promise<void> {
   const tempQueue: QueueElement[] = [];
   while (childFilter?.type == 'relationship_condition') {
     tempQueue.push({
-      key: Utils.getUniqueId(),
+      key: getUniqueId(),
       value: childFilter,
       schema: childSchema,
     });

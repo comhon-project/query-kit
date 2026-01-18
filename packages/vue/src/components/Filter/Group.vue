@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, useTemplateRef } from 'vue';
-import Utils from '@core/Utils.js';
+import { getUniqueId } from '@core/Utils';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
@@ -94,7 +94,7 @@ function initFilter(): void {
   }
   for (const filter of props.modelValue.filters) {
     if (!filter.key) {
-      filter.key = Utils.getUniqueId();
+      filter.key = getUniqueId();
     }
   }
 }

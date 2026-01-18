@@ -5,7 +5,7 @@ import Builder from '@components/Filter/Builder.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
-import Utils from '@core/Utils';
+import { getUniqueId } from '@core/Utils';
 import Shortcuts from '@components/Filter/Shortcuts.vue';
 import { getContainerOperators, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
 import type {
@@ -74,7 +74,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 let tempFilter: Record<string, unknown> | null = null;
-const uniqueId = Utils.getUniqueId();
+const uniqueId = getUniqueId();
 const filterId = 'qkit-filter-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
 const schema = ref<EntitySchema | null>(null);
