@@ -46,7 +46,6 @@ interface Props {
 interface Emits {
   remove: [];
   goToRootGroup: [];
-  transitionGroup: [];
 }
 
 const emit = defineEmits<Emits>();
@@ -99,14 +98,6 @@ async function addFilter(filter: Filter): Promise<void> {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   const endQueuePropertySchema = await resolve(endQueuePropertySchemaId.value);
 
-  /**
-   * polyfill for browser that don't support css pseudo-class :has() like firefox.
-   * remove following emit value when all browser support :has().
-   * remove it from list of defined emits too.
-   */
-  if (filter.type == 'group') {
-    emit('transitionGroup');
-  }
   queue.value[queue.value.length - 1].value.filter = filter;
   if (filter.type == 'relationship_condition') {
     queue.value.push({
@@ -131,14 +122,7 @@ function removeQueueFilter(): void {
 
 function removeEndFilter(): void {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
-  /**
-   * polyfill for browser that don't support css pseudo-class :has() like firefox.
-   * remove following emit value when all browser support :has().
-   * remove it from list of defined emits too.
-   */
-  if (queue.value[queue.value.length - 1].value.filter?.type == 'group') {
-    emit('transitionGroup');
-  }
+
   queue.value[queue.value.length - 1].value.filter = undefined;
   endQueueFilter.value = null;
 }
@@ -233,11 +217,7 @@ watch(() => props.modelValue.filter, initSchema);
           />
         </div>
       </div>
-      <div
-        v-else
-        :class="classes.grid_container_for_transition"
-        :has-group="endQueueFilter.type == 'group' ? '' : undefined"
-      >
+      <div v-else :class="classes.grid_container_for_transition">
         <component
           :is="endQueueComponent"
           v-bind="props"

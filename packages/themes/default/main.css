@@ -159,16 +159,8 @@
   margin-top: 0rem;
 }
 
-@supports selector(:has(*)) {
-  .qkit-group-list-element:has(.qkit-group) {
-    flex-basis: 100%;
-  }
-}
-
-@supports not selector(:has(*)) {
-  .qkit-group-list-element[has-group] {
-    flex-basis: 100%;
-  }
+.qkit-group-list-element:has(.qkit-group) {
+  flex-basis: 100%;
 }
 
 .qkit-group-header {
@@ -670,48 +662,24 @@
   opacity: 0;
 }
 
-@supports selector(:has(*)) {
-  .qkit-collapse-horizontal-list-enter-from:has(.qkit-group),
-  .qkit-collapse-horizontal-list-leave-to:has(.qkit-group) {
-    grid-template-rows: 0fr;
-    margin-top: calc(-1 * var(--qkit-gap-spacer));
-  }
-
-  .qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)),
-  .qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) {
-    grid-template-columns: 0fr;
-    margin-right: calc(-1 * var(--qkit-gap-spacer));
-  }
-
-  .qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)) *,
-  .qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) *,
-  .qkit-collapse-horizontal-list-enter-active:not(:has(.qkit-group)) *,
-  .qkit-collapse-horizontal-list-leave-active:not(:has(.qkit-group)) * {
-    white-space: nowrap;
-    flex-wrap: nowrap;
-  }
+.qkit-collapse-horizontal-list-enter-from:has(.qkit-group),
+.qkit-collapse-horizontal-list-leave-to:has(.qkit-group) {
+  grid-template-rows: 0fr;
+  margin-top: calc(-1 * var(--qkit-gap-spacer));
 }
 
-@supports not selector(:has(*)) {
-  .qkit-collapse-horizontal-list-enter-from[has-group],
-  .qkit-collapse-horizontal-list-leave-to[has-group] {
-    grid-template-rows: 0fr;
-    margin-top: calc(-1 * var(--qkit-gap-spacer));
-  }
+.qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)),
+.qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) {
+  grid-template-columns: 0fr;
+  margin-right: calc(-1 * var(--qkit-gap-spacer));
+}
 
-  .qkit-collapse-horizontal-list-enter-from:not([has-group]),
-  .qkit-collapse-horizontal-list-leave-to:not([has-group]) {
-    grid-template-columns: 0fr;
-    margin-right: calc(-1 * var(--qkit-gap-spacer));
-  }
-
-  .qkit-collapse-horizontal-list-enter-from:not([has-group]) *,
-  .qkit-collapse-horizontal-list-leave-to:not([has-group]) *,
-  .qkit-collapse-horizontal-list-enter-active:not([has-group]) *,
-  .qkit-collapse-horizontal-list-leave-active:not([has-group]) * {
-    white-space: nowrap;
-    flex-wrap: nowrap;
-  }
+.qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)) *,
+.qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) *,
+.qkit-collapse-horizontal-list-enter-active:not(:has(.qkit-group)) *,
+.qkit-collapse-horizontal-list-leave-active:not(:has(.qkit-group)) * {
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 @media (max-width: 576px) {
