@@ -1,5 +1,5 @@
 import { translate } from '@i18n/i18n';
-import type { ArrayableTypeContainer, EntitySchema, Property, Scope } from '@core/EntitySchema';
+import type { ArrayableTypeContainer, Property, Scope } from '@core/EntitySchema';
 import type { ContainerFilterType } from '@core/types';
 
 export type ConditionOperator =
@@ -125,21 +125,10 @@ const getContainerOperators = (
 };
 
 const getConditionOperators = (
-  filterType: 'condition' | 'scope',
-  target: string,
-  schema: EntitySchema,
+  property: Property,
   allowedOperators: AllowedOperators | null = null,
-  computedScopes: ComputedScopes | null = null,
 ): ConditionOperator[] => {
-  const targetObject: Property | Scope | ComputedScope | undefined =
-    filterType === 'condition'
-      ? schema.mapProperties[target]
-      : computedScopes?.[schema.id]?.find((scope) => scope.id === target) || schema.mapScopes[target];
-
-  if (!targetObject) {
-    throw new Error(`invalid target ${target}`);
-  }
-  let containerType: ArrayableTypeContainer = targetObject as ArrayableTypeContainer;
+  let containerType: ArrayableTypeContainer = property as ArrayableTypeContainer;
   let isArray = false;
   while (containerType.type === 'array') {
     containerType = containerType.children!;

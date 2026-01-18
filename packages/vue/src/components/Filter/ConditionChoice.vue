@@ -87,7 +87,7 @@ function validate(): void {
           key: getUniqueId(),
         };
       } else {
-        const operators = getConditionOperators('condition', target, schema.value, props.allowedOperators);
+        const operators = getConditionOperators(schema.value.mapProperties[target], props.allowedOperators);
         condition = {
           type: 'condition',
           operator: operators[0],

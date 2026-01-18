@@ -45,7 +45,7 @@ const useSearchable = (props: SearchableProps, schema: Ref<EntitySchema | null>)
         if (hasRelationshipOperator) {
           properties.push(property);
         }
-      } else if (getConditionOperators('condition', property.id, schema.value, props.allowedOperators).length) {
+      } else if (getConditionOperators(property, props.allowedOperators).length) {
         properties.push(property);
       }
     }
