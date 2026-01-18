@@ -169,40 +169,28 @@ const getOperatorTranslation = (
   operator: string,
 ): string => {
   const names = operatorNames[container] as Record<string, string>;
-  const label = names[operator.toLowerCase()];
+  const label = names[operator];
   return label.charAt(0).match(/[a-z]/i) ? translate(label) ?? label : label;
 };
 
 const isValidOperator = (
   container: 'condition' | 'group' | 'relationship_condition',
   operator: string | undefined | null,
-  caseSensitive: boolean = true,
 ): boolean => {
   if (!operator) return false;
   const names = operatorNames[container] as Record<string, string>;
-  return !!(names[operator] || (!caseSensitive && names[operator.toLowerCase()]));
+  return !!names[operator];
 };
 
 const registerAllowedOperators = (allowedOperators: AllowedOperators): void => {
   if (allowedOperators.condition) {
-    for (const key in allowedOperators.condition) {
-      if (!Object.hasOwn(allowedOperators.condition, key)) {
-        continue;
-      }
-      const ops = allowedOperators.condition[key];
-      if (ops) {
-        operators.condition[key] = ops.map((op) => op.toLowerCase() as ConditionOperator);
-      }
-    }
     Object.assign(operators.condition, allowedOperators.condition);
   }
   if (allowedOperators.group) {
-    operators.group = allowedOperators.group.map((op) => op.toLowerCase() as GroupOperator);
+    operators.group = allowedOperators.group;
   }
   if (allowedOperators.relationship_condition) {
-    operators.relationship_condition = allowedOperators.relationship_condition.map(
-      (op) => op.toLowerCase() as RelationshipOperator,
-    );
+    operators.relationship_condition = allowedOperators.relationship_condition;
   }
 };
 

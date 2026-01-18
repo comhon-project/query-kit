@@ -129,10 +129,8 @@ watchEffect(() => {
   initSchema();
 });
 watchEffect(() => {
-  if (!isValidOperator('group', props.modelValue.operator, false)) {
+  if (!isValidOperator('group', props.modelValue.operator)) {
     validOperator.value = false;
-  } else if (!isValidOperator('group', props.modelValue.operator, true)) {
-    props.modelValue.operator = props.modelValue.operator.toLowerCase();
   }
 });
 </script>

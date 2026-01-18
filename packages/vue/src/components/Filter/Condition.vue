@@ -116,9 +116,6 @@ function verifyType(): void {
 watchEffect(initSchema);
 
 watchEffect(() => {
-  if (!isValidOperator('condition', props.modelValue.operator)) {
-    props.modelValue.operator = props.modelValue.operator.toLowerCase();
-  }
   verifyOperator();
 });
 

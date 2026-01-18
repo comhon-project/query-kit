@@ -137,9 +137,7 @@ async function setChild(schema: EntitySchema): Promise<void> {
       value: childFilter,
       schema: childSchema,
     });
-    const operator =
-      typeof childFilter.operator == 'string' ? childFilter.operator.toLowerCase() : childFilter.operator;
-    if (!isValidOperator('relationship_condition', operator)) {
+    if (!isValidOperator('relationship_condition', childFilter.operator)) {
       invalidOperator.value = childFilter.operator;
       return;
     }

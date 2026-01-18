@@ -124,16 +124,16 @@ async function initColumns(columns: string[], orderBy?: (string | OrderByItem)[]
 
 function initOrderBy(orderBy?: (string | OrderByItem)[], fetch = true): void {
   copiedOrderBy.value = orderBy
-    ? (orderBy
+    ? orderBy
         .map((value) => {
           const column = typeof value == 'string' ? value : value.column;
           return copiedColumns.value.includes(column)
             ? typeof value == 'string'
               ? { column: column, order: 'asc' as const }
-              : { column: column, order: (value.order?.toLowerCase() || 'asc') as 'asc' | 'desc' }
+              : { column: column, order: (value.order || 'asc') as 'asc' | 'desc' }
             : null;
         })
-        .filter((value): value is OrderByItem => value != null))
+        .filter((value): value is OrderByItem => value != null)
     : [];
 
   if (fetch) {
@@ -157,7 +157,8 @@ async function updateColumns(columns: string[]): Promise<void> {
 function updateOrder(columnId: string | undefined, multi: boolean): void {
   if (!requesting.value && columnId) {
     let orderBy = structuredClone(toRaw(copiedOrderBy.value));
-    const newOrder: 'asc' | 'desc' = indexedOrderBy.value[columnId] == 'asc' && (orderBy.length <= 1 || multi) ? 'desc' : 'asc';
+    const newOrder: 'asc' | 'desc' =
+      indexedOrderBy.value[columnId] == 'asc' && (orderBy.length <= 1 || multi) ? 'desc' : 'asc';
     const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
     if (multi) {
       const index = orderBy.findIndex((value) => value.column == columnId);
@@ -221,7 +222,7 @@ async function requestServer(reset = false): Promise<void> {
   });
   if (typeof response != 'object' || !Array.isArray(response.collection)) {
     throw new Error(
-      'invalid request response, it must be an object containing a property "collection" with an array value'
+      'invalid request response, it must be an object containing a property "collection" with an array value',
     );
   }
   count.value = response.count;
@@ -251,7 +252,7 @@ async function getRequestOrder(): Promise<{ property: string; order: string }[]>
       orderBy.push(
         ...props.customColumns[order.column].order!.map((customOrderProperty) => {
           return { property: customOrderProperty, order: order.order };
-        })
+        }),
       );
     } else {
       const propertyPath = await getPropertyPath(props.entity, order.column);
@@ -266,7 +267,7 @@ async function getRequestOrder(): Promise<{ property: string; order: string }[]>
         orderBy.push(
           ...schema.default_sort.map((prop) => {
             return { property: order.column + '.' + prop, order: order.order };
-          })
+          }),
         );
         continue;
       }
@@ -312,28 +313,28 @@ watch(
   () => props.entity,
   async () => {
     await init(true);
-  }
+  },
 );
 watch(
   () => props.columns,
   async () => {
     await initColumns(props.columns, copiedOrderBy.value);
-  }
+  },
 );
 watch(
   () => props.orderBy,
   () => {
     initOrderBy(props.orderBy);
-  }
+  },
 );
 watch(
   () => props.filter,
-  () => requestServer(true)
+  () => requestServer(true),
 );
 watch(infiniteScroll, () => requestServer(true));
 watch(
   () => props.allowedCollectionTypes,
-  () => (infiniteScroll.value = isInfiniteAccordingProps())
+  () => (infiniteScroll.value = isInfiniteAccordingProps()),
 );
 </script>
 
