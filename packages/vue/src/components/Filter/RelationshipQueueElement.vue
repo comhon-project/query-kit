@@ -31,8 +31,7 @@ const schema = ref<EntitySchema | null>(null);
 const { canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
 const label = computed<string>(() => {
   if (!schema.value) return '';
-  const property = schema.value.mapProperties[props.modelValue.property];
-  return getPropertyTranslation(property);
+  return getPropertyTranslation(schema.value.getProperty(props.modelValue.property));
 });
 
 async function initSchema(): Promise<void> {

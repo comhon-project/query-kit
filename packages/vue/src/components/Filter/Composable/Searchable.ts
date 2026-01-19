@@ -37,10 +37,7 @@ const useSearchable = (props: SearchableProps, schema: Ref<EntitySchema | null>)
     const properties: Property[] = [];
     const hasRelationshipOperator = getContainerOperators('relationship_condition', props.allowedOperators).length;
     for (const propertyName of propertyNames) {
-      const property = schema.value.mapProperties[propertyName];
-      if (!property) {
-        throw new Error(`Property "${propertyName}" not found in schema "${props.entity}"`);
-      }
+      const property = schema.value.getProperty(propertyName);
       if (property.type === 'relationship') {
         if (hasRelationshipOperator) {
           properties.push(property);
@@ -60,13 +57,7 @@ const useSearchable = (props: SearchableProps, schema: Ref<EntitySchema | null>)
     }
     const currentSchema = schema.value;
     if (!currentSchema) return;
-    searchableScopes.value = scopeIds.map((scopeId) => {
-      const scope = currentSchema.mapScopes[scopeId];
-      if (!scope) {
-        throw new Error(`Scope "${scopeId}" not found in schema "${props.entity}"`);
-      }
-      return scope;
-    });
+    searchableScopes.value = scopeIds.map((scopeId) => currentSchema.getScope(scopeId));
   });
 
   const searchableComputedScopes = computed((): ComputedScope[] => {

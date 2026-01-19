@@ -73,7 +73,12 @@ const mustDisplayOperator = computed<boolean>(() => {
 });
 
 const property = computed<Property | undefined>(() => {
-  return schema.value?.mapProperties[props.modelValue.property];
+  if (!schema.value) return undefined;
+  try {
+    return schema.value.getProperty(props.modelValue.property);
+  } catch {
+    return undefined;
+  }
 });
 
 const propertyName = computed<string>(() => {

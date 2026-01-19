@@ -12,15 +12,15 @@ beforeAll(() => {
 describe('test schemas', async () => {
   it('test computed schema with default locale', async () => {
     const schema = await resolve('user');
-    expect(getPropertyTranslation(schema.mapProperties['first_name'])).toBe('first name');
-    expect(getScopeTranslation(schema.mapScopes['datetime_scope'])).toBe('datetime scope');
+    expect(getPropertyTranslation(schema.getProperty('first_name'))).toBe('first name');
+    expect(getScopeTranslation(schema.getScope('datetime_scope'))).toBe('datetime scope');
   });
   it('test computed schema with locale "fr"', async () => {
     locale.value = 'fr';
     await loadRawTranslations('user', 'fr');
     const schema = await resolve('user');
-    expect(getPropertyTranslation(schema.mapProperties['first_name'])).toBe('prénom');
-    expect(getScopeTranslation(schema.mapScopes['datetime_scope'])).toBe('scope date time');
+    expect(getPropertyTranslation(schema.getProperty('first_name'))).toBe('prénom');
+    expect(getScopeTranslation(schema.getScope('datetime_scope'))).toBe('scope date time');
   });
   it('test computed schema with locale "es" and fallback "fr"', async () => {
     fallback.value = 'fr';
@@ -28,8 +28,8 @@ describe('test schemas', async () => {
     await loadRawTranslations('user', 'es');
     await loadRawTranslations('user', 'fr');
     const schema = await resolve('user');
-    expect(getPropertyTranslation(schema.mapProperties['first_name'])).toBe('primer nombre');
-    expect(getPropertyTranslation(schema.mapProperties['married'])).toBe('marié(e)');
-    expect(getScopeTranslation(schema.mapScopes['datetime_scope'])).toBe('scope date time');
+    expect(getPropertyTranslation(schema.getProperty('first_name'))).toBe('primer nombre');
+    expect(getPropertyTranslation(schema.getProperty('married'))).toBe('marié(e)');
+    expect(getScopeTranslation(schema.getScope('datetime_scope'))).toBe('scope date time');
   });
 });

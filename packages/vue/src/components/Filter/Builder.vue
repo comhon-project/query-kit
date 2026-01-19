@@ -76,7 +76,12 @@ function getScopeDefinition(scopeId: string, entitySchema: EntitySchema): Scope 
     props.computedScopes && props.computedScopes[props.entity]
       ? props.computedScopes[props.entity].find((scope) => scope.id == scopeId)
       : undefined;
-  return computedScope || entitySchema.mapScopes[scopeId];
+  if (computedScope) return computedScope;
+  try {
+    return entitySchema.getScope(scopeId);
+  } catch {
+    return undefined;
+  }
 }
 
 function isScopeFilled(scope: Scope | ComputedScope, filter: ScopeFilter): boolean {
@@ -122,7 +127,7 @@ async function getComputedFilter(): Promise<MutableFilter> {
     const [currentFilter, currentSchema] = stack.pop()!;
     if (currentFilter.type == 'relationship_condition') {
       if (currentFilter.filter) {
-        const schemaId = currentSchema.mapProperties[currentFilter.property as string]?.related!;
+        const schemaId = currentSchema.getProperty(currentFilter.property as string).related!;
         const childSchema = await resolve(schemaId);
         if (mustKeepFilter(currentFilter.filter as Filter, childSchema)) {
           stack.push([currentFilter.filter as MutableFilter, childSchema]);

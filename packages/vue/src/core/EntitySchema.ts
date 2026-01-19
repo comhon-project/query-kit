@@ -33,6 +33,9 @@ export interface RawProperty extends ArrayableTypeContainer {
 export interface RawEntitySchema {
   properties: RawProperty[];
   scopes?: (string | RawScope)[];
+  unique_identifier?: string;
+  primary_identifiers?: string[];
+  default_sort?: string[];
 }
 
 // Computed types - after compute()
@@ -44,17 +47,6 @@ export interface Scope extends RawScope {
 
 export interface Property extends RawProperty {
   owner: string;
-}
-
-export interface EntitySchema {
-  id: string;
-  properties: Property[];
-  scopes?: Scope[];
-  mapProperties: Record<string, Property>;
-  mapScopes: Record<string, Scope>;
-  unique_identifier?: string;
-  primary_identifiers?: string[];
-  default_sort?: string[];
 }
 
 export interface EntityTranslations {
@@ -69,6 +61,31 @@ export interface EntitySchemaLoader {
 
 export interface EntityTranslationsLoader {
   load: (schemaId: string, locale: string) => Promise<EntityTranslations | null>;
+}
+
+export class EntitySchema {
+  constructor(
+    readonly id: string,
+    readonly properties: Property[],
+    readonly mapProperties: Record<string, Property>,
+    readonly scopes: Scope[],
+    readonly mapScopes: Record<string, Scope>,
+    readonly unique_identifier?: string,
+    readonly primary_identifiers?: string[],
+    readonly default_sort?: string[],
+  ) {}
+
+  getProperty(id: string): Property {
+    const property = this.mapProperties[id];
+    if (!property) throw new Error(`Property "${id}" not found in schema "${this.id}"`);
+    return property;
+  }
+
+  getScope(id: string): Scope {
+    const scope = this.mapScopes[id];
+    if (!scope) throw new Error(`Scope "${id}" not found in schema "${this.id}"`);
+    return scope;
+  }
 }
 
 let schemaLoader: EntitySchemaLoader | undefined;
@@ -200,13 +217,16 @@ async function compute(id: string): Promise<EntitySchema> {
     }
   }
 
-  return {
+  return new EntitySchema(
     id,
     properties,
-    scopes: scopes.length > 0 ? scopes : undefined,
     mapProperties,
+    scopes,
     mapScopes,
-  };
+    rawSchema.unique_identifier,
+    rawSchema.primary_identifiers,
+    rawSchema.default_sort,
+  );
 }
 
 async function loadRawTranslations(schemaId: string, targetLocale: string): Promise<EntityTranslations> {

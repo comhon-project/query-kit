@@ -70,7 +70,7 @@ const endQueuePropertySchemaId = computed<string>(() => {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
-  return lastQueueSchema.mapProperties[lastQueueElement.value.property].related!;
+  return lastQueueSchema.getProperty(lastQueueElement.value.property).related!;
 });
 
 const endQueueComponent = computed<Component | null>(() => {
@@ -141,13 +141,15 @@ async function setChild(schema: EntitySchema): Promise<void> {
       invalidOperator.value = childFilter.operator;
       return;
     }
-    if (!childSchema.mapProperties[childFilter.property]) {
+    let property;
+    try {
+      property = childSchema.getProperty(childFilter.property);
+    } catch {
       invalidProperty.value = childFilter.property;
       return;
     }
-    childAriaLabelProperty.value = childSchema.mapProperties[childFilter.property];
+    childAriaLabelProperty.value = property;
 
-    const property = childSchema.mapProperties[childFilter.property];
     if (property.relationship_type == 'morph_to') {
       throw new Error('not handle morph_to relationship');
     }

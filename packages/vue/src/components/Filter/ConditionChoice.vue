@@ -69,7 +69,16 @@ function validate(): void {
   if (selectedType.value == 'condition') {
     const target = targetCondition.value!;
     const computedScope = props.computedScopes?.[props.entity]?.find((scope) => scope.id == target);
-    const scope = computedScope || schema.value.mapScopes[target];
+    let scope;
+    if (computedScope) {
+      scope = computedScope;
+    } else {
+      try {
+        scope = schema.value.getScope(target);
+      } catch {
+        scope = null;
+      }
+    }
     if (scope) {
       condition = {
         type: 'scope',
@@ -78,7 +87,8 @@ function validate(): void {
         key: getUniqueId(),
       };
     } else {
-      if (schema.value.mapProperties[target]?.type == 'relationship') {
+      const property = schema.value.getProperty(target);
+      if (property.type == 'relationship') {
         const operators = getContainerOperators('relationship_condition', props.allowedOperators);
         condition = {
           type: 'relationship_condition',
@@ -87,7 +97,7 @@ function validate(): void {
           key: getUniqueId(),
         };
       } else {
-        const operators = getConditionOperators(schema.value.mapProperties[target], props.allowedOperators);
+        const operators = getConditionOperators(property, props.allowedOperators);
         condition = {
           type: 'condition',
           operator: operators[0],

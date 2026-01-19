@@ -41,7 +41,7 @@ const useFilterWithOperator = (
     const currentOperators =
       filterType === 'condition'
         ? getConditionOperators(
-            schema.value.mapProperties[(props.modelValue as ConditionFilter).property],
+            schema.value.getProperty((props.modelValue as ConditionFilter).property),
             props.allowedOperators,
           )
         : getContainerOperators(filterType, props.allowedOperators);

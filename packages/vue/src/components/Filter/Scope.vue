@@ -53,7 +53,12 @@ const scope = computed<ComputedScope | ScopeType | null>(() => {
     props.computedScopes && props.computedScopes[props.entity]
       ? props.computedScopes[props.entity].find((s) => s.id == props.modelValue.id)
       : null;
-  return computedScope ?? schema.value.mapScopes[props.modelValue.id];
+  if (computedScope) return computedScope;
+  try {
+    return schema.value.getScope(props.modelValue.id);
+  } catch {
+    return null;
+  }
 });
 
 const scopeName = computed<string>(() => {
