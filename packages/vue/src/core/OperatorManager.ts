@@ -1,5 +1,5 @@
 import { translate } from '@i18n/i18n';
-import type { ArrayableTypeContainer, Property, Scope } from '@core/EntitySchema';
+import type { ArrayableTypeContainer, Property } from '@core/EntitySchema';
 import type { ContainerFilterType } from '@core/types';
 
 export type ConditionOperator =
@@ -51,12 +51,6 @@ export interface AllowedOperators {
   group?: GroupOperator[];
   relationship_condition?: RelationshipOperator[];
 }
-
-export interface ComputedScope extends Scope {
-  computed?: (parameters: unknown[]) => Record<string, unknown>;
-}
-
-export type ComputedScopes = Record<string, ComputedScope[]>;
 
 const operatorNames: OperatorNames = {
   condition: {

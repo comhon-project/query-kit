@@ -6,13 +6,12 @@ import Scope from '@components/Filter/Scope.vue';
 import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
 import Group from '@components/Filter/Group.vue';
 import { classes } from '@core/ClassManager';
-import type { AllowedOperators, ComputedScopes } from '@core/OperatorManager';
+import type { AllowedOperators } from '@core/OperatorManager';
 import type { Filter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
 
 interface Props {
   modelValue: Filter;
   entity: string;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;

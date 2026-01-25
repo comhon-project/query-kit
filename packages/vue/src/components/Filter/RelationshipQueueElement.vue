@@ -5,13 +5,12 @@ import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithO
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import type { AllowedOperators, ComputedScopes } from '@core/OperatorManager';
+import type { AllowedOperators } from '@core/OperatorManager';
 import type { RelationshipConditionFilter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
 
 interface Props {
   modelValue: RelationshipConditionFilter;
   entity: string;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;

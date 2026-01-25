@@ -15,6 +15,26 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import '@query-kit/themes/default';
 
 import { plugin, MultipleCapableComponent } from '@query-kit/vue';
+
+function computeQuickSearch(parameters) {
+  const value = parameters[0];
+  return {
+    type: 'group',
+    operator: 'or',
+    filters: [
+      {
+        property: 'first_name',
+        operator: 'like',
+        value: value,
+      },
+      {
+        property: 'last_name',
+        operator: 'like',
+        value: value,
+      },
+    ],
+  };
+}
 import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader, requestSchemaLoader } from './core/SchemaLoader';
 import CellInteger from './components/CellInteger.vue';
 import CountryInput from './components/CountryInput.vue';
@@ -70,6 +90,17 @@ createApp(App)
         datetime: ['=', 'not_in'],
         array: ['=', 'in'],
       },
+    },
+    computedScopes: {
+      user: [
+        {
+          id: 'quick_search',
+          translation: (localeValue) => (localeValue == 'fr' ? 'recherche rapide' : 'quick search user'),
+          parameters: [{ id: 'value', name: 'value', type: 'string' }],
+          computed: computeQuickSearch,
+        },
+      ],
+      organization: [{ id: 'quick_search', name: 'quick search company', parameters: [] }],
     },
     requester: {
       request: (query) => {

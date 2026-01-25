@@ -265,25 +265,6 @@ function handleUpdatedFilters(params) {
   console.log(params);
 }
 
-function computeQuickSearch(parameters) {
-  const value = parameters[0];
-  return {
-    type: 'group',
-    operator: 'or',
-    filters: [
-      {
-        property: 'first_name',
-        operator: 'like',
-        value: value,
-      },
-      {
-        property: 'last_name',
-        operator: 'like',
-        value: value,
-      },
-    ],
-  };
-}
 let requester = {
   request: (query) => {
     console.log('prop-requester');
@@ -398,17 +379,6 @@ watch(columns, () => {
         :display-count="true"
         :edit-columns="true"
         :custom-columns="customColumns"
-        :computed-scopes="{
-          user: [
-            {
-              id: 'quick_search',
-              translation: (localeValue) => (localeValue == 'fr' ? 'recherche rapide' : 'quick search user'),
-              parameters: [{ id: 'value', name: 'value', type: 'string' }],
-              computed: computeQuickSearch,
-            },
-          ],
-          organization: [{ id: 'quick_search', name: 'quick search company', parameters: [] }],
-        }"
         :requester="requester"
         @row-click="printRow"
         @export="exportResults"

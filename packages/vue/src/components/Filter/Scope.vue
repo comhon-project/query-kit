@@ -13,17 +13,12 @@ import ArrayableInput from '@components/Filter/ArrayableInput.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { locale, translate } from '@i18n/i18n';
-import type { ComputedScopes } from '@core/OperatorManager';
+import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
 import type { ScopeFilter } from '@core/types';
-
-interface ComputedScope extends ScopeType {
-  translation?: (locale: string) => string;
-}
 
 interface Props {
   modelValue: ScopeFilter;
   entity: string;
-  computedScopes?: ComputedScopes;
   userTimezone?: string;
   requestTimezone?: string;
   ariaLabel?: string;
@@ -49,10 +44,7 @@ const isEditable = computed<boolean>(() => props.modelValue.editable !== false);
 
 const scope = computed<ComputedScope | ScopeType | null>(() => {
   if (!schema.value) return null;
-  const computedScope =
-    props.computedScopes && props.computedScopes[props.entity]
-      ? props.computedScopes[props.entity].find((s) => s.id == props.modelValue.id)
-      : null;
+  const computedScope = getComputedScope(props.entity, props.modelValue.id);
   if (computedScope) return computedScope;
   try {
     return schema.value.getScope(props.modelValue.id);

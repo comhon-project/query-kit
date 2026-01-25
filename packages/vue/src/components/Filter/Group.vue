@@ -4,7 +4,7 @@ import { getUniqueId } from '@core/Utils';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
-import { isValidOperator, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
+import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
@@ -18,7 +18,6 @@ import type { GroupFilter, Filter, DisplayOperator, AllowedScopes, AllowedProper
 interface Props {
   modelValue: GroupFilter;
   entity: string;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;

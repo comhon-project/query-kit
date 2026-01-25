@@ -23,6 +23,7 @@ import { registerLoader as registerRequestSchemaLoader, type SchemaLoader as Req
 import { applyOptions } from '@config/config';
 import { registerRequester, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
 import { registerAllowedOperators, type AllowedOperators } from '@core/OperatorManager';
+import { registerComputedScopes, type ComputedScopes } from '@core/ComputedScopesManager';
 
 import Search from '@components/Search.vue';
 import Builder from '@components/Filter/Builder.vue';
@@ -46,6 +47,7 @@ export interface PluginOptions {
   defaultLocale?: string;
   fallbackLocale?: string;
   allowedOperators?: AllowedOperators;
+  computedScopes?: ComputedScopes;
   requester?: Requester | RequesterFunction;
   entitySchemaLoader: EntitySchemaLoader | EntitySchemaLoaderFunction;
   entityTranslationsLoader?: EntityTranslationsLoader | EntityTranslationsLoaderFunction;
@@ -83,6 +85,9 @@ export default {
     }
     if (options.allowedOperators) {
       registerAllowedOperators(options.allowedOperators);
+    }
+    if (options.computedScopes) {
+      registerComputedScopes(options.computedScopes);
     }
     if (options.requester) {
       const requester: Requester =

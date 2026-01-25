@@ -7,7 +7,7 @@ import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { getUniqueId } from '@core/Utils';
 import Shortcuts from '@components/Filter/Shortcuts.vue';
-import { getContainerOperators, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
+import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
 import type {
   GroupFilter,
   DisplayOperator,
@@ -26,7 +26,6 @@ interface Props {
   customColumns?: Record<string, CustomColumnConfig>;
   filter?: GroupFilter | null;
   allowReset?: boolean;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;
