@@ -63,6 +63,7 @@ const page = ref<number>(1);
 const infiniteScroll = ref<boolean>(isInfiniteAccordingProps());
 const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
 const showColumnsModal = ref<boolean>(false);
+const rowKeyProperty = ref<string>();
 
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
 let observer: IntersectionObserver | undefined;
@@ -92,7 +93,8 @@ async function init(fetch = true): Promise<void> {
 }
 
 async function initColumns(columns: string[], orderBy?: (string | OrderByItem)[], fetch = true): Promise<void> {
-  await resolve(props.entity);
+  const schema = await resolve(props.entity);
+  rowKeyProperty.value = schema.unique_identifier;
   const properties: (Property | undefined)[] = [];
   requestProperties = [];
 
@@ -393,7 +395,7 @@ watch(
           <tbody>
             <tr
               v-for="(object, rowIndex) in collection"
-              :key="(object.id as string | number) ?? rowIndex"
+              :key="(object[rowKeyProperty!] as string | number) ?? rowIndex"
               :class="onRowClick ? classes.collection_clickable_row : ''"
               @click="(e) => $emit('rowClick', object, e)"
             >
