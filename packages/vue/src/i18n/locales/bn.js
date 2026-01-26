@@ -46,6 +46,9 @@ export default {
   paginated_list: 'পৃষ্ঠাযুক্ত তালিকা',
   asc: 'ঊর্ধ্বক্রম',
   desc: 'অধঃক্রম',
+  page: 'পৃষ্ঠা',
+  boolean_choice: 'বুলিয়ান পছন্দ',
+  collection: 'সংগ্রহ',
 
   show_action_shortcuts: 'অ্যাকশন শর্টকাট দেখান',
   go_to_next_condition: 'পরবর্তী শর্তে যান',

@@ -20,7 +20,7 @@ interface Props {
   limit: number;
   offset?: number;
   id?: string;
-  onRowClick?: (row: Record<string, unknown>, event: MouseEvent) => void;
+  onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   orderBy?: (string | OrderByItem)[];
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
@@ -34,7 +34,7 @@ interface Props {
 }
 
 interface Emits {
-  rowClick: [row: Record<string, unknown>, event: MouseEvent];
+  rowClick: [row: Record<string, unknown>, event: MouseEvent | KeyboardEvent];
   export: [filter?: Record<string, unknown>];
   'update:columns': [columns: string[]];
   'update:orderBy': [orderBy: OrderByItem[]];
@@ -341,7 +341,7 @@ watch(
 </script>
 
 <template>
-  <div :id="id" :class="classes.collection" tabindex="0" :aria-label="translate('results')">
+  <div :id="id" :class="classes.collection" tabindex="0" :aria-label="translate('collection')">
     <slot name="shortcuts" />
     <div>
       <div
@@ -377,6 +377,7 @@ watch(
       </slot>
       <div ref="collectionContent" :class="classes.collection_content">
         <table :class="classes.collection_table">
+          <caption class="qkit-sr-only">{{ translate('results') }}</caption>
           <thead>
             <tr>
               <Header
@@ -397,7 +398,9 @@ watch(
               v-for="(object, rowIndex) in collection"
               :key="(object[rowKeyProperty!] as string | number) ?? rowIndex"
               :class="onRowClick ? classes.collection_clickable_row : ''"
+              :tabindex="onRowClick ? 0 : undefined"
               @click="(e) => $emit('rowClick', object, e)"
+              @keydown.enter="(e) => onRowClick ? $emit('rowClick', object, e) : undefined"
             >
               <template v-for="(columnId, index) in copiedColumns" :key="columnId">
                 <Cell

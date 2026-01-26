@@ -46,6 +46,9 @@ export default {
   paginated_list: 'पृष्ठांकित सूची',
   asc: 'आरोही',
   desc: 'अवरोही',
+  page: 'पृष्ठ',
+  boolean_choice: 'बूलियन विकल्प',
+  collection: 'संग्रह',
 
   show_action_shortcuts: 'क्रिया शॉर्टकट दिखाएं',
   go_to_next_condition: 'अगली शर्त पर जाएं',

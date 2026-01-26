@@ -46,6 +46,9 @@ export default {
   paginated_list: 'ページ分割リスト',
   asc: '昇順',
   desc: '降順',
+  page: 'ページ',
+  boolean_choice: 'ブール選択',
+  collection: 'コレクション',
 
   show_action_shortcuts: 'アクションショートカットを表示',
   go_to_next_condition: '次の条件へ移動',

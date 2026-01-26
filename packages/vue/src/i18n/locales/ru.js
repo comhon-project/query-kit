@@ -46,6 +46,9 @@ export default {
   paginated_list: 'постраничный список',
   asc: 'возр.',
   desc: 'убыв.',
+  page: 'страница',
+  boolean_choice: 'логический выбор',
+  collection: 'коллекция',
 
   show_action_shortcuts: 'показать горячие клавиши',
   go_to_next_condition: 'перейти к следующему условию',

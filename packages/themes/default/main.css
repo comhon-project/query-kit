@@ -87,13 +87,13 @@
   padding-block: 1rem;
 }
 
-.qkit-condition-choice-form > *:first-child {
+.qkit-condition-choice-form > fieldset > div:first-of-type {
   display: flex;
   align-items: center;
   gap: var(--qkit-gap-spacer);
 }
 
-.qkit-condition-choice-form > :not(*:last-child) {
+.qkit-condition-choice-form > fieldset > div:not(:last-child) {
   margin-bottom: 0.5rem;
 }
 
@@ -546,8 +546,6 @@
 }
 
 .qkit-pagination > li {
-  cursor: pointer;
-  padding: 0.5rem;
   color: white;
   background-color: var(--qkit-color-primary);
   transition: background-color 0.15s ease-in-out;
@@ -555,9 +553,13 @@
   align-items: center;
 }
 
-.qkit-pagination > li > a {
-  text-decoration: none;
+.qkit-pagination > li > button {
+  background: none;
+  border: none;
   color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0.5rem;
 }
 
 .qkit-pagination > [active] {
@@ -565,7 +567,6 @@
 }
 
 .qkit-pagination > li:hover {
-  padding: 0.5rem;
   background-color: var(--qkit-color-primary-darken);
 }
 
@@ -784,4 +785,23 @@
   opacity: 1;
   width: auto;
   height: auto;
+}
+
+.qkit-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.qkit-input-boolean,
+.qkit-condition-choice-form fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
 }

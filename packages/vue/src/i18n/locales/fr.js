@@ -46,6 +46,9 @@ export default {
   paginated_list: 'liste paginée',
   asc: 'crois.',
   desc: 'décrois.',
+  page: 'page',
+  boolean_choice: 'choix booléen',
+  collection: 'collection',
 
   show_action_shortcuts: "afficher les raccourcis d'actions",
   go_to_next_condition: 'aller à la condition suivante',

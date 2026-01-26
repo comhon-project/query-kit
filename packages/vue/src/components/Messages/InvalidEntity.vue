@@ -9,7 +9,7 @@ const props = defineProps<Props>();
 </script>
 
 <template>
-  <span :class="classes.error_info">
+  <span :class="classes.error_info" role="alert">
     invalid entity <span>{{ props.entity }}</span>
   </span>
 </template>

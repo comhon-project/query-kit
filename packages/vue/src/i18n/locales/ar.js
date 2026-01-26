@@ -46,6 +46,9 @@ export default {
   paginated_list: 'قائمة مرقمة',
   asc: 'تصاعدي',
   desc: 'تنازلي',
+  page: 'صفحة',
+  boolean_choice: 'اختيار منطقي',
+  collection: 'مجموعة البيانات',
 
   show_action_shortcuts: 'عرض اختصارات الإجراءات',
   go_to_next_condition: 'الانتقال إلى الشرط التالي',

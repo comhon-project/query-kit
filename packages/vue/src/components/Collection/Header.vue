@@ -27,7 +27,7 @@ const orderLabel = computed<string>(() => props.order ? `(${translate(props.orde
 </script>
 
 <template>
-  <th>
+  <th scope="col" :aria-sort="isColumnSortable ? (props.order === 'asc' ? 'ascending' : props.order === 'desc' ? 'descending' : 'none') : undefined">
     <button
       v-if="isColumnSortable"
       type="button"

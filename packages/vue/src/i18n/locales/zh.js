@@ -46,6 +46,9 @@ export default {
   paginated_list: '分页列表',
   asc: '升序',
   desc: '降序',
+  page: '页',
+  boolean_choice: '布尔选择',
+  collection: '数据集',
 
   show_action_shortcuts: '显示操作快捷键',
   go_to_next_condition: '转到下一个条件',
