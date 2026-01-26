@@ -165,15 +165,15 @@ const isValidOperator = (
   return !!names[operator];
 };
 
-const registerAllowedOperators = (allowedOperators: AllowedOperators): void => {
-  if (allowedOperators.condition) {
-    Object.assign(operators.condition, allowedOperators.condition);
+const registerOperators = (operatorsConfig: AllowedOperators): void => {
+  if (operatorsConfig.condition) {
+    Object.assign(operators.condition, operatorsConfig.condition);
   }
-  if (allowedOperators.group) {
-    operators.group = allowedOperators.group;
+  if (operatorsConfig.group) {
+    operators.group = operatorsConfig.group;
   }
-  if (allowedOperators.relationship_condition) {
-    operators.relationship_condition = allowedOperators.relationship_condition;
+  if (operatorsConfig.relationship_condition) {
+    operators.relationship_condition = operatorsConfig.relationship_condition;
   }
 };
 
@@ -182,5 +182,5 @@ export {
   getConditionOperators,
   getOperatorTranslation,
   isValidOperator,
-  registerAllowedOperators,
+  registerOperators,
 };

@@ -22,7 +22,7 @@ import {
 import { registerLoader as registerRequestSchemaLoader, type SchemaLoader as RequestSchemaLoader, type RequestSchema } from '@core/RequestSchema';
 import { applyOptions } from '@config/config';
 import { registerRequester, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
-import { registerAllowedOperators, type AllowedOperators } from '@core/OperatorManager';
+import { registerOperators, type AllowedOperators } from '@core/OperatorManager';
 import { registerComputedScopes, type ComputedScopes } from '@core/ComputedScopesManager';
 
 import Search from '@components/Search.vue';
@@ -46,7 +46,7 @@ export interface PluginOptions {
   cellPropertyRenderers?: PropertyRenderers;
   defaultLocale?: string;
   fallbackLocale?: string;
-  allowedOperators?: AllowedOperators;
+  operators?: AllowedOperators;
   computedScopes?: ComputedScopes;
   requester?: Requester | RequesterFunction;
   entitySchemaLoader: EntitySchemaLoader | EntitySchemaLoaderFunction;
@@ -83,8 +83,8 @@ export default {
     if (options.fallbackLocale) {
       fallback.value = options.fallbackLocale;
     }
-    if (options.allowedOperators) {
-      registerAllowedOperators(options.allowedOperators);
+    if (options.operators) {
+      registerOperators(options.operators);
     }
     if (options.computedScopes) {
       registerComputedScopes(options.computedScopes);
