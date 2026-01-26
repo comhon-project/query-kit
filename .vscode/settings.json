@@ -3,5 +3,5 @@
   "[javascript]": {
     "editor.formatOnSave": true
   },
-  "eslint.validate": ["javascript", "vue"]
+  "eslint.validate": ["javascript"]
 }
