@@ -2,6 +2,7 @@
 import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
+import { getUniqueId } from '@core/Utils';
 
 interface Props {
   closeOnConfirm?: boolean;
@@ -23,6 +24,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const modal = useTemplateRef<HTMLDialogElement>('modal');
 const closing = ref<boolean | null>(null);
+const headerId = `modal-header-${getUniqueId()}`;
+let previouslyFocusedElement: HTMLElement | null = null;
 
 function confirm(): void {
   if (props.closeOnConfirm) {
@@ -34,6 +37,8 @@ function confirm(): void {
 function close(): void {
   closing.value = false;
   modal.value?.close();
+  previouslyFocusedElement?.focus();
+  previouslyFocusedElement = null;
   emit('closed');
 }
 
@@ -51,6 +56,7 @@ onMounted(() => {
 
 watch(show, async (visible) => {
   if (visible) {
+    previouslyFocusedElement = document.activeElement as HTMLElement | null;
     modal.value?.showModal();
   } else {
     closing.value = true;
@@ -63,9 +69,9 @@ watch(show, async (visible) => {
 </script>
 
 <template>
-  <dialog ref="modal" :class="classes.modal" :visible="show && !closing ? '' : undefined" @cancel.prevent="show = false">
+  <dialog ref="modal" :class="classes.modal" :visible="show && !closing ? '' : undefined" :aria-labelledby="headerId" @cancel.prevent="show = false">
     <div :class="classes.modal_header">
-      <div><slot name="header" /></div>
+      <div :id="headerId"><slot name="header" /></div>
       <IconButton icon="close" btn-class="btn" @click="() => (show = false)" />
     </div>
     <div :class="classes.modal_body"><slot name="body" /></div>

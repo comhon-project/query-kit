@@ -46,6 +46,9 @@ export default {
   paginated_list: 'paginierte Liste',
   asc: 'aufst.',
   desc: 'abst.',
+  page: 'Seite',
+  boolean_choice: 'Boolesche Auswahl',
+  collection: 'Sammlung',
 
   show_action_shortcuts: 'Aktionskürzel anzeigen',
   go_to_next_condition: 'zur nächsten Bedingung gehen',

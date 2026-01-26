@@ -160,7 +160,7 @@ watchEffect(() => {
         <slot name="relationship" />
       </div>
       <div :class="classes.group_actions">
-        <div :class="classes.group_resume" :collapsed="collapsed ? '' : undefined">
+        <div :class="classes.group_resume" :collapsed="collapsed ? '' : undefined" aria-live="polite" aria-atomic="true">
           {{ visibleFilters.length }}
           <span>{{ translate(visibleFilters.length > 1 ? 'filters' : 'filter') }}</span>
         </div>

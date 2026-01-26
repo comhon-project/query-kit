@@ -30,8 +30,7 @@ const nearPages = computed<number[]>(() => {
   return indexes;
 });
 
-function updatePage(newPage: number, event: Event): void {
-  event.preventDefault();
+function updatePage(newPage: number): void {
   if (!props.lock && newPage >= 1 && newPage <= props.count) {
     currentPage.value = newPage;
     if (timeoutId) clearTimeout(timeoutId);
@@ -47,35 +46,33 @@ watchEffect(() => (currentPage.value = props.page));
 <template>
   <nav :aria-label="translate('pagination')">
     <ul :class="classes.pagination">
-      <li @click="(e) => updatePage(currentPage - 1, e)">
-        <a href="#" :aria-label="translate('previous')">
+      <li>
+        <button type="button" :aria-label="translate('previous')" :disabled="lock || currentPage <= 1" @click="updatePage(currentPage - 1)">
           <Icon icon="previous" />
-        </a>
+        </button>
       </li>
-      <li :active="currentPage === 1 ? '' : undefined" @click="(e) => updatePage(1, e)">
-        <a href="#">1</a>
+      <li :active="currentPage === 1 ? '' : undefined">
+        <button type="button" :aria-current="currentPage === 1 ? 'page' : undefined" :aria-label="`${translate('page')} 1`" @click="updatePage(1)">1</button>
       </li>
       <li v-if="currentPage > 4">...</li>
       <li
         v-for="index in nearPages"
         :key="index"
         :active="index == currentPage ? '' : undefined"
-        @click="(e) => updatePage(index, e)"
       >
-        <a href="#">{{ index }}</a>
+        <button type="button" :aria-current="index == currentPage ? 'page' : undefined" :aria-label="`${translate('page')} ${index}`" @click="updatePage(index)">{{ index }}</button>
       </li>
       <li v-if="currentPage < count - 3">...</li>
       <li
         v-if="count && count != 1"
         :active="count == currentPage ? '' : undefined"
-        @click="(e) => updatePage(count, e)"
       >
-        <a href="#">{{ count }}</a>
+        <button type="button" :aria-current="count == currentPage ? 'page' : undefined" :aria-label="`${translate('page')} ${count}`" @click="updatePage(count)">{{ count }}</button>
       </li>
-      <li @click="(e) => updatePage(currentPage + 1, e)">
-        <a href="#" :aria-label="translate('next')">
+      <li>
+        <button type="button" :aria-label="translate('next')" :disabled="lock || currentPage >= count" @click="updatePage(currentPage + 1)">
           <Icon icon="next" />
-        </a>
+        </button>
       </li>
     </ul>
   </nav>

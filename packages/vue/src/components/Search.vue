@@ -38,7 +38,7 @@ interface Props {
   deferred?: number;
   limit: number;
   offset?: number;
-  onRowClick?: (row: Record<string, unknown>, event: MouseEvent) => void;
+  onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   orderBy?: (string | OrderByItem)[];
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
@@ -49,7 +49,7 @@ interface Props {
 }
 
 interface Emits {
-  rowClick: [row: Record<string, unknown>, event: MouseEvent];
+  rowClick: [row: Record<string, unknown>, event: MouseEvent | KeyboardEvent];
   export: [filter?: Record<string, unknown>];
   computed: [filter: Record<string, unknown>];
   updated: [filter: GroupFilter];

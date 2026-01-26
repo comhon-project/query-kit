@@ -133,31 +133,34 @@ watchEffect(async () => {
   <Modal v-if="schema" v-model:show="show" @confirm="submitForm" @closed="onClosed">
     <template #body>
       <form ref="form" :class="classes.condition_choice_form" @submit.prevent="validate">
-        <div>
-          <input
-            :id="uniqueIdCondition"
-            type="radio"
-            :name="uniqueName"
-            checked
-            @click="() => selectType('condition')"
-          />
-          <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
-          <select
-            v-model="targetCondition"
-            :class="classes.input"
-            :disabled="selectedType == 'group'"
-            :aria-label="translate('choose_condition_element')"
-            required
-          >
-            <option v-for="(display, value) in options" :key="value" :value="value">
-              {{ display }}
-            </option>
-          </select>
-        </div>
-        <div v-if="displayGroup">
-          <input :id="uniqueIdGroup" type="radio" :name="uniqueName" @click="() => selectType('group')" />
-          <label :for="uniqueIdGroup">{{ translate('group') }}</label>
-        </div>
+        <fieldset>
+          <legend class="qkit-sr-only">{{ translate('choose_condition_element') }}</legend>
+          <div>
+            <input
+              :id="uniqueIdCondition"
+              type="radio"
+              :name="uniqueName"
+              checked
+              @click="() => selectType('condition')"
+            />
+            <label :for="uniqueIdCondition">{{ translate('condition') }}</label>
+            <select
+              v-model="targetCondition"
+              :class="classes.input"
+              :disabled="selectedType == 'group'"
+              :aria-label="translate('choose_condition_element')"
+              required
+            >
+              <option v-for="(display, value) in options" :key="value" :value="value">
+                {{ display }}
+              </option>
+            </select>
+          </div>
+          <div v-if="displayGroup">
+            <input :id="uniqueIdGroup" type="radio" :name="uniqueName" @click="() => selectType('group')" />
+            <label :for="uniqueIdGroup">{{ translate('group') }}</label>
+          </div>
+        </fieldset>
       </form>
     </template>
   </Modal>

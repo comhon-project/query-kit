@@ -15,22 +15,25 @@ const uniqueId = getUniqueId();
 </script>
 
 <template>
-  <div :class="classes.input_boolean">
+  <fieldset :class="classes.input_boolean">
+    <legend class="qkit-sr-only">{{ translate('boolean_choice') }}</legend>
     <input
+      :id="`boolean-true-${uniqueId}`"
       type="radio"
       :name="`boolean-input-filter-${uniqueId}`"
       :checked="modelValue === true"
       :disabled="disabled"
       @input="modelValue = true"
     />
-    <span>{{ translate('yes') }}</span>
+    <label :for="`boolean-true-${uniqueId}`">{{ translate('yes') }}</label>
     <input
+      :id="`boolean-false-${uniqueId}`"
       type="radio"
       :name="`boolean-input-filter-${uniqueId}`"
       :checked="modelValue === false"
       :disabled="disabled"
       @input="modelValue = false"
     />
-    <span>{{ translate('no') }}</span>
-  </div>
+    <label :for="`boolean-false-${uniqueId}`">{{ translate('no') }}</label>
+  </fieldset>
 </template>

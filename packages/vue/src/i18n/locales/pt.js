@@ -46,6 +46,9 @@ export default {
   paginated_list: 'lista paginada',
   asc: 'asc.',
   desc: 'desc.',
+  page: 'página',
+  boolean_choice: 'escolha booleana',
+  collection: 'coleção',
 
   show_action_shortcuts: 'mostrar atalhos de ação',
   go_to_next_condition: 'ir para a próxima condição',
