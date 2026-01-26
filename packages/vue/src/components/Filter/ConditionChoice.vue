@@ -4,20 +4,14 @@ import { classes } from '@core/ClassManager';
 import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import { translate, locale } from '@i18n/i18n';
-import {
-  getConditionOperators,
-  getContainerOperators,
-  type AllowedOperators,
-  type ComputedScopes,
-  type ComputedScope,
-} from '@core/OperatorManager';
+import { getConditionOperators, getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
+import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import Modal from '@components/Common/Modal.vue';
 import type { Filter, AllowedScopes, AllowedProperties } from '@core/types';
 
 interface Props {
   entity: string;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;
@@ -68,15 +62,12 @@ function validate(): void {
 
   if (selectedType.value == 'condition') {
     const target = targetCondition.value!;
-    const computedScope = props.computedScopes?.[props.entity]?.find((scope) => scope.id == target);
-    let scope;
-    if (computedScope) {
-      scope = computedScope;
-    } else {
+    let scope = getComputedScope(props.entity, target);
+    if (!scope) {
       try {
         scope = schema.value.getScope(target);
       } catch {
-        scope = null;
+        scope = undefined;
       }
     }
     if (scope) {

@@ -5,7 +5,8 @@ import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import type { AllowedOperators, ComputedScopes, ComputedScope } from '@core/OperatorManager';
+import type { AllowedOperators } from '@core/OperatorManager';
+import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
 import type {
   GroupFilter,
   Filter,
@@ -29,7 +30,6 @@ interface Props {
   modelValue: GroupFilter;
   entity: string;
   allowReset?: boolean;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;
@@ -72,10 +72,7 @@ function reset(): void {
 }
 
 function getScopeDefinition(scopeId: string, entitySchema: EntitySchema): Scope | ComputedScope | undefined {
-  const computedScope =
-    props.computedScopes && props.computedScopes[props.entity]
-      ? props.computedScopes[props.entity].find((scope) => scope.id == scopeId)
-      : undefined;
+  const computedScope = getComputedScope(entitySchema.id, scopeId);
   if (computedScope) return computedScope;
   try {
     return entitySchema.getScope(scopeId);

@@ -4,13 +4,12 @@ import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import IconButton from '@components/Common/IconButton.vue';
-import type { AllowedOperators, ComputedScopes } from '@core/OperatorManager';
+import type { AllowedOperators } from '@core/OperatorManager';
 import type { RelationshipConditionFilter, Filter, AllowedScopes, AllowedProperties } from '@core/types';
 
 interface Props {
   modelValue: RelationshipConditionFilter;
   entity: string;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;

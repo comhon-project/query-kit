@@ -5,7 +5,7 @@ import Group from '@components/Filter/Group.vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
 import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
-import { isValidOperator, type AllowedOperators, type ComputedScopes } from '@core/OperatorManager';
+import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
@@ -34,7 +34,6 @@ interface QueueElement {
 interface Props {
   modelValue: RelationshipConditionFilter;
   entity: string;
-  computedScopes?: ComputedScopes;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;

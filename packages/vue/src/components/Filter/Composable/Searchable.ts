@@ -1,11 +1,6 @@
 import { computed, ref, watchEffect, type Ref, type ComputedRef } from 'vue';
-import {
-  getConditionOperators,
-  getContainerOperators,
-  type AllowedOperators,
-  type ComputedScopes,
-  type ComputedScope,
-} from '@core/OperatorManager';
+import { getConditionOperators, getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
+import { getComputedScopes, type ComputedScope } from '@core/ComputedScopesManager';
 import { getFiltrableProperties, getFiltrableScopes } from '@core/RequestSchema';
 import type { EntitySchema, Property, Scope } from '@core/EntitySchema';
 
@@ -14,7 +9,6 @@ export interface SearchableProps {
   allowedProperties?: Record<string, string[]>;
   allowedScopes?: Record<string, string[]>;
   allowedOperators?: AllowedOperators;
-  computedScopes?: ComputedScopes;
 }
 
 export interface UseSearchableReturn {
@@ -61,13 +55,13 @@ const useSearchable = (props: SearchableProps, schema: Ref<EntitySchema | null>)
   });
 
   const searchableComputedScopes = computed((): ComputedScope[] => {
-    if (!props.computedScopes || !props.computedScopes[props.entity]) {
+    const scopes = getComputedScopes(props.entity);
+    if (!scopes.length) {
       return [];
     }
     const filter = props.allowedScopes ? props.allowedScopes[props.entity] : null;
-    let scopes = props.computedScopes[props.entity];
-    if (scopes.length && filter) {
-      scopes = scopes.filter((scope) => filter.includes(scope.id));
+    if (filter) {
+      return scopes.filter((scope) => filter.includes(scope.id));
     }
     return scopes;
   });
