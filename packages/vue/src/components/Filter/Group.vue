@@ -151,6 +151,7 @@ watchEffect(() => {
     v-else-if="schema"
     ref="groupRef"
     :class="classes.group"
+    data-group
     tabindex="0"
     :aria-label="ariaLabel ?? translate('group')"
   >

@@ -159,7 +159,7 @@
   margin-top: 0rem;
 }
 
-.qkit-group-list-element:has(.qkit-group) {
+.qkit-group-list-element:has([data-group]) {
   flex-basis: 100%;
 }
 
@@ -663,22 +663,22 @@
   opacity: 0;
 }
 
-.qkit-collapse-horizontal-list-enter-from:has(.qkit-group),
-.qkit-collapse-horizontal-list-leave-to:has(.qkit-group) {
+.qkit-collapse-horizontal-list-enter-from:has([data-group]),
+.qkit-collapse-horizontal-list-leave-to:has([data-group]) {
   grid-template-rows: 0fr;
   margin-top: calc(-1 * var(--qkit-gap-spacer));
 }
 
-.qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)),
-.qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) {
+.qkit-collapse-horizontal-list-enter-from:not(:has([data-group])),
+.qkit-collapse-horizontal-list-leave-to:not(:has([data-group])) {
   grid-template-columns: 0fr;
   margin-right: calc(-1 * var(--qkit-gap-spacer));
 }
 
-.qkit-collapse-horizontal-list-enter-from:not(:has(.qkit-group)) *,
-.qkit-collapse-horizontal-list-leave-to:not(:has(.qkit-group)) *,
-.qkit-collapse-horizontal-list-enter-active:not(:has(.qkit-group)) *,
-.qkit-collapse-horizontal-list-leave-active:not(:has(.qkit-group)) * {
+.qkit-collapse-horizontal-list-enter-from:not(:has([data-group])) *,
+.qkit-collapse-horizontal-list-leave-to:not(:has([data-group])) *,
+.qkit-collapse-horizontal-list-enter-active:not(:has([data-group])) *,
+.qkit-collapse-horizontal-list-leave-active:not(:has([data-group])) * {
   white-space: nowrap;
   flex-wrap: nowrap;
 }
