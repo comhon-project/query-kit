@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
-import Shortcuts from '@components/Filter/Shortcuts.vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
 import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
@@ -18,59 +17,18 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
-  exceptAddFilterToParentGroup?: boolean;
-  exceptGoToPrevious?: boolean;
-  exceptGoToNext?: boolean;
   ariaLabel?: string; // not used but avoid prop to be injected automatically by vue on first template html node
 }
 
 interface Emits {
   remove: [key: string | number | undefined];
-  goToNext: [key: string | number | undefined];
-  goToPrevious: [key: string | number | undefined];
-  goToParentGroup: [];
-  goToRootGroup: [];
-  addFilterToParentGroup: [];
 }
 
-const emit = defineEmits<Emits>();
+defineEmits<Emits>();
 const props = withDefaults(defineProps<Props>(), {
   displayOperator: true,
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
-});
-
-type ShortcutEvents = {
-  goToNext?: () => void;
-  goToPrevious?: () => void;
-  goToParentGroup: () => void;
-  goToRootGroup: () => void;
-  addFilterToParentGroup?: () => void;
-};
-
-const shortcutEvents: ShortcutEvents = {
-  goToNext: () => emit('goToNext', props.modelValue.key),
-  goToPrevious: () => emit('goToPrevious', props.modelValue.key),
-  goToParentGroup: () => emit('goToParentGroup'),
-  goToRootGroup: () => emit('goToRootGroup'),
-  addFilterToParentGroup: () => emit('addFilterToParentGroup'),
-};
-
-const filteredShortcutEvents = computed<ShortcutEvents>(() => {
-  if (!props.exceptAddFilterToParentGroup && !props.exceptGoToPrevious && !props.exceptGoToNext) {
-    return shortcutEvents;
-  }
-  const values: ShortcutEvents = { ...shortcutEvents };
-  if (props.exceptAddFilterToParentGroup) {
-    delete values.addFilterToParentGroup;
-  }
-  if (props.exceptGoToPrevious) {
-    delete values.goToPrevious;
-  }
-  if (props.exceptGoToNext) {
-    delete values.goToNext;
-  }
-  return values;
 });
 
 const component = computed<Component>(() => {
@@ -91,17 +49,12 @@ const component = computed<Component>(() => {
 </script>
 
 <template>
-  <li :class="classes.group_list_element">
+  <li role="none" :class="classes.group_list_element">
     <component
       :is="component"
       v-bind="props"
       :model-value="modelValue"
       @remove="$emit('remove', modelValue.key)"
-      @go-to-root-group="$emit('goToRootGroup')"
-    >
-      <template #shortcuts>
-        <Shortcuts v-on="filteredShortcutEvents" />
-      </template>
-    </component>
+    />
   </li>
 </template>

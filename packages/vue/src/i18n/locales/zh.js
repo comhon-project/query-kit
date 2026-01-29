@@ -51,11 +51,6 @@ export default {
   collection: '数据集',
 
   show_action_shortcuts: '显示操作快捷键',
-  go_to_next_condition: '转到下一个条件',
-  go_to_previous_condition: '转到上一个条件',
-  go_to_parent_group: '转到父分组',
-  go_to_root_group: '转到第一级分组',
   go_to_collection: '转到搜索结果',
   go_to_filter: '转到筛选',
-  add_filter_on_parent_group: '在父分组中添加筛选条件',
 };

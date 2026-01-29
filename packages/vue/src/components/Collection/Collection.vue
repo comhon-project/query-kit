@@ -19,7 +19,6 @@ interface Props {
   directQuery: boolean;
   limit: number;
   offset?: number;
-  id?: string;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   orderBy?: (string | OrderByItem)[];
@@ -31,6 +30,7 @@ interface Props {
   requestTimezone?: string;
   editColumns?: boolean;
   requester?: Requester | RequesterFunction;
+  builderId?: string;
 }
 
 interface Emits {
@@ -38,6 +38,7 @@ interface Emits {
   export: [filter?: Record<string, unknown>];
   'update:columns': [columns: string[]];
   'update:orderBy': [orderBy: OrderByItem[]];
+  goToBuilder: [];
 }
 
 const emit = defineEmits<Emits>();
@@ -341,8 +342,8 @@ watch(
 </script>
 
 <template>
-  <div :id="id" :class="classes.collection" tabindex="0" :aria-label="translate('collection')">
-    <slot name="shortcuts" />
+  <section :class="classes.collection" :aria-label="translate('collection')">
+    <a v-if="builderId" :href="'#' + builderId" :class="classes.skip_link">{{ translate('go_to_filter') }}</a>
     <div>
       <div
         v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1"
@@ -377,7 +378,7 @@ watch(
       </slot>
       <div ref="collectionContent" :class="classes.collection_content">
         <table :class="classes.collection_table">
-          <caption class="qkit-sr-only">{{ translate('results') }}</caption>
+          <caption :class="classes.sr_only">{{ translate('results') }}</caption>
           <thead>
             <tr>
               <Header
@@ -400,7 +401,7 @@ watch(
               :class="onRowClick ? classes.collection_clickable_row : ''"
               :tabindex="onRowClick ? 0 : undefined"
               @click="(e) => $emit('rowClick', object, e)"
-              @keydown.enter="(e) => onRowClick ? $emit('rowClick', object, e) : undefined"
+              @keydown.enter="(e) => (onRowClick ? $emit('rowClick', object, e) : undefined)"
             >
               <template v-for="(columnId, index) in copiedColumns" :key="columnId">
                 <Cell
@@ -430,5 +431,5 @@ watch(
       :entity="entity"
       @update:columns="updateColumns"
     />
-  </div>
+  </section>
 </template>

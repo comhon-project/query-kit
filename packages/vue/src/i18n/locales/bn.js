@@ -51,11 +51,6 @@ export default {
   collection: 'সংগ্রহ',
 
   show_action_shortcuts: 'অ্যাকশন শর্টকাট দেখান',
-  go_to_next_condition: 'পরবর্তী শর্তে যান',
-  go_to_previous_condition: 'পূর্ববর্তী শর্তে যান',
-  go_to_parent_group: 'প্যারেন্ট গ্রুপে যান',
-  go_to_root_group: 'প্রথম স্তরের গ্রুপে যান',
   go_to_collection: 'অনুসন্ধান ফলাফলে যান',
   go_to_filter: 'ফিল্টারে যান',
-  add_filter_on_parent_group: 'প্যারেন্ট গ্রুপে ফিল্টার যোগ করুন',
 };

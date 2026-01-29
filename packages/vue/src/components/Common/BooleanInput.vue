@@ -13,7 +13,7 @@ defineProps<Props>();
 
 <template>
   <fieldset :class="classes.input_boolean">
-    <legend class="qkit-sr-only">{{ translate('boolean_choice') }}</legend>
+    <legend :class="classes.sr_only">{{ translate('boolean_choice') }}</legend>
     <label>
       <input
         type="radio"

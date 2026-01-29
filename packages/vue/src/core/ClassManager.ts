@@ -46,7 +46,9 @@ export type ClassName =
   | 'column_add'
   | 'spinner'
   | 'pagination'
-  | 'grid_container_for_transition';
+  | 'grid_container_for_transition'
+  | 'skip_link'
+  | 'sr_only';
 
 export type ClassList = Record<ClassName, string>;
 
@@ -99,6 +101,8 @@ const classList: ClassList = {
   spinner: 'qkit-spinner',
   pagination: 'qkit-pagination',
   grid_container_for_transition: 'qkit-grid-container-for-transition',
+  skip_link: 'qkit-skip-link',
+  sr_only: 'qkit-sr-only',
 };
 
 const registerClasses = (custom: Partial<ClassList>): void => {

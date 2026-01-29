@@ -51,11 +51,6 @@ export default {
   collection: 'colección',
 
   show_action_shortcuts: 'mostrar atajos de acción',
-  go_to_next_condition: 'ir a la siguiente condición',
-  go_to_previous_condition: 'ir a la condición anterior',
-  go_to_parent_group: 'ir al grupo padre',
-  go_to_root_group: 'ir al grupo de primer nivel',
   go_to_collection: 'ir a los resultados de búsqueda',
   go_to_filter: 'ir a filtrar',
-  add_filter_on_parent_group: 'agregar filtro al grupo padre',
 };

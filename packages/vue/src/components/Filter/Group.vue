@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, useTemplateRef } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import { getUniqueId } from '@core/Utils';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
@@ -24,25 +24,20 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
-  root?: boolean;
   ariaLabel?: string;
 }
 
 interface Emits {
   remove: [];
-  goToRootGroup: [];
 }
 
-const emit = defineEmits<Emits>();
+defineEmits<Emits>();
 const props = withDefaults(defineProps<Props>(), {
   displayOperator: true,
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
-  root: false,
 });
 
-const listRef = useTemplateRef<HTMLUListElement>('listRef');
-const groupRef = useTemplateRef<HTMLDivElement>('groupRef');
 const validOperator = ref<boolean>(true);
 const validEntity = ref<boolean>(true);
 const schema = ref<EntitySchema | null>(null);
@@ -50,42 +45,10 @@ const showConditionChoice = ref<boolean>(false);
 const collapsed = ref<boolean>(false);
 const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
 
+
 const visibleFilters = computed<Filter[]>(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
 });
-
-const shortcutEvents = {
-  goToNext: goToNext,
-  goToPrevious: goToPrevious,
-  goToParentGroup: focusGroup,
-  goToRootGroup: goToRootGroup,
-  addFilterToParentGroup: addFilter,
-};
-
-function goToNext(key: string | number): void {
-  const index = visibleFilters.value.findIndex((filter) => filter.key == key);
-  goToCondition(index + 1);
-}
-
-function goToPrevious(key: string | number): void {
-  const index = visibleFilters.value.findIndex((filter) => filter.key == key);
-  goToCondition(index - 1);
-}
-
-function goToCondition(index: number): void {
-  const next = listRef.value?.children[index];
-  if (next && next.children[0]) {
-    (next.children[0] as HTMLElement).focus();
-  }
-}
-
-function focusGroup(): void {
-  groupRef.value?.focus();
-}
-
-function goToRootGroup(): void {
-  props.root ? groupRef.value?.focus() : emit('goToRootGroup');
-}
 
 function initFilter(): void {
   if (!props.modelValue.filters) {
@@ -123,6 +86,10 @@ function setNewFilter(data: Filter): void {
   props.modelValue.filters.push(data);
 }
 
+function toggleCollapse(): void {
+  collapsed.value = !collapsed.value;
+}
+
 watchEffect(() => {
   initFilter();
   initSchema();
@@ -132,13 +99,15 @@ watchEffect(() => {
     validOperator.value = false;
   }
 });
+
 </script>
 
 <template>
   <div
     v-if="!validEntity || !validOperator"
     :class="classes.condition_error_container"
-    tabindex="0"
+    role="treeitem"
+    :tabindex="-1"
     :aria-label="ariaLabel ?? translate('group')"
   >
     <div>
@@ -149,13 +118,14 @@ watchEffect(() => {
   </div>
   <div
     v-else-if="schema"
-    ref="groupRef"
     :class="classes.group"
     data-group
-    tabindex="0"
+    role="treeitem"
+    :tabindex="-1"
+    :aria-expanded="!collapsed"
     :aria-label="ariaLabel ?? translate('group')"
+    @tree-toggle="toggleCollapse"
   >
-    <slot name="shortcuts" />
     <div :class="classes.group_header">
       <div>
         <slot name="relationship" />
@@ -183,20 +153,15 @@ watchEffect(() => {
     </div>
     <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined">
       <div style="overflow: hidden">
-        <ul ref="listRef" :class="classes.group_list">
+        <ul role="group" :class="classes.group_list">
           <TransitionGroup name="qkit-collapse-horizontal-list">
             <GroupElement
-              v-for="(filter, displayIndex) in visibleFilters"
+              v-for="filter in visibleFilters"
               :key="filter.key"
               v-bind="props"
               :model-value="filter"
-              :root="undefined"
               :aria-label="undefined"
-              :except-add-filter-to-parent-group="!canAddFilter"
-              :except-go-to-previous="displayIndex == 0"
-              :except-go-to-next="displayIndex == visibleFilters.length - 1"
               @remove="() => removeFilter(filter)"
-              v-on="shortcutEvents"
             />
           </TransitionGroup>
         </ul>

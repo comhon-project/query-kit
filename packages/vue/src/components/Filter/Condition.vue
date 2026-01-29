@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, watchEffect } from 'vue';
+import { ref, watch, computed, watchEffect, useTemplateRef } from 'vue';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
 import {
@@ -43,6 +43,7 @@ const props = withDefaults(defineProps<Props>(), {
   requestTimezone: 'UTC',
 });
 
+const treeitemRef = useTemplateRef<HTMLDivElement>('treeitemRef');
 const validEntity = ref<boolean>(true);
 const validOperator = ref<boolean>(true);
 const validProperty = ref<boolean>(true);
@@ -156,9 +157,8 @@ watch(
 </script>
 
 <template>
-  <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
+  <div ref="treeitemRef" :class="classes.condition_container" role="treeitem" :tabindex="-1" :aria-label="ariaLabel ?? translate('condition')" @keydown.escape="treeitemRef?.focus()">
     <div>
-      <slot name="shortcuts" />
       <InvalidEntity v-if="!validEntity" :entity="entity" />
       <InvalidProperty v-else-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />

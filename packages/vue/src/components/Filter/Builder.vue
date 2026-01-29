@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, toRaw, watchEffect, onUnmounted } from 'vue';
+import { ref, watch, toRaw, watchEffect, onUnmounted, onMounted, useTemplateRef } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -7,14 +7,8 @@ import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import type { AllowedOperators } from '@core/OperatorManager';
 import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
-import type {
-  GroupFilter,
-  Filter,
-  DisplayOperator,
-  AllowedScopes,
-  AllowedProperties,
-  ScopeFilter,
-} from '@core/types';
+import type { GroupFilter, Filter, DisplayOperator, AllowedScopes, AllowedProperties, ScopeFilter } from '@core/types';
+import { useTreeNavigation } from '@components/Filter/Composable/TreeNavigation';
 
 /**
  * Mutable filter type for dynamic manipulation in getComputedFilter().
@@ -37,14 +31,18 @@ interface Props {
   userTimezone?: string;
   requestTimezone?: string;
   deferred?: number;
-  id?: string;
+  collectionId?: string;
 }
 
 interface Emits {
   computed: [filter: MutableFilter];
+  goToCollection: [];
 }
 
 const emit = defineEmits<Emits>();
+const treeRef = useTemplateRef<HTMLDivElement>('treeRef');
+const { handleKeydown, initTabindex } = useTreeNavigation(treeRef, () => emit('goToCollection'));
+
 const props = withDefaults(defineProps<Props>(), {
   allowReset: true,
   displayOperator: true,
@@ -59,6 +57,10 @@ const schema = ref<EntitySchema | null>(null);
 
 onUnmounted(() => {
   if (timeoutId) clearTimeout(timeoutId);
+});
+
+onMounted(() => {
+  initTabindex();
 });
 
 async function initSchema(): Promise<void> {
@@ -202,15 +204,17 @@ watch(props.modelValue, () => {
 </script>
 
 <template>
-  <div :id="id" style="position: relative" :class="classes.builder" tabindex="0" :aria-label="translate('filter')">
-    <slot name="shortcuts" />
-    <Group v-if="schema" v-bind="props" :root="true">
-      <template v-if="allowReset" #reset>
-        <IconButton icon="reset" @click="reset" />
-      </template>
-      <template #validate>
-        <slot name="validate" />
-      </template>
-    </Group>
-  </div>
+  <section :class="classes.builder" :aria-label="translate('filter')">
+    <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
+    <div ref="treeRef" role="tree" @keydown="handleKeydown">
+      <Group v-if="schema" v-bind="props">
+        <template v-if="allowReset" #reset>
+          <IconButton icon="reset" @click="reset" />
+        </template>
+        <template #validate>
+          <slot name="validate" />
+        </template>
+      </Group>
+    </div>
+  </section>
 </template>

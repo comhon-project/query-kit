@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, watchEffect, computed, type Component } from 'vue';
+import { ref, watch, watchEffect, computed, useTemplateRef, type Component } from 'vue';
 import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import Condition from '@components/Filter/Condition.vue';
@@ -44,10 +44,10 @@ interface Props {
 
 interface Emits {
   remove: [];
-  goToRootGroup: [];
 }
 
 const emit = defineEmits<Emits>();
+const treeitemRef = useTemplateRef<HTMLDivElement>('treeitemRef');
 const props = withDefaults(defineProps<Props>(), {
   displayOperator: true,
   userTimezone: 'UTC',
@@ -173,9 +173,12 @@ watch(() => props.modelValue.filter, initSchema);
 <template>
   <div
     v-if="invalidEntity || invalidProperty || invalidOperator"
+    ref="treeitemRef"
     :class="classes.condition_error_container"
-    tabindex="0"
+    role="treeitem"
+    :tabindex="-1"
     :aria-label="translate('relationship_condition')"
+    @keydown.escape="treeitemRef?.focus()"
   >
     <div>
       <InvalidEntity v-if="invalidEntity" :entity="invalidEntity" />
@@ -187,9 +190,8 @@ watch(() => props.modelValue.filter, initSchema);
   <template v-else-if="queue">
     <Transition name="qkit-collapse-horizontal-list" mode="out-in">
       <div v-if="!endQueueFilter" :class="classes.grid_container_for_transition">
-        <div :class="classes.relationship_container" tabindex="0" :aria-label="translate('relationship_condition')">
+        <div ref="treeitemRef" :class="classes.relationship_container" role="treeitem" :tabindex="-1" :aria-label="translate('relationship_condition')" @keydown.escape="treeitemRef?.focus()">
           <div :class="classes.relationship_queue_and_action">
-            <slot name="shortcuts" />
             <div :class="classes.relationship_queue">
               <RelationshipQueueElement
                 v-for="elmnt in queue"
@@ -223,7 +225,6 @@ watch(() => props.modelValue.filter, initSchema);
           :entity="endQueuePropertySchemaId"
           :model-value="endQueueFilter"
           @remove="removeEndFilter"
-          v-on="endQueueFilter.type == 'group' ? { goToRootGroup: () => $emit('goToRootGroup') } : {}"
         >
           <template #relationship>
             <div :class="classes.relationship_queue">
@@ -235,9 +236,6 @@ watch(() => props.modelValue.filter, initSchema);
                 :entity="elmnt.schema.id"
               />
             </div>
-          </template>
-          <template #shortcuts="shortcutsProps">
-            <slot name="shortcuts" v-bind="shortcutsProps" />
           </template>
         </component>
       </div>

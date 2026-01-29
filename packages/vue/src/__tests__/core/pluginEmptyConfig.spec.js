@@ -125,6 +125,8 @@ describe('minimal plugin', () => {
       spinner: 'qkit-spinner',
       pagination: 'qkit-pagination',
       grid_container_for_transition: 'qkit-grid-container-for-transition',
+      skip_link: 'qkit-skip-link',
+      sr_only: 'qkit-sr-only',
     });
     for (const key in componentList) {
       if (Object.hasOwn(componentList, key)) {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, watchEffect, useTemplateRef } from 'vue';
 import {
   resolve,
   getScopeTranslation,
@@ -35,6 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
   requestTimezone: 'UTC',
 });
 
+const treeitemRef = useTemplateRef<HTMLDivElement>('treeitemRef');
 const validEntity = ref<boolean>(true);
 const validScope = ref<boolean>(true);
 const schema = ref<EntitySchema | null>(null);
@@ -87,9 +88,8 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('scope')">
+  <div ref="treeitemRef" :class="classes.condition_container" role="treeitem" :tabindex="-1" :aria-label="ariaLabel ?? translate('scope')" @keydown.escape="treeitemRef?.focus()">
     <div>
-      <slot name="shortcuts" />
       <InvalidEntity v-if="!validEntity" :entity="entity" />
       <InvalidScope v-else-if="!validScope" :id="modelValue.id" />
       <template v-else-if="schema && scope">

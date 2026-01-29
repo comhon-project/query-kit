@@ -51,11 +51,6 @@ export default {
   collection: 'collection',
 
   show_action_shortcuts: 'show action shortcuts',
-  go_to_next_condition: 'go to next condition',
-  go_to_previous_condition: 'go to previous condition',
-  go_to_parent_group: 'go to parent group',
-  go_to_root_group: 'go to first level group',
   go_to_collection: 'go to search results',
   go_to_filter: 'go to filter',
-  add_filter_on_parent_group: 'add a filter to the parent group',
 };

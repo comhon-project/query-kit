@@ -51,11 +51,6 @@ export default {
   collection: 'مجموعة البيانات',
 
   show_action_shortcuts: 'عرض اختصارات الإجراءات',
-  go_to_next_condition: 'الانتقال إلى الشرط التالي',
-  go_to_previous_condition: 'الانتقال إلى الشرط السابق',
-  go_to_parent_group: 'الانتقال إلى المجموعة الأصل',
-  go_to_root_group: 'الانتقال إلى مجموعة المستوى الأول',
   go_to_collection: 'الانتقال إلى نتائج البحث',
   go_to_filter: 'الانتقال إلى التصفية',
-  add_filter_on_parent_group: 'إضافة تصفية إلى المجموعة الأصل',
 };

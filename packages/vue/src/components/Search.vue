@@ -6,7 +6,6 @@ import { resolve, type EntitySchema } from '@core/EntitySchema';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { getUniqueId } from '@core/Utils';
-import Shortcuts from '@components/Filter/Shortcuts.vue';
 import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
 import type {
   GroupFilter,
@@ -74,7 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 let tempFilter: Record<string, unknown> | null = null;
 const uniqueId = getUniqueId();
-const filterId = 'qkit-filter-' + uniqueId;
+const builderId = 'qkit-filter-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
 const schema = ref<EntitySchema | null>(null);
 const builtFilter = ref<GroupFilter>(null!);
@@ -116,13 +115,11 @@ function updateFilter(filter: Record<string, unknown>): void {
 }
 
 function goToCollection(): void {
-  location.href = `#${collectionId}`;
-  document.getElementById(collectionId)?.focus();
+  location.hash = collectionId;
 }
 
-function goToFilter(): void {
-  location.href = `#${filterId}`;
-  document.getElementById(filterId)?.focus();
+function goToBuilder(): void {
+  location.hash = builderId;
 }
 
 watchEffect(() => {
@@ -137,27 +134,30 @@ watch(computedFilter, () => {
 
 <template>
   <div v-if="schema" :class="classes.search">
-    <Builder v-bind="props" :id="filterId" v-model="builtFilter" @computed="updateFilter">
+    <Builder
+      :id="builderId"
+      v-bind="props"
+      v-model="builtFilter"
+      :collection-id="collectionId"
+      @computed="updateFilter"
+      @go-to-collection="goToCollection"
+    >
       <template #validate>
         <IconButton v-if="manually" icon="search" @click="applyQuery" />
-      </template>
-      <template #shortcuts>
-        <Shortcuts @go-to-collection="goToCollection" />
       </template>
     </Builder>
     <Collection
       v-if="computedFilter !== false"
-      v-bind="props"
       :id="collectionId"
+      v-bind="props"
       :filter="computedFilter"
+      :builder-id="builderId"
       @update:columns="(columns) => emit('update:columns', columns)"
       @update:order-by="(orderBy) => emit('update:orderBy', orderBy)"
+      @go-to-builder="goToBuilder"
     >
       <template #loading="loadingProps">
         <slot name="loading" v-bind="loadingProps" />
-      </template>
-      <template #shortcuts>
-        <Shortcuts @go-to-filter="goToFilter" />
       </template>
     </Collection>
   </div>
