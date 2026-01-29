@@ -28,7 +28,6 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
-  ariaLabel?: string;
 }
 
 interface Emits {
@@ -156,9 +155,8 @@ watch(
 </script>
 
 <template>
-  <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('condition')">
+  <div :class="classes.condition_container">
     <div>
-      <slot name="shortcuts" />
       <InvalidEntity v-if="!validEntity" :entity="entity" />
       <InvalidProperty v-else-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />

@@ -51,11 +51,6 @@ export default {
   collection: 'コレクション',
 
   show_action_shortcuts: 'アクションショートカットを表示',
-  go_to_next_condition: '次の条件へ移動',
-  go_to_previous_condition: '前の条件へ移動',
-  go_to_parent_group: '親グループへ移動',
-  go_to_root_group: '第一階層グループへ移動',
   go_to_collection: '検索結果へ移動',
   go_to_filter: 'フィルターへ移動',
-  add_filter_on_parent_group: '親グループにフィルターを追加',
 };

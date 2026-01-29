@@ -21,7 +21,6 @@ interface Props {
   entity: string;
   userTimezone?: string;
   requestTimezone?: string;
-  ariaLabel?: string;
 }
 
 interface Emits {
@@ -87,9 +86,8 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div :class="classes.condition_container" tabindex="0" :aria-label="ariaLabel ?? translate('scope')">
+  <div :class="classes.condition_container">
     <div>
-      <slot name="shortcuts" />
       <InvalidEntity v-if="!validEntity" :entity="entity" />
       <InvalidScope v-else-if="!validScope" :id="modelValue.id" />
       <template v-else-if="schema && scope">

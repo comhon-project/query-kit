@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, type Component } from 'vue';
-import Shortcuts from '@components/Filter/Shortcuts.vue';
+import { ref, computed, type Component } from 'vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
 import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
-import Group from '@components/Filter/Group.vue';
+import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { classes } from '@core/ClassManager';
+import { translate } from '@i18n/i18n';
 import type { AllowedOperators } from '@core/OperatorManager';
 import type { Filter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
 
@@ -18,60 +18,31 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
-  exceptAddFilterToParentGroup?: boolean;
-  exceptGoToPrevious?: boolean;
-  exceptGoToNext?: boolean;
-  ariaLabel?: string; // not used but avoid prop to be injected automatically by vue on first template html node
 }
 
 interface Emits {
   remove: [key: string | number | undefined];
-  goToNext: [key: string | number | undefined];
-  goToPrevious: [key: string | number | undefined];
-  goToParentGroup: [];
-  goToRootGroup: [];
-  addFilterToParentGroup: [];
 }
 
-const emit = defineEmits<Emits>();
+defineEmits<Emits>();
 const props = withDefaults(defineProps<Props>(), {
   displayOperator: true,
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
 });
 
-type ShortcutEvents = {
-  goToNext?: () => void;
-  goToPrevious?: () => void;
-  goToParentGroup: () => void;
-  goToRootGroup: () => void;
-  addFilterToParentGroup?: () => void;
-};
+const collapsed = ref<boolean>(false);
 
-const shortcutEvents: ShortcutEvents = {
-  goToNext: () => emit('goToNext', props.modelValue.key),
-  goToPrevious: () => emit('goToPrevious', props.modelValue.key),
-  goToParentGroup: () => emit('goToParentGroup'),
-  goToRootGroup: () => emit('goToRootGroup'),
-  addFilterToParentGroup: () => emit('addFilterToParentGroup'),
-};
+function hasExpandableContent(filter: Filter): boolean {
+  if (filter.type === 'group') return true;
+  if (filter.type === 'relationship_condition' && filter.filter) {
+    return hasExpandableContent(filter.filter);
+  }
+  return false;
+}
 
-const filteredShortcutEvents = computed<ShortcutEvents>(() => {
-  if (!props.exceptAddFilterToParentGroup && !props.exceptGoToPrevious && !props.exceptGoToNext) {
-    return shortcutEvents;
-  }
-  const values: ShortcutEvents = { ...shortcutEvents };
-  if (props.exceptAddFilterToParentGroup) {
-    delete values.addFilterToParentGroup;
-  }
-  if (props.exceptGoToPrevious) {
-    delete values.goToPrevious;
-  }
-  if (props.exceptGoToNext) {
-    delete values.goToNext;
-  }
-  return values;
-});
+const isExpandable = computed<boolean>(() => hasExpandableContent(props.modelValue));
+const ariaExpanded = computed<boolean | undefined>(() => (isExpandable.value ? !collapsed.value : undefined));
 
 const component = computed<Component>(() => {
   const type = props.modelValue.type;
@@ -83,25 +54,32 @@ const component = computed<Component>(() => {
     case 'relationship_condition':
       return RelationshipCondition;
     case 'group':
-      return Group;
+      return ChildGroup;
     default:
       throw new Error('invalid type ' + type);
   }
 });
+
+function toggleCollapse(): void {
+  collapsed.value = !collapsed.value;
+}
 </script>
 
 <template>
-  <li :class="classes.group_list_element">
+  <li
+    role="treeitem"
+    :tabindex="-1"
+    @tree-toggle="toggleCollapse"
+    :aria-expanded="ariaExpanded"
+    :aria-label="translate(modelValue.type)"
+    :class="classes.group_list_element"
+  >
     <component
       :is="component"
       v-bind="props"
       :model-value="modelValue"
+      v-model:collapsed="collapsed"
       @remove="$emit('remove', modelValue.key)"
-      @go-to-root-group="$emit('goToRootGroup')"
-    >
-      <template #shortcuts>
-        <Shortcuts v-on="filteredShortcutEvents" />
-      </template>
-    </component>
+    />
   </li>
 </template>

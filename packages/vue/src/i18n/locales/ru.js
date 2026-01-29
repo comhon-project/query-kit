@@ -51,11 +51,6 @@ export default {
   collection: 'коллекция',
 
   show_action_shortcuts: 'показать горячие клавиши',
-  go_to_next_condition: 'перейти к следующему условию',
-  go_to_previous_condition: 'перейти к предыдущему условию',
-  go_to_parent_group: 'перейти к родительской группе',
-  go_to_root_group: 'перейти к группе первого уровня',
   go_to_collection: 'перейти к результатам поиска',
   go_to_filter: 'перейти к фильтру',
-  add_filter_on_parent_group: 'добавить фильтр в родительскую группу',
 };

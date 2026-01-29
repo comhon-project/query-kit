@@ -3,6 +3,7 @@
   --qkit-color-primary-darken: hsl(263, 45%, 45%);
   --qkit-color-secondary: hsl(9, 57%, 50%);
   --qkit-color-secondary-darken: hsl(9, 57%, 45%);
+  --qkit-color-focus: hsl(0, 0%, 20%);
   --qkit-color-border: hsl(210, 14%, 83%);
   --qkit-collection-background-color: hsl(0, 0%, 95%);
   --qkit-collection-background-color-darken: hsl(0, 0%, 90%);
@@ -73,13 +74,17 @@
   flex-direction: column;
   height: 100%;
 }
+.qkit-builder,
+.qkit-collection {
+  position: relative;
+}
 
-.qkit-search > .qkit-builder > .qkit-group {
+.qkit-search .qkit-builder > [role='tree'] > .qkit-group {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-.qkit-search > .qkit-collection {
+.qkit-search .qkit-collection {
   border-top: 0;
 }
 
@@ -213,6 +218,10 @@
 .qkit-condition-container > button {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+.qkit-condition-container > button:focus-visible {
+  outline: 2px solid var(--qkit-color-focus);
+  outline-offset: -2px;
 }
 
 .qkit-condition-header {
@@ -770,21 +779,37 @@
   transform: rotate(-180deg);
 }
 
-/* Focus-only shortcuts styles */
-.qkit-focus-only {
+.qkit-skip-link {
   position: absolute;
   left: 0;
   top: 0;
-  background-color: white;
-  width: 0;
-  height: 0;
+  padding: 0.5rem 1rem;
+  background-color: var(--qkit-color-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  font-size: inherit;
+  z-index: 100;
   opacity: 0;
-  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
-.qkit-focus-only:focus-visible {
+.qkit-skip-link:focus-visible {
   opacity: 1;
-  width: auto;
-  height: auto;
+  pointer-events: auto;
+  outline: 2px solid var(--qkit-color-focus);
+  outline-offset: 2px;
+}
+
+[role='treeitem']:focus-visible {
+  outline: 2px solid var(--qkit-color-focus);
+  outline-offset: -2px;
+  border-radius: 0.5rem;
+}
+
+[role='treeitem']:focus:has(.qkit-collapse-horizontal-list-enter-active),
+[role='treeitem']:focus:has(.qkit-collapse-horizontal-list-leave-active) {
+  outline: none;
 }
 
 .qkit-sr-only {

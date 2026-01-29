@@ -51,11 +51,6 @@ export default {
   collection: 'संग्रह',
 
   show_action_shortcuts: 'क्रिया शॉर्टकट दिखाएं',
-  go_to_next_condition: 'अगली शर्त पर जाएं',
-  go_to_previous_condition: 'पिछली शर्त पर जाएं',
-  go_to_parent_group: 'मूल समूह पर जाएं',
-  go_to_root_group: 'पहले स्तर के समूह पर जाएं',
   go_to_collection: 'खोज परिणामों पर जाएं',
   go_to_filter: 'फ़िल्टर पर जाएं',
-  add_filter_on_parent_group: 'मूल समूह में फ़िल्टर जोड़ें',
 };

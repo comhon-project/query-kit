@@ -134,7 +134,7 @@ watchEffect(async () => {
     <template #body>
       <form ref="form" :class="classes.condition_choice_form" @submit.prevent="validate">
         <fieldset>
-          <legend class="qkit-sr-only">{{ translate('choose_condition_element') }}</legend>
+          <legend :class="classes.sr_only">{{ translate('choose_condition_element') }}</legend>
           <div>
             <input
               :id="uniqueIdCondition"
