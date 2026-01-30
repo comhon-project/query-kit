@@ -26,7 +26,14 @@ const computedAriaLabel = computed<string>(() => {
 </script>
 
 <template>
-  <button :class="classes[btnClass]" :type="type" :aria-label="computedAriaLabel" :aria-expanded="!collapsed" @click="collapsed = !collapsed">
+  <button
+    :class="classes[btnClass]"
+    :type="type"
+    :title="icons['collapse'] ? computedAriaLabel : undefined"
+    :aria-label="computedAriaLabel"
+    :aria-expanded="!collapsed"
+    @click="collapsed = !collapsed"
+  >
     <div v-if="icons['collapse']" class="qkit-collapse-icon-wrapper" :upsidedown="collapsed ? '' : undefined">
       <Icon icon="collapse" />
     </div>

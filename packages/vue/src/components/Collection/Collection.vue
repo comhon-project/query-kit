@@ -35,7 +35,6 @@ interface Props {
 
 interface Emits {
   rowClick: [row: Record<string, unknown>, event: MouseEvent | KeyboardEvent];
-  export: [filter?: Record<string, unknown>];
   'update:columns': [columns: string[]];
   'update:orderBy': [orderBy: OrderByItem[]];
   goToBuilder: [];
@@ -360,7 +359,7 @@ watch(
           @update="updatePage"
         />
         <div :class="classes.collection_actions">
-          <IconButton v-if="onExport" icon="export" @click="() => $emit('export', filter)" />
+          <IconButton v-if="onExport" icon="export" @click="() => onExport!(filter)" />
           <IconButton
             v-if="allowedCollectionTypes.length > 1"
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"

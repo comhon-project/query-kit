@@ -35,7 +35,13 @@ function computeQuickSearch(parameters) {
     ],
   };
 }
-import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader, requestSchemaLoader } from './core/SchemaLoader';
+import {
+  entitySchemaLoader,
+  entityTranslationsLoader,
+  enumSchemaLoader,
+  enumTranslationsLoader,
+  requestSchemaLoader,
+} from './core/SchemaLoader';
 import CellInteger from './components/CellInteger.vue';
 import CountryInput from './components/CountryInput.vue';
 
@@ -62,25 +68,7 @@ createApp(App)
         weight: (value) => value + ' kg',
       },
     },
-    icons: {
-      add: { class: 'qkit-icon qkit-icon-plus', component: 'i' },
-      add_filter: { class: 'qkit-icon qkit-icon-plus', component: 'i' },
-      add_value: { class: 'qkit-icon qkit-icon-plus', component: 'i' },
-      delete: { class: 'qkit-icon qkit-icon-cross', component: 'i' },
-      close: { class: 'qkit-icon qkit-icon-cross', component: 'i' },
-      previous: { class: 'qkit-icon qkit-icon-double-arrow-left', component: 'i' },
-      next: { class: 'qkit-icon qkit-icon-double-arrow-right', component: 'i' },
-      collapse: { class: 'qkit-icon qkit-icon-arrow-down', component: 'i' },
-      down: { class: 'qkit-icon qkit-icon-arrow-full-down', component: 'i' },
-      minus: { class: 'qkit-icon qkit-icon-minus', component: 'i' },
-      reset: { class: 'qkit-icon qkit-icon-refresh', component: 'i' },
-      confirm: { icon: 'fa-solid fa-check', fade: '' },
-      search: undefined,
-      export: undefined,
-      columns: undefined,
-    },
-    iconComponent: 'Icon',
-    iconPropName: 'icon',
+    icons: 'default',
     defaultLocale: 'en',
     fallbackLocale: 'fr',
     renderHtml: true,

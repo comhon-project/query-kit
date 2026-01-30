@@ -2,7 +2,6 @@
 import { ref, watch, toRaw, watchEffect, onUnmounted } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
-import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import type { AllowedOperators } from '@core/OperatorManager';
@@ -31,6 +30,7 @@ interface Props {
   requestTimezone?: string;
   deferred?: number;
   collectionId?: string;
+  onValidate?: () => void;
 }
 
 interface Emits {
@@ -199,13 +199,6 @@ watch(props.modelValue, () => {
 <template>
   <section :class="classes.builder" :aria-label="translate('filter')">
     <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
-    <Group v-if="schema" v-bind="props" @exit="$emit('goToCollection')">
-      <template v-if="allowReset" #reset>
-        <IconButton icon="reset" @click="reset" />
-      </template>
-      <template #validate>
-        <slot name="validate" />
-      </template>
-    </Group>
+    <Group v-if="schema" v-bind="props" :on-reset="allowReset ? reset : undefined" @exit="$emit('goToCollection')" />
   </section>
 </template>

@@ -441,10 +441,10 @@
   transform: rotate(-90deg);
   transition: transform 0.2s ease-in-out;
 }
-.qkit-collection-table thead button[desc] > *:last-child {
+.qkit-collection-table thead button[asc] > *:last-child {
   transform: rotate(-180deg);
 }
-.qkit-collection-table thead button[asc] > *:last-child {
+.qkit-collection-table thead button[desc] > *:last-child {
   transform: rotate(0deg);
 }
 
@@ -549,42 +549,35 @@
 
 .qkit-pagination {
   margin: 0;
-  list-style: none;
   padding: 0;
+  list-style: none;
   display: flex;
 }
 
 .qkit-pagination > li {
-  color: white;
-  background-color: var(--qkit-color-primary);
-  transition: background-color 0.15s ease-in-out;
-  display: flex;
-  align-items: center;
+  border-radius: 0;
+  cursor: inherit;
 }
 
 .qkit-pagination > li > button {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  padding: 0.5rem;
+  height: 100%;
+  border-radius: 0;
 }
 
-.qkit-pagination > [active] {
+.qkit-pagination > li > button:disabled {
+  opacity: 1;
+}
+
+.qkit-pagination > [active] > button {
   background-color: var(--qkit-color-primary-darken);
 }
 
-.qkit-pagination > li:hover {
-  background-color: var(--qkit-color-primary-darken);
-}
-
-.qkit-pagination > li:first-child {
+.qkit-pagination > li:first-child > button {
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
 }
 
-.qkit-pagination > li:last-child {
+.qkit-pagination > li:last-child > button {
   border-top-right-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
 }
@@ -710,54 +703,85 @@
   height: var(--qkit-icon-size);
 }
 .qkit-icon-minus {
-  clip-path: polygon(0% 35%, 100% 35%, 100% 65%, 0% 65%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8L14 8' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-plus {
-  clip-path: polygon(
-    0% 35%,
-    35% 35%,
-    35% 0%,
-    65% 0%,
-    65% 35%,
-    100% 35%,
-    100% 65%,
-    65% 65%,
-    65% 100%,
-    35% 100%,
-    35% 65%,
-    0% 65%
-  );
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2L8 14M2 8L14 8' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-cross {
-  clip-path: polygon(
-    20% 0%,
-    0% 20%,
-    30% 50%,
-    0% 80%,
-    20% 100%,
-    50% 70%,
-    80% 100%,
-    100% 80%,
-    70% 50%,
-    100% 20%,
-    80% 0%,
-    50% 30%
-  );
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 3L13 13M13 3L3 13' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-arrow-down {
-  clip-path: polygon(25% 15%, 50% 50%, 75% 15%, 100% 15%, 50% 85%, 0 15%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 5L8 11L13 5' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-double-arrow-right {
-  clip-path: polygon(45% 45%, 45% 0, 100% 50%, 45% 100%, 45% 55%, 0 100%, 0 0);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 2L11 8L5 14' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-double-arrow-left {
-  clip-path: polygon(55% 0, 55% 45%, 100% 0, 100% 100%, 55% 55%, 55% 100%, 0 50%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M11 2L5 8L11 14' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-arrow-full-down {
-  clip-path: polygon(50% 80%, 0 20%, 100% 20%);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='black' d='M8 11L2 5h12z'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 .qkit-icon-refresh {
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='2 2 20 20'%3E%3Cpath d='M6.35 6.35A7.96 7.96 0 0112 4c4.42 0 7.99 3.58 7.99 8s-3.57 8-7.99 8c-3.73 0-6.84-2.55-7.73-6h2.5A5.99 5.99 0 0012 18c3.31 0 6-2.69 6-6s-2.69-6-6-6c-1.66 0-3.14.69-4.22 1.78L9.5 9.5H4V4l2.35 2.35z' stroke='black' stroke-width='2' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='2 2 20 20'%3E%3Cpath d='M6.35 6.35A7.96 7.96 0 0112 4c4.42 0 7.99 3.58 7.99 8s-3.57 8-7.99 8c-3.73 0-6.84-2.55-7.73-6h2.5A5.99 5.99 0 0012 18c3.31 0 6-2.69 6-6s-2.69-6-6-6c-1.66 0-3.14.69-4.22 1.78L9.5 9.5H4V4l2.35 2.35z' fill='black' stroke='black' stroke-width='1'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-search {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='6' cy='6' r='4.5' fill='none' stroke='black' stroke-width='2.5'/%3E%3Cline x1='9.5' y1='9.5' x2='14.5' y2='14.5' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-export {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1L8 10M8 1L4 5M8 1L12 5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9L2 14L14 14L14 9' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-columns {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 2L2 14M8 2L8 14M14 2L14 14' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-paginated-list {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 16'%3E%3Cpath d='M4 3L1 8L4 13' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='8' cy='8' r='2' fill='black'/%3E%3Ccircle cx='12' cy='8' r='2' fill='black'/%3E%3Cpath d='M16 3L19 8L16 13' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-infinite-list {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 2L14 2M2 6L14 6' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M8 10L8 15M8 15L5 12M8 15L11 12' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-check {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8L6 12L14 4' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-position: center;
@@ -776,7 +800,7 @@
   transition: transform 0.2s ease;
 }
 .qkit-collapse-icon-wrapper[upsidedown] {
-  transform: rotate(-180deg);
+  transform: rotate(-90deg);
 }
 
 .qkit-skip-link {

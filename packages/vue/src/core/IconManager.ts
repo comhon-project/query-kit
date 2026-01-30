@@ -25,25 +25,27 @@ export interface IconConfig {
 
 export type IconList = Record<IconName, IconConfig | undefined>;
 
-const iconList: IconList = {
-  add: undefined,
-  add_filter: undefined,
-  add_value: undefined,
-  delete: undefined,
-  close: undefined,
-  previous: undefined,
-  next: undefined,
-  collapse: undefined,
-  down: undefined,
-  minus: undefined,
-  reset: undefined,
-  search: undefined,
-  confirm: undefined,
-  export: undefined,
-  columns: undefined,
-  paginated_list: undefined,
-  infinite_list: undefined,
+export const defaultIcons: IconList = {
+  add: { class: 'qkit-icon qkit-icon-plus', component: 'i' },
+  add_filter: { class: 'qkit-icon qkit-icon-plus', component: 'i' },
+  add_value: { class: 'qkit-icon qkit-icon-plus', component: 'i' },
+  delete: { class: 'qkit-icon qkit-icon-cross', component: 'i' },
+  close: { class: 'qkit-icon qkit-icon-cross', component: 'i' },
+  previous: { class: 'qkit-icon qkit-icon-double-arrow-left', component: 'i' },
+  next: { class: 'qkit-icon qkit-icon-double-arrow-right', component: 'i' },
+  collapse: { class: 'qkit-icon qkit-icon-arrow-down', component: 'i' },
+  down: { class: 'qkit-icon qkit-icon-arrow-full-down', component: 'i' },
+  minus: { class: 'qkit-icon qkit-icon-minus', component: 'i' },
+  reset: { class: 'qkit-icon qkit-icon-refresh', component: 'i' },
+  search: { class: 'qkit-icon qkit-icon-search', component: 'i' },
+  confirm: { class: 'qkit-icon qkit-icon-check', component: 'i' },
+  export: { class: 'qkit-icon qkit-icon-export', component: 'i' },
+  columns: { class: 'qkit-icon qkit-icon-columns', component: 'i' },
+  paginated_list: { class: 'qkit-icon qkit-icon-paginated-list', component: 'i' },
+  infinite_list: { class: 'qkit-icon qkit-icon-infinite-list', component: 'i' },
 };
+
+const iconList = {} as IconList;
 
 let iconComponent: string = 'i';
 let iconPropName: string = 'class';

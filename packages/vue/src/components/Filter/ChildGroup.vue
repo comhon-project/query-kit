@@ -24,6 +24,8 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
+  onReset?: () => void;
+  onValidate?: () => void;
 }
 
 interface Emits {
@@ -144,8 +146,8 @@ watchEffect(() => {
           />
         </template>
         <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
-        <slot name="reset" />
-        <slot name="validate" />
+        <IconButton v-if="onReset" icon="reset" @click="onReset" />
+        <IconButton v-if="onValidate" icon="search" @click="onValidate" />
         <IconButton v-if="isRemovable" icon="delete" :aria-label="translate('group')" @click="$emit('remove')" />
         <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />
       </div>

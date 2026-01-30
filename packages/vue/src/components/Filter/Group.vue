@@ -15,6 +15,8 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
+  onReset?: () => void;
+  onValidate?: () => void;
 }
 
 interface Emits {
@@ -53,10 +55,7 @@ onMounted(() => {
       :aria-label="translate('group')"
       @tree-toggle="toggleCollapse"
     >
-      <ChildGroup v-bind="props" v-model:collapsed="collapsed" @remove="$emit('remove')">
-        <template #reset><slot name="reset" /></template>
-        <template #validate><slot name="validate" /></template>
-      </ChildGroup>
+      <ChildGroup v-bind="props" v-model:collapsed="collapsed" @remove="$emit('remove')" />
     </div>
   </div>
 </template>

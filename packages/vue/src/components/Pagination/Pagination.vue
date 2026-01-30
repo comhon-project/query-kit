@@ -2,7 +2,7 @@
 import { computed, watchEffect, ref } from 'vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import Icon from '@components/Common/Icon.vue';
+import IconButton from '../Common/IconButton.vue';
 
 interface Props {
   page: number;
@@ -47,32 +47,45 @@ watchEffect(() => (currentPage.value = props.page));
   <nav :aria-label="translate('pagination')">
     <ul :class="classes.pagination">
       <li>
-        <button type="button" :aria-label="translate('previous')" :disabled="lock || currentPage <= 1" @click="updatePage(currentPage - 1)">
-          <Icon icon="previous" />
-        </button>
+        <IconButton icon="previous" :disabled="lock || currentPage <= 1" @click="updatePage(currentPage - 1)" />
       </li>
       <li :active="currentPage === 1 ? '' : undefined">
-        <button type="button" :aria-current="currentPage === 1 ? 'page' : undefined" :aria-label="`${translate('page')} 1`" @click="updatePage(1)">1</button>
+        <button
+          type="button"
+          :class="classes.btn_primary"
+          :aria-current="currentPage === 1 ? 'page' : undefined"
+          :aria-label="`${translate('page')} 1`"
+          @click="updatePage(1)"
+        >
+          1
+        </button>
       </li>
-      <li v-if="currentPage > 4">...</li>
-      <li
-        v-for="index in nearPages"
-        :key="index"
-        :active="index == currentPage ? '' : undefined"
-      >
-        <button type="button" :aria-current="index == currentPage ? 'page' : undefined" :aria-label="`${translate('page')} ${index}`" @click="updatePage(index)">{{ index }}</button>
+      <li v-if="currentPage > 4" :class="classes.btn_primary">...</li>
+      <li v-for="index in nearPages" :key="index" :active="index == currentPage ? '' : undefined">
+        <button
+          type="button"
+          :class="classes.btn_primary"
+          :aria-current="index == currentPage ? 'page' : undefined"
+          :aria-label="`${translate('page')} ${index}`"
+          @click="updatePage(index)"
+        >
+          {{ index }}
+        </button>
       </li>
-      <li v-if="currentPage < count - 3">...</li>
-      <li
-        v-if="count && count != 1"
-        :active="count == currentPage ? '' : undefined"
-      >
-        <button type="button" :aria-current="count == currentPage ? 'page' : undefined" :aria-label="`${translate('page')} ${count}`" @click="updatePage(count)">{{ count }}</button>
+      <li v-if="currentPage < count - 3" :class="classes.btn_primary">...</li>
+      <li v-if="count && count != 1" :active="count == currentPage ? '' : undefined">
+        <button
+          type="button"
+          :class="classes.btn_primary"
+          :aria-current="count == currentPage ? 'page' : undefined"
+          :aria-label="`${translate('page')} ${count}`"
+          @click="updatePage(count)"
+        >
+          {{ count }}
+        </button>
       </li>
       <li>
-        <button type="button" :aria-label="translate('next')" :disabled="lock || currentPage >= count" @click="updatePage(currentPage + 1)">
-          <Icon icon="next" />
-        </button>
+        <IconButton icon="next" :disabled="lock || currentPage >= count" @click="updatePage(currentPage + 1)" />
       </li>
     </ul>
   </nav>

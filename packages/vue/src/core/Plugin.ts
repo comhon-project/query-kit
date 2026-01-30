@@ -1,7 +1,7 @@
 import type { App } from 'vue';
 import { locale, fallback } from '@i18n/i18n';
 import { registerClasses, type ClassList } from '@core/ClassManager';
-import { registerIcons, type IconList } from '@core/IconManager';
+import { registerIcons, defaultIcons, type IconList } from '@core/IconManager';
 import { registerComponents, type ComponentList } from '@core/InputManager';
 import { registerPropertyRenderers, registerTypeRenderers, type TypeRenderers, type PropertyRenderers } from '@core/CellRendererManager';
 import {
@@ -37,7 +37,7 @@ type RequestSchemaLoaderFunction = (id: string) => Promise<RequestSchema | null>
 type RequesterFunction = (params: RequestParams) => Promise<RequestResponse>;
 
 export interface PluginOptions {
-  icons?: Partial<IconList>;
+  icons?: Partial<IconList> | 'default';
   iconComponent?: string;
   iconPropName?: string;
   classes?: Partial<ClassList>;
@@ -63,7 +63,9 @@ export default {
       throw new Error('must have at least required configs');
     }
     if (options.icons) {
-      registerIcons(options.icons, options.iconComponent, options.iconPropName);
+      options.icons === 'default'
+        ? registerIcons(defaultIcons)
+        : registerIcons(options.icons, options.iconComponent, options.iconPropName);
     }
     if (options.classes) {
       registerClasses(options.classes);

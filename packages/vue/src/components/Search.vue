@@ -3,7 +3,6 @@ import { ref, shallowRef, toRaw, watch, watchEffect } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
 import Builder from '@components/Filter/Builder.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
-import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { getUniqueId } from '@core/Utils';
 import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
@@ -101,7 +100,7 @@ function applyQuery(): void {
   if (tempFilter) {
     computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
   }
-  location.href = `#${collectionId}`;
+  location.hash = collectionId;
 }
 
 function updateFilter(filter: Record<string, unknown>): void {
@@ -139,13 +138,10 @@ watch(computedFilter, () => {
       v-bind="props"
       v-model="builtFilter"
       :collection-id="collectionId"
+      :on-validate="manually ? applyQuery : undefined"
       @computed="updateFilter"
       @go-to-collection="goToCollection"
-    >
-      <template #validate>
-        <IconButton v-if="manually" icon="search" @click="applyQuery" />
-      </template>
-    </Builder>
+    />
     <Collection
       v-if="computedFilter !== false"
       :id="collectionId"

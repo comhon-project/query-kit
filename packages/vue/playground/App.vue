@@ -370,7 +370,7 @@ watch(columns, () => {
           relationship_condition: true,
         }"
         :deferred="500"
-        :manually="false"
+        :manually="true"
         :direct-query="true"
         :limit="20"
         :quick-sort="true"
