@@ -73,17 +73,17 @@ describe('test schemas', async () => {
       scope: { id: 'scope', parameters: [], owner: 'user' },
       string_scope: {
         id: 'string_scope',
-        parameters: [{ id: 'value', name: 'string scope', type: 'string', nullable: false }],
+        parameters: [{ id: 'value', name: 'string scope', type: 'string', nullable: false, owner: 'user', scopeId: 'string_scope' }],
         owner: 'user',
       },
       datetime_scope: {
         id: 'datetime_scope',
-        parameters: [{ id: 'value', name: 'datetime scope', type: 'datetime', nullable: false }],
+        parameters: [{ id: 'value', name: 'datetime scope', type: 'datetime', nullable: false, owner: 'user', scopeId: 'datetime_scope' }],
         owner: 'user',
       },
       enum_scope: {
         id: 'enum_scope',
-        parameters: [{ id: 'value', name: 'enum scope', type: 'string', enum: 'enum_scope_values', nullable: false }],
+        parameters: [{ id: 'value', name: 'enum scope', type: 'string', enum: 'enum_scope_values', nullable: false, owner: 'user', scopeId: 'enum_scope' }],
         owner: 'user',
       },
     });

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue';
 import { getTranslation, getCases, type EnumCase } from '@core/EnumSchema';
+import { getLeafTypeContainer, type ArrayableTypeContainer } from '@core/EntitySchema';
 import { classes } from '@core/ClassManager';
 
 interface Props {
-  enumId: string;
+  target: ArrayableTypeContainer;
   multiple: boolean;
   disabled: boolean;
 }
@@ -16,7 +17,7 @@ const props = defineProps<Props>();
 const cases = ref<EnumCase[]>([]);
 
 watchEffect(async () => {
-  cases.value = await getCases(props.enumId);
+  cases.value = await getCases(getLeafTypeContainer(props.target).enum!);
 });
 
 const options = computed<Record<string, string>>(() => {

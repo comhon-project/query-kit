@@ -3,10 +3,10 @@ import { computed } from 'vue';
 import CollectionInput from '@components/Filter/CollectionInput.vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
 import { supportsMultiple } from '@core/InputManager';
-import type { ArrayableTypeContainer } from '@core/EntitySchema';
+import type { Property, RawScopeParameter } from '@core/EntitySchema';
 
 interface Props {
-  target: ArrayableTypeContainer;
+  target: Property | RawScopeParameter;
   entity: string;
   editable?: boolean;
   userTimezone?: string;
@@ -23,15 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
   isArray: false,
 });
 
-const containerType = computed<ArrayableTypeContainer>(() => {
-  let container: ArrayableTypeContainer = props.target;
-  while (container.type === 'array' && container.children) {
-    container = container.children;
-  }
-  return container;
-});
-
-const componentSupportsMultiple = computed(() => supportsMultiple(containerType.value));
+const componentSupportsMultiple = computed(() => supportsMultiple(props.target));
 
 const useCollection = computed(() => {
   return props.isArray && !componentSupportsMultiple.value;

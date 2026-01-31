@@ -1,5 +1,5 @@
 import { translate } from '@i18n/i18n';
-import type { ArrayableTypeContainer, Property } from '@core/EntitySchema';
+import { getLeafTypeContainer, type Property } from '@core/EntitySchema';
 import type { ContainerFilterType } from '@core/types';
 
 export type ConditionOperator =
@@ -122,13 +122,9 @@ const getConditionOperators = (
   property: Property,
   allowedOperators: AllowedOperators | null = null,
 ): ConditionOperator[] => {
-  let containerType: ArrayableTypeContainer = property as ArrayableTypeContainer;
-  let isArray = false;
-  while (containerType.type === 'array') {
-    containerType = containerType.children!;
-    isArray = true;
-  }
-  const type = containerType.enum ? 'enum' : containerType.type;
+  const leaf = getLeafTypeContainer(property);
+  const isArray = property.type === 'array';
+  const type = leaf.enum ? 'enum' : leaf.type;
   let currentOperators: ConditionOperator[] =
     allowedOperators?.condition?.[type] ||
     operators.condition[type] ||

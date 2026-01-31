@@ -1,6 +1,6 @@
 import type { Component } from 'vue';
 import type { NativeHtmlComponent } from '@core/types';
-import type { TypeContainer } from '@core/EntitySchema';
+import { getLeafTypeContainer, type TypeContainer, type ArrayableTypeContainer } from '@core/EntitySchema';
 import { MultipleCapableComponent } from '@core/MultipleCapableComponent';
 import BooleanInput from '@components/Common/BooleanInput.vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
@@ -66,8 +66,9 @@ const getComponent = (container: TypeContainer): NativeHtmlComponent | Component
   return entry;
 };
 
-const supportsMultiple = (container: TypeContainer): boolean => {
-  const type = container.enum ? 'enum' : container.type;
+const supportsMultiple = (container: ArrayableTypeContainer): boolean => {
+  const leaf = getLeafTypeContainer(container);
+  const type = leaf.enum ? 'enum' : leaf.type;
   const entry = componentList[type];
   return entry instanceof MultipleCapableComponent;
 };

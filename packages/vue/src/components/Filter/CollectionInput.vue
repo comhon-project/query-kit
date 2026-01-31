@@ -3,11 +3,11 @@ import { ref, watch } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
-import type { ArrayableTypeContainer } from '@core/EntitySchema';
+import type { Property, RawScopeParameter } from '@core/EntitySchema';
 
 interface Props {
   modelValue?: unknown[];
-  target: ArrayableTypeContainer;
+  target: Property | RawScopeParameter;
   editable?: boolean;
   entity: string;
   userTimezone?: string;

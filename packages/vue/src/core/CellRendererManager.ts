@@ -31,8 +31,8 @@ const registerPropertyRenderers = (custom: PropertyRenderers): void => {
   Object.assign(propertyRenderers, custom);
 };
 
-const getTypeRenderer = (typeContainer: TypeContainer): TypeRenderer => {
-  return typeContainer.enum ? typeRenderers.enum : (typeRenderers[typeContainer.type] ?? null);
+const getTypeRenderer = (container: TypeContainer): TypeRenderer => {
+  return container.enum ? typeRenderers.enum : (typeRenderers[container.type] ?? null);
 };
 
 const getPropertyRenderer = (property: Property): TypeRenderer => {

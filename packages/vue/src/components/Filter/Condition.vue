@@ -5,9 +5,9 @@ import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
 import {
   resolve,
   getPropertyTranslation,
+  getLeafTypeContainer,
   type EntitySchema,
   type Property,
-  type ArrayableTypeContainer,
 } from '@core/EntitySchema';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
@@ -49,21 +49,6 @@ const validType = ref<boolean>(true);
 const schema = ref<EntitySchema | null>(null);
 
 const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
-
-const inputType = computed(() => {
-  if (!containerType.value) return undefined;
-  return getComponent(containerType.value);
-});
-
-const containerType = computed<ArrayableTypeContainer | undefined>(() => {
-  let container: ArrayableTypeContainer | undefined = property.value;
-  if (container) {
-    while (container.type == 'array' && container.children) {
-      container = container.children;
-    }
-  }
-  return container;
-});
 
 const mustDisplayOperator = computed<boolean>(() => {
   return (
@@ -112,8 +97,12 @@ function verifyOperator(): void {
 }
 
 function verifyType(): void {
-  if (schema.value && property.value && containerType.value && !getComponent(containerType.value)) {
-    validType.value = false;
+  if (schema.value && property.value) {
+    try {
+      getComponent(getLeafTypeContainer(property.value));
+    } catch {
+      validType.value = false;
+    }
   }
 }
 
@@ -160,11 +149,11 @@ watch(
       <InvalidEntity v-if="!validEntity" :entity="entity" />
       <InvalidProperty v-else-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
-      <InvalidType v-else-if="!validType && containerType" :type="containerType.type" />
+      <InvalidType v-else-if="!validType && property" :type-container="property" />
       <template v-else-if="schema && property">
         <div :class="classes.condition_header">
           <slot name="relationship" />
-          <label :class="classes.property_name_container">{{ propertyName }}</label>
+          <span :class="classes.property_name_container">{{ propertyName }}</span>
           <template v-if="mustDisplayOperator">
             <AdaptativeSelect
               v-model="modelValue.operator"
@@ -176,7 +165,7 @@ watch(
           </template>
         </div>
         <ArrayableInput
-          v-if="inputType && modelValue.operator != 'null' && modelValue.operator != 'not_null'"
+          v-if="modelValue.operator != 'null' && modelValue.operator != 'not_null'"
           v-model="modelValue.value"
           :target="property"
           :entity="entity"

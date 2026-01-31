@@ -39,10 +39,14 @@ export interface RawEntitySchema {
 }
 
 // Computed types - after compute()
-export interface ScopeParameter extends RawScopeParameter {}
+export interface ScopeParameter extends RawScopeParameter {
+  owner: string;
+  scopeId: string;
+}
 
 export interface Scope extends RawScope {
   owner: string;
+  parameters?: ScopeParameter[];
 }
 
 export interface Property extends RawProperty {
@@ -168,12 +172,12 @@ function getParameterTranslationForLocale(
   return null;
 }
 
-function getScopeParameterTranslation(schemaId: string, scopeId: string, parameter: ScopeParameter): string {
-  ensureTranslationsLoaded(schemaId);
+function getScopeParameterTranslation(parameter: ScopeParameter): string {
+  ensureTranslationsLoaded(parameter.owner);
 
-  const cacheKey = `${schemaId}.${locale.value}`;
+  const cacheKey = `${parameter.owner}.${locale.value}`;
   const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
-  const translation = getParameterTranslationForLocale(schemaId, scopeId, parameter.id, targetLocale);
+  const translation = getParameterTranslationForLocale(parameter.owner, parameter.scopeId, parameter.id, targetLocale);
 
   return translation ?? parameter.name ?? parameter.id;
 }
@@ -208,10 +212,13 @@ async function compute(id: string): Promise<EntitySchema> {
 
   if (rawSchema.scopes && Array.isArray(rawSchema.scopes)) {
     for (const current of rawSchema.scopes) {
-      const scope: Scope =
-        typeof current === 'object'
-          ? { ...structuredClone(current), owner: id }
-          : { id: current, name: current, owner: id };
+      const rawScope = typeof current === 'object' ? structuredClone(current) : { id: current, name: current };
+      const parameters: ScopeParameter[] | undefined = rawScope.parameters?.map((param) => ({
+        ...param,
+        owner: id,
+        scopeId: rawScope.id,
+      }));
+      const scope: Scope = { ...rawScope, owner: id, parameters };
       scopes.push(scope);
       mapScopes[scope.id] = scope;
     }
@@ -288,6 +295,13 @@ const resolve = (id: string): Promise<EntitySchema> => {
   return computedSchemas[id];
 };
 
+const getLeafTypeContainer = (container: ArrayableTypeContainer): TypeContainer => {
+  while (container.type === 'array' && container.children) {
+    container = container.children;
+  }
+  return container;
+};
+
 export {
   registerLoader,
   registerTranslationsLoader,
@@ -296,5 +310,6 @@ export {
   getPropertyTranslation,
   getScopeTranslation,
   getScopeParameterTranslation,
+  getLeafTypeContainer,
   loadRawTranslations,
 };

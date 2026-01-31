@@ -6,15 +6,28 @@ import {
   getScopeParameterTranslation,
   type EntitySchema,
   type Scope as ScopeType,
+  type ScopeParameter,
+  type RawScopeParameter,
 } from '@core/EntitySchema';
 import InvalidScope from '@components/Messages/InvalidScope.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import ArrayableInput from '@components/Filter/ArrayableInput.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
-import { locale, translate } from '@i18n/i18n';
-import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
+import { translate } from '@i18n/i18n';
+import {
+  getComputedScope,
+  getComputedScopeTranslation,
+  getComputedScopeParameterTranslation,
+  type ComputedScope,
+  type ComputedScopeParameter,
+} from '@core/ComputedScopesManager';
 import type { ScopeFilter } from '@core/types';
+
+interface ParameterWithTranslation {
+  param: ScopeParameter | RawScopeParameter;
+  translation: string;
+}
 
 interface Props {
   modelValue: ScopeFilter;
@@ -54,11 +67,18 @@ const scope = computed<ComputedScope | ScopeType | null>(() => {
 
 const scopeName = computed<string>(() => {
   if (!scope.value) return '';
-  const currentLocale = locale.value;
-  if ((scope.value as ComputedScope).translation) {
-    return (scope.value as ComputedScope).translation!(currentLocale);
-  }
-  return getScopeTranslation(scope.value);
+  return 'computed' in scope.value ? getComputedScopeTranslation(scope.value) : getScopeTranslation(scope.value);
+});
+
+const parametersWithTranslations = computed<ParameterWithTranslation[]>(() => {
+  if (!scope.value?.parameters) return [];
+  return scope.value.parameters.map((param) => ({
+    param,
+    translation:
+      'scopeId' in param
+        ? getScopeParameterTranslation(param)
+        : getComputedScopeParameterTranslation(param as ComputedScopeParameter),
+  }));
 });
 
 async function initSchema(): Promise<void> {
@@ -93,13 +113,15 @@ watchEffect(() => {
       <template v-else-if="schema && scope">
         <div :class="classes.condition_header">
           <slot name="relationship" />
-          <label :class="classes.property_name_container">{{ scopeName }}</label>
+          <span :class="classes.property_name_container">{{ scopeName }}</span>
         </div>
-        <div v-if="scope.parameters?.length" :class="classes.scope_parameters">
-          <div v-for="(param, index) in scope.parameters" :key="param.id" :class="classes.scope_parameter">
-            <label :class="classes.property_name_container">
-              {{ getScopeParameterTranslation(entity, modelValue.id, param) }}
-            </label>
+        <div v-if="parametersWithTranslations.length" :class="classes.scope_parameters">
+          <div
+            v-for="({ param, translation }, index) in parametersWithTranslations"
+            :key="param.id"
+            :class="classes.scope_parameter"
+          >
+            <span :class="classes.property_name_container">{{ translation }}</span>
             <ArrayableInput
               v-model="modelValue.parameters![index]"
               :target="param"

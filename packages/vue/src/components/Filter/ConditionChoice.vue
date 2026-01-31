@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watchEffect, computed, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema } from '@core/EntitySchema';
+import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
-import { translate, locale } from '@i18n/i18n';
+import { translate } from '@i18n/i18n';
 import { getConditionOperators, getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
-import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
+import { getComputedScope, getComputedScopeTranslation, type ComputedScope } from '@core/ComputedScopesManager';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import Modal from '@components/Common/Modal.vue';
 import type { Filter, AllowedScopes, AllowedProperties } from '@core/types';
@@ -44,11 +44,7 @@ const options = computed<Record<string, string>>(() => {
     opts[scope.id] = getScopeTranslation(scope);
   }
   for (const scope of searchableComputedScopes.value) {
-    if ((scope as ComputedScope & { translation?: (locale: string) => string }).translation) {
-      opts[scope.id] = (scope as ComputedScope & { translation: (locale: string) => string }).translation(locale.value);
-    } else if (scope.name) {
-      opts[scope.id] = scope.name;
-    }
+    opts[scope.id] = getComputedScopeTranslation(scope);
   }
   return opts;
 });
@@ -62,7 +58,7 @@ function validate(): void {
 
   if (selectedType.value == 'condition') {
     const target = targetCondition.value!;
-    let scope = getComputedScope(props.entity, target);
+    let scope: ComputedScope | Scope | undefined = getComputedScope(props.entity, target);
     if (!scope) {
       try {
         scope = schema.value.getScope(target);
