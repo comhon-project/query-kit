@@ -20,7 +20,6 @@ import type {
 
 interface Props {
   entity: string;
-  columns: string[];
   customColumns?: Record<string, CustomColumnConfig>;
   filter?: GroupFilter | null;
   allowReset?: boolean;
@@ -38,7 +37,6 @@ interface Props {
   offset?: number;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
-  orderBy?: (string | OrderByItem)[];
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
@@ -51,11 +49,11 @@ interface Emits {
   export: [filter?: Record<string, unknown>];
   computed: [filter: Record<string, unknown>];
   updated: [filter: GroupFilter];
-  'update:columns': [columns: string[]];
-  'update:orderBy': [orderBy: OrderByItem[]];
 }
 
 const emit = defineEmits<Emits>();
+const columns = defineModel<string[]>('columns', { required: true });
+const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
 const props = withDefaults(defineProps<Props>(), {
   filter: null,
   allowReset: true,
@@ -146,10 +144,10 @@ watch(computedFilter, () => {
       v-if="computedFilter !== false"
       :id="collectionId"
       v-bind="props"
+      v-model:columns="columns"
+      v-model:order-by="orderBy"
       :filter="computedFilter"
       :builder-id="builderId"
-      @update:columns="(columns) => emit('update:columns', columns)"
-      @update:order-by="(orderBy) => emit('update:orderBy', orderBy)"
       @go-to-builder="goToBuilder"
     >
       <template #loading="loadingProps">

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, watch, type Component } from 'vue';
-import { DateTime } from 'luxon';
+import { computed, type Component } from 'vue';
 import { classes } from '@core/ClassManager';
 import { getComponent, isNativeHtmlComponent } from '@core/InputManager';
 import {
@@ -16,7 +15,6 @@ import { getComputedScopeParameterTranslation, type ComputedScopeParameter } fro
 import type { NativeHtmlComponent } from '@core/types';
 
 interface Props {
-  modelValue: unknown;
   multiple: boolean;
   target: Property | RawScopeParameter;
   entity: string;
@@ -25,19 +23,13 @@ interface Props {
   requestTimezone?: string;
 }
 
-interface Emits {
-  'update:modelValue': [value: unknown];
-}
-
-const emit = defineEmits<Emits>();
+const modelValue = defineModel<unknown>();
 
 const props = withDefaults(defineProps<Props>(), {
   editable: true,
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
 });
-
-const conditionValue = ref<unknown>(null);
 
 const inputType = computed<NativeHtmlComponent | Component | undefined>(() => {
   try {
@@ -61,49 +53,12 @@ const ariaLabel = computed<string>(() => {
   return getComputedScopeParameterTranslation(props.target as ComputedScopeParameter);
 });
 
-function getConditionValueFromModelValue(): unknown {
-  if (props.modelValue == null) {
-    return null;
-  }
-  switch (inputType.value) {
-    case 'datetime-local': {
-      const date = DateTime.fromISO(props.modelValue as string, { zone: props.requestTimezone }).setZone(
-        props.userTimezone,
-      );
-      return `${date.toFormat('yyyy-LL-dd')}T${date.toFormat('TT')}`;
-    }
-    default:
-      return props.modelValue;
-  }
-}
-
-function getModelValueFromConditionValue(value: unknown): unknown {
-  switch (inputType.value) {
-    case 'datetime-local':
-      return DateTime.fromISO(value as string, { zone: props.userTimezone })
-        .setZone(props.requestTimezone)
-        .toISO();
-    default:
-      return value;
-  }
-}
-
-watchEffect(() => {
-  if (typeof props.modelValue == 'string' && props.modelValue.trim() == '') {
-    emit('update:modelValue', undefined);
-  } else {
-    conditionValue.value = getConditionValueFromModelValue();
-  }
-});
-
-watch(conditionValue, () => {
-  let value = typeof conditionValue.value == 'string' ? conditionValue.value.trim() : conditionValue.value;
-  if (value === null || value === '') {
-    conditionValue.value = null;
-    emit('update:modelValue', undefined);
-  } else {
-    emit('update:modelValue', getModelValueFromConditionValue(value));
-  }
+const conditionValue = computed<unknown>({
+  get: () => modelValue.value,
+  set: (value) => {
+    const trimmed = typeof value == 'string' ? value.trim() : value;
+    modelValue.value = trimmed === '' || trimmed === null ? undefined : trimmed;
+  },
 });
 </script>
 
@@ -116,6 +71,8 @@ watch(conditionValue, () => {
     :entity="entity"
     :target="target"
     :multiple="multiple"
+    :user-timezone="userTimezone"
+    :request-timezone="requestTimezone"
     :disabled="!editable"
     :aria-label="ariaLabel"
   />

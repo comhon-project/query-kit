@@ -8,7 +8,7 @@ import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
-import ColumnChoices from '@components/Collection/ColumnChoices.vue';
+import ColumnEditor from '@components/Collection/ColumnEditor.vue';
 import type { CustomColumnConfig, OrderByItem, CollectionType, Requester, RequesterFunction } from '@core/types';
 
 interface Props {
@@ -62,7 +62,6 @@ const copiedOrderBy = ref<OrderByItem[]>([]);
 const page = ref<number>(1);
 const infiniteScroll = ref<boolean>(isInfiniteAccordingProps());
 const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
-const showColumnsModal = ref<boolean>(false);
 const rowKeyProperty = ref<string>();
 
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
@@ -292,10 +291,6 @@ function isInfiniteAccordingProps(): boolean {
   return props.allowedCollectionTypes[0] == 'infinite';
 }
 
-function initColumnsModal(): void {
-  showColumnsModal.value = true;
-}
-
 onMounted(async () => {
   observer = new IntersectionObserver(shiftThenRequestServer);
   if (observered.value) {
@@ -353,10 +348,10 @@ watch(
         </div>
         <Pagination
           v-if="!infiniteScroll"
-          :page="page"
+          :model-value="page"
           :count="Math.max(1, Math.ceil(count / limit))"
           :lock="requesting"
-          @update="updatePage"
+          @update:model-value="updatePage"
         />
         <div :class="classes.collection_actions">
           <IconButton v-if="onExport" icon="export" @click="() => onExport!(filter)" />
@@ -365,7 +360,13 @@ watch(
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
-          <IconButton v-if="editColumns" icon="columns" @click="initColumnsModal" />
+          <ColumnEditor
+            v-if="editColumns"
+            :model-value="copiedColumns"
+            :custom-columns="customColumns"
+            :entity="entity"
+            @update:model-value="updateColumns"
+          />
         </div>
       </div>
     </div>
@@ -422,13 +423,5 @@ watch(
         </table>
       </div>
     </div>
-    <ColumnChoices
-      v-if="editColumns"
-      v-model:show="showColumnsModal"
-      :columns="copiedColumns"
-      :custom-columns="customColumns"
-      :entity="entity"
-      @update:columns="updateColumns"
-    />
   </section>
 </template>

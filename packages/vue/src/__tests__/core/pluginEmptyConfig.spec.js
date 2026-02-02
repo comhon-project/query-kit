@@ -8,6 +8,7 @@ import { getComponent } from '@core/InputManager';
 import { config } from '@config/config';
 import BooleanInput from '@components/Common/BooleanInput.vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
+import DateTimeInput from '@components/Common/DateTimeInput.vue';
 import { locale, fallback } from '@i18n/i18n';
 
 const componentList = {
@@ -16,7 +17,7 @@ const componentList = {
   integer: 'number',
   float: 'number',
   date: 'date',
-  datetime: 'datetime-local',
+  datetime: DateTimeInput,
   time: 'time',
   enum: SelectEnum,
   boolean: BooleanInput,

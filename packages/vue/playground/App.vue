@@ -351,7 +351,7 @@ watch(columns, () => {
       <QkitSearch
         v-model:order-by="orderBy"
         :entity="entity"
-        :columns="columns"
+        v-model:columns="columns"
         :filter="filter"
         :allowed-properties="{ user: null }"
         :allowed-scopes="{ user: null }"
@@ -370,7 +370,7 @@ watch(columns, () => {
           relationship_condition: true,
         }"
         :deferred="500"
-        :manually="true"
+        :manually="false"
         :direct-query="true"
         :limit="20"
         :quick-sort="true"

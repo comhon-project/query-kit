@@ -4,6 +4,7 @@ import { getLeafTypeContainer, type TypeContainer, type ArrayableTypeContainer }
 import { MultipleCapableComponent } from '@core/MultipleCapableComponent';
 import BooleanInput from '@components/Common/BooleanInput.vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
+import DateTimeInput from '@components/Common/DateTimeInput.vue';
 
 const nativeHtmlComponents: Record<NativeHtmlComponent, true> = {
   // input types
@@ -44,7 +45,7 @@ const componentList: ComponentList = {
   integer: 'number',
   float: 'number',
   date: 'date',
-  datetime: 'datetime-local',
+  datetime: DateTimeInput,
   time: 'time',
   enum: new MultipleCapableComponent(SelectEnum),
   boolean: BooleanInput,

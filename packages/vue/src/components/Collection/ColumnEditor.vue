@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { classes } from '@core/ClassManager';
-import { locale, translate } from '@i18n/i18n';
+import { computed, ref, watchEffect } from 'vue';
+import IconButton from '@components/Common/IconButton.vue';
 import Modal from '@components/Common/Modal.vue';
 import ColumnChoice from '@components/Collection/ColumnChoice.vue';
+import { translate, locale } from '@i18n/i18n';
+import { classes } from '@core/ClassManager';
 import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
-import IconButton from '@components/Common/IconButton.vue';
 import { getUniqueId } from '@core/Utils';
 import type { CustomColumnConfig, SelectOption } from '@core/types';
 
@@ -16,33 +16,27 @@ interface KeyedColumn {
 
 interface Props {
   entity: string;
-  columns: string[];
   customColumns?: Record<string, CustomColumnConfig>;
 }
 
-interface Emits {
-  'update:columns': [columns: string[]];
-}
-
-const emit = defineEmits<Emits>();
-const show = defineModel<boolean>('show', { required: true });
+const columns = defineModel<string[]>({ required: true });
 const props = defineProps<Props>();
 
+const showModal = ref<boolean>(false);
 const schema = ref<EntitySchema | null>(null);
-const newColumns = ref<KeyedColumn[]>([]);
-const confirmed = ref<boolean>(false);
-const updated = ref<boolean>(false);
 const selectedProperty = ref<string | null>(null);
+const keyedColumns = ref<KeyedColumn[]>([]);
+
+const columnIds = computed<string[]>(() => keyedColumns.value.map((c) => c.id));
+const disableConfirm = computed<boolean>(() => keyedColumns.value.length === 0);
+
 const options = computed<SelectOption<string>[]>(() => {
   if (!schema.value) return [];
   const opts: SelectOption<string>[] = [];
   for (const property of schema.value.properties) {
     let selectableProperty: Property | null = null;
     if (property.type != 'relationship') {
-      const column = newColumns.value.find((column) => {
-        return property.id == column.id;
-      });
-      if (!column) {
+      if (!columnIds.value.includes(property.id)) {
         selectableProperty = property;
       }
     } else if (isOneToOneRelationship(property)) {
@@ -64,10 +58,7 @@ const options = computed<SelectOption<string>[]>(() => {
       if (customColumn.open !== true) {
         continue;
       }
-      const column = newColumns.value.find((column) => {
-        return customColumnId == column.id;
-      });
-      if (!column) {
+      if (!columnIds.value.includes(customColumnId)) {
         opts.push({
           value: customColumnId,
           label: typeof customColumn.label == 'function' ? customColumn.label(locale.value) : customColumn.label,
@@ -83,63 +74,37 @@ function isOneToOneRelationship(property: Property): boolean {
   return property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one';
 }
 
+function openModal(): void {
+  showModal.value = true;
+}
+
 function confirm(): void {
-  confirmed.value = true;
-  show.value = false;
+  columns.value = keyedColumns.value.map((c) => c.id);
+  showModal.value = false;
 }
 
-function updateColumns(): void {
-  if (!updated.value) {
-    return;
-  }
-  if (confirmed.value) {
-    emit(
-      'update:columns',
-      newColumns.value.map((column) => column.id),
-    );
-  } else {
-    newColumns.value = props.columns.map((columnId) => getKeyedColumn(columnId));
-  }
-}
-
-function getKeyedColumn(columnId: string): KeyedColumn {
-  return { id: columnId, key: getUniqueId() };
+function cancel(): void {
+  showModal.value = false;
 }
 
 function removeColumn(index: number): void {
-  newColumns.value.splice(index, 1);
+  keyedColumns.value.splice(index, 1);
 }
 
 function addColumn(): void {
   if (selectedProperty.value) {
-    newColumns.value.push(getKeyedColumn(selectedProperty.value));
+    keyedColumns.value.push({ id: selectedProperty.value, key: getUniqueId() });
     selectedProperty.value = null;
   }
 }
 
-watch(
-  () => props.columns,
-  () => (newColumns.value = props.columns.map((columnId) => getKeyedColumn(columnId))),
-  { immediate: true },
-);
-
-watch(
-  () => props.entity,
-  async () => (schema.value = await resolve(props.entity)),
-  { immediate: true },
-);
-watch(newColumns, () => (updated.value = true), { deep: true });
-watch(show, () => {
-  if (show.value) {
-    // reset states only when displaying modal
-    updated.value = false;
-    confirmed.value = false;
-  }
-});
+watchEffect(async () => (schema.value = await resolve(props.entity)));
+watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: getUniqueId() }))));
 </script>
 
 <template>
-  <Modal v-model:show="show" :disable-confirm="newColumns.length === 0" @confirm="confirm" @closed="updateColumns">
+  <IconButton icon="columns" @click="openModal" />
+  <Modal v-model:show="showModal" :disable-confirm="disableConfirm" @confirm="confirm" @cancel="cancel">
     <template #header>
       <h1>{{ translate('columns') }}</h1>
     </template>
@@ -147,13 +112,17 @@ watch(show, () => {
       <div :class="classes.column_choices">
         <ul>
           <TransitionGroup name="qkit-collapse-horizontal-list">
-            <li v-for="(column, index) in newColumns" :key="column.key" :class="classes.grid_container_for_transition">
+            <li
+              v-for="(column, index) in keyedColumns"
+              :key="column.key"
+              :class="classes.grid_container_for_transition"
+            >
               <ColumnChoice
-                v-model:column-id="column.id"
+                v-model="keyedColumns[index].id"
                 :property-id="customColumns?.[column.id]?.open === true ? undefined : column.id"
                 :entity="entity"
                 :label="customColumns?.[column.id]?.label"
-                :columns="newColumns"
+                :columns="columnIds"
                 @remove="() => removeColumn(index)"
               />
             </li>

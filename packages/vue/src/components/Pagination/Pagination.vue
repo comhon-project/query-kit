@@ -1,24 +1,19 @@
 <script setup lang="ts">
-import { computed, watchEffect, ref } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import IconButton from '../Common/IconButton.vue';
 
 interface Props {
-  page: number;
   lock?: boolean;
   count: number;
 }
 
-interface Emits {
-  update: [page: number];
-}
-
-const emit = defineEmits<Emits>();
+const modelValue = defineModel<number>({ required: true });
 const props = defineProps<Props>();
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null;
-const currentPage = ref<number>(null!);
+const currentPage = ref<number>(modelValue.value);
 
 const nearPages = computed<number[]>(() => {
   const indexes: number[] = [];
@@ -35,12 +30,16 @@ function updatePage(newPage: number): void {
     currentPage.value = newPage;
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      emit('update', currentPage.value);
+      if (props.lock) {
+        currentPage.value = modelValue.value;
+      } else {
+        modelValue.value = currentPage.value;
+      }
     }, 300);
   }
 }
 
-watchEffect(() => (currentPage.value = props.page));
+watchEffect(() => (currentPage.value = modelValue.value));
 </script>
 
 <template>

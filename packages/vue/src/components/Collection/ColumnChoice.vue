@@ -5,25 +5,19 @@ import IconButton from '@components/Common/IconButton.vue';
 import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
 import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 
-interface ColumnItem {
-  id: string;
-  key?: string | number;
-}
-
 interface Props {
   entity: string;
-  columns: ColumnItem[];
-  columnId: string;
+  columns: string[];
   propertyId?: string;
   label?: string | ((locale: string) => string);
 }
 
 interface Emits {
   remove: [];
-  'update:columnId': [columnId: string];
 }
 
 const emit = defineEmits<Emits>();
+const columnId = defineModel<string>({ required: true });
 const props = defineProps<Props>();
 
 const { label, propertyPath } = usePropertyPath(props);
@@ -43,10 +37,7 @@ const options = computed<Property[] | null>(() => {
   const opts: Property[] = [];
   for (const property of schema.value.properties) {
     if (property.type != 'relationship') {
-      const column = props.columns.find((column) => {
-        return props.propertyId + '.' + property.id == column.id;
-      });
-      if (!column) {
+      if (!props.columns.includes(props.propertyId + '.' + property.id)) {
         opts.push(property);
       }
     } else if (isOneToOneRelationship(property)) {
@@ -70,7 +61,7 @@ function reduceProperty(): void {
     editing.value = false;
   } else if (props.propertyId && propertyPath.value) {
     const end = -propertyPath.value[propertyPath.value.length - 1].id.length - 1;
-    emit('update:columnId', props.propertyId.slice(0, end));
+    columnId.value = props.propertyId.slice(0, end);
   }
 }
 
@@ -87,7 +78,7 @@ watch(propertyPath, async () => {
 });
 watch(selectedProperty, () => {
   if (selectedProperty.value) {
-    emit('update:columnId', props.propertyId + '.' + selectedProperty.value);
+    columnId.value = props.propertyId + '.' + selectedProperty.value;
     selectedProperty.value = null;
     editing.value = false;
   }
