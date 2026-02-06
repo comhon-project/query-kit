@@ -49,11 +49,11 @@ const value = computed<unknown>(() => {
 
 <template>
   <td>
-    <button
-      v-if="onClick"
-      type="button"
-      :class="classes.collection_clickable_cell"
-      @click="(e) => emit('click', value, rowValue, columnId, e)"
+    <component
+      :is="onClick ? 'button' : 'div'"
+      :type="onClick ? 'button' : undefined"
+      :class="onClick ? classes.collection_clickable_cell : classes.collection_cell"
+      v-on="onClick ? { click: (e: MouseEvent) => emit('click', value, rowValue, columnId, e) } : {}"
     >
       <template v-if="cellComponent == null">{{ value }}</template>
       <component
@@ -66,19 +66,6 @@ const value = computed<unknown>(() => {
         :request-timezone="requestTimezone"
         :user-timezone="userTimezone"
       />
-    </button>
-    <div v-else :class="classes.collection_cell">
-      <template v-if="cellComponent == null">{{ value }}</template>
-      <component
-        :is="cellComponent"
-        :column-id="columnId"
-        :property="property"
-        :type="property"
-        :value="value"
-        :row-value="rowValue"
-        :request-timezone="requestTimezone"
-        :user-timezone="userTimezone"
-      />
-    </div>
+    </component>
   </td>
 </template>

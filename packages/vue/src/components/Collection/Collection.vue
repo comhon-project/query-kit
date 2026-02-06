@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, shallowRef, computed, toRaw, useTemplateRef } from 'vue';
+import { ref, watch, onMounted, onUnmounted, shallowRef, computed, useTemplateRef } from 'vue';
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyPath, type Property } from '@core/EntitySchema';
+import { resolve, getPropertyPath, type Property, type EntitySchema } from '@core/EntitySchema';
 import { translate } from '@i18n/i18n';
 import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
@@ -13,15 +13,12 @@ import type { CustomColumnConfig, OrderByItem, CollectionType, Requester, Reques
 
 interface Props {
   entity: string;
-  columns: string[];
   customColumns?: Record<string, CustomColumnConfig>;
   filter?: Record<string, unknown>;
   directQuery: boolean;
   limit: number;
-  offset?: number;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
-  orderBy?: (string | OrderByItem)[];
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
@@ -35,14 +32,19 @@ interface Props {
 
 interface Emits {
   rowClick: [row: Record<string, unknown>, event: MouseEvent | KeyboardEvent];
-  'update:columns': [columns: string[]];
-  'update:orderBy': [orderBy: OrderByItem[]];
   goToBuilder: [];
 }
 
+interface IndexedOrderByEntry {
+  order: 'asc' | 'desc';
+  properties: string[];
+}
+
 const emit = defineEmits<Emits>();
+const columns = defineModel<string[]>('columns', { required: true });
+const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
+const page = defineModel<number>('page', { default: 1 });
 const props = withDefaults(defineProps<Props>(), {
-  offset: 0,
   quickSort: true,
   allowedCollectionTypes: () => ['pagination'],
   userTimezone: 'UTC',
@@ -50,19 +52,17 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 let hasExecFirstQuery = false;
-let movingOffset = 0;
-let requestProperties: string[] = [];
+let properties: string[] = [];
 const requesting = ref<boolean>(false);
-const copiedColumns = shallowRef<string[]>([]);
-const propertyColumns = shallowRef<(Property | undefined)[]>([]);
+const columnsProperties = shallowRef<Record<string, Property | undefined>>({});
 const collection = shallowRef<Record<string, unknown>[]>([]);
 const count = ref<number>(0);
 const end = ref<boolean>(false);
-const copiedOrderBy = ref<OrderByItem[]>([]);
-const page = ref<number>(1);
 const infiniteScroll = ref<boolean>(isInfiniteAccordingProps());
 const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
+const entitySchema = ref<EntitySchema>();
 const rowKeyProperty = ref<string>();
+const indexedOrderBy = shallowRef<Record<string, IndexedOrderByEntry>>({});
 
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
 let observer: IntersectionObserver | undefined;
@@ -79,114 +79,112 @@ const isResultFlattened = computed<boolean>(() => {
   return typeof activeRequester.value == 'object' ? !!activeRequester.value.flattened : false;
 });
 
-const indexedOrderBy = computed<Record<string, 'asc' | 'desc'>>(() => {
-  const indexed: Record<string, 'asc' | 'desc'> = {};
-  for (const order of copiedOrderBy.value) {
-    indexed[order.column] = order.order;
-  }
-  return indexed;
-});
+const computedColumns = computed<string[]>(() => Object.keys(columnsProperties.value));
 
-async function init(fetch = true): Promise<void> {
-  await initColumns(props.columns, props.orderBy, fetch);
+async function init(): Promise<void> {
+  entitySchema.value = await resolve(props.entity);
+  await initColumns(entitySchema.value);
+  await initOrderBy(orderBy.value, computedColumns.value, props.entity, props.customColumns);
 }
 
-async function initColumns(columns: string[], orderBy?: (string | OrderByItem)[], fetch = true): Promise<void> {
-  const schema = await resolve(props.entity);
-  rowKeyProperty.value = schema.unique_identifier;
-  const properties: (Property | undefined)[] = [];
-  requestProperties = [];
+async function initColumns(entitySchema: EntitySchema): Promise<void> {
+  const cols = columns.value;
+  rowKeyProperty.value = entitySchema.unique_identifier;
+  const colsProps: Record<string, Property | undefined> = {};
+  properties = [];
 
-  for (const columnId of columns) {
+  for (const columnId of cols) {
     const propertyPath = props.customColumns?.[columnId]?.open
       ? undefined
       : await getPropertyPath(props.entity, columnId);
     const property = propertyPath?.[propertyPath.length - 1];
-    properties.push(property);
+    colsProps[columnId] = property;
 
     if (property) {
       if (property.type != 'relationship') {
-        requestProperties.push(columnId);
+        properties.push(columnId);
       } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
         const propertySchema = await resolve(property.related!);
-        requestProperties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
+        properties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
         if (propertySchema.primary_identifiers) {
           for (const propertyId of propertySchema.primary_identifiers) {
-            requestProperties.push(columnId + '.' + propertyId);
+            properties.push(columnId + '.' + propertyId);
           }
         }
       }
     }
   }
-  copiedColumns.value = [...columns];
-  propertyColumns.value = properties;
-  initOrderBy(orderBy, fetch);
+  columnsProperties.value = colsProps;
 }
 
-function initOrderBy(orderBy?: (string | OrderByItem)[], fetch = true): void {
-  copiedOrderBy.value = orderBy
-    ? orderBy
-        .map((value) => {
-          const column = typeof value == 'string' ? value : value.column;
-          return copiedColumns.value.includes(column)
-            ? typeof value == 'string'
-              ? { column: column, order: 'asc' as const }
-              : { column: column, order: (value.order || 'asc') as 'asc' | 'desc' }
-            : null;
-        })
-        .filter((value): value is OrderByItem => value != null)
-    : [];
-
-  if (fetch) {
-    requestServer(true);
+async function initOrderBy(
+  orderBy: (string | OrderByItem)[] | undefined,
+  columns: string[],
+  entity: string,
+  customColumns?: Record<string, CustomColumnConfig>,
+): Promise<void> {
+  if (!orderBy) {
+    indexedOrderBy.value = {};
+    return;
   }
-}
+  const indexed: Record<string, IndexedOrderByEntry> = {};
+  for (const value of orderBy) {
+    const column = typeof value == 'string' ? value : value.column;
+    if (!columns.includes(column)) continue;
+    const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
 
-async function updateColumns(columns: string[]): Promise<void> {
-  emit('update:columns', columns);
+    let reqProps: string[];
+    if (customColumns?.[column]?.order) {
+      reqProps = customColumns[column].order!;
+    } else {
+      const propertyPath = await getPropertyPath(entity, column);
+      const property = propertyPath[propertyPath.length - 1];
 
-  setTimeout(async () => {
-    if (!requesting.value) {
-      // we init only if the collection is not requesting.
-      // if requesting that means props.columns is used with v-model
-      // and initialization has been made through the props.columns watcher
-      await initColumns(columns, copiedOrderBy.value);
+      if (property.type != 'relationship') {
+        reqProps = [column];
+      } else {
+        const schema = await resolve(property.related!);
+        if (schema.default_sort) {
+          reqProps = schema.default_sort.map((prop) => column + '.' + prop);
+        } else {
+          const idProperty = schema.unique_identifier || 'id';
+          reqProps = [column + '.' + idProperty];
+        }
+      }
     }
-  }, 0);
+    indexed[column] = { order, properties: reqProps };
+  }
+  indexedOrderBy.value = indexed;
 }
 
 function updateOrder(columnId: string | undefined, multi: boolean): void {
-  if (!requesting.value && columnId) {
-    let orderBy = structuredClone(toRaw(copiedOrderBy.value));
-    const newOrder: 'asc' | 'desc' =
-      indexedOrderBy.value[columnId] == 'asc' && (orderBy.length <= 1 || multi) ? 'desc' : 'asc';
-    const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
-    if (multi) {
-      const index = orderBy.findIndex((value) => value.column == columnId);
-      if (index != -1) {
-        orderBy[index] = newColumnOrder;
-      } else {
-        orderBy.push(newColumnOrder);
-      }
+  if (requesting.value || !columnId) {
+    return;
+  }
+  const currentOrder = indexedOrderBy.value[columnId]?.order;
+  const orderCount = Object.keys(indexedOrderBy.value).length;
+  const newOrder: 'asc' | 'desc' = currentOrder == 'asc' && (orderCount <= 1 || multi) ? 'desc' : 'asc';
+  const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
+  if (multi) {
+    const updated: OrderByItem[] = Object.entries(indexedOrderBy.value).map(([col, entry]) => ({
+      column: col,
+      order: entry.order,
+    }));
+    const existingIndex = updated.findIndex((v) => v.column == columnId);
+    if (existingIndex != -1) {
+      updated[existingIndex] = newColumnOrder;
     } else {
-      orderBy = [newColumnOrder];
+      updated.push(newColumnOrder);
     }
-
-    emit('update:orderBy', orderBy);
-    setTimeout(async () => {
-      if (!requesting.value) {
-        // we init only if the collection is not requesting.
-        // if requesting that means props.orderBy is used with v-model
-        // and initialization has been made through the props.orderBy watcher
-        initOrderBy(orderBy);
-      }
-    }, 0);
+    orderBy.value = updated;
+  } else {
+    orderBy.value = [newColumnOrder];
   }
 }
 
 async function shiftThenRequestServer(): Promise<void> {
   if (!requesting.value && hasExecFirstQuery) {
-    movingOffset += props.limit;
+    page.value++;
     requestServer();
   }
 }
@@ -194,7 +192,6 @@ async function shiftThenRequestServer(): Promise<void> {
 async function updatePage(newPage: number): Promise<void> {
   if (!requesting.value) {
     page.value = newPage;
-    movingOffset = (page.value - 1) * props.limit;
     requestServer();
   }
 }
@@ -202,7 +199,6 @@ async function updatePage(newPage: number): Promise<void> {
 async function requestServer(reset = false): Promise<void> {
   if (reset) {
     end.value = false;
-    movingOffset = 0;
     page.value = 1;
     if (collectionContent.value) {
       collectionContent.value.scrollTop = 0;
@@ -213,13 +209,19 @@ async function requestServer(reset = false): Promise<void> {
   const requesterValue = activeRequester.value;
   const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
 
+  const order = Object.keys(indexedOrderBy.value).length
+    ? Object.values(indexedOrderBy.value).flatMap((entry) =>
+        entry.properties.map((prop) => ({ property: prop, order: entry.order })),
+      )
+    : undefined;
+
   const response = await fetch({
     entity: props.entity,
-    order: copiedOrderBy.value.length ? await getRequestOrder() : undefined,
-    offset: movingOffset,
+    order,
+    page: page.value,
     limit: props.limit,
     filter: props.filter,
-    properties: requestProperties,
+    properties: properties,
   });
   if (typeof response != 'object' || !Array.isArray(response.collection)) {
     throw new Error(
@@ -246,46 +248,19 @@ async function requestServer(reset = false): Promise<void> {
   requesting.value = false;
 }
 
-async function getRequestOrder(): Promise<{ property: string; order: string }[]> {
-  const orderBy: { property: string; order: string }[] = [];
-  for (const order of copiedOrderBy.value) {
-    if (props.customColumns?.[order.column]?.order) {
-      orderBy.push(
-        ...props.customColumns[order.column].order!.map((customOrderProperty) => {
-          return { property: customOrderProperty, order: order.order };
-        }),
-      );
-    } else {
-      const propertyPath = await getPropertyPath(props.entity, order.column);
-      const property = propertyPath[propertyPath.length - 1];
-
-      if (property.type != 'relationship') {
-        orderBy.push({ property: order.column, order: order.order });
-        continue;
-      }
-      const schema = await resolve(property.related!);
-      if (schema.default_sort) {
-        orderBy.push(
-          ...schema.default_sort.map((prop) => {
-            return { property: order.column + '.' + prop, order: order.order };
-          }),
-        );
-        continue;
-      }
-      const idProperty = schema.unique_identifier || 'id';
-      orderBy.push({ property: order.column + '.' + idProperty, order: order.order });
-    }
-  }
-  return orderBy;
-}
-
-function isInfiniteAccordingProps(): boolean {
+function isInfiniteAccordingProps(preferred: boolean | null = null): boolean {
   if (!props.allowedCollectionTypes.length) {
     throw new Error('allowedCollectionTypes prop must be not empty array');
   }
   for (const type of props.allowedCollectionTypes) {
     if (type != 'infinite' && type != 'pagination') {
       throw new Error('invalide allowed collection type ' + type);
+    }
+  }
+  if (preferred !== null) {
+    const preferredType = preferred ? 'infinite' : 'pagination';
+    if (props.allowedCollectionTypes.includes(preferredType)) {
+      return preferred;
     }
   }
   return props.allowedCollectionTypes[0] == 'infinite';
@@ -297,41 +272,24 @@ onMounted(async () => {
     observer.observe(observered.value);
   }
 
-  movingOffset = props.offset;
-  await init(false);
+  await init();
   if (props.directQuery) {
-    requestServer();
+    await requestServer();
   }
 });
+
 onUnmounted(() => {
   observer?.disconnect();
 });
-watch(
-  () => props.entity,
-  async () => {
-    await init(true);
-  },
-);
-watch(
-  () => props.columns,
-  async () => {
-    await initColumns(props.columns, copiedOrderBy.value);
-  },
-);
-watch(
-  () => props.orderBy,
-  () => {
-    initOrderBy(props.orderBy);
-  },
-);
-watch(
-  () => props.filter,
-  () => requestServer(true),
-);
-watch(infiniteScroll, () => requestServer(true));
+
+watch([() => props.entity, columns, orderBy], async () => {
+  await init();
+  await requestServer(true);
+});
+watch([() => props.filter, infiniteScroll], () => requestServer(true));
 watch(
   () => props.allowedCollectionTypes,
-  () => (infiniteScroll.value = isInfiniteAccordingProps()),
+  () => (infiniteScroll.value = isInfiniteAccordingProps(infiniteScroll.value)),
 );
 </script>
 
@@ -360,13 +318,7 @@ watch(
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
-          <ColumnEditor
-            v-if="editColumns"
-            :model-value="copiedColumns"
-            :custom-columns="customColumns"
-            :entity="entity"
-            @update:model-value="updateColumns"
-          />
+          <ColumnEditor v-if="editColumns" v-model="columns" :custom-columns="customColumns" :entity="entity" />
         </div>
       </div>
     </div>
@@ -382,13 +334,13 @@ watch(
           <thead>
             <tr>
               <Header
-                v-for="columnId in copiedColumns"
+                v-for="columnId in computedColumns"
                 :key="columnId"
                 :entity="entity"
                 :column-id="columnId"
                 :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
                 :label="customColumns?.[columnId]?.label"
-                :order="indexedOrderBy[columnId]"
+                :order="indexedOrderBy[columnId]?.order"
                 :has-custom-order="customColumns?.[columnId]?.order != null"
                 @click="updateOrder"
               />
@@ -403,10 +355,10 @@ watch(
               @click="(e) => $emit('rowClick', object, e)"
               @keydown.enter="(e) => (onRowClick ? $emit('rowClick', object, e) : undefined)"
             >
-              <template v-for="(columnId, index) in copiedColumns" :key="columnId">
+              <template v-for="columnId in computedColumns" :key="columnId">
                 <Cell
                   :column-id="columnId"
-                  :property="propertyColumns[index]"
+                  :property="columnsProperties[columnId]"
                   :row-value="object"
                   :flattened="isResultFlattened"
                   :user-timezone="userTimezone"
@@ -417,7 +369,7 @@ watch(
               </template>
             </tr>
             <tr v-show="infiniteScroll && !end && !requesting" ref="observered" style="opacity: 0">
-              <td :colspan="copiedColumns.length" />
+              <td :colspan="computedColumns.length" />
             </tr>
           </tbody>
         </table>

@@ -79,7 +79,7 @@
   position: relative;
 }
 
-.qkit-search .qkit-builder > [role='tree'] > .qkit-group {
+.qkit-search .qkit-builder .qkit-group:not(.qkit-group .qkit-group) {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }

@@ -34,7 +34,6 @@ interface Props {
   directQuery?: boolean;
   deferred?: number;
   limit: number;
-  offset?: number;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
@@ -54,6 +53,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 const columns = defineModel<string[]>('columns', { required: true });
 const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
+const page = defineModel<number>('page', { default: 1 });
 const props = withDefaults(defineProps<Props>(), {
   filter: null,
   allowReset: true,
@@ -63,7 +63,6 @@ const props = withDefaults(defineProps<Props>(), {
   manually: true,
   directQuery: true,
   deferred: 1000,
-  offset: 0,
   quickSort: true,
   allowedCollectionTypes: () => ['pagination'],
 });
@@ -146,6 +145,7 @@ watch(computedFilter, () => {
       v-bind="props"
       v-model:columns="columns"
       v-model:order-by="orderBy"
+      v-model:page="page"
       :filter="computedFilter"
       :builder-id="builderId"
       @go-to-builder="goToBuilder"

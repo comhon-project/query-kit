@@ -269,8 +269,8 @@ let requester = {
   request: (query) => {
     console.log('prop-requester');
     console.log(query);
-    const lastCompleteBulk = 10;
-    const limit = query.offset > lastCompleteBulk * query.limit ? query.limit - 1 : query.limit;
+    const lastPage = 5;
+    const limit = query.page >= lastPage ? query.limit - 1 : query.limit;
     const collection = [];
     for (let index = 0; index < limit; index++) {
       const element = {};
@@ -315,7 +315,7 @@ let requester = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          count: lastCompleteBulk * query.limit + (query.limit - 1),
+          count: lastPage * query.limit - 1,
           collection: collection,
         });
       }, 1000);
@@ -324,8 +324,16 @@ let requester = {
   flattened: true,
 };
 
+const page = ref(3);
+
 watch(columns, () => {
-  console.log('------ app watch columns-------');
+  console.log('------ app watch columns-------', columns.value);
+});
+watch(orderBy, () => {
+  console.log('------ app watch orderBy-------', orderBy.value);
+});
+watch(page, () => {
+  console.log('------ app watch page-------', page.value);
 });
 
 // TODO export dist files and update main file in package.json
@@ -352,6 +360,7 @@ watch(columns, () => {
         v-model:order-by="orderBy"
         :entity="entity"
         v-model:columns="columns"
+        v-model:page="page"
         :filter="filter"
         :allowed-properties="{ user: null }"
         :allowed-scopes="{ user: null }"
@@ -375,7 +384,7 @@ watch(columns, () => {
         :limit="20"
         :quick-sort="true"
         :post-request="completeCollection"
-        :allowed-collection-types="['infinite', 'pagination']"
+        :allowed-collection-types="['pagination', 'pagination']"
         :display-count="true"
         :edit-columns="true"
         :custom-columns="customColumns"

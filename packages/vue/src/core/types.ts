@@ -50,7 +50,7 @@ export type NativeHtmlComponent =
 export interface RequestParams {
   entity: string;
   order?: { property: string; order: string }[];
-  offset: number;
+  page: number;
   limit: number;
   filter?: Record<string, unknown>;
   properties: string[];
