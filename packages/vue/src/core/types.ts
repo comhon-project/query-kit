@@ -1,5 +1,6 @@
 import type { Component } from 'vue';
 import type { Property, ArrayableTypeContainer } from '@core/EntitySchema';
+import type { AllowedOperators } from '@core/OperatorManager';
 
 /**
  * Shared type definitions for query-kit
@@ -179,4 +180,15 @@ export interface CustomInputProps {
   multiple: boolean;
   disabled?: boolean;
   enumId?: string;
+}
+
+// ==================== Builder Config (Provide/Inject) ====================
+
+export interface BuilderConfig {
+  allowedScopes?: AllowedScopes;
+  allowedProperties?: AllowedProperties;
+  allowedOperators?: AllowedOperators;
+  displayOperator?: DisplayOperator;
+  userTimezone?: string;
+  requestTimezone?: string;
 }

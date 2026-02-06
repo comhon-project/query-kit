@@ -9,16 +9,12 @@ interface Props {
   target: Property | RawScopeParameter;
   editable?: boolean;
   entity: string;
-  userTimezone?: string;
-  requestTimezone?: string;
 }
 
 const modelValue = defineModel<unknown[]>({ default: [] });
 
 const props = withDefaults(defineProps<Props>(), {
   editable: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
 });
 
 watchEffect(() => {
@@ -41,8 +37,9 @@ function removeValue(index: number): void {
     <ul :class="classes.in_list">
       <li v-for="(_, index) in modelValue" :key="index" :class="classes.in_value_container">
         <UniqueInput
-          v-bind="props"
           v-model="modelValue[index]"
+          :target="target"
+          :entity="entity"
           :editable="editable"
           :multiple="false"
         />

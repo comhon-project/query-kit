@@ -32,8 +32,6 @@ interface ParameterWithTranslation {
 interface Props {
   modelValue: ScopeFilter;
   entity: string;
-  userTimezone?: string;
-  requestTimezone?: string;
 }
 
 interface Emits {
@@ -42,10 +40,7 @@ interface Emits {
 
 defineEmits<Emits>();
 
-const props = withDefaults(defineProps<Props>(), {
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<Props>();
 
 const validEntity = ref<boolean>(true);
 const validScope = ref<boolean>(true);
@@ -127,8 +122,6 @@ watchEffect(() => {
               :target="param"
               :entity="entity"
               :editable="isEditable"
-              :user-timezone="userTimezone"
-              :request-timezone="requestTimezone"
               :is-array="param.type === 'array'"
             />
           </div>

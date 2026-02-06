@@ -1,12 +1,8 @@
 import { computed, type Ref, type ComputedRef } from 'vue';
 import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '@core/OperatorManager';
-import { useSearchable, type SearchableProps } from '@components/Filter/Composable/Searchable';
+import { useSearchable } from '@components/Filter/Composable/Searchable';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { FilterWithOperator, ConditionFilter } from '@core/types';
-
-export interface FilterWithOperatorProps extends SearchableProps {
-  modelValue: FilterWithOperator;
-}
+import type { FilterWithOperator, ConditionFilter, BuilderConfig } from '@core/types';
 
 export interface OperatorOption {
   label: string;
@@ -22,12 +18,13 @@ export interface UseFilterWithOperatorReturn {
 }
 
 const useFilterWithOperator = (
-  props: FilterWithOperatorProps,
+  modelValue: FilterWithOperator,
+  config: BuilderConfig,
   schema: Ref<EntitySchema | null>,
 ): UseFilterWithOperatorReturn => {
-  const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(props, schema);
-  const isRemovable = computed(() => !(props.modelValue.removable === false));
-  const isEditable = computed(() => !(props.modelValue.editable === false));
+  const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, schema);
+  const isRemovable = computed(() => !(modelValue.removable === false));
+  const isEditable = computed(() => !(modelValue.editable === false));
   const canEditOperator = computed(() => {
     return isEditable.value && operatorOptions.value.length > 1;
   });
@@ -36,15 +33,15 @@ const useFilterWithOperator = (
       throw new Error('schema must be loaded before calling operatorOptions');
     }
 
-    const filterType = props.modelValue.type;
+    const filterType = modelValue.type;
     const options: OperatorOption[] = [];
     const currentOperators =
       filterType === 'condition'
         ? getConditionOperators(
-            schema.value.getProperty((props.modelValue as ConditionFilter).property),
-            props.allowedOperators,
+            schema.value.getProperty((modelValue as ConditionFilter).property),
+            config.allowedOperators,
           )
-        : getContainerOperators(filterType, props.allowedOperators);
+        : getContainerOperators(filterType, config.allowedOperators);
 
     for (const operator of currentOperators) {
       options.push({
@@ -54,15 +51,15 @@ const useFilterWithOperator = (
     }
     let has = false;
     for (const option of options) {
-      if (option.value === props.modelValue.operator) {
+      if (option.value === modelValue.operator) {
         has = true;
         break;
       }
     }
-    if (!has && props.modelValue.operator) {
+    if (!has && modelValue.operator) {
       options.push({
-        label: getOperatorTranslation(filterType, props.modelValue.operator),
-        value: props.modelValue.operator,
+        label: getOperatorTranslation(filterType, modelValue.operator),
+        value: modelValue.operator,
       });
     }
     return options;

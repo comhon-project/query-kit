@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, type Component } from 'vue';
+import { computed, inject, type Component } from 'vue';
 import { classes } from '@core/ClassManager';
 import { getComponent, isNativeHtmlComponent } from '@core/InputManager';
 import {
@@ -12,24 +12,22 @@ import {
 } from '@core/EntitySchema';
 import InvalidType from '@components/Messages/InvalidType.vue';
 import { getComputedScopeParameterTranslation, type ComputedScopeParameter } from '@core/ComputedScopesManager';
-import type { NativeHtmlComponent } from '@core/types';
+import { type NativeHtmlComponent } from '@core/types';
+import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   multiple: boolean;
   target: Property | RawScopeParameter;
   entity: string;
   editable?: boolean;
-  userTimezone?: string;
-  requestTimezone?: string;
 }
 
 const modelValue = defineModel<unknown>();
 
 const props = withDefaults(defineProps<Props>(), {
   editable: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
 });
+const config = inject(builderConfigKey)!;
 
 const inputType = computed<NativeHtmlComponent | Component | undefined>(() => {
   try {
@@ -71,8 +69,8 @@ const conditionValue = computed<unknown>({
     :entity="entity"
     :target="target"
     :multiple="multiple"
-    :user-timezone="userTimezone"
-    :request-timezone="requestTimezone"
+    :user-timezone="config.userTimezone"
+    :request-timezone="config.requestTimezone"
     :disabled="!editable"
     :aria-label="ariaLabel"
   />

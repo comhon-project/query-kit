@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import { ref, watchEffect, computed, useTemplateRef } from 'vue';
+import { ref, watchEffect, computed, useTemplateRef, inject } from 'vue';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import { translate } from '@i18n/i18n';
-import { getConditionOperators, getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
+import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
 import { getComputedScope, getComputedScopeTranslation, type ComputedScope } from '@core/ComputedScopesManager';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import Modal from '@components/Common/Modal.vue';
-import type { Filter, AllowedScopes, AllowedProperties } from '@core/types';
+import { type Filter } from '@core/types';
+import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   entity: string;
-  allowedScopes?: AllowedScopes;
-  allowedProperties?: AllowedProperties;
-  allowedOperators?: AllowedOperators;
 }
 
 interface Emits {
@@ -24,6 +22,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 const show = defineModel<boolean>('show', { required: true });
 const props = defineProps<Props>();
+const config = inject(builderConfigKey)!;
 
 let condition: Filter | null = null;
 const form = useTemplateRef<HTMLFormElement>('form');
@@ -33,7 +32,7 @@ const uniqueIdGroup = ref<string>(`choice-${getUniqueId()}`);
 const schema = ref<EntitySchema | null>(null);
 const targetCondition = ref<string | null>(null);
 const selectedType = ref<'condition' | 'group'>('condition');
-const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(props, schema);
+const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, schema);
 
 const options = computed<Record<string, string>>(() => {
   const opts: Record<string, string> = {};
@@ -50,7 +49,7 @@ const options = computed<Record<string, string>>(() => {
 });
 
 const displayGroup = computed<number>(() => {
-  return getContainerOperators('group', props.allowedOperators).length;
+  return getContainerOperators('group', config.allowedOperators).length;
 });
 
 function validate(): void {
@@ -76,7 +75,7 @@ function validate(): void {
     } else {
       const property = schema.value.getProperty(target);
       if (property.type == 'relationship') {
-        const operators = getContainerOperators('relationship_condition', props.allowedOperators);
+        const operators = getContainerOperators('relationship_condition', config.allowedOperators);
         condition = {
           type: 'relationship_condition',
           operator: operators[0],
@@ -84,7 +83,7 @@ function validate(): void {
           key: getUniqueId(),
         };
       } else {
-        const operators = getConditionOperators(property, props.allowedOperators);
+        const operators = getConditionOperators(property, config.allowedOperators);
         condition = {
           type: 'condition',
           operator: operators[0],
@@ -94,7 +93,7 @@ function validate(): void {
       }
     }
   } else {
-    const operators = getContainerOperators('group', props.allowedOperators);
+    const operators = getContainerOperators('group', config.allowedOperators);
     condition = {
       type: 'group',
       operator: operators[0],

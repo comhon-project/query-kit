@@ -1,15 +1,9 @@
 import { computed, ref, watchEffect, type Ref, type ComputedRef } from 'vue';
-import { getConditionOperators, getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
+import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
 import { getComputedScopes, type ComputedScope } from '@core/ComputedScopesManager';
 import { getFiltrableProperties, getFiltrableScopes } from '@core/RequestSchema';
 import type { EntitySchema, Property, Scope } from '@core/EntitySchema';
-
-export interface SearchableProps {
-  entity: string;
-  allowedProperties?: Record<string, string[]>;
-  allowedScopes?: Record<string, string[]>;
-  allowedOperators?: AllowedOperators;
-}
+import type { BuilderConfig } from '@core/types';
 
 export interface UseSearchableReturn {
   searchableProperties: Ref<Property[]>;
@@ -17,26 +11,27 @@ export interface UseSearchableReturn {
   searchableComputedScopes: ComputedRef<ComputedScope[]>;
 }
 
-const useSearchable = (props: SearchableProps, schema: Ref<EntitySchema | null>): UseSearchableReturn => {
+const useSearchable = (config: BuilderConfig, schema: Ref<EntitySchema | null>): UseSearchableReturn => {
   const searchableProperties: Ref<Property[]> = ref([]);
   const searchableScopes: Ref<Scope[]> = ref([]);
 
   watchEffect(async () => {
-    const filter = props.allowedProperties?.[props.entity];
-    let propertyNames = await getFiltrableProperties(props.entity);
+    if (!schema.value) return;
+    const entity = schema.value.id;
+    const filter = config.allowedProperties?.[entity];
+    let propertyNames = await getFiltrableProperties(entity);
     if (propertyNames.length && filter) {
       propertyNames = propertyNames.filter((value) => filter.includes(value));
     }
-    if (!schema.value || schema.value.id !== props.entity) return;
     const properties: Property[] = [];
-    const hasRelationshipOperator = getContainerOperators('relationship_condition', props.allowedOperators).length;
+    const hasRelationshipOperator = getContainerOperators('relationship_condition', config.allowedOperators).length;
     for (const propertyName of propertyNames) {
       const property = schema.value.getProperty(propertyName);
       if (property.type === 'relationship') {
         if (hasRelationshipOperator) {
           properties.push(property);
         }
-      } else if (getConditionOperators(property, props.allowedOperators).length) {
+      } else if (getConditionOperators(property, config.allowedOperators).length) {
         properties.push(property);
       }
     }
@@ -44,22 +39,25 @@ const useSearchable = (props: SearchableProps, schema: Ref<EntitySchema | null>)
   });
 
   watchEffect(async () => {
-    const filter = props.allowedScopes ? props.allowedScopes[props.entity] : null;
-    let scopeIds = await getFiltrableScopes(props.entity);
+    const currentSchema = schema.value;
+    if (!currentSchema) return;
+    const entity = currentSchema.id;
+    const filter = config.allowedScopes?.[entity];
+    let scopeIds = await getFiltrableScopes(entity);
     if (scopeIds.length && filter) {
       scopeIds = scopeIds.filter((scopeId) => filter.includes(scopeId));
     }
-    const currentSchema = schema.value;
-    if (!currentSchema) return;
     searchableScopes.value = scopeIds.map((scopeId) => currentSchema.getScope(scopeId));
   });
 
   const searchableComputedScopes = computed((): ComputedScope[] => {
-    const scopes = getComputedScopes(props.entity);
+    if (!schema.value) return [];
+    const entity = schema.value.id;
+    const scopes = getComputedScopes(entity);
     if (!scopes.length) {
       return [];
     }
-    const filter = props.allowedScopes ? props.allowedScopes[props.entity] : null;
+    const filter = config.allowedScopes?.[entity];
     if (filter) {
       return scopes.filter((scope) => filter.includes(scope.id));
     }

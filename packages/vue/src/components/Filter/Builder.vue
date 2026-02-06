@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { ref, watch, toRaw, watchEffect, onUnmounted } from 'vue';
+import { ref, watch, toRaw, watchEffect, onUnmounted, provide } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import Group from '@components/Filter/Group.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import type { AllowedOperators } from '@core/OperatorManager';
 import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
-import type { GroupFilter, Filter, DisplayOperator, AllowedScopes, AllowedProperties, ScopeFilter } from '@core/types';
+import {
+  type GroupFilter,
+  type Filter,
+  type DisplayOperator,
+  type AllowedScopes,
+  type AllowedProperties,
+  type ScopeFilter,
+} from '@core/types';
+import { builderConfigKey } from '@core/InjectionKeys';
 
 /**
  * Mutable filter type for dynamic manipulation in getComputedFilter().
@@ -46,6 +54,15 @@ const props = withDefaults(defineProps<Props>(), {
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
   deferred: 1000,
+});
+
+provide(builderConfigKey, {
+  allowedScopes: props.allowedScopes,
+  allowedProperties: props.allowedProperties,
+  allowedOperators: props.allowedOperators,
+  displayOperator: props.displayOperator,
+  userTimezone: props.userTimezone,
+  requestTimezone: props.requestTimezone,
 });
 
 let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -199,6 +216,13 @@ watch(props.modelValue, () => {
 <template>
   <section :class="classes.builder" :aria-label="translate('filter')">
     <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
-    <Group v-if="schema" v-bind="props" :on-reset="allowReset ? reset : undefined" @exit="$emit('goToCollection')" />
+    <Group
+      v-if="schema"
+      :model-value="modelValue"
+      :entity="entity"
+      :on-reset="allowReset ? reset : undefined"
+      :on-validate="onValidate"
+      @exit="$emit('goToCollection')"
+    />
   </section>
 </template>

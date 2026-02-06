@@ -5,7 +5,7 @@ import ChildGroup from '@components/Filter/ChildGroup.vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
 import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
-import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
+import { isValidOperator } from '@core/OperatorManager';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
@@ -17,9 +17,6 @@ import { translate } from '@i18n/i18n';
 import type {
   RelationshipConditionFilter,
   Filter,
-  DisplayOperator,
-  AllowedScopes,
-  AllowedProperties,
   ConditionFilter,
   ScopeFilter,
   GroupFilter,
@@ -34,12 +31,6 @@ interface QueueElement {
 interface Props {
   modelValue: RelationshipConditionFilter;
   entity: string;
-  allowedScopes?: AllowedScopes;
-  allowedProperties?: AllowedProperties;
-  allowedOperators?: AllowedOperators;
-  displayOperator?: DisplayOperator;
-  userTimezone?: string;
-  requestTimezone?: string;
 }
 
 interface Emits {
@@ -48,11 +39,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 const collapsed = defineModel<boolean>('collapsed', { default: false });
-const props = withDefaults(defineProps<Props>(), {
-  displayOperator: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<Props>();
 
 const invalidEntity = ref<string | null>(null);
 const invalidProperty = ref<string | null>(null);
@@ -195,13 +182,11 @@ watch(() => props.modelValue.filter, initSchema);
               <RelationshipQueueElement
                 v-for="elmnt in queue"
                 :key="elmnt.key"
-                v-bind="props"
                 :model-value="elmnt.value"
                 :entity="elmnt.schema.id"
               />
             </div>
             <RelationshipAction
-              v-bind="props"
               :entity="endQueuePropertySchemaId"
               :model-value="queue[queue.length - 1].value"
               @remove="removeQueueFilter"
@@ -220,7 +205,6 @@ watch(() => props.modelValue.filter, initSchema);
       <div v-else :class="classes.grid_container_for_transition">
         <component
           :is="endQueueComponent"
-          v-bind="props"
           :entity="endQueuePropertySchemaId"
           :model-value="endQueueFilter"
           v-model:collapsed="collapsed"
@@ -231,7 +215,6 @@ watch(() => props.modelValue.filter, initSchema);
               <RelationshipQueueElement
                 v-for="elmnt in queue"
                 :key="elmnt.key"
-                v-bind="props"
                 :model-value="elmnt.value"
                 :entity="elmnt.schema.id"
               />

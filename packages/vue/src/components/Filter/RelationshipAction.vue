@@ -1,18 +1,15 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect, inject } from 'vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import IconButton from '@components/Common/IconButton.vue';
-import type { AllowedOperators } from '@core/OperatorManager';
-import type { RelationshipConditionFilter, Filter, AllowedScopes, AllowedProperties } from '@core/types';
+import { type RelationshipConditionFilter, type Filter } from '@core/types';
+import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: RelationshipConditionFilter;
   entity: string;
-  allowedScopes?: AllowedScopes;
-  allowedProperties?: AllowedProperties;
-  allowedOperators?: AllowedOperators;
 }
 
 interface Emits {
@@ -22,9 +19,10 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
+const config = inject(builderConfigKey)!;
 const schema = ref<EntitySchema | null>(null);
 const showConditionChoice = ref<boolean>(false);
-const { canAddFilter } = useFilterWithOperator(props, schema);
+const { canAddFilter } = useFilterWithOperator(props.modelValue, config, schema);
 
 async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
@@ -44,6 +42,6 @@ watchEffect(initSchema);
 <template>
   <div v-if="schema">
     <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
-    <ConditionChoice v-model:show="showConditionChoice" v-bind="props" :entity="schema.id" @validate="setNewFilter" />
+    <ConditionChoice v-model:show="showConditionChoice" :entity="schema.id" @validate="setNewFilter" />
   </div>
 </template>

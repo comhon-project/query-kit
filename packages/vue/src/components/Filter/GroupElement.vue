@@ -6,18 +6,11 @@ import RelationshipCondition from '@components/Filter/RelationshipCondition.vue'
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import type { AllowedOperators } from '@core/OperatorManager';
-import type { Filter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
+import type { Filter } from '@core/types';
 
 interface Props {
   modelValue: Filter;
   entity: string;
-  allowedScopes?: AllowedScopes;
-  allowedProperties?: AllowedProperties;
-  allowedOperators?: AllowedOperators;
-  displayOperator?: DisplayOperator;
-  userTimezone?: string;
-  requestTimezone?: string;
 }
 
 interface Emits {
@@ -25,11 +18,7 @@ interface Emits {
 }
 
 defineEmits<Emits>();
-const props = withDefaults(defineProps<Props>(), {
-  displayOperator: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<Props>();
 
 const collapsed = ref<boolean>(false);
 
@@ -76,8 +65,8 @@ function toggleCollapse(): void {
   >
     <component
       :is="component"
-      v-bind="props"
       :model-value="modelValue"
+      :entity="entity"
       v-model:collapsed="collapsed"
       @remove="$emit('remove', modelValue.key)"
     />

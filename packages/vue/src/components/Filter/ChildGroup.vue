@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect, useTemplateRef } from 'vue';
+import { ref, computed, watchEffect, useTemplateRef, inject } from 'vue';
 import { getUniqueId } from '@core/Utils';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
-import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
+import { isValidOperator } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
@@ -13,17 +13,12 @@ import CollapseButton from '@components/Common/CollapseButton.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import GroupElement from '@components/Filter/GroupElement.vue';
-import type { GroupFilter, Filter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
+import { type GroupFilter, type Filter } from '@core/types';
+import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: GroupFilter;
   entity: string;
-  allowedScopes?: AllowedScopes;
-  allowedProperties?: AllowedProperties;
-  allowedOperators?: AllowedOperators;
-  displayOperator?: DisplayOperator;
-  userTimezone?: string;
-  requestTimezone?: string;
   onReset?: () => void;
   onValidate?: () => void;
 }
@@ -34,18 +29,19 @@ interface Emits {
 
 defineEmits<Emits>();
 const collapsed = defineModel<boolean>('collapsed', { default: false });
-const props = withDefaults(defineProps<Props>(), {
-  displayOperator: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<Props>();
+const config = inject(builderConfigKey)!;
 
 const validOperator = ref<boolean>(true);
 const validEntity = ref<boolean>(true);
 const schema = ref<EntitySchema | null>(null);
 const showConditionChoice = ref<boolean>(false);
 const groupListRef = useTemplateRef<HTMLUListElement>('groupListRef');
-const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
+const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(
+  props.modelValue,
+  config,
+  schema,
+);
 
 const visibleFilters = computed<Filter[]>(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
@@ -136,7 +132,7 @@ watchEffect(() => {
           {{ visibleFilters.length }}
           <span>{{ translate(visibleFilters.length > 1 ? 'filters' : 'filter') }}</span>
         </div>
-        <template v-if="displayOperator === true || (displayOperator && displayOperator.group)">
+        <template v-if="config.displayOperator === true || (config.displayOperator && config.displayOperator.group)">
           <AdaptativeSelect
             v-model="modelValue.operator"
             :class="classes.operator"
@@ -159,14 +155,14 @@ watchEffect(() => {
             <GroupElement
               v-for="filter in visibleFilters"
               :key="filter.key"
-              v-bind="props"
               :model-value="filter"
+              :entity="entity"
               @remove="() => removeFilter(filter)"
             />
           </TransitionGroup>
         </ul>
       </div>
     </div>
-    <ConditionChoice v-model:show="showConditionChoice" v-bind="props" @validate="setNewFilter" />
+    <ConditionChoice v-model:show="showConditionChoice" :entity="entity" @validate="setNewFilter" />
   </div>
 </template>

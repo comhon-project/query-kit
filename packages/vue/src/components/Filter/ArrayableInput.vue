@@ -9,8 +9,6 @@ interface Props {
   target: Property | RawScopeParameter;
   entity: string;
   editable?: boolean;
-  userTimezone?: string;
-  requestTimezone?: string;
   isArray?: boolean;
 }
 
@@ -18,8 +16,6 @@ const modelValue = defineModel<unknown>();
 
 const props = withDefaults(defineProps<Props>(), {
   editable: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
   isArray: false,
 });
 
@@ -35,6 +31,19 @@ const isMultiple = computed(() => {
 </script>
 
 <template>
-  <CollectionInput v-if="useCollection" v-bind="props" v-model="modelValue as unknown[]" />
-  <UniqueInput v-else v-bind="props" v-model="modelValue" :multiple="isMultiple" />
+  <CollectionInput
+    v-if="useCollection"
+    v-model="modelValue as unknown[]"
+    :target="target"
+    :entity="entity"
+    :editable="editable"
+  />
+  <UniqueInput
+    v-else
+    v-model="modelValue"
+    :target="target"
+    :entity="entity"
+    :editable="editable"
+    :multiple="isMultiple"
+  />
 </template>

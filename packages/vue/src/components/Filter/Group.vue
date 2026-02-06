@@ -3,33 +3,21 @@ import { ref, computed, useTemplateRef, onMounted } from 'vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { useTreeNavigation } from '@components/Filter/Composable/TreeNavigation';
 import { translate } from '@i18n/i18n';
-import type { AllowedOperators } from '@core/OperatorManager';
-import type { GroupFilter, DisplayOperator, AllowedScopes, AllowedProperties } from '@core/types';
+import type { GroupFilter } from '@core/types';
 
 interface Props {
   modelValue: GroupFilter;
   entity: string;
-  allowedScopes?: AllowedScopes;
-  allowedProperties?: AllowedProperties;
-  allowedOperators?: AllowedOperators;
-  displayOperator?: DisplayOperator;
-  userTimezone?: string;
-  requestTimezone?: string;
   onReset?: () => void;
   onValidate?: () => void;
 }
 
 interface Emits {
-  remove: [];
   exit: [];
 }
 
 const emit = defineEmits<Emits>();
-const props = withDefaults(defineProps<Props>(), {
-  displayOperator: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<Props>();
 
 const collapsed = ref<boolean>(false);
 const ariaExpanded = computed<boolean>(() => !collapsed.value);
@@ -55,7 +43,13 @@ onMounted(() => {
       :aria-label="translate('group')"
       @tree-toggle="toggleCollapse"
     >
-      <ChildGroup v-bind="props" v-model:collapsed="collapsed" @remove="$emit('remove')" />
+      <ChildGroup
+        :model-value="modelValue"
+        :entity="entity"
+        :on-reset="onReset"
+        :on-validate="onValidate"
+        v-model:collapsed="collapsed"
+      />
     </div>
   </div>
 </template>

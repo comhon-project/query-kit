@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed, watchEffect } from 'vue';
+import { ref, watch, computed, watchEffect, inject } from 'vue';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
-import { isValidOperator, type AllowedOperators } from '@core/OperatorManager';
+import { isValidOperator } from '@core/OperatorManager';
 import {
   resolve,
   getPropertyTranslation,
@@ -19,15 +19,12 @@ import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
 import { translate } from '@i18n/i18n';
-import type { ConditionFilter, DisplayOperator } from '@core/types';
+import { type ConditionFilter } from '@core/types';
+import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: ConditionFilter;
   entity: string;
-  allowedOperators?: AllowedOperators;
-  displayOperator?: DisplayOperator;
-  userTimezone?: string;
-  requestTimezone?: string;
 }
 
 interface Emits {
@@ -36,11 +33,8 @@ interface Emits {
 
 defineEmits<Emits>();
 
-const props = withDefaults(defineProps<Props>(), {
-  displayOperator: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<Props>();
+const config = inject(builderConfigKey)!;
 
 const validEntity = ref<boolean>(true);
 const validOperator = ref<boolean>(true);
@@ -48,11 +42,16 @@ const validProperty = ref<boolean>(true);
 const validType = ref<boolean>(true);
 const schema = ref<EntitySchema | null>(null);
 
-const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(props, schema);
+const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(
+  props.modelValue,
+  config,
+  schema,
+);
 
 const mustDisplayOperator = computed<boolean>(() => {
   return (
-    props.displayOperator === true || (typeof props.displayOperator === 'object' && !!props.displayOperator.condition)
+    config.displayOperator === true ||
+    (typeof config.displayOperator === 'object' && !!config.displayOperator.condition)
   );
 });
 
@@ -170,8 +169,6 @@ watch(
           :target="property"
           :entity="entity"
           :editable="isEditable"
-          :user-timezone="userTimezone"
-          :request-timezone="requestTimezone"
           :is-array="isArrayOperator"
         />
       </template>
