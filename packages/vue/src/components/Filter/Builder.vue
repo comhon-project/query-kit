@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, toRaw, watchEffect, onUnmounted, provide } from 'vue';
+import { ref, watch, toRaw, onUnmounted, provide } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
+import { getUniqueId } from '@core/Utils';
 import Group from '@components/Filter/Group.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import type { AllowedOperators } from '@core/OperatorManager';
+import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
 import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
 import {
   type GroupFilter,
@@ -16,18 +17,7 @@ import {
 } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 
-/**
- * Mutable filter type for dynamic manipulation in getComputedFilter().
- * We use Record<string, unknown> because:
- * - structuredClone returns a runtime object without TypeScript guarantees
- * - We delete properties dynamically (key, editable, removable, id)
- * - We use Object.assign with computed scope values
- * The double-cast (as unknown as) is the standard TypeScript pattern for this.
- */
-type MutableFilter = Record<string, unknown>;
-
 interface Props {
-  modelValue: GroupFilter;
   entity: string;
   allowReset?: boolean;
   allowedScopes?: AllowedScopes;
@@ -42,10 +32,11 @@ interface Props {
 }
 
 interface Emits {
-  computed: [filter: MutableFilter];
+  computed: [filter: GroupFilter];
   goToCollection: [];
 }
 
+const modelValue = defineModel<Filter | null>({ default: null });
 const emit = defineEmits<Emits>();
 
 const props = withDefaults(defineProps<Props>(), {
@@ -67,20 +58,62 @@ provide(builderConfigKey, {
 
 let timeoutId: ReturnType<typeof setTimeout> | undefined;
 let originalFilter: GroupFilter;
-const schema = ref<EntitySchema | null>(null);
+let lastEmitted: GroupFilter;
+const internalModel = ref<GroupFilter>(null!);
 
-onUnmounted(() => {
-  if (timeoutId) clearTimeout(timeoutId);
-});
+function prepareFilters(filter: Filter): void {
+  const stack: Filter[] = [filter];
+  while (stack.length) {
+    const current = stack.pop()!;
+    current.key = getUniqueId();
+    if (current.type === 'group') {
+      if (!Array.isArray(current.filters)) {
+        current.filters = [];
+      }
+      stack.push(...current.filters);
+    }
+    if (current.type === 'relationship_condition' && current.filter) {
+      stack.push(current.filter);
+    }
+  }
+}
 
-async function initSchema(): Promise<void> {
-  schema.value = await resolve(props.entity);
+function init(value: Filter | null): void {
+  const raw = value ? toRaw(value) : null;
+  const isGroup = raw?.type === 'group';
+  const group: GroupFilter = isGroup
+    ? raw
+    : {
+        type: 'group',
+        filters: raw ? [raw] : [],
+        operator: getContainerOperators('group', props.allowedOperators)?.[0] || 'and',
+      };
+
+  originalFilter = structuredClone(group);
+  originalFilter.removable = false;
+  prepareFilters(originalFilter);
+
+  internalModel.value = structuredClone(originalFilter);
+}
+
+function stripKeys(filter: GroupFilter): GroupFilter {
+  const clone = structuredClone(toRaw(filter));
+  const stack: Filter[] = [clone];
+  while (stack.length) {
+    const current = stack.pop()!;
+    delete current.key;
+    if (current.type === 'group') {
+      stack.push(...current.filters);
+    }
+    if (current.type === 'relationship_condition' && current.filter) {
+      stack.push(current.filter);
+    }
+  }
+  return clone;
 }
 
 function reset(): void {
-  const mutableModel = props.modelValue as unknown as MutableFilter;
-  for (const member of Object.keys(mutableModel)) delete mutableModel[member];
-  Object.assign(props.modelValue, structuredClone(originalFilter));
+  internalModel.value = structuredClone(originalFilter);
 }
 
 function getScopeDefinition(scopeId: string, entitySchema: EntitySchema): Scope | ComputedScope | undefined {
@@ -129,32 +162,31 @@ function mustKeepFilter(filter: Filter, entitySchema: EntitySchema): boolean {
   return true;
 }
 
-async function getComputedFilter(): Promise<MutableFilter> {
-  const computedFilter = structuredClone(toRaw(props.modelValue)) as unknown as MutableFilter;
-  const stack: Array<[MutableFilter, EntitySchema]> = [[computedFilter, schema.value!]];
+async function getComputedFilter(): Promise<GroupFilter> {
+  const entitySchema = await resolve(props.entity);
+  const computedFilter = structuredClone(toRaw(internalModel.value));
+  const stack: Array<[Filter, EntitySchema]> = [[computedFilter, entitySchema]];
   while (stack.length) {
     const [currentFilter, currentSchema] = stack.pop()!;
     if (currentFilter.type == 'relationship_condition') {
       if (currentFilter.filter) {
-        const schemaId = currentSchema.getProperty(currentFilter.property as string).related!;
+        const schemaId = currentSchema.getProperty(currentFilter.property).related!;
         const childSchema = await resolve(schemaId);
-        if (mustKeepFilter(currentFilter.filter as Filter, childSchema)) {
-          stack.push([currentFilter.filter as MutableFilter, childSchema]);
+        if (mustKeepFilter(currentFilter.filter, childSchema)) {
+          stack.push([currentFilter.filter, childSchema]);
         } else {
           delete currentFilter.filter;
         }
       }
     } else if (currentFilter.type == 'group') {
-      const filters: MutableFilter[] = [];
-      for (const filter of currentFilter.filters as MutableFilter[]) {
-        if (!mustKeepFilter(filter as unknown as Filter, currentSchema)) {
-          continue;
-        }
+      const kept: Filter[] = [];
+      for (const filter of currentFilter.filters) {
+        if (!mustKeepFilter(filter, currentSchema)) continue;
         stack.push([filter, currentSchema]);
-        filters.push(filter);
+        kept.push(filter);
       }
-      currentFilter.filters = filters;
-    } else {
+      currentFilter.filters = kept;
+    } else if (currentFilter.type == 'condition') {
       if (Array.isArray(currentFilter.value)) {
         currentFilter.value = (currentFilter.value as unknown[]).filter((value) => value !== undefined);
       } else if (currentFilter.operator == 'like' || currentFilter.operator == 'not_like') {
@@ -166,24 +198,23 @@ async function getComputedFilter(): Promise<MutableFilter> {
         currentFilter.operator = currentFilter.operator == 'ends_with' ? 'like' : 'not_like';
         currentFilter.value = `%${currentFilter.value}`;
       }
-      if (currentFilter.type == 'scope') {
-        const parameters = currentFilter.parameters as unknown[] | undefined;
-        if (parameters?.length) {
-          for (let i = 0; i < parameters.length; i++) {
-            if (Array.isArray(parameters[i])) {
-              parameters[i] = (parameters[i] as unknown[]).filter((v) => v !== undefined);
-            }
+    } else if (currentFilter.type == 'scope') {
+      const parameters = currentFilter.parameters;
+      if (parameters?.length) {
+        for (let i = 0; i < parameters.length; i++) {
+          if (Array.isArray(parameters[i])) {
+            parameters[i] = (parameters[i] as unknown[]).filter((v) => v !== undefined);
           }
         }
-        const scope = getScopeDefinition(currentFilter.id as string, currentSchema);
-        if (scope && (scope as ComputedScope).computed) {
-          delete currentFilter.id;
-          const computedScopeValue = (scope as ComputedScope).computed!(parameters || []);
-          if (typeof computedScopeValue != 'object') {
-            throw new Error(`invalid computed value for scope ${scope.id}, value must be an object`);
-          }
-          Object.assign(currentFilter, computedScopeValue);
+      }
+      const scope = getScopeDefinition(currentFilter.id, currentSchema);
+      if (scope && (scope as ComputedScope).computed) {
+        const computedScopeValue = (scope as ComputedScope).computed!(parameters || []);
+        if (typeof computedScopeValue != 'object') {
+          throw new Error(`invalid computed value for scope ${scope.id}, value must be an object`);
         }
+        delete (currentFilter as { id?: string }).id;
+        Object.assign(currentFilter, computedScopeValue);
       }
     }
     delete currentFilter.key;
@@ -193,32 +224,42 @@ async function getComputedFilter(): Promise<MutableFilter> {
   return computedFilter;
 }
 
-watchEffect(async () => {
-  await initSchema();
-  originalFilter = structuredClone(toRaw(props.modelValue));
+function scheduleEmit(): void {
   if (timeoutId) {
     clearTimeout(timeoutId);
   }
   timeoutId = setTimeout(async () => {
+    const stripped = stripKeys(internalModel.value);
+    lastEmitted = stripped;
+    modelValue.value = stripped;
     emit('computed', await getComputedFilter());
   }, props.deferred);
+}
+
+onUnmounted(() => {
+  if (timeoutId) clearTimeout(timeoutId);
 });
-watch(props.modelValue, () => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-  timeoutId = setTimeout(async () => {
-    emit('computed', await getComputedFilter());
-  }, props.deferred);
-});
+
+watch(
+  modelValue,
+  (newVal) => {
+    // Prevent re-init loop: when scheduleEmit sets modelValue, this watch fires back.
+    // We compare by reference to detect our own emission and skip it.
+    // When newVal is null/undefined, always re-init (no reference to compare).
+    if (!newVal || toRaw(newVal) !== lastEmitted) {
+      init(newVal);
+    }
+  },
+  { immediate: true },
+);
+watch(internalModel, scheduleEmit, { deep: true, immediate: true });
 </script>
 
 <template>
   <section :class="classes.builder" :aria-label="translate('filter')">
     <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
     <Group
-      v-if="schema"
-      :model-value="modelValue"
+      :model-value="internalModel"
       :entity="entity"
       :on-reset="allowReset ? reset : undefined"
       :on-validate="onValidate"

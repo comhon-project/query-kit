@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, useTemplateRef, inject } from 'vue';
-import { getUniqueId } from '@core/Utils';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
@@ -47,17 +46,6 @@ const visibleFilters = computed<Filter[]>(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
 });
 
-function initFilter(): void {
-  if (!props.modelValue.filters) {
-    props.modelValue.filters = [];
-  }
-  for (const filter of props.modelValue.filters) {
-    if (!filter.key) {
-      filter.key = getUniqueId();
-    }
-  }
-}
-
 async function initSchema(): Promise<void> {
   schema.value = await resolve(props.entity);
   if (!schema.value) {
@@ -66,12 +54,12 @@ async function initSchema(): Promise<void> {
 }
 
 function isVisible(filter: Filter): boolean {
-  return !(filter.visible === false);
+  return filter.visible !== false;
 }
 
 function removeFilter(filter: Filter): void {
-  const index = props.modelValue.filters.findIndex((current) => current === filter);
-  const visibleIndex = visibleFilters.value.findIndex((current) => current === filter);
+  const index = props.modelValue.filters.indexOf(filter);
+  const visibleIndex = visibleFilters.value.indexOf(filter);
   const allTreeitems = groupListRef.value?.querySelectorAll<HTMLElement>('[role="treeitem"]');
   const treeitems = allTreeitems
     ? Array.from(allTreeitems).filter((item) => item.closest('[role="group"]') === groupListRef.value)
@@ -99,7 +87,6 @@ function setNewFilter(data: Filter): void {
 }
 
 watchEffect(() => {
-  initFilter();
   initSchema();
 });
 watchEffect(() => {

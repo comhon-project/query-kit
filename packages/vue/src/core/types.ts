@@ -53,7 +53,7 @@ export interface RequestParams {
   order?: { property: string; order: string }[];
   page: number;
   limit: number;
-  filter?: Record<string, unknown>;
+  filter?: Filter;
   properties: string[];
 }
 
