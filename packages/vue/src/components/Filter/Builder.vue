@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, watchEffect, toRaw, onUnmounted, provide } from 'vue';
+import { ref, reactive, watch, watchEffect, toRaw, onUnmounted, provide } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import Group from '@components/Filter/Group.vue';
@@ -16,6 +16,7 @@ import {
   type AllowedScopes,
   type AllowedProperties,
   type ScopeFilter,
+  type BuilderConfig,
 } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 import { useHistory } from '@components/Filter/Composable/History';
@@ -54,14 +55,8 @@ const props = withDefaults(defineProps<Props>(), {
   deferred: 1000,
 });
 
-provide(builderConfigKey, {
-  allowedScopes: props.allowedScopes,
-  allowedProperties: props.allowedProperties,
-  allowedOperators: props.allowedOperators,
-  displayOperator: props.displayOperator,
-  userTimezone: props.userTimezone,
-  requestTimezone: props.requestTimezone,
-});
+const config = reactive<BuilderConfig>({});
+provide(builderConfigKey, config);
 
 let timeoutId: ReturnType<typeof setTimeout> | undefined;
 let originalFilter: GroupFilter;
@@ -275,6 +270,15 @@ watch(
   { immediate: true },
 );
 watch(internalModel, scheduleEmit, { deep: true, immediate: true });
+
+watchEffect(() => {
+  config.allowedScopes = props.allowedScopes;
+  config.allowedProperties = props.allowedProperties;
+  config.allowedOperators = props.allowedOperators;
+  config.displayOperator = props.displayOperator;
+  config.userTimezone = props.userTimezone;
+  config.requestTimezone = props.requestTimezone;
+});
 
 watchEffect(async () => {
   try {

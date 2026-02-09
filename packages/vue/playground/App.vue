@@ -4,6 +4,11 @@ import CellFirstName from './components/CellFirstName.vue';
 import { locale } from '@query-kit/vue';
 
 const entity = ref('user');
+const displayOperator = ref({
+  group: true,
+  condition: true,
+  relationship_condition: true,
+});
 const columns = ref([
   'first_name',
   'last_name',
@@ -335,19 +340,22 @@ watch(page, () => {
 
 <template>
   <div class="root-app">
-    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; justify-content: end; flex-wrap: wrap">
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">en</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'zh')">zh</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'hi')">hi</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">es</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">fr</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ar')">ar</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'bn')">bn</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'pt')">pt</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ru')">ru</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ja')">ja</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap">
       <button class="qkit-btn qkit-btn-primary" @click="() => page++">page++</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (displayOperator = displayOperator ? false : true)">toggle displayOperator</button>
+      <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap">
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">en</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'zh')">zh</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'hi')">hi</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">es</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">fr</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ar')">ar</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'bn')">bn</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'pt')">pt</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ru')">ru</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ja')">ja</button>
+        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
+      </div>
     </div>
     <div style="height: 90vh">
       <QkitSearch
@@ -366,11 +374,7 @@ watch(page, () => {
           },
         }"
         user-timezone="Europe/Paris"
-        :display-operator="{
-          group: true,
-          condition: true,
-          relationship_condition: true,
-        }"
+        :display-operator="displayOperator"
         :deferred="1000"
         :manually="false"
         :direct-query="true"
