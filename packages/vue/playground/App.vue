@@ -255,16 +255,6 @@ async function exportResults(newFilter) {
   console.log(newFilter);
 }
 
-function handleComputedFilters(params) {
-  console.log('computed');
-  console.log(params);
-}
-
-function handleUpdatedFilters(params) {
-  console.log('updated');
-  console.log(params);
-}
-
 let requester = {
   request: (query) => {
     console.log('prop-requester');
@@ -326,6 +316,9 @@ let requester = {
 
 const page = ref(3);
 
+watch(filter, () => {
+  console.log('------ app watch filter-------', filter.value);
+});
 watch(columns, () => {
   console.log('------ app watch columns-------', columns.value);
 });
@@ -354,6 +347,7 @@ watch(page, () => {
       <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ru')">ru</button>
       <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ja')">ja</button>
       <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => page++">page++</button>
     </div>
     <div style="height: 90vh">
       <QkitSearch
@@ -361,7 +355,7 @@ watch(page, () => {
         :entity="entity"
         v-model:columns="columns"
         v-model:page="page"
-        :filter="filter"
+        v-model:filter="filter"
         :allowed-properties="{ user: null }"
         :allowed-scopes="{ user: null }"
         :allowed-operators="{
@@ -378,21 +372,19 @@ watch(page, () => {
           condition: true,
           relationship_condition: true,
         }"
-        :deferred="500"
+        :deferred="1000"
         :manually="false"
         :direct-query="true"
         :limit="20"
         :quick-sort="true"
         :post-request="completeCollection"
-        :allowed-collection-types="['pagination', 'pagination']"
+        :allowed-collection-types="['infinite', 'pagination']"
         :display-count="true"
         :edit-columns="true"
         :custom-columns="customColumns"
         :requester="requester"
         @row-click="printRow"
         @export="exportResults"
-        @updated="handleUpdatedFilters"
-        @computed="handleComputedFilters"
       >
         <template #loadings="{ requesting }">
           <div v-show="requesting">loading...</div>
@@ -401,13 +393,3 @@ watch(page, () => {
     </div>
   </div>
 </template>
-
-<style>
-@media (min-width: 1000px) {
-  .root-app {
-    margin-left: auto;
-    margin-right: auto;
-    width: 80%;
-  }
-}
-</style>

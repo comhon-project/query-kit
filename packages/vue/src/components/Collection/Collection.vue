@@ -9,20 +9,27 @@ import Pagination from '@components/Pagination/Pagination.vue';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
 import ColumnEditor from '@components/Collection/ColumnEditor.vue';
-import type { CustomColumnConfig, OrderByItem, CollectionType, Requester, RequesterFunction } from '@core/types';
+import type {
+  CustomColumnConfig,
+  OrderByItem,
+  CollectionType,
+  Requester,
+  RequesterFunction,
+  Filter,
+} from '@core/types';
 
 interface Props {
   entity: string;
   customColumns?: Record<string, CustomColumnConfig>;
-  filter?: Record<string, unknown>;
-  directQuery: boolean;
+  filter?: Filter;
+  directQuery?: boolean;
   limit: number;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
-  onExport?: (filter?: Record<string, unknown>) => void;
+  onExport?: (filter?: Filter) => void;
   userTimezone?: string;
   requestTimezone?: string;
   editColumns?: boolean;
@@ -45,6 +52,7 @@ const columns = defineModel<string[]>('columns', { required: true });
 const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
 const page = defineModel<number>('page', { default: 1 });
 const props = withDefaults(defineProps<Props>(), {
+  directQuery: true,
   quickSort: true,
   allowedCollectionTypes: () => ['pagination'],
   userTimezone: 'UTC',
@@ -52,6 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 let hasExecFirstQuery = false;
+let requestId = 0;
 let properties: string[] = [];
 const requesting = ref<boolean>(false);
 const columnsProperties = shallowRef<Record<string, Property | undefined>>({});
@@ -158,7 +167,7 @@ async function initOrderBy(
 }
 
 function updateOrder(columnId: string | undefined, multi: boolean): void {
-  if (requesting.value || !columnId) {
+  if (!columnId) {
     return;
   }
   const currentOrder = indexedOrderBy.value[columnId]?.order;
@@ -182,70 +191,89 @@ function updateOrder(columnId: string | undefined, multi: boolean): void {
   }
 }
 
-async function shiftThenRequestServer(): Promise<void> {
-  if (!requesting.value && hasExecFirstQuery) {
+function shiftThenRequestServer(): void {
+  if (hasExecFirstQuery && !requesting.value) {
     page.value++;
-    requestServer();
   }
 }
 
-async function updatePage(newPage: number): Promise<void> {
-  if (!requesting.value) {
-    page.value = newPage;
+function resetCollection(): void {
+  end.value = false;
+  if (page.value === 1) {
     requestServer();
-  }
-}
-
-async function requestServer(reset = false): Promise<void> {
-  if (reset) {
-    end.value = false;
-    page.value = 1;
-    if (collectionContent.value) {
-      collectionContent.value.scrollTop = 0;
-    }
-  }
-  hasExecFirstQuery = true;
-  requesting.value = true;
-  const requesterValue = activeRequester.value;
-  const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
-
-  const order = Object.keys(indexedOrderBy.value).length
-    ? Object.values(indexedOrderBy.value).flatMap((entry) =>
-        entry.properties.map((prop) => ({ property: prop, order: entry.order })),
-      )
-    : undefined;
-
-  const response = await fetch({
-    entity: props.entity,
-    order,
-    page: page.value,
-    limit: props.limit,
-    filter: props.filter,
-    properties: properties,
-  });
-  if (typeof response != 'object' || !Array.isArray(response.collection)) {
-    throw new Error(
-      'invalid request response, it must be an object containing a property "collection" with an array value',
-    );
-  }
-  count.value = response.count;
-  if (props.postRequest) {
-    const res = props.postRequest(response.collection);
-    if (res instanceof Promise) {
-      await res;
-    }
-  }
-  if (reset || !infiniteScroll.value) {
-    collection.value = response.collection;
   } else {
-    for (const element of response.collection) {
-      collection.value.push(element);
+    page.value = 1;
+  }
+}
+
+async function requestServer(): Promise<void> {
+  let currentRequestId = 0;
+  let shouldDelay = false;
+  try {
+    hasExecFirstQuery = true;
+    requesting.value = true;
+    currentRequestId = ++requestId;
+    const requesterValue = activeRequester.value;
+    const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
+
+    const order = Object.keys(indexedOrderBy.value).length
+      ? Object.values(indexedOrderBy.value).flatMap((entry) =>
+          entry.properties.map((prop) => ({ property: prop, order: entry.order })),
+        )
+      : undefined;
+
+    const response = await fetch({
+      entity: props.entity,
+      order,
+      page: page.value,
+      limit: props.limit,
+      filter: props.filter,
+      properties: properties,
+    });
+
+    // Discard this response if a newer request has been triggered in the meantime
+    if (currentRequestId !== requestId) return;
+
+    if (typeof response != 'object' || !Array.isArray(response.collection)) {
+      throw new Error(
+        'invalid request response, it must be an object containing a property "collection" with an array value',
+      );
+    }
+    count.value = response.count;
+    if (props.postRequest) {
+      const res = props.postRequest(response.collection);
+      if (res instanceof Promise) {
+        await res;
+      }
+    }
+    if (currentRequestId !== requestId) return;
+
+    const shouldReplace = !infiniteScroll.value || page.value <= 1;
+    if (shouldReplace) {
+      collection.value = response.collection;
+    } else {
+      for (const element of response.collection) {
+        collection.value.push(element);
+      }
+    }
+    if (infiniteScroll.value && response.collection.length < props.limit) {
+      end.value = true;
+    }
+
+    shouldDelay = !!(shouldReplace && collectionContent.value);
+    if (shouldDelay) {
+      // Delay to ensure the DOM has updated after collection replacement, otherwise the scroll may not trigger
+      setTimeout(() => {
+        collectionContent.value?.scrollTo({ top: 0, behavior: 'smooth' });
+        // Delay releasing the lock to prevent the IntersectionObserver from triggering a second request
+        setTimeout(() => (requesting.value = false), 30);
+      }, 20);
+    }
+  } finally {
+    if (!shouldDelay && currentRequestId === requestId) {
+      requesting.value = false;
     }
   }
-  if (infiniteScroll.value && response.collection.length < props.limit) {
-    end.value = true;
-  }
-  requesting.value = false;
 }
 
 function isInfiniteAccordingProps(preferred: boolean | null = null): boolean {
@@ -284,9 +312,14 @@ onUnmounted(() => {
 
 watch([() => props.entity, columns, orderBy], async () => {
   await init();
-  await requestServer(true);
+  resetCollection();
 });
-watch([() => props.filter, infiniteScroll], () => requestServer(true));
+watch([() => props.filter, infiniteScroll], () => resetCollection());
+watch(page, () => {
+  if (hasExecFirstQuery) {
+    requestServer();
+  }
+});
 watch(
   () => props.allowedCollectionTypes,
   () => (infiniteScroll.value = isInfiniteAccordingProps(infiniteScroll.value)),
@@ -306,10 +339,9 @@ watch(
         </div>
         <Pagination
           v-if="!infiniteScroll"
-          :model-value="page"
+          v-model="page"
           :count="Math.max(1, Math.ceil(count / limit))"
           :lock="requesting"
-          @update:model-value="updatePage"
         />
         <div :class="classes.collection_actions">
           <IconButton v-if="onExport" icon="export" @click="() => onExport!(filter)" />

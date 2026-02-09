@@ -70,7 +70,6 @@ function validate(): void {
         type: 'scope',
         id: target,
         parameters: [],
-        key: getUniqueId(),
       };
     } else {
       const property = schema.value.getProperty(target);
@@ -80,16 +79,14 @@ function validate(): void {
           type: 'relationship_condition',
           operator: operators[0],
           property: target,
-          key: getUniqueId(),
-        };
+          };
       } else {
         const operators = getConditionOperators(property, config.allowedOperators);
         condition = {
           type: 'condition',
           operator: operators[0],
           property: target,
-          key: getUniqueId(),
-        };
+          };
       }
     }
   } else {
@@ -98,7 +95,6 @@ function validate(): void {
       type: 'group',
       operator: operators[0],
       filters: [],
-      key: getUniqueId(),
     };
   }
   show.value = false;
@@ -106,7 +102,7 @@ function validate(): void {
 
 function onClosed(): void {
   if (condition) {
-    emit('validate', { ...condition });
+    emit('validate', { ...condition, key: getUniqueId() });
     condition = null;
   }
 }

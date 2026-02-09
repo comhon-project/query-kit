@@ -35,7 +35,7 @@ function updatePage(newPage: number): void {
       } else {
         modelValue.value = currentPage.value;
       }
-    }, 300);
+    }, 500);
   }
 }
 

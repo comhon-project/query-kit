@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
+import './assets/main.css';
 import '@query-kit/themes/default';
 
 import { plugin, MultipleCapableComponent } from '@query-kit/vue';
