@@ -37,9 +37,9 @@ describe('test schemas', async () => {
       weight: { id: 'weight', name: 'the weight', type: 'float', owner: 'user' },
       married: { id: 'married', name: 'is married', type: 'boolean', owner: 'user' },
       gender: { id: 'gender', name: 'the gender', type: 'string', enum: 'gender', owner: 'user' },
-      'birth.birth_date': { id: 'birth.birth_date', name: 'birth date', type: 'datetime', owner: 'user' },
-      'birth.birth_day': { id: 'birth.birth_day', name: 'birth day', type: 'date', owner: 'user' },
-      'birth.birth_hour': { id: 'birth.birth_hour', name: 'birth hour', type: 'time', owner: 'user' },
+      'birth_date': { id: 'birth_date', name: 'birth date', type: 'datetime', owner: 'user' },
+      'birth_day': { id: 'birth_day', name: 'birth day', type: 'date', owner: 'user' },
+      'birth_hour': { id: 'birth_hour', name: 'birth hour', type: 'time', owner: 'user' },
       country: { id: 'country', name: 'the country', type: 'choice', owner: 'user' },
       favorite_fruits: {
         id: 'favorite_fruits',

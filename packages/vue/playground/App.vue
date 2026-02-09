@@ -17,9 +17,9 @@ const columns = ref([
   'gender',
   'married',
   'favorite_fruits',
-  'birth.birth_date',
-  'birth.birth_day',
-  'birth.birth_hour',
+  'birth_date',
+  'birth_day',
+  'birth_hour',
   'friend',
   'company',
   'company.description',
@@ -118,7 +118,7 @@ const group = {
     },
     {
       type: 'condition',
-      property: 'birth.birth_date',
+      property: 'birth_date',
       value: '2022-01-07T03:06:06.000Z',
       operator: '=',
     },
@@ -273,13 +273,13 @@ let requester = {
         let leafProperty = name.replaceAll('friend.', '');
         leafProperty = leafProperty.replaceAll('company.', '');
         switch (leafProperty) {
-          case 'birth.birth_date':
+          case 'birth_date':
             element[name] = '2023-01-03T20:45:04Z';
             break;
-          case 'birth.birth_day':
+          case 'birth_day':
             element[name] = '2023-01-03';
             break;
-          case 'birth.birth_hour':
+          case 'birth_hour':
             element[name] = '20:45:04';
             break;
           case 'gender':

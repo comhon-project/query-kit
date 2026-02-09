@@ -114,13 +114,13 @@ createApp(App)
               }
             }
             switch (name) {
-              case 'birth.birth_date':
+              case 'birth_date':
                 container[property] = '2023-01-03T20:45:04Z';
                 break;
-              case 'birth.birth_day':
+              case 'birth_day':
                 container[property] = '2023-01-03';
                 break;
-              case 'birth.birth_hour':
+              case 'birth_hour':
                 container[property] = '20:45:04';
                 break;
               case 'gender':

@@ -252,32 +252,20 @@ async function loadRawTranslations(schemaId: string, targetLocale: string): Prom
   return loadedTranslations[cacheKey] ?? {};
 }
 
-async function getPropertyPath(schemaId: string, nestedProperty: string): Promise<Property[]> {
-  const propertyPath: Property[] = [];
-  const splited = nestedProperty.split('.');
-  let propertyName = '';
-  let currentSchema = await resolve(schemaId);
-  for (let i = 0; i < splited.length - 1; i++) {
-    propertyName = propertyName.length ? `${propertyName}.${splited[i]}` : splited[i];
-    const property = currentSchema.mapProperties[propertyName];
-    if (!property) {
-      continue;
+async function getPropertyPath(schemaId: string, path: string): Promise<Property[]> {
+  const segments = path.split('.');
+  const properties: Property[] = [];
+  let schema = await resolve(schemaId);
+
+  for (let i = 0; i < segments.length; i++) {
+    const property = schema.getProperty(segments[i]);
+    properties.push(property);
+    if (i < segments.length - 1) {
+      schema = await resolve(property.related!);
     }
-    if (!property.related) {
-      throw new Error(`Property "${propertyName}" has no related schema`);
-    }
-    propertyPath.push(property);
-    currentSchema = await resolve(property.related);
-    propertyName = '';
   }
-  const last = splited[splited.length - 1];
-  propertyName = propertyName.length ? `${propertyName}.${last}` : last;
-  const finalProperty = currentSchema.mapProperties[propertyName];
-  if (!finalProperty) {
-    throw new Error(`Property "${nestedProperty}" not found in schema "${currentSchema.id}"`);
-  }
-  propertyPath.push(finalProperty);
-  return propertyPath;
+
+  return properties;
 }
 
 const registerLoader = (config: EntitySchemaLoader): void => {

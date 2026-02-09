@@ -39,17 +39,17 @@ export default {
       enum: 'gender',
     },
     {
-      id: 'birth.birth_date',
+      id: 'birth_date',
       name: 'birth date',
       type: 'datetime',
     },
     {
-      id: 'birth.birth_day',
+      id: 'birth_day',
       name: 'birth day',
       type: 'date',
     },
     {
-      id: 'birth.birth_hour',
+      id: 'birth_hour',
       name: 'birth hour',
       type: 'time',
     },
