@@ -3,6 +3,7 @@ import { ref, watch, toRaw, onUnmounted, provide } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import Group from '@components/Filter/Group.vue';
+import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
@@ -16,10 +17,13 @@ import {
   type ScopeFilter,
 } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
+import { useHistory } from '@components/Filter/Composable/History';
 
 interface Props {
   entity: string;
   allowReset?: boolean;
+  allowUndo?: boolean;
+  allowRedo?: boolean;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;
@@ -41,6 +45,8 @@ const emit = defineEmits<Emits>();
 
 const props = withDefaults(defineProps<Props>(), {
   allowReset: true,
+  allowUndo: true,
+  allowRedo: true,
   displayOperator: true,
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
@@ -60,6 +66,7 @@ let timeoutId: ReturnType<typeof setTimeout> | undefined;
 let originalFilter: GroupFilter;
 let lastEmitted: GroupFilter;
 const internalModel = ref<GroupFilter>(null!);
+const { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory } = useHistory();
 
 function prepareFilters(filter: Filter): void {
   const stack: Filter[] = [filter];
@@ -93,6 +100,7 @@ function init(value: Filter | null): void {
   originalFilter.removable = false;
   prepareFilters(originalFilter);
 
+  clearHistory();
   internalModel.value = structuredClone(originalFilter);
 }
 
@@ -114,6 +122,16 @@ function stripKeys(filter: GroupFilter): GroupFilter {
 
 function reset(): void {
   internalModel.value = structuredClone(originalFilter);
+}
+
+function performUndo(): void {
+  const state = undo();
+  if (state) internalModel.value = state;
+}
+
+function performRedo(): void {
+  const state = redo();
+  if (state) internalModel.value = state;
 }
 
 function getScopeDefinition(scopeId: string, entitySchema: EntitySchema): Scope | ComputedScope | undefined {
@@ -229,6 +247,7 @@ function scheduleEmit(): void {
     clearTimeout(timeoutId);
   }
   timeoutId = setTimeout(async () => {
+    pushSnapshot(internalModel.value);
     const stripped = stripKeys(internalModel.value);
     lastEmitted = stripped;
     modelValue.value = stripped;
@@ -261,9 +280,14 @@ watch(internalModel, scheduleEmit, { deep: true, immediate: true });
     <Group
       :model-value="internalModel"
       :entity="entity"
-      :on-reset="allowReset ? reset : undefined"
-      :on-validate="onValidate"
       @exit="$emit('goToCollection')"
-    />
+    >
+      <template #builder_actions>
+        <IconButton v-if="allowUndo" icon="undo" :disabled="!canUndo" @click="performUndo" />
+        <IconButton v-if="allowRedo" icon="redo" :disabled="!canRedo" @click="performRedo" />
+        <IconButton v-if="allowReset" icon="reset" @click="reset" />
+        <IconButton v-if="onValidate" icon="search" @click="onValidate" />
+      </template>
+    </Group>
   </section>
 </template>

@@ -18,8 +18,6 @@ import { builderConfigKey } from '@core/InjectionKeys';
 interface Props {
   modelValue: GroupFilter;
   entity: string;
-  onReset?: () => void;
-  onValidate?: () => void;
 }
 
 interface Emits {
@@ -129,8 +127,7 @@ watchEffect(() => {
           />
         </template>
         <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
-        <IconButton v-if="onReset" icon="reset" @click="onReset" />
-        <IconButton v-if="onValidate" icon="search" @click="onValidate" />
+        <slot name="builder_actions" />
         <IconButton v-if="isRemovable" icon="delete" :aria-label="translate('group')" @click="$emit('remove')" />
         <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />
       </div>

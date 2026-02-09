@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: 'عرض اختصارات الإجراءات',
   go_to_collection: 'الانتقال إلى نتائج البحث',
   go_to_filter: 'الانتقال إلى التصفية',
+  undo: 'تراجع',
+  redo: 'إعادة',
 };

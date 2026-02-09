@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: 'アクションショートカットを表示',
   go_to_collection: '検索結果へ移動',
   go_to_filter: 'フィルターへ移動',
+  undo: '元に戻す',
+  redo: 'やり直し',
 };

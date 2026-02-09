@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: 'show action shortcuts',
   go_to_collection: 'go to search results',
   go_to_filter: 'go to filter',
+  undo: 'undo',
+  redo: 'redo',
 };

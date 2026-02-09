@@ -365,7 +365,6 @@ watch(page, () => {
             integer: ['not_null', 'in'],
           },
         }"
-        :allow-reset="true"
         user-timezone="Europe/Paris"
         :display-operator="{
           group: true,
@@ -379,6 +378,9 @@ watch(page, () => {
         :quick-sort="true"
         :post-request="completeCollection"
         :allowed-collection-types="['infinite', 'pagination']"
+        :allow-reset="true"
+        :allow-undo="true"
+        :allow-redo="true"
         :display-count="true"
         :edit-columns="true"
         :custom-columns="customColumns"

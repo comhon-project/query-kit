@@ -12,6 +12,7 @@ interface Props {
   type?: ButtonType;
   label?: string;
   ariaLabel?: string;
+  disabled?: boolean;
 }
 
 interface Emits {
@@ -37,6 +38,7 @@ const computedAriaLabel = computed<string>(() => {
     :type="type"
     :title="icons[icon] ? computedAriaLabel : undefined"
     :aria-label="computedAriaLabel"
+    :disabled="disabled"
     @click="$emit('click')"
   >
     <Icon :icon="icon" :label="label" />

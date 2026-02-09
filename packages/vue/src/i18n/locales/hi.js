@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: 'क्रिया शॉर्टकट दिखाएं',
   go_to_collection: 'खोज परिणामों पर जाएं',
   go_to_filter: 'फ़िल्टर पर जाएं',
+  undo: 'पूर्ववत करें',
+  redo: 'फिर से करें',
 };

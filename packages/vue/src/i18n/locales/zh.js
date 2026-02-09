@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: '显示操作快捷键',
   go_to_collection: '转到搜索结果',
   go_to_filter: '转到筛选',
+  undo: '撤销',
+  redo: '重做',
 };

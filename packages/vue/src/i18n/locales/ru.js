@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: 'показать горячие клавиши',
   go_to_collection: 'перейти к результатам поиска',
   go_to_filter: 'перейти к фильтру',
+  undo: 'отменить',
+  redo: 'повторить',
 };

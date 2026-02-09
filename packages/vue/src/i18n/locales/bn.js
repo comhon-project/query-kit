@@ -53,4 +53,6 @@ export default {
   show_action_shortcuts: 'অ্যাকশন শর্টকাট দেখান',
   go_to_collection: 'অনুসন্ধান ফলাফলে যান',
   go_to_filter: 'ফিল্টারে যান',
+  undo: 'পূর্বাবস্থায় ফেরান',
+  redo: 'পুনরায় করুন',
 };

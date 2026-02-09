@@ -8,8 +8,6 @@ import type { GroupFilter } from '@core/types';
 interface Props {
   modelValue: GroupFilter;
   entity: string;
-  onReset?: () => void;
-  onValidate?: () => void;
 }
 
 interface Emits {
@@ -46,10 +44,12 @@ onMounted(() => {
       <ChildGroup
         :model-value="modelValue"
         :entity="entity"
-        :on-reset="onReset"
-        :on-validate="onValidate"
         v-model:collapsed="collapsed"
-      />
+      >
+        <template #builder_actions>
+          <slot name="builder_actions" />
+        </template>
+      </ChildGroup>
     </div>
   </div>
 </template>

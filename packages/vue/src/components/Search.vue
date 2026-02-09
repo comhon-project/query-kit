@@ -21,6 +21,8 @@ interface Props {
   entity: string;
   customColumns?: Record<string, CustomColumnConfig>;
   allowReset?: boolean;
+  allowUndo?: boolean;
+  allowRedo?: boolean;
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;

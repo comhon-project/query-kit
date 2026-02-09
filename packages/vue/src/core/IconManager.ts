@@ -9,6 +9,8 @@ export type IconName =
   | 'collapse'
   | 'down'
   | 'minus'
+  | 'undo'
+  | 'redo'
   | 'reset'
   | 'search'
   | 'confirm'
@@ -36,6 +38,8 @@ export const defaultIcons: IconList = {
   collapse: { class: 'qkit-icon qkit-icon-arrow-down', component: 'i' },
   down: { class: 'qkit-icon qkit-icon-arrow-full-down', component: 'i' },
   minus: { class: 'qkit-icon qkit-icon-minus', component: 'i' },
+  undo: { class: 'qkit-icon qkit-icon-undo', component: 'i' },
+  redo: { class: 'qkit-icon qkit-icon-redo', component: 'i' },
   reset: { class: 'qkit-icon qkit-icon-refresh', component: 'i' },
   search: { class: 'qkit-icon qkit-icon-search', component: 'i' },
   confirm: { class: 'qkit-icon qkit-icon-check', component: 'i' },
