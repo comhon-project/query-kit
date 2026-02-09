@@ -4,9 +4,10 @@ import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
 import Icon from '@components/Common/Icon.vue';
 import { translate } from '@i18n/i18n';
 import { computed } from 'vue';
+import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
-  entity: string;
+  entitySchema: EntitySchema;
   columnId?: string;
   propertyId?: string;
   label?: string | ((locale: string) => string);

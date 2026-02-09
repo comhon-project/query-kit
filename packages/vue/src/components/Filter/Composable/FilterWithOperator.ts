@@ -1,4 +1,4 @@
-import { computed, type Ref, type ComputedRef } from 'vue';
+import { computed, type ComputedRef } from 'vue';
 import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '@core/OperatorManager';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import type { EntitySchema } from '@core/EntitySchema';
@@ -18,27 +18,22 @@ export interface UseFilterWithOperatorReturn {
 }
 
 const useFilterWithOperator = (
-  modelValue: FilterWithOperator,
   config: BuilderConfig,
-  schema: Ref<EntitySchema | null>,
+  props: { entitySchema: EntitySchema; modelValue: FilterWithOperator },
 ): UseFilterWithOperatorReturn => {
-  const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, schema);
-  const isRemovable = computed(() => !(modelValue.removable === false));
-  const isEditable = computed(() => !(modelValue.editable === false));
+  const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, props);
+  const isRemovable = computed(() => !(props.modelValue.removable === false));
+  const isEditable = computed(() => !(props.modelValue.editable === false));
   const canEditOperator = computed(() => {
     return isEditable.value && operatorOptions.value.length > 1;
   });
   const operatorOptions = computed((): OperatorOption[] => {
-    if (!schema.value) {
-      throw new Error('schema must be loaded before calling operatorOptions');
-    }
-
-    const filterType = modelValue.type;
+    const filterType = props.modelValue.type;
     const options: OperatorOption[] = [];
     const currentOperators =
       filterType === 'condition'
         ? getConditionOperators(
-            schema.value.getProperty((modelValue as ConditionFilter).property),
+            props.entitySchema.getProperty((props.modelValue as ConditionFilter).property),
             config.allowedOperators,
           )
         : getContainerOperators(filterType, config.allowedOperators);
@@ -51,15 +46,15 @@ const useFilterWithOperator = (
     }
     let has = false;
     for (const option of options) {
-      if (option.value === modelValue.operator) {
+      if (option.value === props.modelValue.operator) {
         has = true;
         break;
       }
     }
-    if (!has && modelValue.operator) {
+    if (!has && props.modelValue.operator) {
       options.push({
-        label: getOperatorTranslation(filterType, modelValue.operator),
-        value: modelValue.operator,
+        label: getOperatorTranslation(filterType, props.modelValue.operator),
+        value: props.modelValue.operator,
       });
     }
     return options;

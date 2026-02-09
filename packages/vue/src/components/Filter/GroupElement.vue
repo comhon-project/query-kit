@@ -6,11 +6,12 @@ import RelationshipCondition from '@components/Filter/RelationshipCondition.vue'
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
+import type { EntitySchema } from '@core/EntitySchema';
 import type { Filter } from '@core/types';
 
 interface Props {
   modelValue: Filter;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -66,7 +67,7 @@ function toggleCollapse(): void {
     <component
       :is="component"
       :model-value="modelValue"
-      :entity="entity"
+      :entity-schema="entitySchema"
       v-model:collapsed="collapsed"
       @remove="$emit('remove', modelValue.key)"
     />

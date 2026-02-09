@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watchEffect, computed, useTemplateRef, inject } from 'vue';
+import { ref, computed, useTemplateRef, inject } from 'vue';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyTranslation, getScopeTranslation, type EntitySchema, type Scope } from '@core/EntitySchema';
+import { getPropertyTranslation, getScopeTranslation, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import { translate } from '@i18n/i18n';
 import { getConditionOperators, getContainerOperators } from '@core/OperatorManager';
@@ -12,7 +12,7 @@ import { type Filter } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -29,10 +29,9 @@ const form = useTemplateRef<HTMLFormElement>('form');
 const uniqueName = ref<string>(`choice-${getUniqueId()}`);
 const uniqueIdCondition = ref<string>(`choice-${getUniqueId()}`);
 const uniqueIdGroup = ref<string>(`choice-${getUniqueId()}`);
-const schema = ref<EntitySchema | null>(null);
 const targetCondition = ref<string | null>(null);
 const selectedType = ref<'condition' | 'group'>('condition');
-const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, schema);
+const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, props);
 
 const options = computed<Record<string, string>>(() => {
   const opts: Record<string, string> = {};
@@ -53,14 +52,14 @@ const displayGroup = computed<number>(() => {
 });
 
 function validate(): void {
-  if (!schema.value || (selectedType.value === 'condition' && !targetCondition.value)) return;
+  if (selectedType.value === 'condition' && !targetCondition.value) return;
 
   if (selectedType.value == 'condition') {
     const target = targetCondition.value!;
-    let scope: ComputedScope | Scope | undefined = getComputedScope(props.entity, target);
+    let scope: ComputedScope | Scope | undefined = getComputedScope(props.entitySchema.id, target);
     if (!scope) {
       try {
-        scope = schema.value.getScope(target);
+        scope = props.entitySchema.getScope(target);
       } catch {
         scope = undefined;
       }
@@ -72,7 +71,7 @@ function validate(): void {
         parameters: [],
       };
     } else {
-      const property = schema.value.getProperty(target);
+      const property = props.entitySchema.getProperty(target);
       if (property.type == 'relationship') {
         const operators = getContainerOperators('relationship_condition', config.allowedOperators);
         condition = {
@@ -115,13 +114,10 @@ function submitForm(): void {
   form.value?.requestSubmit();
 }
 
-watchEffect(async () => {
-  schema.value = await resolve(props.entity);
-});
 </script>
 
 <template>
-  <Modal v-if="schema" v-model:show="show" @confirm="submitForm" @closed="onClosed">
+  <Modal v-model:show="show" @confirm="submitForm" @closed="onClosed">
     <template #body>
       <form ref="form" :class="classes.condition_choice_form" @submit.prevent="validate">
         <fieldset>

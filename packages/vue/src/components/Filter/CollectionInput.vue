@@ -3,12 +3,12 @@ import { watchEffect } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
-import type { Property, RawScopeParameter } from '@core/EntitySchema';
+import type { Property, RawScopeParameter, EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   target: Property | RawScopeParameter;
   editable?: boolean;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 const modelValue = defineModel<unknown[]>({ default: [] });
@@ -39,7 +39,7 @@ function removeValue(index: number): void {
         <UniqueInput
           v-model="modelValue[index]"
           :target="target"
-          :entity="entity"
+          :entity-schema="entitySchema"
           :editable="editable"
           :multiple="false"
         />

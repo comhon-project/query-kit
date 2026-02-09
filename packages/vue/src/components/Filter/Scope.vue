@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue';
 import {
-  resolve,
   getScopeTranslation,
   getScopeParameterTranslation,
   type EntitySchema,
@@ -10,7 +9,6 @@ import {
   type RawScopeParameter,
 } from '@core/EntitySchema';
 import InvalidScope from '@components/Messages/InvalidScope.vue';
-import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import ArrayableInput from '@components/Filter/ArrayableInput.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
@@ -31,7 +29,7 @@ interface ParameterWithTranslation {
 
 interface Props {
   modelValue: ScopeFilter;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -42,19 +40,16 @@ defineEmits<Emits>();
 
 const props = defineProps<Props>();
 
-const validEntity = ref<boolean>(true);
 const validScope = ref<boolean>(true);
-const schema = ref<EntitySchema | null>(null);
 
 const isRemovable = computed<boolean>(() => props.modelValue.removable !== false);
 const isEditable = computed<boolean>(() => props.modelValue.editable !== false);
 
 const scope = computed<ComputedScope | ScopeType | null>(() => {
-  if (!schema.value) return null;
-  const computedScope = getComputedScope(props.entity, props.modelValue.id);
+  const computedScope = getComputedScope(props.entitySchema.id, props.modelValue.id);
   if (computedScope) return computedScope;
   try {
-    return schema.value.getScope(props.modelValue.id);
+    return props.entitySchema.getScope(props.modelValue.id);
   } catch {
     return null;
   }
@@ -76,24 +71,8 @@ const parametersWithTranslations = computed<ParameterWithTranslation[]>(() => {
   }));
 });
 
-async function initSchema(): Promise<void> {
-  schema.value = await resolve(props.entity);
-  if (!schema.value) {
-    validEntity.value = false;
-    return;
-  }
-  verifyScope();
-}
-
-function verifyScope(): void {
-  if (schema.value && !scope.value) {
-    validScope.value = false;
-  }
-}
-
-watchEffect(initSchema);
-
 watchEffect(() => {
+  validScope.value = !!scope.value;
   if (scope.value?.parameters?.length && props.modelValue.parameters == null) {
     props.modelValue.parameters = [];
   }
@@ -103,9 +82,8 @@ watchEffect(() => {
 <template>
   <div :class="classes.condition_container">
     <div>
-      <InvalidEntity v-if="!validEntity" :entity="entity" />
-      <InvalidScope v-else-if="!validScope" :id="modelValue.id" />
-      <template v-else-if="schema && scope">
+      <InvalidScope v-if="!validScope" :id="modelValue.id" />
+      <template v-else-if="scope">
         <div :class="classes.condition_header">
           <slot name="relationship" />
           <span :class="classes.property_name_container">{{ scopeName }}</span>
@@ -120,7 +98,7 @@ watchEffect(() => {
             <ArrayableInput
               v-model="modelValue.parameters![index]"
               :target="param"
-              :entity="entity"
+              :entity-schema="entitySchema"
               :editable="isEditable"
               :is-array="param.type === 'array'"
             />
@@ -129,7 +107,7 @@ watchEffect(() => {
       </template>
     </div>
     <IconButton
-      v-if="isRemovable || !validEntity || !validScope"
+      v-if="isRemovable || !validScope"
       icon="delete"
       btn-class="btn_secondary"
       :aria-label="scope ? translate('scope') + ' ' + scopeName : ''"

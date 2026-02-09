@@ -5,7 +5,7 @@ import Modal from '@components/Common/Modal.vue';
 import ColumnChoice from '@components/Collection/ColumnChoice.vue';
 import { translate, locale } from '@i18n/i18n';
 import { classes } from '@core/ClassManager';
-import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
+import { getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import type { CustomColumnConfig, SelectOption } from '@core/types';
 
@@ -15,7 +15,7 @@ interface KeyedColumn {
 }
 
 interface Props {
-  entity: string;
+  entitySchema: EntitySchema;
   customColumns?: Record<string, CustomColumnConfig>;
 }
 
@@ -23,7 +23,6 @@ const columns = defineModel<string[]>({ required: true });
 const props = defineProps<Props>();
 
 const showModal = ref<boolean>(false);
-const schema = ref<EntitySchema | null>(null);
 const selectedProperty = ref<string | null>(null);
 const keyedColumns = ref<KeyedColumn[]>([]);
 
@@ -31,9 +30,8 @@ const columnIds = computed<string[]>(() => keyedColumns.value.map((c) => c.id));
 const disableConfirm = computed<boolean>(() => keyedColumns.value.length === 0);
 
 const options = computed<SelectOption<string>[]>(() => {
-  if (!schema.value) return [];
   const opts: SelectOption<string>[] = [];
-  for (const property of schema.value.properties) {
+  for (const property of props.entitySchema.properties) {
     let selectableProperty: Property | null = null;
     if (property.type != 'relationship') {
       if (!columnIds.value.includes(property.id)) {
@@ -98,7 +96,6 @@ function addColumn(): void {
   }
 }
 
-watchEffect(async () => (schema.value = await resolve(props.entity)));
 watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: getUniqueId() }))));
 </script>
 
@@ -120,14 +117,14 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
               <ColumnChoice
                 v-model="keyedColumns[index].id"
                 :property-id="customColumns?.[column.id]?.open === true ? undefined : column.id"
-                :entity="entity"
+                :entity-schema="entitySchema"
                 :label="customColumns?.[column.id]?.label"
                 :columns="columnIds"
                 @remove="() => removeColumn(index)"
               />
             </li>
           </TransitionGroup>
-          <div v-if="schema" :class="classes.column_add">
+          <div :class="classes.column_add">
             <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
               <option value="" disabled hidden />
               <option v-for="option in options" :key="option.value" :value="option.value">

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch, toRaw, onUnmounted, provide } from 'vue';
+import { ref, watch, watchEffect, toRaw, onUnmounted, provide } from 'vue';
 import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
+import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
@@ -66,6 +67,8 @@ let timeoutId: ReturnType<typeof setTimeout> | undefined;
 let originalFilter: GroupFilter;
 let lastEmitted: GroupFilter;
 const internalModel = ref<GroupFilter>(null!);
+const entitySchema = ref<EntitySchema | null>(null);
+const validEntity = ref(true);
 const { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory } = useHistory();
 
 function prepareFilters(filter: Filter): void {
@@ -272,14 +275,26 @@ watch(
   { immediate: true },
 );
 watch(internalModel, scheduleEmit, { deep: true, immediate: true });
+
+watchEffect(async () => {
+  try {
+    entitySchema.value = await resolve(props.entity);
+    validEntity.value = true;
+  } catch {
+    entitySchema.value = null;
+    validEntity.value = false;
+  }
+});
 </script>
 
 <template>
   <section :class="classes.builder" :aria-label="translate('filter')">
     <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
+    <InvalidEntity v-if="!validEntity" :entity="entity" />
     <Group
+      v-else-if="entitySchema"
       :model-value="internalModel"
-      :entity="entity"
+      :entity-schema="entitySchema"
       @exit="$emit('goToCollection')"
     >
       <template #builder_actions>

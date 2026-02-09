@@ -3,11 +3,12 @@ import { ref, computed, useTemplateRef, onMounted } from 'vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { useTreeNavigation } from '@components/Filter/Composable/TreeNavigation';
 import { translate } from '@i18n/i18n';
+import type { EntitySchema } from '@core/EntitySchema';
 import type { GroupFilter } from '@core/types';
 
 interface Props {
   modelValue: GroupFilter;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -43,7 +44,7 @@ onMounted(() => {
     >
       <ChildGroup
         :model-value="modelValue"
-        :entity="entity"
+        :entity-schema="entitySchema"
         v-model:collapsed="collapsed"
       >
         <template #builder_actions>

@@ -3,7 +3,6 @@ import { ref, watch, computed, watchEffect, inject } from 'vue';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import { isValidOperator } from '@core/OperatorManager';
 import {
-  resolve,
   getPropertyTranslation,
   getLeafTypeContainer,
   type EntitySchema,
@@ -12,7 +11,6 @@ import {
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import InvalidType from '@components/Messages/InvalidType.vue';
-import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import ArrayableInput from '@components/Filter/ArrayableInput.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -24,7 +22,7 @@ import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: ConditionFilter;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -36,17 +34,11 @@ defineEmits<Emits>();
 const props = defineProps<Props>();
 const config = inject(builderConfigKey)!;
 
-const validEntity = ref<boolean>(true);
 const validOperator = ref<boolean>(true);
 const validProperty = ref<boolean>(true);
 const validType = ref<boolean>(true);
-const schema = ref<EntitySchema | null>(null);
 
-const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(
-  props.modelValue,
-  config,
-  schema,
-);
+const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
 
 const mustDisplayOperator = computed<boolean>(() => {
   return (
@@ -56,9 +48,8 @@ const mustDisplayOperator = computed<boolean>(() => {
 });
 
 const property = computed<Property | undefined>(() => {
-  if (!schema.value) return undefined;
   try {
-    return schema.value.getProperty(props.modelValue.property);
+    return props.entitySchema.getProperty(props.modelValue.property);
   } catch {
     return undefined;
   }
@@ -72,43 +63,17 @@ const isArrayOperator = computed<boolean>(() => {
   return props.modelValue.operator === 'in' || props.modelValue.operator === 'not_in';
 });
 
-async function initSchema(): Promise<void> {
-  schema.value = await resolve(props.entity);
-  if (!schema.value) {
-    validEntity.value = false;
-    return;
-  }
-  verifyProperty();
-  verifyOperator();
-  verifyType();
-}
-
-function verifyProperty(): void {
-  if (schema.value && !property.value) {
-    validProperty.value = false;
-  }
-}
-
-function verifyOperator(): void {
-  if (schema.value && !isValidOperator('condition', props.modelValue.operator)) {
-    validOperator.value = false;
-  }
-}
-
-function verifyType(): void {
-  if (schema.value && property.value) {
+watchEffect(() => {
+  validProperty.value = !!property.value;
+  validOperator.value = isValidOperator('condition', props.modelValue.operator);
+  if (property.value) {
     try {
       getComponent(getLeafTypeContainer(property.value));
+      validType.value = true;
     } catch {
       validType.value = false;
     }
   }
-}
-
-watchEffect(initSchema);
-
-watchEffect(() => {
-  verifyOperator();
 });
 
 watch(
@@ -132,24 +97,15 @@ watch(
     }
   },
 );
-
-watch(
-  () => props.modelValue.property,
-  () => {
-    verifyType();
-    verifyProperty();
-  },
-);
 </script>
 
 <template>
   <div :class="classes.condition_container">
     <div>
-      <InvalidEntity v-if="!validEntity" :entity="entity" />
-      <InvalidProperty v-else-if="!validProperty" :property="modelValue.property" />
+      <InvalidProperty v-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
       <InvalidType v-else-if="!validType && property" :type-container="property" />
-      <template v-else-if="schema && property">
+      <template v-else-if="property">
         <div :class="classes.condition_header">
           <slot name="relationship" />
           <span :class="classes.property_name_container">{{ propertyName }}</span>
@@ -167,17 +123,17 @@ watch(
           v-if="modelValue.operator != 'null' && modelValue.operator != 'not_null'"
           v-model="modelValue.value"
           :target="property"
-          :entity="entity"
+          :entity-schema="entitySchema"
           :editable="isEditable"
           :is-array="isArrayOperator"
         />
       </template>
     </div>
     <IconButton
-      v-if="isRemovable || !validEntity || !validProperty || !validOperator || !validType"
+      v-if="isRemovable || !validProperty || !validOperator || !validType"
       icon="delete"
       btn-class="btn_secondary"
-      :aria-label="schema && property ? translate('condition') + ' ' + propertyName : ''"
+      :aria-label="property ? translate('condition') + ' ' + propertyName : ''"
       @click="$emit('remove')"
     />
   </div>

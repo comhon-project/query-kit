@@ -11,13 +11,12 @@ export interface UseSearchableReturn {
   searchableComputedScopes: ComputedRef<ComputedScope[]>;
 }
 
-const useSearchable = (config: BuilderConfig, schema: Ref<EntitySchema | null>): UseSearchableReturn => {
+const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchema }): UseSearchableReturn => {
   const searchableProperties: Ref<Property[]> = ref([]);
   const searchableScopes: Ref<Scope[]> = ref([]);
 
   watchEffect(async () => {
-    if (!schema.value) return;
-    const entity = schema.value.id;
+    const entity = props.entitySchema.id;
     const filter = config.allowedProperties?.[entity];
     let propertyNames = await getFiltrableProperties(entity);
     if (propertyNames.length && filter) {
@@ -26,7 +25,7 @@ const useSearchable = (config: BuilderConfig, schema: Ref<EntitySchema | null>):
     const properties: Property[] = [];
     const hasRelationshipOperator = getContainerOperators('relationship_condition', config.allowedOperators).length;
     for (const propertyName of propertyNames) {
-      const property = schema.value.getProperty(propertyName);
+      const property = props.entitySchema.getProperty(propertyName);
       if (property.type === 'relationship') {
         if (hasRelationshipOperator) {
           properties.push(property);
@@ -39,20 +38,17 @@ const useSearchable = (config: BuilderConfig, schema: Ref<EntitySchema | null>):
   });
 
   watchEffect(async () => {
-    const currentSchema = schema.value;
-    if (!currentSchema) return;
-    const entity = currentSchema.id;
+    const entity = props.entitySchema.id;
     const filter = config.allowedScopes?.[entity];
     let scopeIds = await getFiltrableScopes(entity);
     if (scopeIds.length && filter) {
       scopeIds = scopeIds.filter((scopeId) => filter.includes(scopeId));
     }
-    searchableScopes.value = scopeIds.map((scopeId) => currentSchema.getScope(scopeId));
+    searchableScopes.value = scopeIds.map((scopeId) => props.entitySchema.getScope(scopeId));
   });
 
   const searchableComputedScopes = computed((): ComputedScope[] => {
-    if (!schema.value) return [];
-    const entity = schema.value.id;
+    const entity = props.entitySchema.id;
     const scopes = getComputedScopes(entity);
     if (!scopes.length) {
       return [];

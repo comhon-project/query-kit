@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, watchEffect, computed, type Component } from 'vue';
+import { ref, watch, computed, type Component } from 'vue';
 import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import Condition from '@components/Filter/Condition.vue';
@@ -14,13 +14,7 @@ import RelationshipAction from '@components/Filter/RelationshipAction.vue';
 import { getUniqueId } from '@core/Utils';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import type {
-  RelationshipConditionFilter,
-  Filter,
-  ConditionFilter,
-  ScopeFilter,
-  GroupFilter,
-} from '@core/types';
+import type { RelationshipConditionFilter, Filter, ConditionFilter, ScopeFilter, GroupFilter } from '@core/types';
 
 interface QueueElement {
   key: string | number;
@@ -30,7 +24,7 @@ interface QueueElement {
 
 interface Props {
   modelValue: RelationshipConditionFilter;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -51,6 +45,7 @@ const childAriaLabel = computed<string>(() => {
 });
 const queue = ref<QueueElement[] | null>(null);
 const endQueueFilter = ref<ConditionFilter | ScopeFilter | GroupFilter | null | undefined>(null);
+const endQueuePropertySchema = ref<EntitySchema | null>(null);
 
 const endQueuePropertySchemaId = computed<string>(() => {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
@@ -72,25 +67,20 @@ const endQueueComponent = computed<Component | null>(() => {
   }
 });
 
-async function initSchema(): Promise<void> {
-  try {
-    setChild(await resolve(props.entity));
-  } catch {
-    invalidEntity.value = props.entity;
-  }
-}
-
 async function addFilter(filter: Filter): Promise<void> {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
-  const endQueuePropertySchema = await resolve(endQueuePropertySchemaId.value);
+  const resolvedSchema = await resolve(endQueuePropertySchemaId.value);
 
   queue.value[queue.value.length - 1].value.filter = filter;
   if (filter.type == 'relationship_condition') {
     queue.value.push({
       key: getUniqueId(),
       value: filter,
-      schema: endQueuePropertySchema,
+      schema: resolvedSchema,
     });
+    endQueuePropertySchema.value = await resolve(
+      resolvedSchema.getProperty(filter.property).related!,
+    );
   } else {
     endQueueFilter.value = filter;
   }
@@ -155,17 +145,16 @@ async function setChild(schema: EntitySchema): Promise<void> {
   }
   queue.value = tempQueue;
   endQueueFilter.value = childFilter;
+  endQueuePropertySchema.value = childSchema;
 }
 
-watchEffect(initSchema);
-watch(() => props.modelValue.filter, initSchema);
+watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(props.entitySchema), {
+  immediate: true,
+});
 </script>
 
 <template>
-  <div
-    v-if="invalidEntity || invalidProperty || invalidOperator"
-    :class="classes.condition_error_container"
-  >
+  <div v-if="invalidEntity || invalidProperty || invalidOperator" :class="classes.condition_error_container">
     <div>
       <InvalidEntity v-if="invalidEntity" :entity="invalidEntity" />
       <InvalidProperty v-else-if="invalidProperty" :property="invalidProperty" />
@@ -183,11 +172,12 @@ watch(() => props.modelValue.filter, initSchema);
                 v-for="elmnt in queue"
                 :key="elmnt.key"
                 :model-value="elmnt.value"
-                :entity="elmnt.schema.id"
+                :entity-schema="elmnt.schema"
               />
             </div>
             <RelationshipAction
-              :entity="endQueuePropertySchemaId"
+              v-if="endQueuePropertySchema"
+              :entity-schema="endQueuePropertySchema"
               :model-value="queue[queue.length - 1].value"
               @remove="removeQueueFilter"
               @add="addFilter"
@@ -205,7 +195,7 @@ watch(() => props.modelValue.filter, initSchema);
       <div v-else :class="classes.grid_container_for_transition">
         <component
           :is="endQueueComponent"
-          :entity="endQueuePropertySchemaId"
+          :entity-schema="endQueuePropertySchema"
           :model-value="endQueueFilter"
           v-model:collapsed="collapsed"
           @remove="removeEndFilter"
@@ -216,7 +206,7 @@ watch(() => props.modelValue.filter, initSchema);
                 v-for="elmnt in queue"
                 :key="elmnt.key"
                 :model-value="elmnt.value"
-                :entity="elmnt.schema.id"
+                :entity-schema="elmnt.schema"
               />
             </div>
           </template>

@@ -1,10 +1,10 @@
 import { computed, ref, shallowRef, watch, type Ref, type ComputedRef, type ShallowRef } from 'vue';
-import { getPropertyPath, getPropertyTranslation, type Property } from '@core/EntitySchema';
+import { getPropertyPath, getPropertyTranslation, type Property, type EntitySchema } from '@core/EntitySchema';
 import { getSortableProperties } from '@core/RequestSchema';
 import { locale } from '@i18n/i18n';
 
 export interface PropertyPathProps {
-  entity: string;
+  entitySchema: EntitySchema;
   propertyId?: string;
   label?: string | ((locale: string) => string);
 }
@@ -35,7 +35,7 @@ const usePropertyPath = (props: PropertyPathProps): UsePropertyPathReturn => {
     const path = propertyPath.value;
     if (!path) return false;
 
-    let currentEntity = props.entity;
+    let currentEntity = props.entitySchema.id;
     for (const property of path) {
       const sortableProperties = await getSortableProperties(currentEntity);
       if (!sortableProperties.includes(property.id)) {
@@ -51,7 +51,7 @@ const usePropertyPath = (props: PropertyPathProps): UsePropertyPathReturn => {
   watch(
     () => props.propertyId,
     async () => {
-      propertyPath.value = props.propertyId ? await getPropertyPath(props.entity, props.propertyId) : false;
+      propertyPath.value = props.propertyId ? await getPropertyPath(props.entitySchema.id, props.propertyId) : false;
       sortable.value = props.propertyId ? await isSortable() : false;
     },
     { immediate: true },

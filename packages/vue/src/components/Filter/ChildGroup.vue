@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, useTemplateRef, inject } from 'vue';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
-import { resolve, type EntitySchema } from '@core/EntitySchema';
+import type { EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import { isValidOperator } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
-import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import CollapseButton from '@components/Common/CollapseButton.vue';
@@ -17,7 +16,7 @@ import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: GroupFilter;
-  entity: string;
+  entitySchema: EntitySchema;
 }
 
 interface Emits {
@@ -30,26 +29,13 @@ const props = defineProps<Props>();
 const config = inject(builderConfigKey)!;
 
 const validOperator = ref<boolean>(true);
-const validEntity = ref<boolean>(true);
-const schema = ref<EntitySchema | null>(null);
 const showConditionChoice = ref<boolean>(false);
 const groupListRef = useTemplateRef<HTMLUListElement>('groupListRef');
-const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(
-  props.modelValue,
-  config,
-  schema,
-);
+const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
 
 const visibleFilters = computed<Filter[]>(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
 });
-
-async function initSchema(): Promise<void> {
-  schema.value = await resolve(props.entity);
-  if (!schema.value) {
-    validEntity.value = false;
-  }
-}
 
 function isVisible(filter: Filter): boolean {
   return filter.visible !== false;
@@ -85,24 +71,18 @@ function setNewFilter(data: Filter): void {
 }
 
 watchEffect(() => {
-  initSchema();
-});
-watchEffect(() => {
-  if (!isValidOperator('group', props.modelValue.operator)) {
-    validOperator.value = false;
-  }
+  validOperator.value = isValidOperator('group', props.modelValue.operator);
 });
 </script>
 
 <template>
-  <div v-if="!validEntity || !validOperator" :class="classes.condition_error_container">
+  <div v-if="!validOperator" :class="classes.condition_error_container">
     <div>
-      <InvalidEntity v-if="!validEntity" :entity="props.entity" />
-      <InvalidOperator v-else-if="!validOperator" :operator="props.modelValue.operator" />
+      <InvalidOperator :operator="props.modelValue.operator" />
     </div>
     <IconButton icon="delete" btn-class="btn_secondary" :aria-label="translate('group')" @click="$emit('remove')" />
   </div>
-  <div v-else-if="schema" :class="classes.group" data-group>
+  <div v-else :class="classes.group" data-group>
     <div :class="classes.group_header">
       <div>
         <slot name="relationship" />
@@ -140,13 +120,13 @@ watchEffect(() => {
               v-for="filter in visibleFilters"
               :key="filter.key"
               :model-value="filter"
-              :entity="entity"
+              :entity-schema="entitySchema"
               @remove="() => removeFilter(filter)"
             />
           </TransitionGroup>
         </ul>
       </div>
     </div>
-    <ConditionChoice v-model:show="showConditionChoice" :entity="entity" @validate="setNewFilter" />
+    <ConditionChoice v-model:show="showConditionChoice" :entity-schema="entitySchema" @validate="setNewFilter" />
   </div>
 </template>

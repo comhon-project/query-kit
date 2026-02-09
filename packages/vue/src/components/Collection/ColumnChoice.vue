@@ -6,7 +6,7 @@ import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
 import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 
 interface Props {
-  entity: string;
+  entitySchema: EntitySchema;
   columns: string[];
   propertyId?: string;
   label?: string | ((locale: string) => string);

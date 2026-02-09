@@ -12,8 +12,8 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  entity: {
-    type: String,
+  entitySchema: {
+    type: Object,
     required: true,
   },
   multiple: {

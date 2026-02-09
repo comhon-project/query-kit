@@ -93,7 +93,7 @@ const computedColumns = computed<string[]>(() => Object.keys(columnsProperties.v
 async function init(): Promise<void> {
   entitySchema.value = await resolve(props.entity);
   await initColumns(entitySchema.value);
-  await initOrderBy(orderBy.value, computedColumns.value, props.entity, props.customColumns);
+  await initOrderBy(orderBy.value, computedColumns.value, entitySchema.value!.id, props.customColumns);
 }
 
 async function initColumns(entitySchema: EntitySchema): Promise<void> {
@@ -105,7 +105,7 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
   for (const columnId of cols) {
     const propertyPath = props.customColumns?.[columnId]?.open
       ? undefined
-      : await getPropertyPath(props.entity, columnId);
+      : await getPropertyPath(entitySchema.id, columnId);
     const property = propertyPath?.[propertyPath.length - 1];
     colsProps[columnId] = property;
 
@@ -350,7 +350,7 @@ watch(
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
-          <ColumnEditor v-if="editColumns" v-model="columns" :custom-columns="customColumns" :entity="entity" />
+          <ColumnEditor v-if="editColumns && entitySchema" v-model="columns" :custom-columns="customColumns" :entity-schema="entitySchema" />
         </div>
       </div>
     </div>
@@ -368,7 +368,7 @@ watch(
               <Header
                 v-for="columnId in computedColumns"
                 :key="columnId"
-                :entity="entity"
+                :entity-schema="entitySchema!"
                 :column-id="columnId"
                 :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
                 :label="customColumns?.[columnId]?.label"

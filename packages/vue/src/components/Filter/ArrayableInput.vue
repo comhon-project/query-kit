@@ -3,11 +3,11 @@ import { computed } from 'vue';
 import CollectionInput from '@components/Filter/CollectionInput.vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
 import { supportsMultiple } from '@core/InputManager';
-import type { Property, RawScopeParameter } from '@core/EntitySchema';
+import type { Property, RawScopeParameter, EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   target: Property | RawScopeParameter;
-  entity: string;
+  entitySchema: EntitySchema;
   editable?: boolean;
   isArray?: boolean;
 }
@@ -35,14 +35,14 @@ const isMultiple = computed(() => {
     v-if="useCollection"
     v-model="modelValue as unknown[]"
     :target="target"
-    :entity="entity"
+    :entity-schema="entitySchema"
     :editable="editable"
   />
   <UniqueInput
     v-else
     v-model="modelValue"
     :target="target"
-    :entity="entity"
+    :entity-schema="entitySchema"
     :editable="editable"
     :multiple="isMultiple"
   />

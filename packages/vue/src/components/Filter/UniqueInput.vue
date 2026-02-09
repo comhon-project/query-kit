@@ -6,6 +6,7 @@ import {
   getLeafTypeContainer,
   getPropertyTranslation,
   getScopeParameterTranslation,
+  type EntitySchema,
   type Property,
   type ScopeParameter,
   type RawScopeParameter,
@@ -18,7 +19,7 @@ import { builderConfigKey } from '@core/InjectionKeys';
 interface Props {
   multiple: boolean;
   target: Property | RawScopeParameter;
-  entity: string;
+  entitySchema: EntitySchema;
   editable?: boolean;
 }
 
@@ -66,7 +67,7 @@ const conditionValue = computed<unknown>({
     v-else-if="isVueComponent"
     :is="inputType"
     v-model="conditionValue"
-    :entity="entity"
+    :entity-schema="entitySchema"
     :target="target"
     :multiple="multiple"
     :user-timezone="config.userTimezone"
