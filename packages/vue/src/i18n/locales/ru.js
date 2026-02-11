@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'перейти к фильтру',
   undo: 'отменить',
   redo: 'повторить',
+  invalid_column: 'недопустимый столбец:',
+  invalid_property: 'недопустимое свойство:',
+  invalid_scope: 'недопустимая область:',
+  invalid_operator: 'недопустимый оператор:',
+  invalid_entity: 'недопустимая сущность:',
+  invalid_type: 'недопустимый тип:',
 };

@@ -109,7 +109,7 @@ watchEffect(() => {
     <IconButton
       v-if="isRemovable || !validScope"
       icon="delete"
-      btn-class="btn_secondary"
+      btn-class="btn_danger"
       :aria-label="scope ? translate('scope') + ' ' + scopeName : ''"
       @click="$emit('remove')"
     />

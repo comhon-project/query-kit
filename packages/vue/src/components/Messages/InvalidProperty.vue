@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { classes } from '@core/ClassManager';
+import InvalidData from '@components/Messages/InvalidData.vue';
 
 interface Props {
   property: string;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>
-  <span :class="classes.error_info" role="alert">
-    invalid property <span>{{ props.property }}</span>
-  </span>
+  <InvalidData message-key="invalid_property" :value="property" />
 </template>

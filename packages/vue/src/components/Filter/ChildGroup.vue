@@ -3,6 +3,7 @@ import { ref, computed, watchEffect, useTemplateRef, inject } from 'vue';
 import ConditionChoice from '@components/Filter/ConditionChoice.vue';
 import type { EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
+import { useSearchable } from '@components/Filter/Composable/Searchable';
 import { isValidOperator } from '@core/OperatorManager';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
@@ -31,7 +32,8 @@ const config = inject(builderConfigKey)!;
 const validOperator = ref<boolean>(true);
 const showConditionChoice = ref<boolean>(false);
 const groupListRef = useTemplateRef<HTMLUListElement>('groupListRef');
-const { isRemovable, canAddFilter, canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
+const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
+const { hasSearchableItems } = useSearchable(config, props);
 
 const visibleFilters = computed<Filter[]>(() => {
   return props.modelValue.filters.filter((filter) => isVisible(filter));
@@ -80,7 +82,7 @@ watchEffect(() => {
     <div>
       <InvalidOperator :operator="props.modelValue.operator" />
     </div>
-    <IconButton icon="delete" btn-class="btn_secondary" :aria-label="translate('group')" @click="$emit('remove')" />
+    <IconButton icon="delete" btn-class="btn_danger" :aria-label="translate('group')" @click="$emit('remove')" />
   </div>
   <div v-else :class="classes.group" data-group>
     <div :class="classes.group_header">
@@ -106,7 +108,7 @@ watchEffect(() => {
             :aria-label="translate('operator')"
           />
         </template>
-        <IconButton v-if="canAddFilter" icon="add_filter" @click="addFilter" />
+        <IconButton v-if="hasSearchableItems && isEditable" icon="add_filter" @click="addFilter" />
         <slot name="builder_actions" />
         <IconButton v-if="isRemovable" icon="delete" :aria-label="translate('group')" @click="$emit('remove')" />
         <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />

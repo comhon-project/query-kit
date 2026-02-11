@@ -15,6 +15,7 @@ export default {
       "country",
       "favorite_fruits",
       "cars",
+      "does_not_exist",
     ],
     scopes: [
       "scope_string_definition",

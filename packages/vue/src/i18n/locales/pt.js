@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'ir para o filtro',
   undo: 'desfazer',
   redo: 'refazer',
+  invalid_column: 'coluna inválida:',
+  invalid_property: 'propriedade inválida:',
+  invalid_scope: 'escopo inválido:',
+  invalid_operator: 'operador inválido:',
+  invalid_entity: 'entidade inválida:',
+  invalid_type: 'tipo inválido:',
 };

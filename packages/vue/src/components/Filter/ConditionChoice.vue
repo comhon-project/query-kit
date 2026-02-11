@@ -8,6 +8,8 @@ import { getConditionOperators, getContainerOperators } from '@core/OperatorMana
 import { getComputedScope, getComputedScopeTranslation, type ComputedScope } from '@core/ComputedScopesManager';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import Modal from '@components/Common/Modal.vue';
+import InvalidProperty from '@components/Messages/InvalidProperty.vue';
+import InvalidScope from '@components/Messages/InvalidScope.vue';
 import { type Filter } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 
@@ -31,7 +33,8 @@ const uniqueIdCondition = ref<string>(`choice-${getUniqueId()}`);
 const uniqueIdGroup = ref<string>(`choice-${getUniqueId()}`);
 const targetCondition = ref<string | null>(null);
 const selectedType = ref<'condition' | 'group'>('condition');
-const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, props);
+const { searchableProperties, searchableScopes, searchableComputedScopes, invalidProperties, invalidScopes } =
+  useSearchable(config, props);
 
 const options = computed<Record<string, string>>(() => {
   const opts: Record<string, string> = {};
@@ -78,14 +81,14 @@ function validate(): void {
           type: 'relationship_condition',
           operator: operators[0],
           property: target,
-          };
+        };
       } else {
         const operators = getConditionOperators(property, config.allowedOperators);
         condition = {
           type: 'condition',
           operator: operators[0],
           property: target,
-          };
+        };
       }
     }
   } else {
@@ -113,12 +116,13 @@ function selectType(type: 'condition' | 'group'): void {
 function submitForm(): void {
   form.value?.requestSubmit();
 }
-
 </script>
 
 <template>
   <Modal v-model:show="show" @confirm="submitForm" @closed="onClosed">
     <template #body>
+      <InvalidProperty v-for="name in invalidProperties" :key="name" :property="name" />
+      <InvalidScope v-for="id in invalidScopes" :key="id" :id="id" />
       <form ref="form" :class="classes.condition_choice_form" @submit.prevent="validate">
         <fieldset>
           <legend :class="classes.sr_only">{{ translate('choose_condition_element') }}</legend>

@@ -1,5 +1,7 @@
 import { reactive, watch } from 'vue';
 import { fallback, locale } from '@i18n/i18n';
+import { PropertyNotFoundError } from '@core/errors';
+import { getSortableProperties } from '@core/RequestSchema';
 
 export interface TypeContainer {
   type: string;
@@ -81,7 +83,7 @@ export class EntitySchema {
 
   getProperty(id: string): Property {
     const property = this.mapProperties[id];
-    if (!property) throw new Error(`Property "${id}" not found in schema "${this.id}"`);
+    if (!property) throw new PropertyNotFoundError(id, this.id);
     return property;
   }
 
@@ -252,6 +254,25 @@ async function loadRawTranslations(schemaId: string, targetLocale: string): Prom
   return loadedTranslations[cacheKey] ?? {};
 }
 
+async function isPropertySortable(schemaId: string, path: string): Promise<boolean> {
+  try {
+    const propertyPath = await getPropertyPath(schemaId, path);
+    let currentEntity = schemaId;
+    for (const property of propertyPath) {
+      const sortableProperties = await getSortableProperties(currentEntity);
+      if (!sortableProperties.includes(property.id)) {
+        return false;
+      }
+      if (property.related) {
+        currentEntity = property.related;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function getPropertyPath(schemaId: string, path: string): Promise<Property[]> {
   const segments = path.split('.');
   const properties: Property[] = [];
@@ -295,6 +316,7 @@ export {
   registerTranslationsLoader,
   resolve,
   getPropertyPath,
+  isPropertySortable,
   getPropertyTranslation,
   getScopeTranslation,
   getScopeParameterTranslation,

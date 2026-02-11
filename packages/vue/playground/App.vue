@@ -24,6 +24,8 @@ const columns = ref([
   'company',
   'company.description',
   'company.address',
+  'invalid_column_test',
+  'friend.invalid_column_test',
   'no_property',
 ]);
 
@@ -120,6 +122,11 @@ const group = {
       type: 'condition',
       property: 'birth_date',
       value: '2022-01-07T03:06:06.000Z',
+      operator: '=',
+    },
+    {
+      type: 'condition',
+      property: 'does_not_exist',
       operator: '=',
     },
     {
@@ -342,7 +349,9 @@ watch(page, () => {
   <div class="root-app">
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap">
       <button class="qkit-btn qkit-btn-primary" @click="() => page++">page++</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (displayOperator = displayOperator ? false : true)">toggle displayOperator</button>
+      <button class="qkit-btn qkit-btn-primary" @click="() => (displayOperator = displayOperator ? false : true)">
+        toggle displayOperator
+      </button>
       <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap">
         <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">en</button>
         <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'zh')">zh</button>

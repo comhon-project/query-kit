@@ -151,7 +151,7 @@ export interface SelectOption<T = string | number> {
 // ==================== Button Types ====================
 
 export type ButtonType = 'button' | 'submit' | 'reset';
-export type ButtonClass = 'btn_primary' | 'btn_secondary' | 'btn';
+export type ButtonClass = 'btn_primary' | 'btn_danger' | 'btn';
 
 // ==================== Display Props ====================
 

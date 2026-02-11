@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'الانتقال إلى التصفية',
   undo: 'تراجع',
   redo: 'إعادة',
+  invalid_column: 'عمود غير صالح:',
+  invalid_property: 'خاصية غير صالحة:',
+  invalid_scope: 'نطاق غير صالح:',
+  invalid_operator: 'عامل غير صالح:',
+  invalid_entity: 'كيان غير صالح:',
+  invalid_type: 'نوع غير صالح:',
 };

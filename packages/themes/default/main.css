@@ -1,8 +1,10 @@
 :root {
   --qkit-color-primary: hsl(263, 45%, 55%);
   --qkit-color-primary-darken: hsl(263, 45%, 45%);
-  --qkit-color-secondary: hsl(9, 57%, 50%);
-  --qkit-color-secondary-darken: hsl(9, 57%, 45%);
+  --qkit-color-danger: hsl(9, 57%, 50%);
+  --qkit-color-danger-darken: hsl(9, 57%, 45%);
+  --qkit-color-warning: hsl(16, 100%, 50%);
+  --qkit-color-warning-darken: hsl(16, 100%, 40%);
   --qkit-color-focus: hsl(0, 0%, 20%);
   --qkit-color-border: hsl(210, 14%, 83%);
   --qkit-collection-background-color: hsl(0, 0%, 95%);
@@ -130,13 +132,13 @@
   background: var(--qkit-color-primary-darken);
 }
 
-.qkit-btn-secondary {
+.qkit-btn-danger {
   color: white;
-  background: var(--qkit-color-secondary);
+  background: var(--qkit-color-danger);
 }
 
-.qkit-btn-secondary:hover:not(:disabled) {
-  background: var(--qkit-color-secondary-darken);
+.qkit-btn-danger:hover:not(:disabled) {
+  background: var(--qkit-color-danger-darken);
 }
 
 .qkit-group {
@@ -288,12 +290,16 @@
   text-transform: capitalize;
 }
 
-.qkit-error-info > span {
-  padding: 0.25rem;
-  background: orangered;
+.qkit-error-info {
+  padding: 0.5rem;
+  background: var(--qkit-color-warning);
   color: white;
   border-radius: 0.25rem;
+  width: fit-content;
+}
+.qkit-error-info > span {
   font-family: monospace;
+  font-weight: bold;
 }
 
 .qkit-property-name-container {
@@ -609,6 +615,16 @@
 .qkit-column-choice > :not(:first-child):not(:last-child) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.qkit-column-choice:has(> .qkit-error-info) > * {
+  background: var(--qkit-color-warning);
+}
+.qkit-column-choice:has(> .qkit-error-info) > .qkit-btn:hover {
+  background: var(--qkit-color-warning-darken);
+}
+.qkit-column-choice > .qkit-error-info {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }

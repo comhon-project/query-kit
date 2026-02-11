@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'फ़िल्टर पर जाएं',
   undo: 'पूर्ववत करें',
   redo: 'फिर से करें',
+  invalid_column: 'अमान्य कॉलम:',
+  invalid_property: 'अमान्य प्रॉपर्टी:',
+  invalid_scope: 'अमान्य स्कोप:',
+  invalid_operator: 'अमान्य ऑपरेटर:',
+  invalid_entity: 'अमान्य इकाई:',
+  invalid_type: 'अमान्य प्रकार:',
 };

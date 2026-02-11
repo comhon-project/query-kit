@@ -2,12 +2,12 @@
 import InvalidData from '@components/Messages/InvalidData.vue';
 
 interface Props {
-  operator: string;
+  column: string;
 }
 
 defineProps<Props>();
 </script>
 
 <template>
-  <InvalidData message-key="invalid_operator" :value="operator" />
+  <InvalidData message-key="invalid_column" :value="column" />
 </template>

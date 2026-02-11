@@ -3,12 +3,14 @@ import { ref, watch, onMounted, onUnmounted, shallowRef, computed, useTemplateRe
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyPath, type Property, type EntitySchema } from '@core/EntitySchema';
+import { PropertyNotFoundError } from '@core/errors';
 import { translate } from '@i18n/i18n';
 import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
 import ColumnEditor from '@components/Collection/ColumnEditor.vue';
+import InvalidColumn from '@components/Messages/InvalidColumn.vue';
 import type {
   CustomColumnConfig,
   OrderByItem,
@@ -72,6 +74,7 @@ const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
 const entitySchema = ref<EntitySchema>();
 const rowKeyProperty = ref<string>();
 const indexedOrderBy = shallowRef<Record<string, IndexedOrderByEntry>>({});
+const invalidColumns = ref<string[]>([]);
 
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
 let observer: IntersectionObserver | undefined;
@@ -102,27 +105,37 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
   const colsProps: Record<string, Property | undefined> = {};
   properties = [];
 
+  const invalid: string[] = [];
   for (const columnId of cols) {
-    const propertyPath = props.customColumns?.[columnId]?.open
-      ? undefined
-      : await getPropertyPath(entitySchema.id, columnId);
-    const property = propertyPath?.[propertyPath.length - 1];
-    colsProps[columnId] = property;
+    try {
+      const propertyPath = props.customColumns?.[columnId]?.open
+        ? undefined
+        : await getPropertyPath(entitySchema.id, columnId);
+      const property = propertyPath?.[propertyPath.length - 1];
+      colsProps[columnId] = property;
 
-    if (property) {
-      if (property.type != 'relationship') {
-        properties.push(columnId);
-      } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
-        const propertySchema = await resolve(property.related!);
-        properties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
-        if (propertySchema.primary_identifiers) {
-          for (const propertyId of propertySchema.primary_identifiers) {
-            properties.push(columnId + '.' + propertyId);
+      if (property) {
+        if (property.type != 'relationship') {
+          properties.push(columnId);
+        } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
+          const propertySchema = await resolve(property.related!);
+          properties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
+          if (propertySchema.primary_identifiers) {
+            for (const propertyId of propertySchema.primary_identifiers) {
+              properties.push(columnId + '.' + propertyId);
+            }
           }
         }
       }
+    } catch (e) {
+      if (e instanceof PropertyNotFoundError) {
+        invalid.push(columnId);
+      } else {
+        throw e;
+      }
     }
   }
+  invalidColumns.value = invalid;
   columnsProperties.value = colsProps;
 }
 
@@ -138,30 +151,34 @@ async function initOrderBy(
   }
   const indexed: Record<string, IndexedOrderByEntry> = {};
   for (const value of orderBy) {
-    const column = typeof value == 'string' ? value : value.column;
-    if (!columns.includes(column)) continue;
-    const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
+    try {
+      const column = typeof value == 'string' ? value : value.column;
+      if (!columns.includes(column)) continue;
+      const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
 
-    let reqProps: string[];
-    if (customColumns?.[column]?.order) {
-      reqProps = customColumns[column].order!;
-    } else {
-      const propertyPath = await getPropertyPath(entity, column);
-      const property = propertyPath[propertyPath.length - 1];
-
-      if (property.type != 'relationship') {
-        reqProps = [column];
+      let reqProps: string[];
+      if (customColumns?.[column]?.order) {
+        reqProps = customColumns[column].order!;
       } else {
-        const schema = await resolve(property.related!);
-        if (schema.default_sort) {
-          reqProps = schema.default_sort.map((prop) => column + '.' + prop);
+        const propertyPath = await getPropertyPath(entity, column);
+        const property = propertyPath[propertyPath.length - 1];
+
+        if (property.type != 'relationship') {
+          reqProps = [column];
         } else {
-          const idProperty = schema.unique_identifier || 'id';
-          reqProps = [column + '.' + idProperty];
+          const schema = await resolve(property.related!);
+          if (schema.default_sort) {
+            reqProps = schema.default_sort.map((prop) => column + '.' + prop);
+          } else {
+            const idProperty = schema.unique_identifier || 'id';
+            reqProps = [column + '.' + idProperty];
+          }
         }
       }
+      indexed[column] = { order, properties: reqProps };
+    } catch (e) {
+      if (!(e instanceof PropertyNotFoundError)) throw e;
     }
-    indexed[column] = { order, properties: reqProps };
   }
   indexedOrderBy.value = indexed;
 }
@@ -354,6 +371,7 @@ watch(
         </div>
       </div>
     </div>
+    <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
     <div :class="classes.collection_content_wrapper">
       <slot name="loading" :requesting="requesting">
         <Transition name="qkit-collection-spinner">

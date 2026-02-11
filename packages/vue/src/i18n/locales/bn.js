@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'ফিল্টারে যান',
   undo: 'পূর্বাবস্থায় ফেরান',
   redo: 'পুনরায় করুন',
+  invalid_column: 'অবৈধ কলাম:',
+  invalid_property: 'অবৈধ প্রপার্টি:',
+  invalid_scope: 'অবৈধ স্কোপ:',
+  invalid_operator: 'অবৈধ অপারেটর:',
+  invalid_entity: 'অবৈধ সত্তা:',
+  invalid_type: 'অবৈধ ধরন:',
 };

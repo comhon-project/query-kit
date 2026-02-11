@@ -132,7 +132,7 @@ watch(
     <IconButton
       v-if="isRemovable || !validProperty || !validOperator || !validType"
       icon="delete"
-      btn-class="btn_secondary"
+      btn-class="btn_danger"
       :aria-label="property ? translate('condition') + ' ' + propertyName : ''"
       @click="$emit('remove')"
     />

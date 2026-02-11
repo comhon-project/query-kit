@@ -43,7 +43,7 @@ function removeValue(index: number): void {
           :editable="editable"
           :multiple="false"
         />
-        <IconButton v-if="editable" icon="delete" btn-class="btn_secondary" @click="() => removeValue(index)" />
+        <IconButton v-if="editable" icon="delete" btn-class="btn_danger" @click="() => removeValue(index)" />
       </li>
     </ul>
     <IconButton v-if="editable" icon="add_value" @click="addValue" />

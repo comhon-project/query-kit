@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'zum Filter gehen',
   undo: 'rückgängig',
   redo: 'wiederherstellen',
+  invalid_column: 'ungültige Spalte:',
+  invalid_property: 'ungültige Eigenschaft:',
+  invalid_scope: 'ungültiger Scope:',
+  invalid_operator: 'ungültiger Operator:',
+  invalid_entity: 'ungültige Entität:',
+  invalid_type: 'ungültiger Typ:',
 };

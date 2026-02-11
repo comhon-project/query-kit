@@ -160,7 +160,7 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
       <InvalidProperty v-else-if="invalidProperty" :property="invalidProperty" />
       <InvalidOperator v-else-if="invalidOperator" :operator="invalidOperator" />
     </div>
-    <IconButton icon="delete" btn-class="btn_secondary" @click="$emit('remove')" />
+    <IconButton icon="delete" btn-class="btn_danger" @click="$emit('remove')" />
   </div>
   <template v-else-if="queue">
     <Transition name="qkit-collapse-horizontal-list" mode="out-in">
@@ -186,7 +186,7 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
           <IconButton
             v-if="!(queue[queue.length - 1].value.removable === false)"
             icon="delete"
-            btn-class="btn_secondary"
+            btn-class="btn_danger"
             :aria-label="translate('condition') + ' ' + childAriaLabel"
             @click="$emit('remove')"
           />

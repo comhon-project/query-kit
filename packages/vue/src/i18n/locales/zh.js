@@ -55,4 +55,10 @@ export default {
   go_to_filter: '转到筛选',
   undo: '撤销',
   redo: '重做',
+  invalid_column: '无效列：',
+  invalid_property: '无效属性：',
+  invalid_scope: '无效范围：',
+  invalid_operator: '无效运算符：',
+  invalid_entity: '无效实体：',
+  invalid_type: '无效类型：',
 };

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { classes } from '@core/ClassManager';
 import { getLeafTypeContainer, type ArrayableTypeContainer } from '@core/EntitySchema';
+import InvalidData from '@components/Messages/InvalidData.vue';
 
 interface Props {
   typeContainer: ArrayableTypeContainer;
@@ -10,13 +10,10 @@ interface Props {
 const props = defineProps<Props>();
 
 const leafType = computed(() => {
-  const leaf = getLeafTypeContainer(props.typeContainer);
-  return leaf.type;
+  return getLeafTypeContainer(props.typeContainer).type;
 });
 </script>
 
 <template>
-  <span :class="classes.error_info" role="alert">
-    invalid type <span>{{ leafType }}</span>
-  </span>
+  <InvalidData message-key="invalid_type" :value="leafType" />
 </template>

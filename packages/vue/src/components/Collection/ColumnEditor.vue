@@ -116,7 +116,7 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
             >
               <ColumnChoice
                 v-model="keyedColumns[index].id"
-                :property-id="customColumns?.[column.id]?.open === true ? undefined : column.id"
+                :open="customColumns?.[column.id]?.open === true"
                 :entity-schema="entitySchema"
                 :label="customColumns?.[column.id]?.label"
                 :columns="columnIds"

@@ -55,4 +55,10 @@ export default {
   go_to_filter: 'フィルターへ移動',
   undo: '元に戻す',
   redo: 'やり直し',
+  invalid_column: '無効な列：',
+  invalid_property: '無効なプロパティ：',
+  invalid_scope: '無効なスコープ：',
+  invalid_operator: '無効な演算子：',
+  invalid_entity: '無効なエンティティ：',
+  invalid_type: '無効なタイプ：',
 };

@@ -103,7 +103,7 @@ describe('minimal plugin', () => {
       relationship_queue_element: 'qkit-relationship-queue-element',
       btn: 'qkit-btn',
       btn_primary: 'qkit-btn qkit-btn-primary',
-      btn_secondary: 'qkit-btn qkit-btn-secondary',
+      btn_danger: 'qkit-btn qkit-btn-danger',
       group: 'qkit-group',
       group_header: 'qkit-group-header',
       group_actions: 'qkit-group-actions',

@@ -1,6 +1,5 @@
 import { computed, type ComputedRef } from 'vue';
 import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '@core/OperatorManager';
-import { useSearchable } from '@components/Filter/Composable/Searchable';
 import type { EntitySchema } from '@core/EntitySchema';
 import type { FilterWithOperator, ConditionFilter, BuilderConfig } from '@core/types';
 
@@ -12,7 +11,6 @@ export interface OperatorOption {
 export interface UseFilterWithOperatorReturn {
   isRemovable: ComputedRef<boolean>;
   isEditable: ComputedRef<boolean>;
-  canAddFilter: ComputedRef<boolean>;
   canEditOperator: ComputedRef<boolean>;
   operatorOptions: ComputedRef<OperatorOption[]>;
 }
@@ -21,7 +19,6 @@ const useFilterWithOperator = (
   config: BuilderConfig,
   props: { entitySchema: EntitySchema; modelValue: FilterWithOperator },
 ): UseFilterWithOperatorReturn => {
-  const { searchableProperties, searchableScopes, searchableComputedScopes } = useSearchable(config, props);
   const isRemovable = computed(() => !(props.modelValue.removable === false));
   const isEditable = computed(() => !(props.modelValue.editable === false));
   const canEditOperator = computed(() => {
@@ -59,14 +56,7 @@ const useFilterWithOperator = (
     }
     return options;
   });
-  const canAddFilter = computed(() => {
-    return (
-      isEditable.value &&
-      !!(searchableProperties.value.length || searchableScopes.value.length || searchableComputedScopes.value.length)
-    );
-  });
-
-  return { isRemovable, isEditable, canAddFilter, canEditOperator, operatorOptions };
+  return { isRemovable, isEditable, canEditOperator, operatorOptions };
 };
 
 export { useFilterWithOperator };

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { classes } from '@core/ClassManager';
-import { usePropertyPath } from '@components/Filter/Composable/PropertyPath';
+import { isPropertySortable } from '@core/EntitySchema';
+import ColumnName from '@components/Collection/ColumnName.vue';
 import Icon from '@components/Common/Icon.vue';
 import { translate } from '@i18n/i18n';
-import { computed } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
@@ -22,13 +23,26 @@ interface Emits {
 const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
 
-const { label, sortable } = usePropertyPath(props);
+const sortable = ref(false);
 const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomOrder);
-const orderLabel = computed<string>(() => props.order ? `(${translate(props.order)})` : '');
+const orderLabel = computed<string>(() => (props.order ? `(${translate(props.order)})` : ''));
+const ariaSort = computed(() =>
+  isColumnSortable.value
+    ? props.order === 'asc'
+      ? 'ascending'
+      : props.order === 'desc'
+        ? 'descending'
+        : 'none'
+    : undefined,
+);
+
+watchEffect(async () => {
+  sortable.value = props.propertyId ? await isPropertySortable(props.entitySchema.id, props.propertyId) : false;
+});
 </script>
 
 <template>
-  <th scope="col" :aria-sort="isColumnSortable ? (props.order === 'asc' ? 'ascending' : props.order === 'desc' ? 'descending' : 'none') : undefined">
+  <th scope="col" :aria-sort="ariaSort">
     <button
       v-if="isColumnSortable"
       type="button"
@@ -38,11 +52,11 @@ const orderLabel = computed<string>(() => props.order ? `(${translate(props.orde
       :asc="props.order == 'asc' ? '' : undefined"
       @click="(e) => emit('click', columnId, e.ctrlKey)"
     >
-      {{ label }}
+      <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />
       <Icon icon="down" :label="orderLabel" />
     </button>
     <div v-else>
-      {{ label }}
+      <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />
     </div>
   </th>
 </template>
