@@ -16,6 +16,7 @@ export type IconName =
   | 'confirm'
   | 'export'
   | 'columns'
+  | 'grip'
   | 'paginated_list'
   | 'infinite_list';
 
@@ -45,6 +46,7 @@ export const defaultIcons: IconList = {
   confirm: { class: 'qkit-icon qkit-icon-check', component: 'i' },
   export: { class: 'qkit-icon qkit-icon-export', component: 'i' },
   columns: { class: 'qkit-icon qkit-icon-columns', component: 'i' },
+  grip: { class: 'qkit-icon qkit-icon-grip', component: 'i' },
   paginated_list: { class: 'qkit-icon qkit-icon-paginated-list', component: 'i' },
   infinite_list: { class: 'qkit-icon qkit-icon-infinite-list', component: 'i' },
 };

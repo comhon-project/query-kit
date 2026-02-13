@@ -61,4 +61,9 @@ export default {
   invalid_operator: 'عامل غير صالح:',
   invalid_entity: 'كيان غير صالح:',
   invalid_type: 'نوع غير صالح:',
+  reorder: 'إعادة ترتيب',
+  column_grabbed: 'تم الإمساك، استخدم مفاتيح الأسهم للتحريك، مسافة للإفلات',
+  column_moved: 'تم النقل إلى الموضع',
+  column_dropped: 'تم الإفلات',
+  reorder_cancelled: 'تم إلغاء إعادة الترتيب',
 };

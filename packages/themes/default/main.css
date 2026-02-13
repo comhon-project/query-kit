@@ -595,28 +595,24 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--qkit-gap-spacer);
-  max-width: 768px;
 }
 
 .qkit-column-choice {
   display: flex;
 }
-.qkit-column-choice > *:first-child {
+.qkit-column-choice > *:not(.qkit-input) {
   color: white;
   background: var(--qkit-color-primary);
   padding: 0.5rem;
+  border-radius: 0;
+}
+.qkit-column-choice > *:first-child {
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
 }
 .qkit-column-choice > *:last-child {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-.qkit-column-choice > :not(:first-child):not(:last-child) {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
 }
 .qkit-column-choice:has(> .qkit-error-info) > * {
   background: var(--qkit-color-warning);
@@ -624,9 +620,41 @@
 .qkit-column-choice:has(> .qkit-error-info) > .qkit-btn:hover {
   background: var(--qkit-color-warning-darken);
 }
-.qkit-column-choice > .qkit-error-info {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+.qkit-column-choice > button:focus-visible {
+  outline: 2px solid var(--qkit-color-focus);
+  outline-offset: -2px;
+}
+.qkit-column-choice > *:first-child {
+  cursor: grab;
+}
+.qkit-column-choice > *:first-child:active {
+  cursor: grabbing;
+}
+[data-dragging] {
+  opacity: 0.4;
+}
+.qkit-grid-container-for-transition {
+  position: relative;
+}
+.qkit-grid-container-for-transition::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--qkit-gap-spacer));
+  width: var(--qkit-gap-spacer);
+}
+.qkit-grid-container-for-transition,
+.qkit-column-add {
+  transition: padding-left 0.15s ease;
+}
+[data-drag-over] {
+  padding-left: 2.5rem;
+}
+[data-grabbed] {
+  outline: 2px solid var(--qkit-color-focus);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
 }
 
 .qkit-column-add {
@@ -810,6 +838,12 @@
 }
 .qkit-icon-check {
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8L6 12L14 4' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+.qkit-icon-grip {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='5' cy='3' r='1.5' fill='black'/%3E%3Ccircle cx='11' cy='3' r='1.5' fill='black'/%3E%3Ccircle cx='5' cy='8' r='1.5' fill='black'/%3E%3Ccircle cx='11' cy='8' r='1.5' fill='black'/%3E%3Ccircle cx='5' cy='13' r='1.5' fill='black'/%3E%3Ccircle cx='11' cy='13' r='1.5' fill='black'/%3E%3C/svg%3E");
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-position: center;

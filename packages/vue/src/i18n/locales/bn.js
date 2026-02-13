@@ -61,4 +61,9 @@ export default {
   invalid_operator: 'অবৈধ অপারেটর:',
   invalid_entity: 'অবৈধ সত্তা:',
   invalid_type: 'অবৈধ ধরন:',
+  reorder: 'পুনর্বিন্যাস করুন',
+  column_grabbed: 'ধরা হয়েছে, তীর কী দিয়ে সরান, স্পেস দিয়ে ছাড়ুন',
+  column_moved: 'অবস্থানে সরানো হয়েছে',
+  column_dropped: 'ছাড়া হয়েছে',
+  reorder_cancelled: 'পুনর্বিন্যাস বাতিল করা হয়েছে',
 };

@@ -61,4 +61,9 @@ export default {
   invalid_operator: 'недопустимый оператор:',
   invalid_entity: 'недопустимая сущность:',
   invalid_type: 'недопустимый тип:',
+  reorder: 'переупорядочить',
+  column_grabbed: 'захвачен, используйте стрелки для перемещения, Пробел чтобы отпустить',
+  column_moved: 'перемещён на позицию',
+  column_dropped: 'отпущен',
+  reorder_cancelled: 'переупорядочивание отменено',
 };

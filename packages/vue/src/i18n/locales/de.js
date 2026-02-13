@@ -61,4 +61,9 @@ export default {
   invalid_operator: 'ungültiger Operator:',
   invalid_entity: 'ungültige Entität:',
   invalid_type: 'ungültiger Typ:',
+  reorder: 'neu anordnen',
+  column_grabbed: 'gegriffen, Pfeiltasten zum Verschieben, Leertaste zum Ablegen',
+  column_moved: 'verschoben auf Position',
+  column_dropped: 'abgelegt',
+  reorder_cancelled: 'Neuanordnung abgebrochen',
 };

@@ -15,6 +15,7 @@ interface Props {
 
 interface Emits {
   remove: [];
+  'grip-start': [event: Event];
 }
 
 const emit = defineEmits<Emits>();
@@ -29,6 +30,12 @@ const openLabel = computed<string>(() => {
 
 <template>
   <div :class="classes.column_choice">
+    <IconButton
+      icon="grip"
+      label="reorder"
+      @mousedown="emit('grip-start', $event)"
+      @keydown="emit('grip-start', $event)"
+    />
     <span v-if="open">{{ openLabel }}</span>
     <ColumnPropertyChoice
       v-else

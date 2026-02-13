@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
+import { computed, nextTick, ref, watch, watchEffect } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import Modal from '@components/Common/Modal.vue';
 import ColumnChoice from '@components/Collection/ColumnChoice.vue';
 import { translate, locale } from '@i18n/i18n';
 import { classes } from '@core/ClassManager';
-import { getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
+import { getPropertyPath, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
+import { useDragAndDrop, type DragAndDropAction } from '@core/useDragAndDrop';
 import { getUniqueId } from '@core/Utils';
 import type { CustomColumnConfig, SelectOption } from '@core/types';
 
@@ -22,9 +23,12 @@ interface Props {
 const columns = defineModel<string[]>({ required: true });
 const props = defineProps<Props>();
 
+const { lastAction, onGripStart, setItemRef, getItemBindings, getDropZoneBindings } = useDragAndDrop({ move });
+
 const showModal = ref<boolean>(false);
 const selectedProperty = ref<string | null>(null);
 const keyedColumns = ref<KeyedColumn[]>([]);
+const liveMessage = ref('');
 
 const columnIds = computed<string[]>(() => keyedColumns.value.map((c) => c.id));
 const disableConfirm = computed<boolean>(() => keyedColumns.value.length === 0);
@@ -96,6 +100,42 @@ function addColumn(): void {
   }
 }
 
+async function getColumnLabel(columnId: string): Promise<string> {
+  const customColumn = props.customColumns?.[columnId];
+  if (customColumn?.label) {
+    return typeof customColumn.label === 'function' ? customColumn.label(locale.value) : customColumn.label;
+  }
+  try {
+    const path = await getPropertyPath(props.entitySchema.id, columnId);
+    return path.map((property) => getPropertyTranslation(property)).join(' ');
+  } catch {
+    return columnId;
+  }
+}
+
+function move(from: number, to: number): void {
+  const item = keyedColumns.value.splice(from, 1)[0];
+  keyedColumns.value.splice(to, 0, item);
+}
+
+watch(lastAction, async (action: DragAndDropAction | null) => {
+  liveMessage.value = '';
+  if (!action) return;
+  await nextTick();
+  if (action.type === 'cancel') {
+    liveMessage.value = translate('reorder_cancelled')!;
+    return;
+  }
+  const label = await getColumnLabel(keyedColumns.value[action.index].id);
+  if (action.type === 'grab') {
+    liveMessage.value = `${label}, ${translate('column_grabbed')}`;
+  } else if (action.type === 'drop') {
+    liveMessage.value = `${label}, ${translate('column_dropped')}`;
+  } else if (action.type === 'move') {
+    liveMessage.value = `${label}, ${translate('column_moved')} ${action.index + 1} / ${action.length}`;
+  }
+});
+
 watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: getUniqueId() }))));
 </script>
 
@@ -107,12 +147,15 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
     </template>
     <template #body>
       <div :class="classes.column_choices">
-        <ul>
+        <div :class="classes.sr_only" aria-live="assertive" aria-atomic="true">{{ liveMessage }}</div>
+        <ul :aria-label="translate('columns')">
           <TransitionGroup name="qkit-collapse-horizontal-list">
             <li
               v-for="(column, index) in keyedColumns"
+              :ref="(el: any) => setItemRef(el, index)"
               :key="column.key"
               :class="classes.grid_container_for_transition"
+              v-bind="getItemBindings(index)"
             >
               <ColumnChoice
                 v-model="keyedColumns[index].id"
@@ -121,10 +164,11 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
                 :label="customColumns?.[column.id]?.label"
                 :columns="columnIds"
                 @remove="() => removeColumn(index)"
+                @grip-start="onGripStart"
               />
             </li>
           </TransitionGroup>
-          <div :class="classes.column_add">
+          <div :class="classes.column_add" v-bind="getDropZoneBindings()">
             <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
               <option value="" disabled hidden />
               <option v-for="option in options" :key="option.value" :value="option.value">

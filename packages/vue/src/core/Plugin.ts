@@ -3,7 +3,12 @@ import { locale, fallback } from '@i18n/i18n';
 import { registerClasses, type ClassList } from '@core/ClassManager';
 import { registerIcons, defaultIcons, type IconList } from '@core/IconManager';
 import { registerComponents, type ComponentList } from '@core/InputManager';
-import { registerPropertyRenderers, registerTypeRenderers, type TypeRenderers, type PropertyRenderers } from '@core/CellRendererManager';
+import {
+  registerPropertyRenderers,
+  registerTypeRenderers,
+  type TypeRenderers,
+  type PropertyRenderers,
+} from '@core/CellRendererManager';
 import {
   registerLoader as registerEntitySchemaLoader,
   registerTranslationsLoader as registerEntityTranslationsLoader,
@@ -19,7 +24,11 @@ import {
   type EnumTranslationsLoader,
   type RawEnumSchema,
 } from '@core/EnumSchema';
-import { registerLoader as registerRequestSchemaLoader, type SchemaLoader as RequestSchemaLoader, type RequestSchema } from '@core/RequestSchema';
+import {
+  registerLoader as registerRequestSchemaLoader,
+  type SchemaLoader as RequestSchemaLoader,
+  type RequestSchema,
+} from '@core/RequestSchema';
 import { applyOptions } from '@config/config';
 import { registerRequester, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
 import { registerOperators, type AllowedOperators } from '@core/OperatorManager';
@@ -37,6 +46,11 @@ type RequestSchemaLoaderFunction = (id: string) => Promise<RequestSchema | null>
 type RequesterFunction = (params: RequestParams) => Promise<RequestResponse>;
 
 export interface PluginOptions {
+  entitySchemaLoader: EntitySchemaLoader | EntitySchemaLoaderFunction;
+  entityTranslationsLoader?: EntityTranslationsLoader | EntityTranslationsLoaderFunction;
+  enumSchemaLoader?: EnumSchemaLoader | EnumSchemaLoaderFunction;
+  enumTranslationsLoader?: EnumTranslationsLoader | EnumTranslationsLoaderFunction;
+  requestSchemaLoader?: RequestSchemaLoader | RequestSchemaLoaderFunction;
   icons?: Partial<IconList> | 'default';
   iconComponent?: string;
   iconPropName?: string;
@@ -49,11 +63,6 @@ export interface PluginOptions {
   operators?: AllowedOperators;
   computedScopes?: ComputedScopes;
   requester?: Requester | RequesterFunction;
-  entitySchemaLoader: EntitySchemaLoader | EntitySchemaLoaderFunction;
-  entityTranslationsLoader?: EntityTranslationsLoader | EntityTranslationsLoaderFunction;
-  enumSchemaLoader?: EnumSchemaLoader | EnumSchemaLoaderFunction;
-  enumTranslationsLoader?: EnumTranslationsLoader | EnumTranslationsLoaderFunction;
-  requestSchemaLoader?: RequestSchemaLoader | RequestSchemaLoaderFunction;
   renderHtml?: boolean;
 }
 

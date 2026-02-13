@@ -61,4 +61,9 @@ export default {
   invalid_operator: 'अमान्य ऑपरेटर:',
   invalid_entity: 'अमान्य इकाई:',
   invalid_type: 'अमान्य प्रकार:',
+  reorder: 'पुनर्क्रमित करें',
+  column_grabbed: 'पकड़ा गया, तीर कुंजियों से हिलाएं, स्पेस से छोड़ें',
+  column_moved: 'स्थान पर ले जाया गया',
+  column_dropped: 'छोड़ा गया',
+  reorder_cancelled: 'पुनर्क्रम रद्द किया गया',
 };

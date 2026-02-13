@@ -61,4 +61,9 @@ export default {
   invalid_operator: '無効な演算子：',
   invalid_entity: '無効なエンティティ：',
   invalid_type: '無効なタイプ：',
+  reorder: '並べ替え',
+  column_grabbed: 'つかみました、矢印キーで移動、スペースキーで離します',
+  column_moved: '位置に移動しました',
+  column_dropped: '離しました',
+  reorder_cancelled: '並べ替えがキャンセルされました',
 };
