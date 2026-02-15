@@ -48,24 +48,22 @@ const value = computed<unknown>(() => {
 </script>
 
 <template>
-  <td>
+  <td
+    :class="onClick ? classes.collection_clickable_cell : classes.collection_cell"
+    :tabindex="onClick ? 0 : undefined"
+    :role="onClick ? 'button' : undefined"
+    v-on="onClick ? { click: (e: MouseEvent) => emit('click', value, rowValue, columnId, e), keydown: (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); emit('click', value, rowValue, columnId, e as unknown as MouseEvent); } } } : {}"
+  >
+    <template v-if="cellComponent == null">{{ value }}</template>
     <component
-      :is="onClick ? 'button' : 'div'"
-      :type="onClick ? 'button' : undefined"
-      :class="onClick ? classes.collection_clickable_cell : classes.collection_cell"
-      v-on="onClick ? { click: (e: MouseEvent) => emit('click', value, rowValue, columnId, e) } : {}"
-    >
-      <template v-if="cellComponent == null">{{ value }}</template>
-      <component
-        :is="cellComponent"
-        :column-id="columnId"
-        :property="property"
-        :type="property"
-        :value="value"
-        :row-value="rowValue"
-        :request-timezone="requestTimezone"
-        :user-timezone="userTimezone"
-      />
-    </component>
+      :is="cellComponent"
+      :column-id="columnId"
+      :property="property"
+      :type="property"
+      :value="value"
+      :row-value="rowValue"
+      :request-timezone="requestTimezone"
+      :user-timezone="userTimezone"
+    />
   </td>
 </template>

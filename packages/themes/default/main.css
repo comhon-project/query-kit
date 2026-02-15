@@ -367,59 +367,35 @@
   height: 100%;
   overflow: auto;
   background: var(--qkit-collection-background-color);
+  padding-inline: 15px;
 }
 
 .qkit-collection-table {
   border-collapse: separate;
   border-spacing: 0 0.25rem;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .qkit-collection-table th {
   padding: 0.5rem 1rem;
 }
 
-.qkit-collection-table thead {
-  position: relative;
-}
-
 .qkit-collection-table thead tr {
   position: sticky;
-  top: 0px;
+  top: 0.25rem;
   z-index: 10;
   background: var(--qkit-collection-background-color);
+  box-shadow:
+    -15px 0 0 var(--qkit-collection-background-color),
+    15px 0 0 var(--qkit-collection-background-color),
+    0 -0.25rem 0 var(--qkit-collection-background-color);
 }
 
-.qkit-collection-table thead tr > th:first-child:before {
+.qkit-collection-table thead tr::after {
   content: '';
-  display: block;
   position: absolute;
-  left: -15px;
-  top: 0;
-  width: 15px;
-  height: 100%;
-  background: var(--qkit-collection-background-color);
-}
-
-.qkit-collection-table thead tr > th:last-child:after {
-  content: '';
-  display: block;
-  position: absolute;
-  top: 0;
-  right: -15px;
-  width: 15px;
-  height: 100%;
-  background: var(--qkit-collection-background-color);
-}
-
-.qkit-collection-table thead tr:after {
-  content: '';
-  display: block;
-  position: absolute;
-  left: -15px;
   bottom: 0;
-  width: calc(100% + 30px);
+  left: -15px;
+  right: -15px;
   height: 1px;
   box-shadow: 1px 1px 1px grey;
 }
@@ -460,7 +436,7 @@
 }
 
 .qkit-collection-table tbody tr.qkit-clickable-row:hover {
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 
 .qkit-collection-table tbody td {
@@ -483,22 +459,22 @@
   border-bottom-right-radius: 0.5rem;
 }
 
-.qkit-collection-table .qkit-cell {
+.qkit-cell {
   position: relative;
   padding: 1rem;
 }
 
-.qkit-collection-table tbody td .qkit-cell.qkit-btn {
+.qkit-cell.qkit-btn {
   background: white;
   border-radius: 0;
   font-size: inherit;
   transition: transform 0.1s ease-in-out;
 }
 
-.qkit-collection-table tbody td .qkit-cell.qkit-btn:hover {
+.qkit-cell.qkit-btn:hover {
   z-index: 1;
   box-shadow: 0px 0px 5px grey;
-  transform: scale(1.15);
+  transform: scale(1.03);
 }
 
 .qkit-spinner {
