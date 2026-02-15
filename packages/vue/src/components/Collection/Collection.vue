@@ -93,6 +93,10 @@ const isResultFlattened = computed<boolean>(() => {
 
 const computedColumns = computed<string[]>(() => Object.keys(columnsProperties.value));
 
+const showInfiniteScrollObserver = computed(() => {
+  return infiniteScroll.value && !end.value && !requesting.value && hasExecFirstQuery;
+});
+
 async function init(): Promise<void> {
   entitySchema.value = await resolve(props.entity);
   await initColumns(entitySchema.value);
@@ -208,8 +212,8 @@ function updateOrder(columnId: string | undefined, multi: boolean): void {
   }
 }
 
-function shiftThenRequestServer(): void {
-  if (hasExecFirstQuery && !requesting.value) {
+function shiftThenRequestServer(entries: IntersectionObserverEntry[]): void {
+  if (entries[0].isIntersecting) {
     page.value++;
   }
 }
@@ -331,12 +335,8 @@ watch([() => props.entity, columns, orderBy], async () => {
   await init();
   resetCollection();
 });
-watch([() => props.filter, infiniteScroll], () => resetCollection());
-watch(page, () => {
-  if (hasExecFirstQuery) {
-    requestServer();
-  }
-});
+watch([() => props.filter, infiniteScroll], resetCollection);
+watch(page, requestServer);
 watch(
   () => props.allowedCollectionTypes,
   () => (infiniteScroll.value = isInfiniteAccordingProps(infiniteScroll.value)),
@@ -367,7 +367,12 @@ watch(
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
-          <ColumnEditor v-if="editColumns && entitySchema" v-model="columns" :custom-columns="customColumns" :entity-schema="entitySchema" />
+          <ColumnEditor
+            v-if="editColumns && entitySchema"
+            v-model="columns"
+            :custom-columns="customColumns"
+            :entity-schema="entitySchema"
+          />
         </div>
       </div>
     </div>
@@ -418,8 +423,8 @@ watch(
                 />
               </template>
             </tr>
-            <tr v-show="infiniteScroll && !end && !requesting" ref="observered" style="opacity: 0">
-              <td :colspan="computedColumns.length" />
+            <tr v-show="showInfiniteScrollObserver" ref="observered" style="opacity: 0">
+              <td :colspan="computedColumns.length">plooooooop</td>
             </tr>
           </tbody>
         </table>
