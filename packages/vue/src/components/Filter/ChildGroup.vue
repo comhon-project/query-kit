@@ -114,7 +114,7 @@ watchEffect(() => {
         <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />
       </div>
     </div>
-    <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined">
+    <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined" :inert="collapsed">
       <div style="overflow: hidden">
         <ul ref="groupListRef" role="group" :class="classes.group_list">
           <TransitionGroup name="qkit-collapse-horizontal-list">
