@@ -7,7 +7,7 @@ export type IconName =
   | 'previous'
   | 'next'
   | 'collapse'
-  | 'down'
+  | 'sort'
   | 'minus'
   | 'undo'
   | 'redo'
@@ -37,7 +37,7 @@ export const defaultIcons: IconList = {
   previous: { class: 'qkit-icon qkit-icon-double-arrow-left', component: 'i' },
   next: { class: 'qkit-icon qkit-icon-double-arrow-right', component: 'i' },
   collapse: { class: 'qkit-icon qkit-icon-arrow-down', component: 'i' },
-  down: { class: 'qkit-icon qkit-icon-arrow-full-down', component: 'i' },
+  sort: { class: 'qkit-icon qkit-icon-sort', component: 'i' },
   minus: { class: 'qkit-icon qkit-icon-minus', component: 'i' },
   undo: { class: 'qkit-icon qkit-icon-undo', component: 'i' },
   redo: { class: 'qkit-icon qkit-icon-redo', component: 'i' },

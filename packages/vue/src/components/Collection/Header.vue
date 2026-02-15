@@ -25,7 +25,7 @@ const props = defineProps<Props>();
 
 const sortable = ref(false);
 const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomOrder);
-const orderLabel = computed<string>(() => (props.order ? `(${translate(props.order)})` : ''));
+const orderLabel = computed<string>(() => `(${translate(props.order ?? 'unsorted')})`);
 const ariaSort = computed(() =>
   isColumnSortable.value
     ? props.order === 'asc'
@@ -53,7 +53,7 @@ watchEffect(async () => {
       @click="(e) => emit('click', columnId, e.ctrlKey)"
     >
       <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />
-      <Icon icon="down" :label="orderLabel" />
+      <Icon icon="sort" :label="orderLabel" />
     </button>
     <div v-else>
       <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />

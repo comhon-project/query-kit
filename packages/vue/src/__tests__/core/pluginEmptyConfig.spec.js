@@ -69,7 +69,7 @@ describe('minimal plugin', () => {
       previous: undefined,
       next: undefined,
       collapse: undefined,
-      down: undefined,
+      sort: undefined,
       minus: undefined,
       reset: undefined,
       search: undefined,
