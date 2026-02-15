@@ -232,16 +232,16 @@
   align-items: center;
 }
 
-.qkit-condition-header > :not(.qkit-property-name-container):last-child {
-  margin-left: auto;
-}
 
 .qkit-relationship-queue-and-action {
   display: flex;
-  flex-direction: row !important;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--qkit-gap-spacer);
+}
+
+.qkit-condition-container > .qkit-relationship-queue-and-action {
+  flex-direction: row;
 }
 
 .qkit-relationship-queue {
@@ -303,6 +303,7 @@
 
 .qkit-property-name-container {
   white-space: nowrap;
+  margin-right: auto;
 }
 
 .qkit-scope-parameters {
