@@ -91,7 +91,7 @@ watchEffect(() => {
       </div>
       <div :class="classes.group_actions">
         <div
-          :class="classes.group_resume"
+          :class="classes.group_summary"
           :collapsed="collapsed ? '' : undefined"
           aria-live="polite"
           aria-atomic="true"

@@ -28,7 +28,7 @@ export type ClassName =
   | 'group'
   | 'group_header'
   | 'group_actions'
-  | 'group_resume'
+  | 'group_summary'
   | 'group_list'
   | 'group_list_element'
   | 'operator'
@@ -82,7 +82,7 @@ const classList: ClassList = {
   group: 'qkit-group',
   group_header: 'qkit-group-header',
   group_actions: 'qkit-group-actions',
-  group_resume: 'qkit-group-resume',
+  group_summary: 'qkit-group-summary',
   group_list: 'qkit-group-list',
   group_list_element: 'qkit-group-list-element qkit-grid-container-for-transition',
   operator: 'qkit-operator',

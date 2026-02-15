@@ -182,13 +182,13 @@
   gap: var(--qkit-gap-spacer);
 }
 
-.qkit-group-resume {
+.qkit-group-summary {
   align-self: center;
   font-size: small;
   opacity: 0%;
   transition: opacity 0.3s ease;
 }
-.qkit-group-resume[collapsed] {
+.qkit-group-summary[collapsed] {
   opacity: 30%;
 }
 
@@ -695,7 +695,7 @@
 }
 
 @media (max-width: 576px) {
-  .qkit-group-resume span {
+  .qkit-group-summary span {
     display: none;
   }
 }

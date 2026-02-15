@@ -107,7 +107,7 @@ describe('minimal plugin', () => {
       group: 'qkit-group',
       group_header: 'qkit-group-header',
       group_actions: 'qkit-group-actions',
-      group_resume: 'qkit-group-resume',
+      group_summary: 'qkit-group-summary',
       group_list: 'qkit-group-list',
       group_list_element: 'qkit-group-list-element qkit-grid-container-for-transition',
       operator: 'qkit-operator',
