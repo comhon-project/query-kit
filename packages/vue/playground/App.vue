@@ -384,7 +384,7 @@ watch(page, () => {
         }"
         user-timezone="Europe/Paris"
         :display-operator="displayOperator"
-        :deferred="1000"
+        :debounce="1000"
         :manually="false"
         :direct-query="true"
         :limit="20"

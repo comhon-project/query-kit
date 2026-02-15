@@ -33,7 +33,7 @@ interface Props {
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
   manually?: boolean;
   directQuery?: boolean;
-  deferred?: number;
+  debounce?: number;
   limit: number;
   quickSort?: boolean;
   allowedCollectionTypes?: CollectionType[];

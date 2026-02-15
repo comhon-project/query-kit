@@ -32,7 +32,7 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
-  deferred?: number;
+  debounce?: number;
   collectionId?: string;
   onValidate?: () => void;
 }
@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
   displayOperator: true,
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
-  deferred: 1000,
+  debounce: 1000,
 });
 
 const config = reactive<BuilderConfig>({});
@@ -250,7 +250,7 @@ function scheduleEmit(): void {
     lastEmitted = stripped;
     modelValue.value = stripped;
     emit('computed', await getComputedFilter());
-  }, props.deferred);
+  }, props.debounce);
 }
 
 onUnmounted(() => {
