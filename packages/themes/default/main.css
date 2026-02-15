@@ -13,7 +13,7 @@
 }
 
 .qkit-operator {
-  padding: 0.375rem 0.5rem 0.375rem 0.5rem;
+  padding: 0.375rem 0.5rem;
   background-color: #fff;
   border: 1px solid var(--qkit-color-border);
   border-radius: 0.25rem;
@@ -37,7 +37,7 @@
 }
 
 .qkit-modal {
-  border: 0px;
+  border: 0;
   border-radius: 0.5rem;
   box-shadow: 0px 0px 10px grey;
   padding: 0;
@@ -76,8 +76,7 @@
   flex-direction: column;
   height: 100%;
 }
-.qkit-builder,
-.qkit-collection {
+.qkit-builder {
   position: relative;
 }
 
@@ -163,7 +162,7 @@
 }
 
 .qkit-collapse-wrapper[collapsed] .qkit-group-list {
-  margin-top: 0rem;
+  margin-top: 0;
 }
 
 .qkit-group-list-element:has([data-group]) {
@@ -379,12 +378,10 @@
 
 .qkit-collection-table th {
   padding: 0.5rem 1rem;
-  font-weight: initial;
 }
 
 .qkit-collection-table thead {
   position: relative;
-  font-size: bold;
 }
 
 .qkit-collection-table thead tr {
@@ -431,9 +428,7 @@
   position: relative;
   padding-right: 15px;
   font-size: inherit;
-}
-
-.qkit-collection-table thead .qkit-btn {
+  font-weight: inherit;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -441,7 +436,7 @@
   gap: var(--qkit-gap-spacer);
 }
 .qkit-collection-table thead button[active] {
-  color: grey;
+  color: var(--qkit-color-primary);
 }
 .qkit-collection-table thead button > *:last-child {
   transform: rotate(-90deg);
@@ -456,9 +451,6 @@
 
 .qkit-collection-table tbody tr {
   position: relative;
-}
-
-.qkit-collection-table tbody tr {
   filter: drop-shadow(0px 0px 3px grey);
 }
 
@@ -609,6 +601,7 @@
 .qkit-column-choice > *:first-child {
   border-top-left-radius: 0.25rem;
   border-bottom-left-radius: 0.25rem;
+  cursor: grab;
 }
 .qkit-column-choice > *:last-child {
   border-top-right-radius: 0.25rem;
@@ -623,9 +616,6 @@
 .qkit-column-choice > button:focus-visible {
   outline: 2px solid var(--qkit-color-focus);
   outline-offset: -2px;
-}
-.qkit-column-choice > *:first-child {
-  cursor: grab;
 }
 .qkit-column-choice > *:first-child:active {
   cursor: grabbing;

@@ -187,28 +187,37 @@ async function initOrderBy(
   indexedOrderBy.value = indexed;
 }
 
+function nextOrder(current: 'asc' | 'desc' | undefined): 'asc' | 'desc' | undefined {
+  if (!current) return 'asc';
+  if (current === 'asc') return 'desc';
+  return undefined;
+}
+
 function updateOrder(columnId: string | undefined, multi: boolean): void {
   if (!columnId) {
     return;
   }
   const currentOrder = indexedOrderBy.value[columnId]?.order;
-  const orderCount = Object.keys(indexedOrderBy.value).length;
-  const newOrder: 'asc' | 'desc' = currentOrder == 'asc' && (orderCount <= 1 || multi) ? 'desc' : 'asc';
-  const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
+  const newOrder = nextOrder(currentOrder);
   if (multi) {
     const updated: OrderByItem[] = Object.entries(indexedOrderBy.value).map(([col, entry]) => ({
       column: col,
       order: entry.order,
     }));
     const existingIndex = updated.findIndex((v) => v.column == columnId);
-    if (existingIndex != -1) {
-      updated[existingIndex] = newColumnOrder;
-    } else {
-      updated.push(newColumnOrder);
+    if (newOrder) {
+      const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
+      if (existingIndex != -1) {
+        updated[existingIndex] = newColumnOrder;
+      } else {
+        updated.push(newColumnOrder);
+      }
+    } else if (existingIndex != -1) {
+      updated.splice(existingIndex, 1);
     }
     orderBy.value = updated;
   } else {
-    orderBy.value = [newColumnOrder];
+    orderBy.value = newOrder ? [{ column: columnId, order: newOrder }] : [];
   }
 }
 
