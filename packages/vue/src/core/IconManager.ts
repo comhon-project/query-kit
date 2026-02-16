@@ -18,7 +18,8 @@ export type IconName =
   | 'columns'
   | 'grip'
   | 'paginated_list'
-  | 'infinite_list';
+  | 'infinite_list'
+  | 'loading';
 
 export interface IconConfig {
   class?: string;
@@ -49,6 +50,7 @@ export const defaultIcons: IconList = {
   grip: { class: 'qkit-icon qkit-icon-grip', component: 'i' },
   paginated_list: { class: 'qkit-icon qkit-icon-paginated-list', component: 'i' },
   infinite_list: { class: 'qkit-icon qkit-icon-infinite-list', component: 'i' },
+  loading: { class: 'qkit-icon qkit-icon-loading', component: 'i' },
 };
 
 const iconList = {} as IconList;

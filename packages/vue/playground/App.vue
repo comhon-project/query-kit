@@ -400,11 +400,7 @@ watch(page, () => {
         :requester="requester"
         @row-click="printRow"
         @export="exportResults"
-      >
-        <template #loadings="{ requesting }">
-          <div v-show="requesting">loading...</div>
-        </template>
-      </QkitSearch>
+      />
     </div>
   </div>
 </template>

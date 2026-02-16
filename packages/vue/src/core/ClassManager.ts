@@ -44,7 +44,7 @@ export type ClassName =
   | 'column_choices'
   | 'column_choice'
   | 'column_add'
-  | 'spinner'
+  | 'loading_container'
   | 'pagination'
   | 'grid_container_for_transition'
   | 'skip_link'
@@ -98,7 +98,7 @@ const classList: ClassList = {
   column_choices: 'qkit-column-choices',
   column_choice: 'qkit-column-choice',
   column_add: 'qkit-column-add',
-  spinner: 'qkit-spinner',
+  loading_container: 'qkit-loading-container',
   pagination: 'qkit-pagination',
   grid_container_for_transition: 'qkit-grid-container-for-transition',
   skip_link: 'qkit-skip-link',

@@ -5,6 +5,7 @@ import { classes } from '@core/ClassManager';
 import { resolve, getPropertyPath, type Property, type EntitySchema } from '@core/EntitySchema';
 import { PropertyNotFoundError } from '@core/errors';
 import { translate } from '@i18n/i18n';
+import Icon from '@components/Common/Icon.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
 import Cell from '@components/Collection/Cell.vue';
@@ -387,11 +388,11 @@ watch(
     </div>
     <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
     <div :class="classes.collection_content_wrapper">
-      <slot name="loading" :requesting="requesting">
-        <Transition name="qkit-collection-spinner">
-          <div v-if="requesting" :class="classes.spinner" />
-        </Transition>
-      </slot>
+      <Transition name="qkit-collection-loading">
+        <div v-if="requesting" :class="classes.loading_container" :position="infiniteScroll && page > 1 ? 'bottom' : 'top'">
+          <Icon icon="loading" />
+        </div>
+      </Transition>
       <div ref="collectionContent" :class="classes.collection_content">
         <table :class="classes.collection_table">
           <caption :class="classes.sr_only">{{ translate('results') }}</caption>

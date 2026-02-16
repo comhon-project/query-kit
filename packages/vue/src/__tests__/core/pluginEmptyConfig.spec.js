@@ -76,6 +76,7 @@ describe('minimal plugin', () => {
       confirm: undefined,
       export: undefined,
       columns: undefined,
+      loading: undefined,
     });
     expect(classes).toEqual({
       modal: 'qkit-modal',
@@ -123,7 +124,7 @@ describe('minimal plugin', () => {
       column_choices: 'qkit-column-choices',
       column_choice: 'qkit-column-choice',
       column_add: 'qkit-column-add',
-      spinner: 'qkit-spinner',
+      loading_container: 'qkit-loading-container',
       pagination: 'qkit-pagination',
       grid_container_for_transition: 'qkit-grid-container-for-transition',
       skip_link: 'qkit-skip-link',
