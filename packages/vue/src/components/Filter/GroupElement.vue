@@ -4,7 +4,6 @@ import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
 import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
-import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import type { EntitySchema } from '@core/EntitySchema';
 import type { Filter } from '@core/types';
@@ -62,7 +61,6 @@ function toggleCollapse(): void {
     @tree-toggle="toggleCollapse"
     :aria-expanded="ariaExpanded"
     :aria-label="translate(modelValue.type)"
-    :class="classes.group_list_element"
   >
     <component
       :is="component"

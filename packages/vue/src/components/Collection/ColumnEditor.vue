@@ -146,39 +146,36 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
       <h1>{{ translate('columns') }}</h1>
     </template>
     <template #body>
-      <div :class="classes.column_choices">
-        <div :class="classes.sr_only" aria-live="assertive" aria-atomic="true">{{ liveMessage }}</div>
-        <ul :aria-label="translate('columns')">
-          <TransitionGroup name="qkit-collapse-horizontal-list">
-            <li
-              v-for="(column, index) in keyedColumns"
-              :ref="(el: any) => setItemRef(el, index)"
-              :key="column.key"
-              :class="classes.grid_container_for_transition"
-              v-bind="getItemBindings(index)"
-            >
-              <ColumnChoice
-                v-model="keyedColumns[index].id"
-                :open="customColumns?.[column.id]?.open === true"
-                :entity-schema="entitySchema"
-                :label="customColumns?.[column.id]?.label"
-                :columns="columnIds"
-                @remove="() => removeColumn(index)"
-                @grip-start="onGripStart"
-              />
-            </li>
-          </TransitionGroup>
-          <div :class="classes.column_add" v-bind="getDropZoneBindings()">
-            <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
-              <option value="" disabled hidden />
-              <option v-for="option in options" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-            <IconButton icon="add" :disabled="!options.length" @click="addColumn" />
-          </div>
-        </ul>
-      </div>
+      <div :class="classes.sr_only" aria-live="assertive" aria-atomic="true">{{ liveMessage }}</div>
+      <ul :class="classes.column_choices" :aria-label="translate('columns')">
+        <TransitionGroup name="qkit-collapse-horizontal-list">
+          <li
+            v-for="(column, index) in keyedColumns"
+            :ref="(el: any) => setItemRef(el, index)"
+            :key="column.key"
+            v-bind="getItemBindings(index)"
+          >
+            <ColumnChoice
+              v-model="keyedColumns[index].id"
+              :open="customColumns?.[column.id]?.open === true"
+              :entity-schema="entitySchema"
+              :label="customColumns?.[column.id]?.label"
+              :columns="columnIds"
+              @remove="() => removeColumn(index)"
+              @grip-start="onGripStart"
+            />
+          </li>
+        </TransitionGroup>
+        <div :class="classes.column_add" v-bind="getDropZoneBindings()">
+          <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
+            <option value="" disabled hidden />
+            <option v-for="option in options" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <IconButton icon="add" :disabled="!options.length" @click="addColumn" />
+        </div>
+      </ul>
     </template>
   </Modal>
 </template>

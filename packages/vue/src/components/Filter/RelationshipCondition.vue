@@ -164,54 +164,51 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
   </div>
   <template v-else-if="queue">
     <Transition name="qkit-collapse-horizontal-list" mode="out-in">
-      <div v-if="!endQueueFilter" :class="classes.grid_container_for_transition">
-        <div :class="classes.relationship_container">
-          <div :class="classes.relationship_queue_and_action">
-            <div :class="classes.relationship_queue">
-              <RelationshipQueueElement
-                v-for="elmnt in queue"
-                :key="elmnt.key"
-                :model-value="elmnt.value"
-                :entity-schema="elmnt.schema"
-              />
-            </div>
-            <RelationshipAction
-              v-if="endQueuePropertySchema"
-              :entity-schema="endQueuePropertySchema"
-              :model-value="queue[queue.length - 1].value"
-              @remove="removeQueueFilter"
-              @add="addFilter"
+      <div v-if="!endQueueFilter" :class="classes.relationship_container">
+        <div :class="classes.relationship_queue_and_action">
+          <div :class="classes.relationship_queue">
+            <RelationshipQueueElement
+              v-for="elmnt in queue"
+              :key="elmnt.key"
+              :model-value="elmnt.value"
+              :entity-schema="elmnt.schema"
             />
           </div>
-          <IconButton
-            v-if="!(queue[queue.length - 1].value.removable === false)"
-            icon="delete"
-            btn-class="btn_danger"
-            :aria-label="translate('condition') + ' ' + childAriaLabel"
-            @click="$emit('remove')"
+          <RelationshipAction
+            v-if="endQueuePropertySchema"
+            :entity-schema="endQueuePropertySchema"
+            :model-value="queue[queue.length - 1].value"
+            @remove="removeQueueFilter"
+            @add="addFilter"
           />
         </div>
+        <IconButton
+          v-if="!(queue[queue.length - 1].value.removable === false)"
+          icon="delete"
+          btn-class="btn_danger"
+          :aria-label="translate('condition') + ' ' + childAriaLabel"
+          @click="$emit('remove')"
+        />
       </div>
-      <div v-else :class="classes.grid_container_for_transition">
-        <component
-          :is="endQueueComponent"
-          :entity-schema="endQueuePropertySchema"
-          :model-value="endQueueFilter"
-          v-model:collapsed="collapsed"
-          @remove="removeEndFilter"
-        >
-          <template #relationship>
-            <div :class="classes.relationship_queue">
-              <RelationshipQueueElement
-                v-for="elmnt in queue"
-                :key="elmnt.key"
-                :model-value="elmnt.value"
-                :entity-schema="elmnt.schema"
-              />
-            </div>
-          </template>
-        </component>
-      </div>
+      <component
+        v-else
+        :is="endQueueComponent"
+        :entity-schema="endQueuePropertySchema"
+        :model-value="endQueueFilter"
+        v-model:collapsed="collapsed"
+        @remove="removeEndFilter"
+      >
+        <template #relationship>
+          <div :class="classes.relationship_queue">
+            <RelationshipQueueElement
+              v-for="elmnt in queue"
+              :key="elmnt.key"
+              :model-value="elmnt.value"
+              :entity-schema="elmnt.schema"
+            />
+          </div>
+        </template>
+      </component>
     </Transition>
   </template>
 </template>

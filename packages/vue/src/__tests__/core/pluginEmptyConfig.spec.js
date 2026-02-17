@@ -110,7 +110,6 @@ describe('minimal plugin', () => {
       group_actions: 'qkit-group-actions',
       group_summary: 'qkit-group-summary',
       group_list: 'qkit-group-list',
-      group_list_element: 'qkit-group-list-element qkit-grid-container-for-transition',
       operator: 'qkit-operator',
       collection: 'qkit-collection',
       collection_header: 'qkit-collection-header',
@@ -126,7 +125,6 @@ describe('minimal plugin', () => {
       column_add: 'qkit-column-add',
       loading_container: 'qkit-loading-container',
       pagination: 'qkit-pagination',
-      grid_container_for_transition: 'qkit-grid-container-for-transition',
       skip_link: 'qkit-skip-link',
       sr_only: 'qkit-sr-only',
     });

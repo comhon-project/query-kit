@@ -30,7 +30,6 @@ export type ClassName =
   | 'group_actions'
   | 'group_summary'
   | 'group_list'
-  | 'group_list_element'
   | 'operator'
   | 'collection'
   | 'collection_header'
@@ -46,7 +45,6 @@ export type ClassName =
   | 'column_add'
   | 'loading_container'
   | 'pagination'
-  | 'grid_container_for_transition'
   | 'skip_link'
   | 'sr_only';
 
@@ -84,7 +82,6 @@ const classList: ClassList = {
   group_actions: 'qkit-group-actions',
   group_summary: 'qkit-group-summary',
   group_list: 'qkit-group-list',
-  group_list_element: 'qkit-group-list-element qkit-grid-container-for-transition',
   operator: 'qkit-operator',
   collection: 'qkit-collection',
   collection_header: 'qkit-collection-header',
@@ -100,7 +97,6 @@ const classList: ClassList = {
   column_add: 'qkit-column-add',
   loading_container: 'qkit-loading-container',
   pagination: 'qkit-pagination',
-  grid_container_for_transition: 'qkit-grid-container-for-transition',
   skip_link: 'qkit-skip-link',
   sr_only: 'qkit-sr-only',
 };

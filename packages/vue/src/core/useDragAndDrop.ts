@@ -63,7 +63,9 @@ export function useDragAndDrop(options: UseDragAndDropOptions) {
     dragOverIndex.value = index;
   }
 
-  function onDragLeave(index: number): void {
+  function onDragLeave(event: DragEvent, index: number): void {
+    const relatedTarget = event.relatedTarget as HTMLElement | null;
+    if (relatedTarget && (event.currentTarget as HTMLElement).contains(relatedTarget)) return;
     if (dragOverIndex.value === index) {
       dragOverIndex.value = null;
     }
@@ -152,7 +154,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions) {
       'data-drag-over':
         (dragOverIndex.value === index && draggedIndex.value !== null && draggedIndex.value !== index) || undefined,
       onDragover: (e: DragEvent) => onDragOver(e, index),
-      onDragleave: () => onDragLeave(index),
+      onDragleave: (e: DragEvent) => onDragLeave(e, index),
       onDrop: (e: DragEvent) => onDrop(e, index),
     };
   }

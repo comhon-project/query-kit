@@ -114,21 +114,24 @@ watchEffect(() => {
         <CollapseButton v-model:collapsed="collapsed" :aria-label="translate('group')" />
       </div>
     </div>
-    <div class="qkit-collapse-wrapper" :collapsed="collapsed ? '' : undefined" :inert="collapsed">
-      <div style="overflow: hidden">
-        <ul ref="groupListRef" role="group" :class="classes.group_list">
-          <TransitionGroup name="qkit-collapse-horizontal-list">
-            <GroupElement
-              v-for="filter in visibleFilters"
-              :key="filter.key"
-              :model-value="filter"
-              :entity-schema="entitySchema"
-              @remove="() => removeFilter(filter)"
-            />
-          </TransitionGroup>
-        </ul>
-      </div>
-    </div>
+    <ul
+      ref="groupListRef"
+      role="group"
+      :class="classes.group_list"
+      :collapsed="collapsed ? '' : undefined"
+      :inert="collapsed"
+      :style="collapsed ? { height: 0, overflow: 'hidden' } : {}"
+    >
+      <TransitionGroup name="qkit-collapse-horizontal-list">
+        <GroupElement
+          v-for="filter in visibleFilters"
+          :key="filter.key"
+          :model-value="filter"
+          :entity-schema="entitySchema"
+          @remove="() => removeFilter(filter)"
+        />
+      </TransitionGroup>
+    </ul>
     <ConditionChoice v-model:show="showConditionChoice" :entity-schema="entitySchema" @validate="setNewFilter" />
   </div>
 </template>
