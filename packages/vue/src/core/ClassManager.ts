@@ -13,14 +13,12 @@ export type ClassName =
   | 'input_boolean'
   | 'in_container'
   | 'in_list'
-  | 'in_value_container'
   | 'property_name_container'
   | 'scope_parameters'
   | 'scope_parameter'
   | 'error_info'
   | 'relationship_container'
   | 'relationship_queue'
-  | 'relationship_queue_and_action'
   | 'relationship_queue_element'
   | 'btn'
   | 'btn_primary'
@@ -33,7 +31,6 @@ export type ClassName =
   | 'operator'
   | 'collection'
   | 'collection_header'
-  | 'collection_content_wrapper'
   | 'collection_content'
   | 'collection_table'
   | 'collection_clickable_row'
@@ -58,21 +55,19 @@ const classList: ClassList = {
   condition_choice_form: 'qkit-condition-choice-form',
   search: 'qkit-search',
   builder: 'qkit-builder',
-  condition_container: 'qkit-condition-container',
+  condition_container: 'qkit-leaf-filter qkit-condition-container',
   condition_header: 'qkit-condition-header',
-  condition_error_container: 'qkit-condition-container',
+  condition_error_container: 'qkit-leaf-filter qkit-invalid-filter',
   input: 'qkit-input',
   input_boolean: 'qkit-input-boolean',
   in_container: 'qkit-in-container',
   in_list: 'qkit-in-list',
-  in_value_container: 'qkit-in-value-container',
   property_name_container: 'qkit-property-name-container',
   scope_parameters: 'qkit-scope-parameters',
   scope_parameter: 'qkit-scope-parameter',
   error_info: 'qkit-error-info',
-  relationship_container: 'qkit-condition-container',
+  relationship_container: 'qkit-leaf-filter qkit-relationship-condition-container',
   relationship_queue: 'qkit-relationship-queue',
-  relationship_queue_and_action: 'qkit-relationship-queue-and-action',
   relationship_queue_element: 'qkit-relationship-queue-element',
   btn: 'qkit-btn',
   btn_primary: 'qkit-btn qkit-btn-primary',
@@ -85,7 +80,6 @@ const classList: ClassList = {
   operator: 'qkit-operator',
   collection: 'qkit-collection',
   collection_header: 'qkit-collection-header',
-  collection_content_wrapper: 'qkit-collection-content-wrapper',
   collection_content: 'qkit-collection-content',
   collection_table: 'qkit-collection-table',
   collection_clickable_row: 'qkit-clickable-row',

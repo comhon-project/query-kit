@@ -387,58 +387,60 @@ watch(
       </div>
     </div>
     <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
-    <div :class="classes.collection_content_wrapper">
-      <Transition name="qkit-collection-loading">
-        <div v-if="requesting" :class="classes.loading_container" :position="infiniteScroll && page > 1 ? 'bottom' : 'top'">
-          <Icon icon="loading" />
-        </div>
-      </Transition>
-      <div ref="collectionContent" :class="classes.collection_content">
-        <table :class="classes.collection_table">
-          <caption :class="classes.sr_only">{{ translate('results') }}</caption>
-          <thead>
-            <tr>
-              <Header
-                v-for="columnId in computedColumns"
-                :key="columnId"
-                :entity-schema="entitySchema!"
-                :column-id="columnId"
-                :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
-                :label="customColumns?.[columnId]?.label"
-                :order="indexedOrderBy[columnId]?.order"
-                :has-custom-order="customColumns?.[columnId]?.order != null"
-                @click="updateOrder"
-              />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(object, rowIndex) in collection"
-              :key="(object[rowKeyProperty!] as string | number) ?? rowIndex"
-              :class="onRowClick ? classes.collection_clickable_row : ''"
-              :tabindex="onRowClick ? 0 : undefined"
-              @click="(e) => $emit('rowClick', object, e)"
-              @keydown.enter="(e) => (onRowClick ? $emit('rowClick', object, e) : undefined)"
-            >
-              <template v-for="columnId in computedColumns" :key="columnId">
-                <Cell
-                  :column-id="columnId"
-                  :property="columnsProperties[columnId]"
-                  :row-value="object"
-                  :flattened="isResultFlattened"
-                  :user-timezone="userTimezone"
-                  :request-timezone="requestTimezone"
-                  :renderer="customColumns?.[columnId]?.renderer"
-                  @click="customColumns?.[columnId]?.onCellClick"
-                />
-              </template>
-            </tr>
-            <tr v-show="showInfiniteScrollObserver" ref="observered" style="opacity: 0">
-              <td :colspan="computedColumns.length">plooooooop</td>
-            </tr>
-          </tbody>
-        </table>
+    <Transition name="qkit-collection-loading">
+      <div
+        v-if="requesting"
+        :class="classes.loading_container"
+        :position="infiniteScroll && page > 1 ? 'bottom' : 'top'"
+      >
+        <Icon icon="loading" />
       </div>
+    </Transition>
+    <div ref="collectionContent" :class="classes.collection_content">
+      <table :class="classes.collection_table">
+        <caption :class="classes.sr_only">{{ translate('results') }}</caption>
+        <thead>
+          <tr>
+            <Header
+              v-for="columnId in computedColumns"
+              :key="columnId"
+              :entity-schema="entitySchema!"
+              :column-id="columnId"
+              :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
+              :label="customColumns?.[columnId]?.label"
+              :order="indexedOrderBy[columnId]?.order"
+              :has-custom-order="customColumns?.[columnId]?.order != null"
+              @click="updateOrder"
+            />
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(object, rowIndex) in collection"
+            :key="(object[rowKeyProperty!] as string | number) ?? rowIndex"
+            :class="onRowClick ? classes.collection_clickable_row : ''"
+            :tabindex="onRowClick ? 0 : undefined"
+            @click="(e) => $emit('rowClick', object, e)"
+            @keydown.enter="(e) => (onRowClick ? $emit('rowClick', object, e) : undefined)"
+          >
+            <template v-for="columnId in computedColumns" :key="columnId">
+              <Cell
+                :column-id="columnId"
+                :property="columnsProperties[columnId]"
+                :row-value="object"
+                :flattened="isResultFlattened"
+                :user-timezone="userTimezone"
+                :request-timezone="requestTimezone"
+                :renderer="customColumns?.[columnId]?.renderer"
+                @click="customColumns?.[columnId]?.onCellClick"
+              />
+            </template>
+          </tr>
+          <tr v-show="showInfiniteScrollObserver" ref="observered" style="opacity: 0">
+            <td :colspan="computedColumns.length">plooooooop</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 </template>

@@ -182,14 +182,8 @@
   gap: var(--qkit-gap-spacer);
 }
 
-.qkit-group-actions {
-  margin-left: auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--qkit-gap-spacer);
-}
-
 .qkit-group-summary {
+  margin-left: auto;
   align-self: center;
   font-size: small;
   opacity: 0%;
@@ -199,33 +193,48 @@
   opacity: 30%;
 }
 
-.qkit-condition-container {
+.qkit-group-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--qkit-gap-spacer);
+}
+
+.qkit-leaf-filter {
   position: relative;
   display: flex;
 }
-.qkit-condition-container > *:first-child {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.qkit-leaf-filter > *:first-child {
   border-top-left-radius: 0.5rem;
   border-bottom-left-radius: 0.5rem;
   padding: 0.5rem;
   border-left: 1px solid var(--qkit-color-border);
   border-top: 1px solid var(--qkit-color-border);
   border-bottom: 1px solid var(--qkit-color-border);
-  gap: var(--qkit-gap-spacer);
 }
-.qkit-condition-container > *:last-child {
+.qkit-leaf-filter > *:last-child {
   border-top-right-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
 }
-.qkit-condition-container > *:first-child:last-child {
+.qkit-leaf-filter > *:first-child:last-child {
   border-right: 1px solid var(--qkit-color-border);
 }
 
-.qkit-condition-container > button {
+.qkit-leaf-filter > button {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+
+.qkit-invalid-filter > *:first-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.qkit-condition-container > *:first-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--qkit-gap-spacer);
 }
 
 .qkit-condition-header {
@@ -235,15 +244,11 @@
   align-items: center;
 }
 
-.qkit-relationship-queue-and-action {
+.qkit-relationship-condition-container > *:first-child {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
   align-items: center;
   gap: var(--qkit-gap-spacer);
-}
-
-.qkit-condition-container > .qkit-relationship-queue-and-action {
-  flex-direction: row;
 }
 
 .qkit-relationship-queue {
@@ -273,16 +278,16 @@
   margin: 0;
 }
 
-.qkit-in-value-container {
+.qkit-in-list > li {
   display: flex;
 }
 
-.qkit-in-value-container > *:first-child:not(:last-child) {
+.qkit-in-list > li > *:first-child:not(:last-child) {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-.qkit-in-value-container > *:last-child:not(:first-child) {
+.qkit-in-list > li > *:last-child:not(:first-child) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
@@ -357,12 +362,6 @@
   justify-content: end;
   display: flex;
   gap: var(--qkit-gap-spacer);
-}
-
-.qkit-collection-content-wrapper {
-  position: relative;
-  flex-grow: 1;
-  overflow: hidden;
 }
 
 .qkit-collection-content {
@@ -489,7 +488,6 @@
   position: absolute;
   left: 50%;
   translate: -50% 5px;
-  top: 60px; /* fallback for browsers without anchor positioning */
   position-anchor: --qkit-collection-thead;
   top: anchor(bottom);
 }
@@ -704,6 +702,7 @@
   .qkit-collapse-horizontal-list-enter-active:not(:has([data-group])),
   .qkit-collapse-horizontal-list-leave-active:not(:has([data-group])) {
     grid-template-columns: 1fr;
+    grid-auto-flow: column;
   }
   .qkit-collapse-horizontal-list-enter-from:not(:has([data-group])),
   .qkit-collapse-horizontal-list-leave-to:not(:has([data-group])) {

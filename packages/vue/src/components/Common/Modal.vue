@@ -69,16 +69,22 @@ watch(show, async (visible) => {
 </script>
 
 <template>
-  <dialog ref="modal" :class="classes.modal" :visible="show && !closing ? '' : undefined" :aria-labelledby="headerId" @cancel.prevent="show = false">
-    <div :class="classes.modal_header">
+  <dialog
+    ref="modal"
+    :class="classes.modal"
+    :visible="show && !closing ? '' : undefined"
+    :aria-labelledby="headerId"
+    @cancel.prevent="show = false"
+  >
+    <header :class="classes.modal_header">
       <div :id="headerId"><slot name="header" /></div>
       <IconButton icon="close" btn-class="btn" @click="() => (show = false)" />
-    </div>
+    </header>
     <div :class="classes.modal_body"><slot name="body" /></div>
-    <div :class="classes.modal_footer">
+    <footer :class="classes.modal_footer">
       <slot name="footer">
         <IconButton icon="confirm" :disabled="disableConfirm" @click="confirm" />
       </slot>
-    </div>
+    </footer>
   </dialog>
 </template>

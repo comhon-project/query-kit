@@ -78,9 +78,7 @@ async function addFilter(filter: Filter): Promise<void> {
       value: filter,
       schema: resolvedSchema,
     });
-    endQueuePropertySchema.value = await resolve(
-      resolvedSchema.getProperty(filter.property).related!,
-    );
+    endQueuePropertySchema.value = await resolve(resolvedSchema.getProperty(filter.property).related!);
   } else {
     endQueueFilter.value = filter;
   }
@@ -165,7 +163,7 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
   <template v-else-if="queue">
     <Transition name="qkit-collapse-horizontal-list" mode="out-in">
       <div v-if="!endQueueFilter" :class="classes.relationship_container">
-        <div :class="classes.relationship_queue_and_action">
+        <div>
           <div :class="classes.relationship_queue">
             <RelationshipQueueElement
               v-for="elmnt in queue"

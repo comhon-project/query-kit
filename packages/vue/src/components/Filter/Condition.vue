@@ -100,40 +100,48 @@ watch(
 </script>
 
 <template>
-  <div :class="classes.condition_container">
+  <div v-if="!validProperty || !validOperator || !validType" :class="classes.condition_error_container">
     <div>
       <InvalidProperty v-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
-      <InvalidType v-else-if="!validType && property" :type-container="property" />
-      <template v-else-if="property">
-        <div :class="classes.condition_header">
-          <slot name="relationship" />
-          <span :class="classes.property_name_container">{{ propertyName }}</span>
-          <template v-if="mustDisplayOperator">
-            <AdaptativeSelect
-              v-model="modelValue.operator"
-              :class="classes.operator"
-              :options="operatorOptions"
-              :disabled="!canEditOperator"
-              :aria-label="propertyName + ' ' + translate('operator')"
-            />
-          </template>
-        </div>
-        <ArrayableInput
-          v-if="modelValue.operator != 'null' && modelValue.operator != 'not_null'"
-          v-model="modelValue.value"
-          :target="property"
-          :entity-schema="entitySchema"
-          :editable="isEditable"
-          :is-array="isArrayOperator"
-        />
-      </template>
+      <InvalidType v-else-if="property" :type-container="property" />
     </div>
     <IconButton
-      v-if="isRemovable || !validProperty || !validOperator || !validType"
       icon="delete"
       btn-class="btn_danger"
       :aria-label="property ? translate('condition') + ' ' + propertyName : ''"
+      @click="$emit('remove')"
+    />
+  </div>
+  <div v-else-if="property" :class="classes.condition_container">
+    <div>
+      <div :class="classes.condition_header">
+        <slot name="relationship" />
+        <span :class="classes.property_name_container">{{ propertyName }}</span>
+        <template v-if="mustDisplayOperator">
+          <AdaptativeSelect
+            v-model="modelValue.operator"
+            :class="classes.operator"
+            :options="operatorOptions"
+            :disabled="!canEditOperator"
+            :aria-label="propertyName + ' ' + translate('operator')"
+          />
+        </template>
+      </div>
+      <ArrayableInput
+        v-if="modelValue.operator != 'null' && modelValue.operator != 'not_null'"
+        v-model="modelValue.value"
+        :target="property"
+        :entity-schema="entitySchema"
+        :editable="isEditable"
+        :is-array="isArrayOperator"
+      />
+    </div>
+    <IconButton
+      v-if="isRemovable"
+      icon="delete"
+      btn-class="btn_danger"
+      :aria-label="translate('condition') + ' ' + propertyName"
       @click="$emit('remove')"
     />
   </div>

@@ -86,19 +86,12 @@ watchEffect(() => {
   </div>
   <div v-else :class="classes.group" data-group>
     <div :class="classes.group_header">
-      <div>
-        <slot name="relationship" />
+      <slot name="relationship" />
+      <div :class="classes.group_summary" :collapsed="collapsed ? '' : undefined" aria-live="polite" aria-atomic="true">
+        {{ visibleFilters.length }}
+        <span>{{ translate(visibleFilters.length > 1 ? 'filters' : 'filter') }}</span>
       </div>
       <div :class="classes.group_actions">
-        <div
-          :class="classes.group_summary"
-          :collapsed="collapsed ? '' : undefined"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {{ visibleFilters.length }}
-          <span>{{ translate(visibleFilters.length > 1 ? 'filters' : 'filter') }}</span>
-        </div>
         <template v-if="config.displayOperator === true || (config.displayOperator && config.displayOperator.group)">
           <AdaptativeSelect
             v-model="modelValue.operator"
