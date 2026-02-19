@@ -34,12 +34,11 @@ interface Props {
   requestTimezone?: string;
   debounce?: number;
   collectionId?: string;
-  onValidate?: () => void;
+  manual?: boolean;
 }
 
 interface Emits {
-  computed: [filter: GroupFilter];
-  goToCollection: [];
+  computed: [filter: GroupFilter, manual: boolean];
 }
 
 const modelValue = defineModel<Filter | null>({ default: null });
@@ -53,11 +52,13 @@ const props = withDefaults(defineProps<Props>(), {
   userTimezone: 'UTC',
   requestTimezone: 'UTC',
   debounce: 1000,
+  manual: false,
 });
 
 const config = reactive<BuilderConfig>({});
 provide(builderConfigKey, config);
 
+let isInitialEmit = true;
 let timeoutId: ReturnType<typeof setTimeout> | undefined;
 let originalFilter: GroupFilter;
 let lastEmitted: GroupFilter;
@@ -99,6 +100,7 @@ function init(value: Filter | null): void {
   prepareFilters(originalFilter);
 
   clearHistory();
+  isInitialEmit = true;
   internalModel.value = structuredClone(originalFilter);
 }
 
@@ -249,8 +251,16 @@ function scheduleEmit(): void {
     const stripped = stripKeys(internalModel.value);
     lastEmitted = stripped;
     modelValue.value = stripped;
-    emit('computed', await getComputedFilter());
+
+    if (!props.manual || isInitialEmit) {
+      isInitialEmit = false;
+      emit('computed', await getComputedFilter(), false);
+    }
   }, props.debounce);
+}
+
+async function validate(): Promise<void> {
+  emit('computed', await getComputedFilter(), true);
 }
 
 onUnmounted(() => {
@@ -289,23 +299,22 @@ watchEffect(async () => {
     validEntity.value = false;
   }
 });
+
+function goToCollection(): void {
+  if (props.collectionId) location.hash = props.collectionId;
+}
 </script>
 
 <template>
   <section :class="classes.builder" :aria-label="translate('filter')">
     <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
     <InvalidEntity v-if="!validEntity" :entity="entity" />
-    <Group
-      v-else-if="entitySchema"
-      :model-value="internalModel"
-      :entity-schema="entitySchema"
-      @exit="$emit('goToCollection')"
-    >
+    <Group v-else-if="entitySchema" :model-value="internalModel" :entity-schema="entitySchema" @exit="goToCollection">
       <template #builder_actions>
         <IconButton v-if="allowUndo" icon="undo" :disabled="!canUndo" @click="performUndo" />
         <IconButton v-if="allowRedo" icon="redo" :disabled="!canRedo" @click="performRedo" />
         <IconButton v-if="allowReset" icon="reset" @click="reset" />
-        <IconButton v-if="onValidate" icon="search" @click="onValidate" />
+        <IconButton v-if="manual" icon="search" @click="validate" />
       </template>
     </Group>
   </section>

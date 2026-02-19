@@ -31,7 +31,7 @@ interface Props {
   requestTimezone?: string;
   requester?: Requester | RequesterFunction;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
-  manually?: boolean;
+  manual?: boolean;
   directQuery?: boolean;
   debounce?: number;
   limit: number;
@@ -48,40 +48,21 @@ const columns = defineModel<string[]>('columns', { required: true });
 const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
 const page = defineModel<number>('page', { default: 1 });
 const props = withDefaults(defineProps<Props>(), {
-  manually: true,
+  manual: true,
 });
 
-let tempFilter: Filter | null = null;
 const uniqueId = getUniqueId();
 const builderId = 'qkit-filter-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
-const computedFilter = shallowRef<Filter | false>(false);
+const computedFilter = shallowRef<Filter>();
 
-function applyQuery(): void {
-  // we copy object filter if it didn't changed to force reload collection
-  if (tempFilter) {
-    computedFilter.value = computedFilter.value === tempFilter ? Object.assign({}, tempFilter) : tempFilter;
-  }
-  location.hash = collectionId;
-}
-
-function updateComputedFilter(filter: Filter): void {
-  tempFilter = filter;
-
-  // if computedFilter.value === false, this is the initialization of the computed filter
-  // (there are no user interaction yet)
-  if (!props.manually || computedFilter.value === false) {
-    computedFilter.value = filter;
+function onComputed(filter: Filter, manual: boolean): void {
+  computedFilter.value = filter;
+  if (manual) {
+    location.hash = collectionId;
   }
 }
 
-function goToCollection(): void {
-  location.hash = collectionId;
-}
-
-function goToBuilder(): void {
-  location.hash = builderId;
-}
 </script>
 
 <template>
@@ -91,12 +72,10 @@ function goToBuilder(): void {
       v-bind="props"
       v-model="filter"
       :collection-id="collectionId"
-      :on-validate="manually ? applyQuery : undefined"
-      @computed="updateComputedFilter"
-      @go-to-collection="goToCollection"
+      @computed="onComputed"
     />
     <Collection
-      v-if="computedFilter !== false"
+      v-if="computedFilter"
       :id="collectionId"
       v-bind="props"
       v-model:columns="columns"
@@ -104,11 +83,7 @@ function goToBuilder(): void {
       v-model:page="page"
       :filter="computedFilter"
       :builder-id="builderId"
-      @go-to-builder="goToBuilder"
-    >
-      <template #loading="loadingProps">
-        <slot name="loading" v-bind="loadingProps" />
-      </template>
-    </Collection>
+    />
+
   </div>
 </template>

@@ -42,7 +42,6 @@ interface Props {
 
 interface Emits {
   rowClick: [row: Record<string, unknown>, event: MouseEvent | KeyboardEvent];
-  goToBuilder: [];
 }
 
 interface IndexedOrderByEntry {
