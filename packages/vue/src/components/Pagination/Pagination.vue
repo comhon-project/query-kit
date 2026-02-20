@@ -45,10 +45,10 @@ watchEffect(() => (currentPage.value = modelValue.value));
 <template>
   <nav :aria-label="translate('pagination')">
     <ul :class="classes.pagination">
-      <li>
+      <li :class="classes.pagination_item">
         <IconButton icon="previous" :disabled="lock || currentPage <= 1" @click="updatePage(currentPage - 1)" />
       </li>
-      <li :active="currentPage === 1 ? '' : undefined">
+      <li :class="classes.pagination_item" :active="currentPage === 1 ? '' : undefined">
         <button
           type="button"
           :class="classes.btn_primary"
@@ -59,8 +59,8 @@ watchEffect(() => (currentPage.value = modelValue.value));
           1
         </button>
       </li>
-      <li v-if="currentPage > 4" :class="classes.btn_primary">...</li>
-      <li v-for="index in nearPages" :key="index" :active="index == currentPage ? '' : undefined">
+      <li v-if="currentPage > 4" :class="[classes.pagination_item, classes.btn_primary]">...</li>
+      <li v-for="index in nearPages" :key="index" :class="classes.pagination_item" :active="index == currentPage ? '' : undefined">
         <button
           type="button"
           :class="classes.btn_primary"
@@ -71,8 +71,8 @@ watchEffect(() => (currentPage.value = modelValue.value));
           {{ index }}
         </button>
       </li>
-      <li v-if="currentPage < count - 3" :class="classes.btn_primary">...</li>
-      <li v-if="count && count != 1" :active="count == currentPage ? '' : undefined">
+      <li v-if="currentPage < count - 3" :class="[classes.pagination_item, classes.btn_primary]">...</li>
+      <li v-if="count && count != 1" :class="classes.pagination_item" :active="count == currentPage ? '' : undefined">
         <button
           type="button"
           :class="classes.btn_primary"
@@ -83,7 +83,7 @@ watchEffect(() => (currentPage.value = modelValue.value));
           {{ count }}
         </button>
       </li>
-      <li>
+      <li :class="classes.pagination_item">
         <IconButton icon="next" :disabled="lock || currentPage >= count" @click="updatePage(currentPage + 1)" />
       </li>
     </ul>

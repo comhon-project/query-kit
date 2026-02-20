@@ -12,15 +12,15 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const propertyId = defineModel<string>('propertyId', { required: true });
+const propertyPath = defineModel<string>({ required: true });
 
-const propertyPath = shallowRef<Property[] | false>([]);
+const resolvedPath = shallowRef<Property[] | false>([]);
 const lastRelatedSchema = ref<EntitySchema | null>(null);
 const editing = ref<boolean>(false);
 const selectedProperty = ref<string | null>(null);
 const expandable = computed<boolean>(() => {
-  if (!propertyPath.value) return false;
-  const property = propertyPath.value[propertyPath.value.length - 1];
+  if (!resolvedPath.value) return false;
+  const property = resolvedPath.value[resolvedPath.value.length - 1];
   return property?.type == 'relationship' && isOneToOneRelationship(property);
 });
 
@@ -31,7 +31,7 @@ const options = computed<Property[] | null>(() => {
   const opts: Property[] = [];
   for (const property of lastRelatedSchema.value.properties) {
     if (property.type != 'relationship') {
-      if (!props.columns.includes(propertyId.value + '.' + property.id)) {
+      if (!props.columns.includes(propertyPath.value + '.' + property.id)) {
         opts.push(property);
       }
     } else if (isOneToOneRelationship(property)) {
@@ -53,37 +53,37 @@ function expandProperty(): void {
 function reduceProperty(): void {
   if (editing.value) {
     editing.value = false;
-  } else if (propertyPath.value) {
-    const end = -propertyPath.value[propertyPath.value.length - 1].id.length - 1;
-    propertyId.value = propertyId.value.slice(0, end);
+  } else if (resolvedPath.value) {
+    const end = -resolvedPath.value[resolvedPath.value.length - 1].id.length - 1;
+    propertyPath.value = propertyPath.value.slice(0, end);
   }
 }
 
-watch(propertyPath, async () => {
-  if (!propertyPath.value || !propertyPath.value.length) return;
-  const lastRelatedSchemaId = propertyPath.value[propertyPath.value.length - 1].related;
+watch(resolvedPath, async () => {
+  if (!resolvedPath.value || !resolvedPath.value.length) return;
+  const lastRelatedSchemaId = resolvedPath.value[resolvedPath.value.length - 1].related;
   if (lastRelatedSchemaId) {
     lastRelatedSchema.value = await resolve(lastRelatedSchemaId);
   }
 });
 watch(selectedProperty, () => {
   if (selectedProperty.value) {
-    propertyId.value = propertyId.value + '.' + selectedProperty.value;
+    propertyPath.value = propertyPath.value + '.' + selectedProperty.value;
     selectedProperty.value = null;
     editing.value = false;
   }
 });
 watchEffect(async () => {
   try {
-    propertyPath.value = await getPropertyPath(props.entitySchema.id, propertyId.value);
+    resolvedPath.value = await getPropertyPath(props.entitySchema.id, propertyPath.value);
   } catch {
-    propertyPath.value = false;
+    resolvedPath.value = false;
   }
 });
 </script>
 
 <template>
-  <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />
+  <ColumnName :entity-schema="entitySchema" :column-id="propertyPath" :label="label" />
   <template v-if="expandable && lastRelatedSchema">
     <select v-if="editing" v-model="selectedProperty" :class="classes.input">
       <option value="" disabled hidden />
@@ -94,7 +94,7 @@ watchEffect(async () => {
     <IconButton v-else icon="add" @click="expandProperty" />
   </template>
   <IconButton
-    v-if="(propertyPath && propertyPath.length > 1) || editing"
+    v-if="(resolvedPath && resolvedPath.length > 1) || editing"
     icon="minus"
     label="remove"
     @click="reduceProperty"

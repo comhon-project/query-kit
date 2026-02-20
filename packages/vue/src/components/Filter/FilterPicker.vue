@@ -123,7 +123,7 @@ function submitForm(): void {
     <template #body>
       <InvalidProperty v-for="name in invalidProperties" :key="name" :property="name" />
       <InvalidScope v-for="id in invalidScopes" :key="id" :id="id" />
-      <form ref="form" :class="classes.condition_choice_form" @submit.prevent="validate">
+      <form ref="form" :class="classes.filter_picker" @submit.prevent="validate">
         <fieldset>
           <legend :class="classes.sr_only">{{ translate('choose_condition_element') }}</legend>
           <div>

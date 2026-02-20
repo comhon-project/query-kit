@@ -9,21 +9,22 @@ import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  columnId?: string;
-  propertyId?: string;
+  columnId: string;
+  open?: boolean;
   label?: string | ((locale: string) => string);
   order?: 'asc' | 'desc';
   hasCustomOrder?: boolean;
 }
 
 interface Emits {
-  click: [columnId: string | undefined, ctrlKey: boolean];
+  click: [columnId: string, ctrlKey: boolean];
 }
 
 const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
 
 const sortable = ref(false);
+const propertyPath = computed<string | undefined>(() => (props.open ? undefined : props.columnId));
 const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomOrder);
 const orderLabel = computed<string>(() => `(${translate(props.order ?? 'unsorted')})`);
 const ariaSort = computed(() =>
@@ -37,7 +38,7 @@ const ariaSort = computed(() =>
 );
 
 watchEffect(async () => {
-  sortable.value = props.propertyId ? await isPropertySortable(props.entitySchema.id, props.propertyId) : false;
+  sortable.value = propertyPath.value ? await isPropertySortable(props.entitySchema.id, propertyPath.value) : false;
 });
 </script>
 
@@ -52,11 +53,11 @@ watchEffect(async () => {
       :asc="props.order == 'asc' ? '' : undefined"
       @click="(e) => emit('click', columnId, e.ctrlKey)"
     >
-      <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />
+      <ColumnName :entity-schema="entitySchema" :column-id="columnId" :open="open" :label="label" />
       <Icon icon="sort" :label="orderLabel" />
     </button>
     <div v-else>
-      <ColumnName :entity-schema="entitySchema" :property-id="propertyId" :label="label" />
+      <ColumnName :entity-schema="entitySchema" :column-id="columnId" :open="open" :label="label" />
     </div>
   </th>
 </template>

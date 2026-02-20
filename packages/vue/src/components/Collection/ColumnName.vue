@@ -6,7 +6,8 @@ import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  propertyId?: string;
+  columnId: string;
+  open?: boolean;
   label?: string | ((locale: string) => string);
 }
 
@@ -19,6 +20,6 @@ const customLabel = computed<string | undefined>(() => {
 </script>
 
 <template>
-  <PropertyPathLabel v-if="propertyId" :entity-schema="entitySchema" :property-id="propertyId" :custom-label="customLabel" />
+  <PropertyPathLabel v-if="!open" :entity-schema="entitySchema" :property-path="columnId" :custom-label="customLabel" />
   <span v-else-if="customLabel">{{ customLabel }}</span>
 </template>

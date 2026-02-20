@@ -28,7 +28,7 @@ const label = computed<string>(() => {
 </script>
 
 <template>
-  <div :class="classes.relationship_queue_element">
+  <li :class="classes.relationship_queue_item">
     <div
       v-if="config.displayOperator === true || (config.displayOperator && config.displayOperator.relationship_condition)"
     >
@@ -40,8 +40,8 @@ const label = computed<string>(() => {
         :aria-label="label + ' ' + translate('operator')"
       />
     </div>
-    <span :class="classes.property_name_container">
+    <span :class="classes.property_label">
       {{ label }}
     </span>
-  </div>
+  </li>
 </template>

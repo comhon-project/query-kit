@@ -152,7 +152,7 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
 </script>
 
 <template>
-  <div v-if="invalidEntity || invalidProperty || invalidOperator" :class="classes.condition_error_container">
+  <div v-if="invalidEntity || invalidProperty || invalidOperator" :class="classes.invalid_filter">
     <div>
       <InvalidEntity v-if="invalidEntity" :entity="invalidEntity" />
       <InvalidProperty v-else-if="invalidProperty" :property="invalidProperty" />
@@ -164,14 +164,14 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
     <Transition name="qkit-collapse-horizontal-list" mode="out-in">
       <div v-if="!endQueueFilter" :class="classes.relationship_container">
         <div>
-          <div :class="classes.relationship_queue">
+          <ol :class="classes.relationship_queue">
             <RelationshipQueueElement
               v-for="elmnt in queue"
               :key="elmnt.key"
               :model-value="elmnt.value"
               :entity-schema="elmnt.schema"
             />
-          </div>
+          </ol>
           <RelationshipAction
             v-if="endQueuePropertySchema"
             :entity-schema="endQueuePropertySchema"
@@ -197,14 +197,14 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
         @remove="removeEndFilter"
       >
         <template #relationship>
-          <div :class="classes.relationship_queue">
+          <ol :class="classes.relationship_queue">
             <RelationshipQueueElement
               v-for="elmnt in queue"
               :key="elmnt.key"
               :model-value="elmnt.value"
               :entity-schema="elmnt.schema"
             />
-          </div>
+          </ol>
         </template>
       </component>
     </Transition>

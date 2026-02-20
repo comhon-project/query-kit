@@ -3,23 +3,24 @@ export type ClassName =
   | 'modal_header'
   | 'modal_body'
   | 'modal_footer'
-  | 'condition_choice_form'
+  | 'filter_picker'
   | 'search'
   | 'builder'
-  | 'condition_container'
-  | 'condition_header'
-  | 'condition_error_container'
+  | 'condition_or_scope'
+  | 'condition_or_scope_header'
+  | 'invalid_filter'
   | 'input'
   | 'input_boolean'
-  | 'in_container'
-  | 'in_list'
-  | 'property_name_container'
+  | 'multi_input'
+  | 'multi_input_list'
+  | 'multi_input_list_item'
+  | 'property_label'
   | 'scope_parameters'
   | 'scope_parameter'
-  | 'error_info'
+  | 'error_message'
   | 'relationship_container'
   | 'relationship_queue'
-  | 'relationship_queue_element'
+  | 'relationship_queue_item'
   | 'btn'
   | 'btn_primary'
   | 'btn_danger'
@@ -28,6 +29,7 @@ export type ClassName =
   | 'group_actions'
   | 'group_summary'
   | 'group_list'
+  | 'group_list_item'
   | 'operator'
   | 'collection'
   | 'collection_header'
@@ -37,11 +39,12 @@ export type ClassName =
   | 'collection_cell'
   | 'collection_clickable_cell'
   | 'collection_actions'
-  | 'column_choices'
-  | 'column_choice'
-  | 'column_add'
-  | 'loading_container'
+  | 'column_editor_list'
+  | 'column_editor_list_item'
+  | 'column_picker'
+  | 'loading'
   | 'pagination'
+  | 'pagination_item'
   | 'skip_link'
   | 'sr_only';
 
@@ -52,23 +55,24 @@ const classList: ClassList = {
   modal_header: 'qkit-modal-header',
   modal_body: 'qkit-modal-body',
   modal_footer: 'qkit-modal-footer',
-  condition_choice_form: 'qkit-condition-choice-form',
+  filter_picker: 'qkit-filter-picker',
   search: 'qkit-search',
   builder: 'qkit-builder',
-  condition_container: 'qkit-leaf-filter qkit-condition-container',
-  condition_header: 'qkit-condition-header',
-  condition_error_container: 'qkit-leaf-filter qkit-invalid-filter',
+  condition_or_scope: 'qkit-leaf-filter qkit-condition-or-scope',
+  condition_or_scope_header: 'qkit-condition-or-scope-header',
+  invalid_filter: 'qkit-leaf-filter qkit-invalid-filter',
   input: 'qkit-input',
   input_boolean: 'qkit-input-boolean',
-  in_container: 'qkit-in-container',
-  in_list: 'qkit-in-list',
-  property_name_container: 'qkit-property-name-container',
+  multi_input: 'qkit-multi-input',
+  multi_input_list: 'qkit-multi-input-list',
+  multi_input_list_item: 'qkit-multi-input-list-item',
+  property_label: 'qkit-property-label',
   scope_parameters: 'qkit-scope-parameters',
   scope_parameter: 'qkit-scope-parameter',
-  error_info: 'qkit-error-info',
+  error_message: 'qkit-error-message',
   relationship_container: 'qkit-leaf-filter qkit-relationship-condition-container',
   relationship_queue: 'qkit-relationship-queue',
-  relationship_queue_element: 'qkit-relationship-queue-element',
+  relationship_queue_item: 'qkit-relationship-queue-item',
   btn: 'qkit-btn',
   btn_primary: 'qkit-btn qkit-btn-primary',
   btn_danger: 'qkit-btn qkit-btn-danger',
@@ -77,6 +81,7 @@ const classList: ClassList = {
   group_actions: 'qkit-group-actions',
   group_summary: 'qkit-group-summary',
   group_list: 'qkit-group-list',
+  group_list_item: 'qkit-group-list-item',
   operator: 'qkit-operator',
   collection: 'qkit-collection',
   collection_header: 'qkit-collection-header',
@@ -86,11 +91,12 @@ const classList: ClassList = {
   collection_cell: 'qkit-cell',
   collection_clickable_cell: 'qkit-cell qkit-btn',
   collection_actions: 'qkit-collection-actions',
-  column_choices: 'qkit-column-choices',
-  column_choice: 'qkit-column-choice',
-  column_add: 'qkit-column-add',
-  loading_container: 'qkit-loading-container',
+  column_editor_list: 'qkit-column-editor-list',
+  column_editor_list_item: 'qkit-column-editor-list-item',
+  column_picker: 'qkit-column-picker',
+  loading: 'qkit-loading',
   pagination: 'qkit-pagination',
+  pagination_item: 'qkit-pagination-item',
   skip_link: 'qkit-skip-link',
   sr_only: 'qkit-sr-only',
 };

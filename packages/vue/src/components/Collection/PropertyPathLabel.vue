@@ -7,7 +7,7 @@ import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  propertyId: string;
+  propertyPath: string;
   customLabel?: string;
 }
 
@@ -19,7 +19,7 @@ watchEffect(async () => {
   // getPropertyTranslation reads it too late (after the await) to be tracked.
   locale.value;
   try {
-    const path = await getPropertyPath(props.entitySchema.id, props.propertyId);
+    const path = await getPropertyPath(props.entitySchema.id, props.propertyPath);
     label.value = path.map((property) => getPropertyTranslation(property)).join(' ');
   } catch {
     label.value = false;
@@ -28,7 +28,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <InvalidColumn v-if="label === false" :column="propertyId" />
+  <InvalidColumn v-if="label === false" :column="propertyPath" />
   <span v-else-if="customLabel">{{ customLabel }}</span>
   <span v-else-if="label">{{ label }}</span>
 </template>

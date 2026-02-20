@@ -5,6 +5,7 @@ import Scope from '@components/Filter/Scope.vue';
 import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { translate } from '@i18n/i18n';
+import { classes } from '@core/ClassManager';
 import type { EntitySchema } from '@core/EntitySchema';
 import type { Filter } from '@core/types';
 
@@ -57,6 +58,7 @@ function toggleCollapse(): void {
 <template>
   <li
     role="treeitem"
+    :class="classes.group_list_item"
     :tabindex="-1"
     @tree-toggle="toggleCollapse"
     :aria-expanded="ariaExpanded"

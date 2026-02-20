@@ -19,7 +19,7 @@ defineProps<Props>();
 </script>
 
 <template>
-  <span :class="classes.error_info" role="alert">
+  <span :class="classes.error_message" role="alert">
     {{ translate(messageKey) }} <span>{{ value }}</span>
   </span>
 </template>

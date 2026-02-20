@@ -33,9 +33,9 @@ function removeValue(index: number): void {
 </script>
 
 <template>
-  <div :class="classes.in_container">
-    <ul :class="classes.in_list">
-      <li v-for="(_, index) in modelValue" :key="index">
+  <div :class="classes.multi_input">
+    <ul :class="classes.multi_input_list">
+      <li v-for="(_, index) in modelValue" :key="index" :class="classes.multi_input_list_item">
         <UniqueInput
           v-model="modelValue[index]"
           :target="target"

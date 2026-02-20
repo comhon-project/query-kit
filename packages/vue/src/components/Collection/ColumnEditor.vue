@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch, watchEffect } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import Modal from '@components/Common/Modal.vue';
-import ColumnChoice from '@components/Collection/ColumnChoice.vue';
+import ColumnEditorItem from '@components/Collection/ColumnEditorItem.vue';
 import { translate, locale } from '@i18n/i18n';
 import { classes } from '@core/ClassManager';
 import { getPropertyPath, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
@@ -147,15 +147,16 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
     </template>
     <template #body>
       <div :class="classes.sr_only" aria-live="assertive" aria-atomic="true">{{ liveMessage }}</div>
-      <ul :class="classes.column_choices" :aria-label="translate('columns')">
+      <ul :class="classes.column_editor_list" :aria-label="translate('columns')">
         <TransitionGroup name="qkit-collapse-horizontal-list">
           <li
             v-for="(column, index) in keyedColumns"
             :ref="(el: any) => setItemRef(el, index)"
             :key="column.key"
+            :class="classes.column_editor_list_item"
             v-bind="getItemBindings(index)"
           >
-            <ColumnChoice
+            <ColumnEditorItem
               v-model="keyedColumns[index].id"
               :open="customColumns?.[column.id]?.open === true"
               :entity-schema="entitySchema"
@@ -166,7 +167,7 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
             />
           </li>
         </TransitionGroup>
-        <div :class="classes.column_add" v-bind="getDropZoneBindings()">
+        <div :class="classes.column_picker" v-bind="getDropZoneBindings()">
           <select v-if="options.length" v-model="selectedProperty" :class="classes.input">
             <option value="" disabled hidden />
             <option v-for="option in options" :key="option.value" :value="option.value">

@@ -387,11 +387,7 @@ watch(
     </div>
     <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
     <Transition name="qkit-collection-loading">
-      <div
-        v-if="requesting"
-        :class="classes.loading_container"
-        :position="infiniteScroll && page > 1 ? 'bottom' : 'top'"
-      >
+      <div v-if="requesting" :class="classes.loading" :position="infiniteScroll && page > 1 ? 'bottom' : 'top'">
         <Icon icon="loading" />
       </div>
     </Transition>
@@ -405,7 +401,7 @@ watch(
               :key="columnId"
               :entity-schema="entitySchema!"
               :column-id="columnId"
-              :property-id="customColumns?.[columnId]?.open === true ? undefined : columnId"
+              :open="customColumns?.[columnId]?.open === true"
               :label="customColumns?.[columnId]?.label"
               :order="indexedOrderBy[columnId]?.order"
               :has-custom-order="customColumns?.[columnId]?.order != null"

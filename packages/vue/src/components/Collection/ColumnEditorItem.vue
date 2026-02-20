@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { classes } from '@core/ClassManager';
 import { locale } from '@i18n/i18n';
 import IconButton from '@components/Common/IconButton.vue';
-import ColumnPropertyChoice from '@components/Collection/ColumnPropertyChoice.vue';
+import PropertyPathEditor from '@components/Collection/PropertyPathEditor.vue';
 import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
@@ -29,21 +28,19 @@ const openLabel = computed<string>(() => {
 </script>
 
 <template>
-  <div :class="classes.column_choice">
-    <IconButton
-      icon="grip"
-      label="reorder"
-      @mousedown="emit('grip-start', $event)"
-      @keydown="emit('grip-start', $event)"
-    />
-    <span v-if="open">{{ openLabel }}</span>
-    <ColumnPropertyChoice
-      v-else
-      v-model:property-id="columnId"
-      :entity-schema="entitySchema"
-      :columns="columns"
-      :label="label"
-    />
-    <IconButton icon="delete" @click="emit('remove')" />
-  </div>
+  <IconButton
+    icon="grip"
+    label="reorder"
+    @mousedown="emit('grip-start', $event)"
+    @keydown="emit('grip-start', $event)"
+  />
+  <span v-if="open">{{ openLabel }}</span>
+  <PropertyPathEditor
+    v-else
+    v-model="columnId"
+    :entity-schema="entitySchema"
+    :columns="columns"
+    :label="label"
+  />
+  <IconButton icon="delete" @click="emit('remove')" />
 </template>

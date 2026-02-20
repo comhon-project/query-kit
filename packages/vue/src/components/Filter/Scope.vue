@@ -80,13 +80,13 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div :class="classes.condition_container">
+  <div :class="classes.condition_or_scope">
     <div>
       <InvalidScope v-if="!validScope" :id="modelValue.id" />
       <template v-else-if="scope">
-        <div :class="classes.condition_header">
+        <div :class="classes.condition_or_scope_header">
           <slot name="relationship" />
-          <span :class="classes.property_name_container">{{ scopeName }}</span>
+          <span :class="classes.property_label">{{ scopeName }}</span>
         </div>
         <div v-if="parametersWithTranslations.length" :class="classes.scope_parameters">
           <div
@@ -94,7 +94,7 @@ watchEffect(() => {
             :key="param.id"
             :class="classes.scope_parameter"
           >
-            <span :class="classes.property_name_container">{{ translation }}</span>
+            <span :class="classes.property_label">{{ translation }}</span>
             <ArrayableInput
               v-model="modelValue.parameters![index]"
               :target="param"

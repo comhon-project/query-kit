@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect, useTemplateRef, inject } from 'vue';
-import ConditionChoice from '@components/Filter/ConditionChoice.vue';
+import FilterPicker from '@components/Filter/FilterPicker.vue';
 import type { EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
@@ -30,7 +30,7 @@ const props = defineProps<Props>();
 const config = inject(builderConfigKey)!;
 
 const validOperator = ref<boolean>(true);
-const showConditionChoice = ref<boolean>(false);
+const showFilterPicker = ref<boolean>(false);
 const groupListRef = useTemplateRef<HTMLUListElement>('groupListRef');
 const { isRemovable, isEditable, canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
 const { hasSearchableItems } = useSearchable(config, props);
@@ -65,7 +65,7 @@ function removeFilter(filter: Filter): void {
 
 function addFilter(): void {
   collapsed.value = false;
-  showConditionChoice.value = true;
+  showFilterPicker.value = true;
 }
 
 function setNewFilter(data: Filter): void {
@@ -78,7 +78,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div v-if="!validOperator" :class="classes.condition_error_container">
+  <div v-if="!validOperator" :class="classes.invalid_filter">
     <div>
       <InvalidOperator :operator="props.modelValue.operator" />
     </div>
@@ -125,6 +125,6 @@ watchEffect(() => {
         />
       </TransitionGroup>
     </ul>
-    <ConditionChoice v-model:show="showConditionChoice" :entity-schema="entitySchema" @validate="setNewFilter" />
+    <FilterPicker v-model:show="showFilterPicker" :entity-schema="entitySchema" @validate="setNewFilter" />
   </div>
 </template>

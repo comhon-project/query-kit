@@ -100,7 +100,7 @@ watch(
 </script>
 
 <template>
-  <div v-if="!validProperty || !validOperator || !validType" :class="classes.condition_error_container">
+  <div v-if="!validProperty || !validOperator || !validType" :class="classes.invalid_filter">
     <div>
       <InvalidProperty v-if="!validProperty" :property="modelValue.property" />
       <InvalidOperator v-else-if="!validOperator" :operator="modelValue.operator" />
@@ -113,11 +113,11 @@ watch(
       @click="$emit('remove')"
     />
   </div>
-  <div v-else-if="property" :class="classes.condition_container">
+  <div v-else-if="property" :class="classes.condition_or_scope">
     <div>
-      <div :class="classes.condition_header">
+      <div :class="classes.condition_or_scope_header">
         <slot name="relationship" />
-        <span :class="classes.property_name_container">{{ propertyName }}</span>
+        <span :class="classes.property_label">{{ propertyName }}</span>
         <template v-if="mustDisplayOperator">
           <AdaptativeSelect
             v-model="modelValue.operator"
