@@ -62,28 +62,50 @@ function onComputed(filter: Filter, manual: boolean): void {
     location.hash = collectionId;
   }
 }
-
 </script>
 
 <template>
   <div :class="classes.search">
     <Builder
       :id="builderId"
-      v-bind="props"
       v-model="filter"
+      :entity="entity"
+      :allow-reset="allowReset"
+      :allow-undo="allowUndo"
+      :allow-redo="allowRedo"
+      :allowed-scopes="allowedScopes"
+      :allowed-properties="allowedProperties"
+      :allowed-operators="allowedOperators"
+      :display-operator="displayOperator"
+      :user-timezone="userTimezone"
+      :request-timezone="requestTimezone"
+      :debounce="debounce"
+      :manual="manual"
       :collection-id="collectionId"
       @computed="onComputed"
     />
     <Collection
       v-if="computedFilter"
       :id="collectionId"
-      v-bind="props"
       v-model:columns="columns"
       v-model:order-by="orderBy"
       v-model:page="page"
+      :entity="entity"
+      :custom-columns="customColumns"
       :filter="computedFilter"
+      :direct-query="directQuery"
+      :limit="limit"
+      :on-row-click="onRowClick"
+      :quick-sort="quickSort"
+      :post-request="postRequest"
+      :allowed-collection-types="allowedCollectionTypes"
+      :display-count="displayCount"
+      :on-export="onExport"
+      :user-timezone="userTimezone"
+      :request-timezone="requestTimezone"
+      :edit-columns="editColumns"
+      :requester="requester"
       :builder-id="builderId"
     />
-
   </div>
 </template>
