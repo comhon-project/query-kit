@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, shallowRef, computed, useTemplateRef } from 'vue';
+import { ref, watch, onMounted, onUnmounted, shallowRef, shallowReactive, computed, useTemplateRef } from 'vue';
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyPath, type Property, type EntitySchema } from '@core/EntitySchema';
@@ -66,7 +66,7 @@ let requestId = 0;
 let properties: string[] = [];
 const requesting = ref<boolean>(false);
 const columnsProperties = shallowRef<Record<string, Property | undefined>>({});
-const collection = shallowRef<Record<string, unknown>[]>([]);
+const collection = shallowReactive<Record<string, unknown>[]>([]);
 const count = ref<number>(0);
 const end = ref<boolean>(false);
 const infiniteScroll = ref<boolean>(isInfiniteAccordingProps());
@@ -279,13 +279,9 @@ async function requestServer(): Promise<void> {
     if (currentRequestId !== requestId) return;
 
     const shouldReplace = !infiniteScroll.value || page.value <= 1;
-    if (shouldReplace) {
-      collection.value = response.collection;
-    } else {
-      for (const element of response.collection) {
-        collection.value.push(element);
-      }
-    }
+    if (shouldReplace) collection.length = 0;
+    collection.push(...response.collection);
+
     if (infiniteScroll.value && response.collection.length < props.limit) {
       end.value = true;
     }
