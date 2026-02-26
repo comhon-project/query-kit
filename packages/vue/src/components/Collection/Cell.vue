@@ -18,11 +18,6 @@ interface Props {
   onClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
 }
 
-interface Emits {
-  click: [value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent];
-}
-
-const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
 
 const renderer = computed<Component | RenderFunction | string | null>(() => {
@@ -45,6 +40,20 @@ const value = computed<unknown>(() => {
   }
   return cellValue;
 });
+
+const cellEvents = computed(() =>
+  props.onClick
+    ? {
+        click: (e: MouseEvent) => props.onClick!(value.value, props.rowValue, props.columnId, e),
+        keydown: (e: KeyboardEvent) => {
+          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            props.onClick!(value.value, props.rowValue, props.columnId, e as unknown as MouseEvent);
+          }
+        },
+      }
+    : {},
+);
 </script>
 
 <template>
@@ -52,7 +61,7 @@ const value = computed<unknown>(() => {
     :class="onClick ? classes.collection_clickable_cell : classes.collection_cell"
     :tabindex="onClick ? 0 : undefined"
     :role="onClick ? 'button' : undefined"
-    v-on="onClick ? { click: (e: MouseEvent) => emit('click', value, rowValue, columnId, e), keydown: (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); emit('click', value, rowValue, columnId, e as unknown as MouseEvent); } } } : {}"
+    v-on="cellEvents"
   >
     <template v-if="cellComponent == null">{{ value }}</template>
     <component

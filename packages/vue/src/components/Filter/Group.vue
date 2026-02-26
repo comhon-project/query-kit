@@ -34,7 +34,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="treeRef" role="tree" @keydown="handleKeydown">
+  <div ref="treeRef" role="tree" tabindex="-1" @keydown="handleKeydown">
     <div
       role="treeitem"
       :tabindex="-1"

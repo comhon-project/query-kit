@@ -55,6 +55,7 @@ watchEffect(async () => {
     >
       <ColumnName :entity-schema="entitySchema" :column-id="columnId" :open="open" :label="label" />
       <Icon icon="sort" :label="orderLabel" />
+      <span :class="classes.sr_only">{{ orderLabel }}</span>
     </button>
     <div v-else>
       <ColumnName :entity-schema="entitySchema" :column-id="columnId" :open="open" :label="label" />

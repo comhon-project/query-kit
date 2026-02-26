@@ -40,16 +40,10 @@ interface Props {
   builderId?: string;
 }
 
-interface Emits {
-  rowClick: [row: Record<string, unknown>, event: MouseEvent | KeyboardEvent];
-}
-
 interface IndexedOrderByEntry {
   order: 'asc' | 'desc';
   properties: string[];
 }
-
-const emit = defineEmits<Emits>();
 const columns = defineModel<string[]>('columns', { required: true });
 const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
 const page = defineModel<number>('page', { default: 1 });
@@ -98,6 +92,19 @@ const showInfiniteScrollObserver = computed(() => {
 });
 
 const pageCount = computed(() => Math.max(1, Math.ceil(count.value / props.limit)));
+
+const rowEvents = (row: Record<string, unknown>) =>
+  props.onRowClick
+    ? {
+        click: (e: MouseEvent) => props.onRowClick!(row, e),
+        keydown: (e: KeyboardEvent) => {
+          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            props.onRowClick!(row, e);
+          }
+        },
+      }
+    : {};
 
 async function init(): Promise<void> {
   entitySchema.value = await resolve(props.entity);
@@ -361,12 +368,7 @@ watch(
         <div>
           <div v-if="displayCount">{{ translate('results') }} : {{ count }}</div>
         </div>
-        <Pagination
-          v-if="!infiniteScroll"
-          v-model="page"
-          :count="pageCount"
-          :lock="requesting"
-        />
+        <Pagination v-if="!infiniteScroll" v-model="page" :count="pageCount" :lock="requesting" />
         <div :class="classes.collection_actions">
           <IconButton v-if="onExport" icon="export" @click="() => onExport!(filter)" />
           <IconButton
@@ -413,8 +415,7 @@ watch(
             :key="(object[rowKeyProperty!] as string | number) ?? rowIndex"
             :class="onRowClick ? classes.collection_clickable_row : ''"
             :tabindex="onRowClick ? 0 : undefined"
-            @click="(e) => $emit('rowClick', object, e)"
-            @keydown.enter="(e) => (onRowClick ? $emit('rowClick', object, e) : undefined)"
+            v-on="rowEvents(object)"
           >
             <template v-for="columnId in computedColumns" :key="columnId">
               <Cell
