@@ -97,6 +97,8 @@ const showInfiniteScrollObserver = computed(() => {
   return infiniteScroll.value && !end.value && !requesting.value && hasExecFirstQuery;
 });
 
+const pageCount = computed(() => Math.max(1, Math.ceil(count.value / props.limit)));
+
 async function init(): Promise<void> {
   entitySchema.value = await resolve(props.entity);
   await initColumns(entitySchema.value);
@@ -362,7 +364,7 @@ watch(
         <Pagination
           v-if="!infiniteScroll"
           v-model="page"
-          :count="Math.max(1, Math.ceil(count / limit))"
+          :count="pageCount"
           :lock="requesting"
         />
         <div :class="classes.collection_actions">
