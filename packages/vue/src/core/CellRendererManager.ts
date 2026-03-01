@@ -39,4 +39,12 @@ const getPropertyRenderer = (property: Property): TypeRenderer => {
   return propertyRenderers[property.owner]?.[property.id] ?? getTypeRenderer(property);
 };
 
-export { registerTypeRenderers, registerPropertyRenderers, getPropertyRenderer, getTypeRenderer };
+const defaultTypeRenderers: TypeRenderers = { ...typeRenderers };
+
+function _resetForTesting(): void {
+  for (const key in typeRenderers) delete typeRenderers[key];
+  Object.assign(typeRenderers, defaultTypeRenderers);
+  for (const key in propertyRenderers) delete propertyRenderers[key];
+}
+
+export { registerTypeRenderers, registerPropertyRenderers, getPropertyRenderer, getTypeRenderer, _resetForTesting };

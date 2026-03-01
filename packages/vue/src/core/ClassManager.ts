@@ -116,4 +116,10 @@ const handler: ProxyHandler<ClassList> = {
 
 const classes = new Proxy(classList, handler) as Readonly<ClassList>;
 
-export { registerClasses, classes };
+const defaultClassList: ClassList = { ...classList };
+
+function _resetForTesting(): void {
+  Object.assign(classList, defaultClassList);
+}
+
+export { registerClasses, classes, _resetForTesting };

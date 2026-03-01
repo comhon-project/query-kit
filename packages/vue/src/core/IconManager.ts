@@ -79,4 +79,10 @@ const handler: ProxyHandler<IconList> = {
 
 const icons = new Proxy(iconList, handler) as Readonly<IconList>;
 
-export { registerIcons, icons, iconComponent, iconPropName };
+function _resetForTesting(): void {
+  for (const key in iconList) delete (iconList as Record<string, unknown>)[key];
+  iconComponent = 'i';
+  iconPropName = 'class';
+}
+
+export { registerIcons, icons, iconComponent, iconPropName, _resetForTesting };

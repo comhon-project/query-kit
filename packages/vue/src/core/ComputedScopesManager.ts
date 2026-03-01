@@ -35,4 +35,8 @@ const getComputedScopeParameterTranslation = (parameter: ComputedScopeParameter)
   return parameter.translation?.(locale.value) ?? parameter.name ?? parameter.id;
 };
 
-export { registerComputedScopes, getComputedScopes, getComputedScope, getComputedScopeTranslation, getComputedScopeParameterTranslation };
+function _resetForTesting(): void {
+  for (const key in computedScopesList) delete computedScopesList[key];
+}
+
+export { registerComputedScopes, getComputedScopes, getComputedScope, getComputedScopeTranslation, getComputedScopeParameterTranslation, _resetForTesting };

@@ -311,6 +311,15 @@ const getLeafTypeContainer = (container: ArrayableTypeContainer): TypeContainer 
   return container;
 };
 
+function _resetForTesting(): void {
+  schemaLoader = undefined;
+  translationsLoader = undefined;
+  for (const key in computedSchemas) delete computedSchemas[key];
+  for (const key in loadedTranslations) delete loadedTranslations[key];
+  for (const key in loadingTranslations) delete loadingTranslations[key];
+  previousLocale = locale.value;
+}
+
 export {
   registerLoader,
   registerTranslationsLoader,
@@ -322,4 +331,5 @@ export {
   getScopeParameterTranslation,
   getLeafTypeContainer,
   loadRawTranslations,
+  _resetForTesting,
 };

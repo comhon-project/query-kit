@@ -15,4 +15,8 @@ function applyOptions(options: Partial<Config>): void {
   }
 }
 
-export { config, applyOptions };
+function _resetForTesting(): void {
+  config.renderHtml = false;
+}
+
+export { config, applyOptions, _resetForTesting };

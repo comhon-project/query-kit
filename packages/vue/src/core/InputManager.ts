@@ -78,4 +78,11 @@ const isNativeHtmlComponent = (component: string | Component): boolean => {
   return typeof component === 'string' && component in nativeHtmlComponents;
 };
 
-export { registerComponents, getComponent, supportsMultiple, isNativeHtmlComponent, MultipleCapableComponent };
+const defaultComponentList: ComponentList = { ...componentList };
+
+function _resetForTesting(): void {
+  for (const key in componentList) delete componentList[key];
+  Object.assign(componentList, defaultComponentList);
+}
+
+export { registerComponents, getComponent, supportsMultiple, isNativeHtmlComponent, MultipleCapableComponent, _resetForTesting };

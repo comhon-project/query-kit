@@ -8,4 +8,8 @@ const registerRequester = (req: Requester): void => {
   requester = req;
 };
 
-export { registerRequester, requester };
+function _resetForTesting(): void {
+  requester = undefined;
+}
+
+export { registerRequester, requester, _resetForTesting };

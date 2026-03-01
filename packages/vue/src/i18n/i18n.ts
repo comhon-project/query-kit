@@ -67,4 +67,14 @@ const translate = (key: string | undefined): string | undefined => {
   return getTranslationForLocale(key, targetLocale);
 };
 
-export { locale, fallback, translate, loadedTranslations };
+function _resetForTesting(): void {
+  locale.value = 'en';
+  fallback.value = 'en';
+  for (const key in loadedTranslations) {
+    if (key !== 'en') delete loadedTranslations[key];
+  }
+  for (const key in loadingTranslations) delete loadingTranslations[key];
+  previousLocale = 'en';
+}
+
+export { locale, fallback, translate, loadedTranslations, _resetForTesting };

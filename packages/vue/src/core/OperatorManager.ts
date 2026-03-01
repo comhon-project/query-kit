@@ -173,10 +173,21 @@ const registerOperators = (operatorsConfig: AllowedOperators): void => {
   }
 };
 
+const defaultConditionOperators: ConditionOperators = { ...operators.condition };
+const defaultGroupOperators: GroupOperator[] = [...operators.group];
+const defaultRelationshipOperators: RelationshipOperator[] = [...operators.relationship_condition];
+
+function _resetForTesting(): void {
+  operators.condition = { ...defaultConditionOperators };
+  operators.group = [...defaultGroupOperators];
+  operators.relationship_condition = [...defaultRelationshipOperators];
+}
+
 export {
   getContainerOperators,
   getConditionOperators,
   getOperatorTranslation,
   isValidOperator,
   registerOperators,
+  _resetForTesting,
 };

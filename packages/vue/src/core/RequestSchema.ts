@@ -51,10 +51,16 @@ const getSortableProperties = async (entityId: string): Promise<string[]> => {
   return request.sortable ?? [];
 };
 
+function _resetForTesting(): void {
+  schemaLoader = undefined;
+  for (const key in computedRequests) delete computedRequests[key];
+}
+
 export {
   registerLoader,
   resolve,
   getFiltrableProperties,
   getFiltrableScopes,
   getSortableProperties,
+  _resetForTesting,
 };
