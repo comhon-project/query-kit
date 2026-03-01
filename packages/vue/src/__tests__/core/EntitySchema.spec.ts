@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
   EntitySchema,
@@ -17,16 +17,12 @@ import {
 import type { ArrayableTypeContainer, Property, ScopeParameter } from '@core/EntitySchema';
 import { PropertyNotFoundError } from '@core/errors';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
-import { locale, fallback, _resetForTesting as resetI18n } from '@i18n/i18n';
+import { locale, fallback } from '@i18n/i18n';
+import { registerLoader as registerRequestLoader, _resetForTesting as resetRequestSchema } from '@core/RequestSchema';
 
 beforeEach(() => {
   registerLoader(entitySchemaLoader);
   registerTranslationsLoader(entityTranslationsLoader);
-});
-
-afterEach(() => {
-  _resetForTesting();
-  resetI18n();
 });
 
 // ---------------------------------------------------------------------------
@@ -260,15 +256,15 @@ describe('getPropertyPath()', () => {
 // ---------------------------------------------------------------------------
 describe('isPropertySortable()', () => {
   beforeEach(() => {
-    vi.mock('@core/RequestSchema', () => ({
-      getSortableProperties: vi.fn(async (entityId: string) => {
-        const sortable: Record<string, string[]> = {
+    resetRequestSchema();
+    registerRequestLoader({
+      load: async (entityId) => ({
+        sortable: ({
           user: ['first_name', 'last_name', 'age', 'company'],
           organization: ['brand_name', 'address'],
-        };
-        return sortable[entityId] ?? [];
+        } as Record<string, string[]>)[entityId] ?? [],
       }),
-    }));
+    });
   });
 
   it('returns true for a sortable property', async () => {

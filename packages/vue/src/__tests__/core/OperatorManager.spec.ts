@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import {
   getConditionOperators,
@@ -15,10 +15,6 @@ function mockProperty(overrides: Partial<Property> = {}): Property {
 }
 
 describe('OperatorManager', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   describe('getConditionOperators', () => {
     it('returns basic operators for string type', () => {
       const ops = getConditionOperators(mockProperty({ type: 'string' }));

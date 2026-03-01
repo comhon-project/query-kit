@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
   registerLoader,
@@ -9,16 +9,11 @@ import {
   _resetForTesting,
 } from '@core/EnumSchema';
 import { enumSchemaLoader, enumTranslationsLoader } from '@tests/assets/SchemaLoader';
-import { locale, fallback, _resetForTesting as _resetI18nForTesting } from '@i18n/i18n';
+import { locale } from '@i18n/i18n';
 
 beforeEach(() => {
   registerLoader(enumSchemaLoader);
   registerTranslationsLoader(enumTranslationsLoader);
-});
-
-afterEach(() => {
-  _resetForTesting();
-  _resetI18nForTesting();
 });
 
 describe('EnumSchema', () => {

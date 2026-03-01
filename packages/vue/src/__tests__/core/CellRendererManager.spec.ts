@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { defineComponent } from 'vue';
 
 import {
@@ -29,10 +29,6 @@ function mockProperty(overrides: Partial<Property> = {}): Property {
 }
 
 describe('CellRendererManager', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   describe('getTypeRenderer', () => {
     it('returns null for string type', () => {
       expect(getTypeRenderer(container('string'))).toBeNull();

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import {
   icons,
@@ -10,10 +10,6 @@ import {
 } from '@core/IconManager';
 
 describe('IconManager', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   describe('initial state', () => {
     it('icons proxy returns undefined for any key initially', () => {
       expect(icons.add).toBeUndefined();

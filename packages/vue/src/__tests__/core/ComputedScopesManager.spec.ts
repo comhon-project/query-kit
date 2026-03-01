@@ -13,7 +13,6 @@ import { locale } from '@i18n/i18n';
 
 describe('ComputedScopesManager', () => {
   afterEach(() => {
-    _resetForTesting();
     locale.value = 'en';
   });
 

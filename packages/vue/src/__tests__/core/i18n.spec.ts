@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { nextTick } from 'vue';
 
 import { locale, fallback, translate, loadedTranslations, _resetForTesting } from '@i18n/i18n';
@@ -21,10 +21,6 @@ async function waitForTranslation(targetLocale: string): Promise<void> {
 }
 
 describe('i18n', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   describe('translate with default locale (en)', () => {
     it('translates known keys in English', () => {
       expect(translate('add')).toBe('add');

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { defineComponent } from 'vue';
 
 import {
@@ -26,10 +26,6 @@ function arrayContainer(childType: string, childExtra: Partial<TypeContainer> = 
 }
 
 describe('InputManager', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   describe('getComponent', () => {
     it('returns "text" for string type', () => {
       expect(getComponent(container('string'))).toBe('text');

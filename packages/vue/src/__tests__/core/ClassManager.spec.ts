@@ -1,12 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { classes, registerClasses, _resetForTesting } from '@core/ClassManager';
 
 describe('ClassManager', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   describe('default classes', () => {
     it('has the modal class', () => {
       expect(classes.modal).toBe('qkit-modal');

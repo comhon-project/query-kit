@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
   registerLoader,
@@ -12,10 +12,6 @@ import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 
 beforeEach(() => {
   registerLoader(requestSchemaLoader);
-});
-
-afterEach(() => {
-  _resetForTesting();
 });
 
 describe('RequestSchema', () => {

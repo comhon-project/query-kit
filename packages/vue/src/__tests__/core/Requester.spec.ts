@@ -1,13 +1,9 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { requester, registerRequester, _resetForTesting } from '@core/Requester';
 import type { Requester } from '@core/Requester';
 
 describe('Requester', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   it('requester is initially undefined', () => {
     expect(requester).toBeUndefined();
   });

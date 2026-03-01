@@ -1,12 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 import { config, applyOptions, _resetForTesting } from '@config/config';
 
 describe('config', () => {
-  afterEach(() => {
-    _resetForTesting();
-  });
-
   it('has renderHtml defaulting to false', () => {
     expect(config.renderHtml).toBe(false);
   });

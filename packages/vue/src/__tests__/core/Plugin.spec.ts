@@ -1,18 +1,12 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 import plugin from '@core/Plugin';
-import { requester, _resetForTesting as resetRequester } from '@core/Requester';
-import { icons, defaultIcons, _resetForTesting as resetIcons } from '@core/IconManager';
-import { classes, _resetForTesting as resetClasses } from '@core/ClassManager';
-import { getComponent, _resetForTesting as resetInputs } from '@core/InputManager';
-import { _resetForTesting as resetCellRenderers } from '@core/CellRendererManager';
-import { _resetForTesting as resetOperators } from '@core/OperatorManager';
-import { _resetForTesting as resetComputedScopes } from '@core/ComputedScopesManager';
-import { _resetForTesting as resetEntitySchema } from '@core/EntitySchema';
-import { _resetForTesting as resetEnumSchema } from '@core/EnumSchema';
-import { _resetForTesting as resetRequestSchema } from '@core/RequestSchema';
-import { config, _resetForTesting as resetConfig } from '@config/config';
-import { locale, fallback, _resetForTesting as resetI18n } from '@i18n/i18n';
+import { requester } from '@core/Requester';
+import { icons, defaultIcons } from '@core/IconManager';
+import { classes } from '@core/ClassManager';
+import { getComponent } from '@core/InputManager';
+import { config } from '@config/config';
+import { locale, fallback } from '@i18n/i18n';
 import {
   entitySchemaLoader,
   entityTranslationsLoader,
@@ -27,18 +21,6 @@ import DateTimeInput from '@components/Common/DateTimeInput.vue';
 const appMock = { component: vi.fn() };
 
 afterEach(() => {
-  resetIcons();
-  resetClasses();
-  resetInputs();
-  resetCellRenderers();
-  resetOperators();
-  resetComputedScopes();
-  resetRequester();
-  resetEntitySchema();
-  resetEnumSchema();
-  resetRequestSchema();
-  resetI18n();
-  resetConfig();
   appMock.component.mockClear();
 });
 
