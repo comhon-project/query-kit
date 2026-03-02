@@ -13,6 +13,7 @@
     "noEmit": true,
     "jsx": "preserve",
 
+    "allowJs": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -32,6 +33,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "src/**/*.js",
     "src/**/*.vue",
     "index.ts"
   ],

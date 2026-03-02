@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { effectScope, nextTick, type EffectScope } from 'vue';
+import { effectScope, type EffectScope } from 'vue';
 import { useDragAndDrop } from '@core/useDragAndDrop';
 
 type DragAndDropReturn = ReturnType<typeof useDragAndDrop>;

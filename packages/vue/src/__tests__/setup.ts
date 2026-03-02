@@ -37,12 +37,24 @@ HTMLDialogElement.prototype.close =
 Element.prototype.getAnimations =
   Element.prototype.getAnimations ?? vi.fn(() => []);
 
+// Mock Element.prototype.scrollTo (not implemented in jsdom)
+Element.prototype.scrollTo =
+  Element.prototype.scrollTo ?? vi.fn();
+
 // Mock IntersectionObserver (not implemented in jsdom)
-global.IntersectionObserver =
-  global.IntersectionObserver ??
-  vi.fn().mockImplementation((callback: IntersectionObserverCallback) => ({
-    observe: vi.fn(),
-    disconnect: vi.fn(),
-    unobserve: vi.fn(),
-    _callback: callback,
-  }));
+// Use a class so it works with `new` and isn't affected by restoreMocks
+globalThis.IntersectionObserver =
+  globalThis.IntersectionObserver ??
+  (class {
+    _callback: IntersectionObserverCallback;
+    constructor(callback: IntersectionObserverCallback) {
+      this._callback = callback;
+    }
+    observe = vi.fn();
+    disconnect = vi.fn();
+    unobserve = vi.fn();
+    takeRecords = vi.fn(() => []);
+    root = null;
+    rootMargin = '';
+    thresholds = [] as number[];
+  } as unknown as typeof IntersectionObserver);

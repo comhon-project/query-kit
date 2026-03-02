@@ -105,14 +105,15 @@ describe('Renderers', () => {
 
   // ──────────── DateTime ────────────
   describe('DateTime', () => {
-    it('formats a datetime string with timezone', () => {
+    it('formats a datetime string in UTC', () => {
       const wrapper = mount(DateTimeRenderer, {
-        props: baseProps({ value: '2024-06-15T14:30:00Z', requestTimezone: 'UTC', userTimezone: 'UTC' }),
+        props: baseProps({ value: '2024-06-15T14:30:00', requestTimezone: 'UTC', userTimezone: 'UTC' }),
       });
-      expect(wrapper.text()).toContain('2024');
+      expect(wrapper.text()).toContain('6/15/2024');
+      expect(wrapper.text()).toMatch(/02:30/);
     });
 
-    it('converts between timezones', () => {
+    it('converts time from requestTimezone to userTimezone', () => {
       const wrapper = mount(DateTimeRenderer, {
         props: baseProps({
           value: '2024-06-15T23:00:00',
@@ -120,14 +121,41 @@ describe('Renderers', () => {
           userTimezone: 'America/New_York',
         }),
       });
-      // NYC is UTC-4 in June, so 23:00 UTC = 19:00 NYC
-      const text = wrapper.text();
-      expect(text).toContain('2024');
+      // NYC is UTC-4 in June, so 23:00 UTC → 19:00 NYC
+      expect(wrapper.text()).toMatch(/07:00/);
+    });
+
+    it('changes date when timezone conversion crosses midnight', () => {
+      const wrapper = mount(DateTimeRenderer, {
+        props: baseProps({
+          value: '2024-06-16T02:00:00',
+          requestTimezone: 'UTC',
+          userTimezone: 'America/New_York',
+        }),
+      });
+      // UTC June 16 02:00 → NYC June 15 22:00
+      expect(wrapper.text()).toContain('6/15/2024');
+      expect(wrapper.text()).toMatch(/10:00/);
     });
 
     it('renders nothing for falsy value', () => {
       const wrapper = mount(DateTimeRenderer, { props: baseProps({ value: null }) });
       expect(wrapper.text()).toBe('');
+    });
+
+    it('updates formatting when locale changes', async () => {
+      const wrapper = mount(DateTimeRenderer, {
+        props: baseProps({ value: '2024-06-15T14:30:00', requestTimezone: 'UTC', userTimezone: 'UTC' }),
+      });
+      // EN: month/day/year
+      expect(wrapper.text()).toContain('6/15/2024');
+
+      locale.value = 'fr';
+      await nextTick();
+
+      // FR: day/month/year, 24h format
+      expect(wrapper.text()).toContain('15/06/2024');
+      expect(wrapper.text()).toContain('14:30');
     });
   });
 

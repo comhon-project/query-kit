@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createApp, defineComponent } from 'vue';
+import type { App } from 'vue';
 
 import plugin from '@core/Plugin';
 import { requester } from '@core/Requester';
@@ -18,10 +20,16 @@ import BooleanInput from '@components/Common/BooleanInput.vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
 import DateTimeInput from '@components/Common/DateTimeInput.vue';
 
-const appMock = { component: vi.fn() };
+let app: App;
+let componentSpy: ReturnType<typeof vi.spyOn>;
+
+beforeEach(() => {
+  app = createApp(defineComponent({ render: () => null }));
+  componentSpy = vi.spyOn(app, 'component');
+});
 
 afterEach(() => {
-  appMock.component.mockClear();
+  componentSpy.mockRestore();
 });
 
 describe('Plugin', () => {
@@ -31,59 +39,59 @@ describe('Plugin', () => {
   });
 
   it('throws when no options passed', () => {
-    expect(() => (plugin as any).install(appMock)).toThrowError('must have at least required configs');
+    expect(() => (plugin as any).install(app)).toThrowError('must have at least required configs');
   });
 
   describe('requester validation', () => {
     it('throws with a number', () => {
-      expect(() => plugin.install(appMock, { requester: 1, entitySchemaLoader: () => Promise.resolve(null) } as any)).toThrowError(
+      expect(() => plugin.install(app, { requester: 1, entitySchemaLoader: () => Promise.resolve(null) } as any)).toThrowError(
         'invalid requester',
       );
     });
 
     it('throws with an empty object', () => {
-      expect(() => plugin.install(appMock, { requester: {}, entitySchemaLoader: () => Promise.resolve(null) } as any)).toThrowError(
+      expect(() => plugin.install(app, { requester: {}, entitySchemaLoader: () => Promise.resolve(null) } as any)).toThrowError(
         'invalid requester',
       );
     });
 
     it('accepts a function', () => {
       expect(() =>
-        plugin.install(appMock, { requester: () => Promise.resolve({ count: 0, collection: [] }), entitySchemaLoader: () => Promise.resolve(null) } as any),
+        plugin.install(app, { requester: () => Promise.resolve({ count: 0, collection: [] }), entitySchemaLoader: () => Promise.resolve(null) } as any),
       ).not.toThrow();
     });
 
     it('accepts {request: fn}', () => {
       expect(() =>
-        plugin.install(appMock, { requester: { request: () => Promise.resolve({ count: 0, collection: [] }) }, entitySchemaLoader: () => Promise.resolve(null) } as any),
+        plugin.install(app, { requester: { request: () => Promise.resolve({ count: 0, collection: [] }) }, entitySchemaLoader: () => Promise.resolve(null) } as any),
       ).not.toThrow();
     });
   });
 
   describe('entitySchemaLoader validation', () => {
     it('required - throws when missing', () => {
-      expect(() => plugin.install(appMock, {} as any)).toThrowError('entitySchemaLoader config is required');
+      expect(() => plugin.install(app, {} as any)).toThrowError('entitySchemaLoader config is required');
     });
 
     it('throws with a number', () => {
-      expect(() => plugin.install(appMock, { entitySchemaLoader: 1 } as any)).toThrowError(
+      expect(() => plugin.install(app, { entitySchemaLoader: 1 } as any)).toThrowError(
         'invalid entity schema loader',
       );
     });
 
     it('throws with an empty object', () => {
-      expect(() => plugin.install(appMock, { entitySchemaLoader: {} } as any)).toThrowError(
+      expect(() => plugin.install(app, { entitySchemaLoader: {} } as any)).toThrowError(
         'invalid entity schema loader',
       );
     });
 
     it('accepts a function (wraps in {load: fn})', () => {
-      expect(() => plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null) } as any)).not.toThrow();
+      expect(() => plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null) } as any)).not.toThrow();
     });
 
     it('accepts {load: fn} object', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: { load: () => Promise.resolve(null) } }),
+        plugin.install(app, { entitySchemaLoader: { load: () => Promise.resolve(null) } }),
       ).not.toThrow();
     });
   });
@@ -91,13 +99,13 @@ describe('Plugin', () => {
   describe('entityTranslationsLoader validation', () => {
     it('throws with a number', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), entityTranslationsLoader: 1 } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), entityTranslationsLoader: 1 } as any),
       ).toThrowError('invalid entity translations loader');
     });
 
     it('throws with an empty object', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), entityTranslationsLoader: {} } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), entityTranslationsLoader: {} } as any),
       ).toThrowError('invalid entity translations loader');
     });
   });
@@ -105,13 +113,13 @@ describe('Plugin', () => {
   describe('enumSchemaLoader validation', () => {
     it('throws with a number', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), enumSchemaLoader: 1 } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), enumSchemaLoader: 1 } as any),
       ).toThrowError('invalid enum schema loader');
     });
 
     it('throws with an empty object', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), enumSchemaLoader: {} } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), enumSchemaLoader: {} } as any),
       ).toThrowError('invalid enum schema loader');
     });
   });
@@ -119,13 +127,13 @@ describe('Plugin', () => {
   describe('enumTranslationsLoader validation', () => {
     it('throws with a number', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), enumTranslationsLoader: 1 } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), enumTranslationsLoader: 1 } as any),
       ).toThrowError('invalid enum translations loader');
     });
 
     it('throws with an empty object', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), enumTranslationsLoader: {} } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), enumTranslationsLoader: {} } as any),
       ).toThrowError('invalid enum translations loader');
     });
   });
@@ -133,13 +141,13 @@ describe('Plugin', () => {
   describe('requestSchemaLoader validation', () => {
     it('throws with a number', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), requestSchemaLoader: 1 } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), requestSchemaLoader: 1 } as any),
       ).toThrowError('invalid request schema loader');
     });
 
     it('throws with an empty object', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), requestSchemaLoader: {} } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), requestSchemaLoader: {} } as any),
       ).toThrowError('invalid request schema loader');
     });
   });
@@ -147,23 +155,23 @@ describe('Plugin', () => {
   describe('renderHtml validation', () => {
     it('throws when given a string', () => {
       expect(() =>
-        plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: 'yes' } as any),
+        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: 'yes' } as any),
       ).toThrowError('renderHtml must be a boolean');
     });
 
     it('works with true', () => {
-      plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: true });
+      plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: true });
       expect(config.renderHtml).toBe(true);
     });
 
     it('works with false', () => {
-      plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: false });
+      plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: false });
       expect(config.renderHtml).toBe(false);
     });
   });
 
   it('installs with minimal config', () => {
-    plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null) });
+    plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null) });
 
     expect(locale.value).toBe('en');
     expect(fallback.value).toBe('en');
@@ -232,7 +240,7 @@ describe('Plugin', () => {
       renderHtml: true,
     };
 
-    plugin.install(appMock, options as any);
+    plugin.install(app, options as any);
 
     expect(locale.value).toBe('es');
     expect(fallback.value).toBe('fr');
@@ -255,7 +263,7 @@ describe('Plugin', () => {
   });
 
   it('registers defaultIcons when icons is "default"', () => {
-    plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null), icons: 'default' });
+    plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), icons: 'default' });
 
     expect(icons.add).toEqual(defaultIcons.add);
     expect(icons.delete).toEqual(defaultIcons.delete);
@@ -273,7 +281,7 @@ describe('Plugin', () => {
 
     // Should not throw - functions are wrapped in {load: fn} objects
     expect(() =>
-      plugin.install(appMock, {
+      plugin.install(app, {
         entitySchemaLoader: entityFn,
         entityTranslationsLoader: entityTransFn,
         enumSchemaLoader: enumFn,
@@ -284,12 +292,12 @@ describe('Plugin', () => {
   });
 
   it('calls app.component 3 times for QkitSearch, QkitCollection, QkitBuilder', () => {
-    plugin.install(appMock, { entitySchemaLoader: () => Promise.resolve(null) });
+    plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null) });
 
-    expect(appMock.component).toHaveBeenCalledTimes(3);
-    expect(appMock.component).toHaveBeenCalledWith('QkitSearch', expect.anything());
-    expect(appMock.component).toHaveBeenCalledWith('QkitCollection', expect.anything());
-    expect(appMock.component).toHaveBeenCalledWith('QkitBuilder', expect.anything());
+    expect(componentSpy).toHaveBeenCalledTimes(3);
+    expect(componentSpy).toHaveBeenCalledWith('QkitSearch', expect.anything());
+    expect(componentSpy).toHaveBeenCalledWith('QkitCollection', expect.anything());
+    expect(componentSpy).toHaveBeenCalledWith('QkitBuilder', expect.anything());
   });
 
   it('registers operators when provided', () => {
@@ -301,7 +309,7 @@ describe('Plugin', () => {
     };
 
     expect(() =>
-      plugin.install(appMock, {
+      plugin.install(app, {
         entitySchemaLoader: () => Promise.resolve(null),
         operators,
       }),
@@ -319,7 +327,7 @@ describe('Plugin', () => {
     };
 
     expect(() =>
-      plugin.install(appMock, {
+      plugin.install(app, {
         entitySchemaLoader: () => Promise.resolve(null),
         computedScopes,
       }),

@@ -77,12 +77,6 @@ function buildTree(): { tree: HTMLElement; items: Record<string, HTMLElement> } 
   };
 }
 
-function fireKey(target: HTMLElement, key: string, opts: Partial<KeyboardEvent> = {}) {
-  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...opts });
-  target.dispatchEvent(event);
-  return event;
-}
-
 describe('useTreeNavigation', () => {
   let tree: HTMLElement;
   let items: Record<string, HTMLElement>;

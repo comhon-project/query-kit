@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
-  EntitySchema,
   resolve,
   registerLoader,
   registerTranslationsLoader,
@@ -14,7 +13,7 @@ import {
   loadRawTranslations,
   _resetForTesting,
 } from '@core/EntitySchema';
-import type { ArrayableTypeContainer, Property, ScopeParameter } from '@core/EntitySchema';
+import type { ArrayableTypeContainer, ScopeParameter } from '@core/EntitySchema';
 import { PropertyNotFoundError } from '@core/errors';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { locale, fallback } from '@i18n/i18n';
