@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import type { CellRendererProps } from '@core/types';
+import type { CellRendererProps, RenderFunction } from '@core/types';
 
 import BooleanRenderer from '@components/Common/Renderers/Boolean.vue';
 import DateRenderer from '@components/Common/Renderers/Date.vue';
@@ -21,7 +21,7 @@ import { entitySchemaLoader, enumSchemaLoader } from '@tests/assets/SchemaLoader
 function baseProps(overrides: Partial<CellRendererProps> = {}): CellRendererProps {
   return {
     columnId: 'col',
-    property: { id: 'test', type: 'string', owner: 'user' } as any,
+    property: { id: 'test', type: 'string', owner: 'user' },
     type: { type: 'string' },
     value: null,
     rowValue: {},
@@ -199,7 +199,7 @@ describe('Renderers', () => {
       const wrapper = mount(ForeignEntityRenderer, {
         props: baseProps({
           value: { brand_name: 'Acme Corp', id: 1 },
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' } as any,
+          property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' },
         }),
       });
 
@@ -215,7 +215,7 @@ describe('Renderers', () => {
       const wrapper = mount(ForeignEntityRenderer, {
         props: baseProps({
           value: { id: 42, name: 'Acme' },
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'no_primary' } as any,
+          property: { id: 'company', type: 'relationship', owner: 'user', related: 'no_primary' },
         }),
       });
 
@@ -230,7 +230,7 @@ describe('Renderers', () => {
 
       const wrapper = mount(ForeignEntityRenderer, {
         props: baseProps({
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'pending' } as any,
+          property: { id: 'company', type: 'relationship', owner: 'user', related: 'pending' },
         }),
       });
       expect(wrapper.text()).toBe('');
@@ -242,7 +242,7 @@ describe('Renderers', () => {
           columnId: 'company',
           value: null,
           rowValue: { 'company.brand_name': 'Acme Corp', 'company.id': 1 },
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' } as any,
+          property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' },
         }),
       });
 
@@ -274,8 +274,8 @@ describe('Renderers', () => {
   // ──────────── Array ────────────
   describe('Array', () => {
     it('renders function-based renderer values comma-separated', () => {
-      const renderFn = vi.fn((value: unknown) => `[${value}]`);
-      registerTypeRenderers({ string: renderFn as any });
+      const renderFn: RenderFunction = vi.fn((value: unknown) => `[${value}]`);
+      registerTypeRenderers({ string: renderFn });
 
       const wrapper = mount(ArrayRenderer, {
         props: baseProps({
