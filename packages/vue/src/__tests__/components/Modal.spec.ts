@@ -91,4 +91,38 @@ describe('Modal', () => {
     await nextTick();
     expect(wrapper.emitted('closed')).toHaveLength(1);
   });
+
+  it('ignores transitionend from child element', async () => {
+    const wrapper = mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
+    const dialog = wrapper.find('dialog').element as HTMLDialogElement;
+    // Simulate transitionend from a child element (not the dialog itself)
+    const childEvent = new Event('transitionend') as TransitionEvent;
+    Object.defineProperty(childEvent, 'target', { value: document.createElement('div') });
+    dialog.ontransitionend!(childEvent);
+    // Should not emit closed since target !== dialog
+    expect(wrapper.emitted('closed')).toBeFalsy();
+  });
+
+  it('calls close on transitionend when closing', async () => {
+    HTMLDialogElement.prototype.getAnimations = vi.fn(() => [{}] as any);
+    const wrapper = mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
+    const dialog = wrapper.find('dialog').element as HTMLDialogElement;
+
+    // Trigger closing
+    await wrapper.setProps({ show: false });
+    await nextTick();
+
+    // Now simulate transitionend on the dialog itself
+    const event = new Event('transitionend') as TransitionEvent;
+    Object.defineProperty(event, 'target', { value: dialog });
+    dialog.ontransitionend!(event);
+
+    expect(wrapper.emitted('closed')).toHaveLength(1);
+  });
+
+  it('sets show to false on dialog cancel event (Escape)', async () => {
+    const wrapper = mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
+    await wrapper.find('dialog').trigger('cancel');
+    expect(wrapper.emitted('update:show')![0]).toEqual([false]);
+  });
 });

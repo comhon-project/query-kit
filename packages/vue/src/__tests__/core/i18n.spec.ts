@@ -105,4 +105,64 @@ describe('i18n', () => {
       expect(loadedTranslations.en).toBeDefined();
     });
   });
+
+  describe('fallback locale loading', () => {
+    it('loads fallback locale when different from target', async () => {
+      // Set fallback to a different locale than target
+      fallback.value = 'de';
+      locale.value = 'fr';
+      // translate triggers ensureTranslationsLoaded
+      translate('add');
+      // Wait for both locales to load
+      await new Promise<void>((resolve) => {
+        const check = (): void => {
+          if (loadedTranslations['fr'] && loadedTranslations['de']) {
+            resolve();
+          } else {
+            setTimeout(check, 10);
+          }
+        };
+        check();
+      });
+      await nextTick();
+      expect(loadedTranslations['fr']).toBeDefined();
+      expect(loadedTranslations['de']).toBeDefined();
+    });
+
+    it('handles import error for invalid locale gracefully', async () => {
+      locale.value = 'invalid_locale_xyz';
+      translate('add');
+      // Wait for the import to fail and fallback to empty
+      await new Promise<void>((resolve) => {
+        const check = (): void => {
+          if (loadedTranslations['invalid_locale_xyz'] !== undefined) {
+            resolve();
+          } else {
+            setTimeout(check, 10);
+          }
+        };
+        check();
+      });
+      await nextTick();
+      expect(loadedTranslations['invalid_locale_xyz']).toEqual({});
+    });
+
+    it('resets fallback to en when fallback locale fails to load', async () => {
+      fallback.value = 'invalid_fallback_xyz';
+      locale.value = 'en'; // keep target as en so only fallback triggers load
+      translate('add');
+      await new Promise<void>((resolve) => {
+        const check = (): void => {
+          if (loadedTranslations['invalid_fallback_xyz'] !== undefined) {
+            resolve();
+          } else {
+            setTimeout(check, 10);
+          }
+        };
+        check();
+      });
+      await nextTick();
+      expect(fallback.value).toBe('en');
+    });
+  });
 });

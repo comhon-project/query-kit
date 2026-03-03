@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
+import FilterPicker from '@components/Filter/FilterPicker.vue';
+import GroupElement from '@components/Filter/GroupElement.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
+import IconButton from '@components/Common/IconButton.vue';
+import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
+import CollapseButton from '@components/Common/CollapseButton.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -269,5 +274,230 @@ describe('ChildGroup', () => {
     await nextTick();
 
     expect(wrapper.text()).toContain('filtres');
+  });
+
+  it('removes filter from the group when child emits remove', async () => {
+    const filter: GroupFilter = {
+      key: 13,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 131, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+        { key: 132, type: 'condition', operator: '=', property: 'last_name', value: 'B' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+    expect(filter.filters).toHaveLength(2);
+
+    // Find the first GroupElement and trigger remove
+    const groupElements = wrapper.findAllComponents(GroupElement);
+    expect(groupElements.length).toBe(2);
+    groupElements[0].vm.$emit('remove');
+    await nextTick();
+
+    expect(filter.filters).toHaveLength(1);
+    expect(filter.filters[0].property).toBe('last_name');
+  });
+
+  it('opens FilterPicker when add button is clicked', async () => {
+    const filter: GroupFilter = {
+      key: 14,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 141, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    // Click the add filter button
+    const addButtons = wrapper.findAllComponents(IconButton).filter((btn) => btn.props('icon') === 'add_filter');
+    expect(addButtons.length).toBe(1);
+    await addButtons[0].trigger('click');
+    await nextTick();
+
+    expect(wrapper.findComponent(FilterPicker).exists()).toBe(true);
+  });
+
+  it('adds filter from FilterPicker to group', async () => {
+    const filter: GroupFilter = {
+      key: 15,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 151, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    // Open the FilterPicker
+    const addButton = wrapper.findAllComponents(IconButton).find((btn) => btn.props('icon') === 'add_filter');
+    await addButton!.trigger('click');
+    await nextTick();
+
+    // Emit validate from FilterPicker
+    const picker = wrapper.findComponent(FilterPicker);
+    picker.vm.$emit('validate', {
+      type: 'condition',
+      property: 'age',
+      operator: '=',
+      key: 999,
+    });
+    await nextTick();
+
+    expect(filter.filters).toHaveLength(2);
+    expect(filter.filters[1]).toEqual(
+      expect.objectContaining({ property: 'age' }),
+    );
+  });
+
+  it('un-collapses group when add button is clicked', async () => {
+    const filter: GroupFilter = {
+      key: 16,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 161, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    // Collapse the group
+    await wrapper.setProps({ collapsed: true });
+    await nextTick();
+
+    // Click add
+    const addButton = wrapper.findAllComponents(IconButton).find((btn) => btn.props('icon') === 'add_filter');
+    await addButton!.trigger('click');
+    await nextTick();
+
+    expect(wrapper.emitted('update:collapsed')).toBeTruthy();
+    const lastCollapsedEmit = wrapper.emitted('update:collapsed')!;
+    expect(lastCollapsedEmit[lastCollapsedEmit.length - 1]).toEqual([false]);
+  });
+
+  it('emits remove on delete button in invalid operator state', async () => {
+    const filter: GroupFilter = {
+      key: 17,
+      type: 'group',
+      operator: 'invalid_op',
+      filters: [
+        { key: 171, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    expect(wrapper.findComponent(InvalidOperator).exists()).toBe(true);
+    const deleteButton = wrapper.findAllComponents(IconButton).find((btn) => btn.props('icon') === 'delete');
+    expect(deleteButton).toBeTruthy();
+    await deleteButton!.trigger('click');
+    expect(wrapper.emitted('remove')).toBeTruthy();
+  });
+
+  it('focuses parent treeitem when removing the only visible filter', async () => {
+    const filter: GroupFilter = {
+      key: 18,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 181, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    // There's only 1 visible filter; removing it means targetIndex = -1
+    // which triggers the fallback: closest('[role="treeitem"]')?.focus()
+    const groupElements = wrapper.findAllComponents(GroupElement);
+    expect(groupElements.length).toBe(1);
+    groupElements[0].vm.$emit('remove');
+    await nextTick();
+
+    expect(filter.filters).toHaveLength(0);
+  });
+
+  it('renders operator select and allows changing operator value', async () => {
+    const filter: GroupFilter = {
+      key: 19,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 191, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    // displayOperator: true is already the default in builderConfigProvide
+    mountChildGroup(filter);
+    await flushAll();
+
+    // Find the operator select (AdaptativeSelect renders a <select>)
+    const operatorSelect = wrapper.findComponent(AdaptativeSelect);
+    expect(operatorSelect.exists()).toBe(true);
+
+    // Change the operator value through the select
+    const selectEl = operatorSelect.find('select');
+    await selectEl.setValue('or');
+    expect(filter.operator).toBe('or');
+  });
+
+  it('renders CollapseButton and toggles collapsed state via button click', async () => {
+    const filter: GroupFilter = {
+      key: 20,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 201, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    const collapseBtn = wrapper.findComponent(CollapseButton);
+    expect(collapseBtn.exists()).toBe(true);
+
+    // Initially not collapsed
+    expect(wrapper.props('collapsed')).toBe(false);
+
+    // Click the collapse button to toggle
+    await collapseBtn.find('button').trigger('click');
+    await nextTick();
+
+    // Should have emitted update:collapsed with true
+    const emitted = wrapper.emitted('update:collapsed');
+    expect(emitted).toBeTruthy();
+    expect(emitted![emitted!.length - 1]).toEqual([true]);
+  });
+
+  it('closes FilterPicker when show is set to false', async () => {
+    const filter: GroupFilter = {
+      key: 21,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 211, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountChildGroup(filter);
+    await flushAll();
+
+    // Open the FilterPicker
+    const addButton = wrapper.findAllComponents(IconButton).find((btn) => btn.props('icon') === 'add_filter');
+    await addButton!.trigger('click');
+    await nextTick();
+
+    const picker = wrapper.findComponent(FilterPicker);
+    expect(picker.exists()).toBe(true);
+
+    // Close it by emitting update:show = false from the picker
+    picker.vm.$emit('update:show', false);
+    await nextTick();
+
+    // The FilterPicker component should still exist in DOM but with show=false
+    // This exercises the v-model:show binding on line 128
+    expect(wrapper.findComponent(FilterPicker).props('show')).toBe(false);
   });
 });

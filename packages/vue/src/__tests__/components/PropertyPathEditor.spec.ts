@@ -163,4 +163,33 @@ describe('PropertyPathEditor', () => {
     const updatedBrandNameOption = updatedOptions.find((o) => o.attributes('value') === 'brand_name');
     expect(updatedBrandNameOption!.text()).toBe('enseigne');
   });
+
+  it('handles invalid property path gracefully', async () => {
+    wrapper = mountWithPlugin(PropertyPathEditor, {
+      props: { entitySchema: userSchema, columns: [], modelValue: 'nonexistent_prop', 'onUpdate:modelValue': () => {} },
+    });
+    await flushAll();
+    // Should not throw, and should not show expand button
+    const addButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('add'));
+    expect(addButton).toBeUndefined();
+  });
+
+  it('collapses editing mode when reduce clicked while editing', async () => {
+    wrapper = mountWithPlugin(PropertyPathEditor, {
+      props: { entitySchema: userSchema, columns: [], modelValue: 'company', 'onUpdate:modelValue': () => {} },
+    });
+    await flushAll();
+
+    // Expand
+    const addButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('add'));
+    await addButton!.trigger('click');
+    await flushAll();
+    expect(wrapper.find('select').exists()).toBe(true);
+
+    // Click reduce while editing → should collapse editing, not truncate path
+    const removeButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('remove'));
+    await removeButton!.trigger('click');
+    await flushAll();
+    expect(wrapper.find('select').exists()).toBe(false);
+  });
 });

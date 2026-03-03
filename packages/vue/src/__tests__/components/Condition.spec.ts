@@ -277,4 +277,100 @@ describe('Condition', () => {
     const updatedOption = select.findAll('option').find((o) => o.element.value === 'like');
     expect(updatedOption?.text()).toBe('contient');
   });
+
+  it('sets value to undefined when switching to null operator', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: '=',
+      value: 'hello',
+      key: 16,
+    });
+    mountCondition(filter);
+    await flushAll();
+
+    filter.operator = 'null';
+    await nextTick();
+
+    expect(filter.value).toBeUndefined();
+  });
+
+  it('sets value to undefined when switching to not_null operator', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: '=',
+      value: 'hello',
+      key: 17,
+    });
+    mountCondition(filter);
+    await flushAll();
+
+    filter.operator = 'not_null';
+    await nextTick();
+
+    expect(filter.value).toBeUndefined();
+  });
+
+  it('converts empty array to undefined when switching from in to eq', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: 'in',
+      value: [],
+      key: 18,
+    });
+    mountCondition(filter);
+    await flushAll();
+
+    filter.operator = '=';
+    await nextTick();
+
+    expect(filter.value).toBeUndefined();
+  });
+
+  it('keeps undefined value when switching from eq to in with no value', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: '=',
+      value: undefined,
+      key: 19,
+    });
+    mountCondition(filter);
+    await flushAll();
+
+    filter.operator = 'in';
+    await nextTick();
+
+    expect(filter.value).toEqual([undefined]);
+  });
+
+  it('shows operator when displayOperator.condition is true', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: '=',
+      value: 'test',
+      key: 20,
+    });
+    mountCondition(filter, { displayOperator: { condition: true } });
+    await flushAll();
+
+    expect(wrapper.findComponent(AdaptativeSelect).exists()).toBe(true);
+  });
+
+  it('hides operator when displayOperator.condition is false', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: '=',
+      value: 'test',
+      key: 21,
+    });
+    mountCondition(filter, { displayOperator: { condition: false } });
+    await flushAll();
+
+    expect(wrapper.findComponent(AdaptativeSelect).exists()).toBe(false);
+  });
 });

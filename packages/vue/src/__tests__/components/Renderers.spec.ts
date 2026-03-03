@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import type { CellRendererProps, RenderFunction } from '@core/types';
+import * as RendererExports from '@components/Common/Renderers/index';
 
 import BooleanRenderer from '@components/Common/Renderers/Boolean.vue';
 import DateRenderer from '@components/Common/Renderers/Date.vue';
@@ -35,6 +36,20 @@ describe('Renderers', () => {
   beforeEach(() => {
     registerEnumLoader(enumSchemaLoader);
     registerEntityLoader(entitySchemaLoader);
+  });
+
+  // ──────────── Barrel Export ────────────
+  describe('barrel export', () => {
+    it('re-exports all renderer components', () => {
+      expect(RendererExports.Array).toBeDefined();
+      expect(RendererExports.Boolean).toBeDefined();
+      expect(RendererExports.Date).toBeDefined();
+      expect(RendererExports.DateTime).toBeDefined();
+      expect(RendererExports.Enum).toBeDefined();
+      expect(RendererExports.ForeignEntity).toBeDefined();
+      expect(RendererExports.Html).toBeDefined();
+      expect(RendererExports.Time).toBeDefined();
+    });
   });
 
   // ──────────── Boolean ────────────

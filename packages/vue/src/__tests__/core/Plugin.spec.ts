@@ -8,6 +8,7 @@ import { icons, defaultIcons } from '@core/IconManager';
 import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
 import { config } from '@config/config';
+import { getTypeRenderer, getPropertyRenderer } from '@core/CellRendererManager';
 import { locale, fallback } from '@i18n/i18n';
 import {
   entitySchemaLoader,
@@ -332,5 +333,27 @@ describe('Plugin', () => {
         computedScopes,
       }),
     ).not.toThrow();
+  });
+
+  it('registers cellTypeRenderers from options', () => {
+    const CustomRenderer = defineComponent({ render() { return null; } });
+    plugin.install(app, {
+      entitySchemaLoader: () => Promise.resolve(null),
+      cellTypeRenderers: { string: CustomRenderer },
+    });
+    // Verify the custom renderer was registered for the 'string' type
+    expect(getTypeRenderer({ type: 'string' })).toBe(CustomRenderer);
+  });
+
+  it('registers cellPropertyRenderers from options', () => {
+    const CustomRenderer = defineComponent({ render() { return null; } });
+    plugin.install(app, {
+      entitySchemaLoader: () => Promise.resolve(null),
+      cellPropertyRenderers: {
+        user: { first_name: CustomRenderer },
+      },
+    });
+    // Verify the custom renderer was registered for user.first_name
+    expect(getPropertyRenderer({ id: 'first_name', type: 'string', owner: 'user' })).toBe(CustomRenderer);
   });
 });

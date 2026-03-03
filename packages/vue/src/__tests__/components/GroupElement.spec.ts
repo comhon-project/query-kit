@@ -149,4 +149,59 @@ describe('GroupElement', () => {
     expect(wrapper.emitted('remove')).toBeTruthy();
     expect(wrapper.emitted('remove')![0]).toEqual([7]);
   });
+
+  it('sets aria-expanded for relationship_condition with nested group', async () => {
+    const filter: RelationshipConditionFilter = {
+      key: 9,
+      type: 'relationship_condition',
+      operator: 'has',
+      property: 'company',
+      filter: {
+        key: 91,
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { key: 911, type: 'condition', operator: '=', property: 'brand_name', value: 'Acme' },
+        ],
+      },
+    };
+    mountGroupElement(filter);
+    await flushAll();
+    const li = wrapper.find('li');
+    expect(li.attributes('aria-expanded')).toBe('true');
+  });
+
+  it('does not set aria-expanded for relationship_condition without filter', async () => {
+    const filter: RelationshipConditionFilter = {
+      key: 10,
+      type: 'relationship_condition',
+      operator: 'has',
+      property: 'company',
+    };
+    mountGroupElement(filter);
+    await flushAll();
+    const li = wrapper.find('li');
+    expect(li.attributes('aria-expanded')).toBeUndefined();
+  });
+
+  it('sets aria-expanded for relationship_condition with nested condition (not expandable)', async () => {
+    const filter: RelationshipConditionFilter = {
+      key: 11,
+      type: 'relationship_condition',
+      operator: 'has',
+      property: 'company',
+      filter: {
+        key: 111,
+        type: 'condition',
+        operator: '=',
+        property: 'brand_name',
+        value: 'Test',
+      },
+    };
+    mountGroupElement(filter);
+    await flushAll();
+    const li = wrapper.find('li');
+    // A relationship_condition with a condition child is NOT expandable (condition has no children)
+    expect(li.attributes('aria-expanded')).toBeUndefined();
+  });
 });

@@ -5,12 +5,13 @@ import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
+import { registerComputedScopes } from '@core/ComputedScopesManager';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
 import { flushAll } from '@tests/helpers/flushAsync';
 import type { VueWrapper } from '@vue/test-utils';
-import type { ConditionFilter, GroupFilter, Filter } from '@core/types';
+import type { ConditionFilter, GroupFilter, Filter, ScopeFilter, RelationshipConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 
@@ -560,6 +561,274 @@ describe('Builder', () => {
       const filter = emitted[emitted.length - 1][0] as GroupFilter;
       const condition = filter.filters[0] as ConditionFilter;
       expect(condition.value).toEqual(['apple', 'banana']);
+    });
+  });
+
+  // ==================== allowedOperators ====================
+  describe('allowedOperators', () => {
+    it('uses first allowed group operator from allowedOperators', async () => {
+      await mountBuilder({ allowedOperators: { group: ['or'] } });
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      expect(filter.operator).toBe('or');
+    });
+  });
+
+  // ==================== Computed scopes ====================
+  describe('computed scopes', () => {
+    it('transforms computed scope into inline filter in computed output', async () => {
+      registerComputedScopes({
+        user: [
+          {
+            id: 'test_computed',
+            name: 'Test Computed',
+            computed: (params: unknown[]) => ({
+              type: 'condition',
+              property: 'first_name',
+              operator: '=',
+              value: params[0] ?? 'default',
+            }),
+          },
+        ],
+      });
+
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'test_computed', parameters: ['Alice'] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      // The scope should have been replaced by the computed result
+      expect(filter.filters).toHaveLength(1);
+      expect(filter.filters[0]).toEqual(
+        expect.objectContaining({
+          type: 'condition',
+          property: 'first_name',
+          operator: '=',
+          value: 'Alice',
+        }),
+      );
+    });
+  });
+
+  // ==================== Scope parameter filtering ====================
+  describe('scope parameter filtering', () => {
+    it('filters undefined values from scope parameters arrays', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'scope', parameters: [['a', undefined, 'b']] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const scope = filter.filters[0] as ScopeFilter;
+      expect(scope.parameters![0]).toEqual(['a', 'b']);
+    });
+  });
+
+  // ==================== Computed filter - isScopeFilled ====================
+  describe('computed filter', () => {
+    it('removes scope with unfilled non-nullable parameter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'string_scope', parameters: [undefined] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      // Scope with unfilled non-nullable parameter should be removed
+      expect(filter.filters.find((f) => f.type === 'scope')).toBeUndefined();
+    });
+
+    it('keeps scope with filled non-nullable parameter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'string_scope', parameters: ['hello'] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      // Scope with filled non-nullable parameter should be kept
+      const scope = filter.filters.find((f) => f.type === 'scope') as ScopeFilter;
+      expect(scope).toBeDefined();
+      expect(scope.id).toBe('string_scope');
+      expect(scope.parameters).toEqual(['hello']);
+    });
+
+    it('removes scope with empty array for non-nullable parameter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'string_scope', parameters: [[]] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      // Empty array counts as empty for non-nullable parameter
+      expect(filter.filters.find((f) => f.type === 'scope')).toBeUndefined();
+    });
+
+    it('removes scope with null non-nullable parameter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'string_scope', parameters: [null] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      // Scope with null non-nullable parameter should be removed
+      expect(filter.filters.find((f) => f.type === 'scope')).toBeUndefined();
+    });
+  });
+
+  // ==================== Relationship conditions ====================
+  describe('relationship condition filtering', () => {
+    it('removes empty relationship condition child filter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          {
+            type: 'relationship_condition',
+            operator: 'has',
+            property: 'company',
+            filter: {
+              type: 'condition',
+              property: 'brand_name',
+              operator: '=',
+              value: undefined,
+            },
+          } as RelationshipConditionFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const rc = filter.filters[0] as RelationshipConditionFilter;
+      // Child filter with undefined value should be removed
+      expect(rc.filter).toBeUndefined();
+    });
+
+    it('keeps relationship condition child filter with value', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          {
+            type: 'relationship_condition',
+            operator: 'has',
+            property: 'company',
+            filter: {
+              type: 'condition',
+              property: 'brand_name',
+              operator: '=',
+              value: 'Acme',
+            },
+          } as RelationshipConditionFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const rc = filter.filters[0] as RelationshipConditionFilter;
+      expect(rc.filter).toBeDefined();
+      expect((rc.filter as ConditionFilter).value).toBe('Acme');
+    });
+  });
+
+  // ==================== Reset / Undo / Redo ====================
+  describe('reset / undo / redo', () => {
+    it('reset restores original filter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
+        ],
+      };
+      await mountBuilder({}, group);
+
+      // Modify the filter via the internal model
+      const groupComp = wrapper.findComponent(Group);
+      const internalGroup = groupComp.props('modelValue') as GroupFilter;
+      internalGroup.filters.push({
+        type: 'condition',
+        property: 'last_name',
+        operator: '=',
+        value: 'Smith',
+        key: 999,
+      });
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      // Click reset
+      const iconButtons = wrapper.findAllComponents(IconButton);
+      const resetButton = iconButtons.find((btn) => btn.props('icon') === 'reset');
+      expect(resetButton).toBeTruthy();
+      await resetButton!.trigger('click');
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      const emitted = wrapper.emitted('computed')!;
+      const lastFilter = emitted[emitted.length - 1][0] as GroupFilter;
+      expect(lastFilter.filters).toHaveLength(1);
+    });
+
+    it('undo reverts to previous state and redo restores it', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
+        ],
+      };
+      await mountBuilder({}, group);
+
+      // Add a filter to trigger a new snapshot (array push triggers Vue reactivity)
+      const groupComp = wrapper.findComponent(Group);
+      const internalGroup = groupComp.props('modelValue') as GroupFilter;
+      internalGroup.filters.push({
+        type: 'condition',
+        property: 'last_name',
+        operator: '=',
+        value: 'Smith',
+        key: 999,
+      });
+      // Flush first to let deep watcher fire, then advance timers for debounce
+      await flushAll();
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      // Undo should now be enabled (2 snapshots in history)
+      let iconButtons = wrapper.findAllComponents(IconButton);
+      const undoButton = iconButtons.find((btn) => btn.props('icon') === 'undo');
+      expect(undoButton!.props('disabled')).toBe(false);
+      await undoButton!.trigger('click');
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      // After undo, redo should be enabled
+      iconButtons = wrapper.findAllComponents(IconButton);
+      const redoButton = iconButtons.find((btn) => btn.props('icon') === 'redo');
+      expect(redoButton!.props('disabled')).toBe(false);
     });
   });
 });

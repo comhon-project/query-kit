@@ -183,4 +183,39 @@ describe('FilterPicker', () => {
     const updatedFirstNameOption = updatedOptions.find((o) => o.attributes('value') === 'first_name');
     expect(updatedFirstNameOption?.text()).toBe('prénom');
   });
+
+  it('does not emit validate when no target is selected for condition type', async () => {
+    mountFilterPicker();
+    await flushAll();
+
+    // Submit without selecting anything
+    await wrapper.find('form').trigger('submit');
+    await flushAll();
+    await nextTick();
+    await flushAll();
+
+    expect(wrapper.emitted('validate')).toBeFalsy();
+  });
+
+  it('lists computed scopes in options', async () => {
+    // Import and register a computed scope
+    const { registerComputedScopes } = await import('@core/ComputedScopesManager');
+    registerComputedScopes({
+      user: [
+        {
+          id: 'test_computed_scope',
+          name: 'Test Computed',
+          computed: () => ({ type: 'condition', property: 'first_name', operator: '=', value: 'test' }),
+        },
+      ],
+    });
+
+    mountFilterPicker();
+    await flushAll();
+
+    const options = wrapper.findAll('select option');
+    const computedOption = options.find((o) => o.attributes('value') === 'test_computed_scope');
+    expect(computedOption).toBeTruthy();
+    expect(computedOption!.text()).toBe('Test Computed');
+  });
 });

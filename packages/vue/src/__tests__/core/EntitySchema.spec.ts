@@ -454,6 +454,24 @@ describe('Translations', () => {
       // Neither es nor fr have parameters translations, falls back to parameter.name
       expect(getScopeParameterTranslation(param)).toBe('enum scope');
     });
+
+    it('falls back from parameter.name to parameter.id when name is missing and no translation', async () => {
+      // Directly test the fallback chain: translation -> name -> id
+      // Create a parameter with no name property at all
+      _resetForTesting();
+      registerLoader(entitySchemaLoader);
+      registerTranslationsLoader(entityTranslationsLoader);
+      await loadRawTranslations('user', 'en');
+
+      const param: ScopeParameter = {
+        id: 'orphan_param',
+        type: 'string',
+        owner: 'user',
+        scopeId: 'nonexistent_scope',
+      };
+      // No translation exists for this scope/parameter, and no name on the param
+      expect(getScopeParameterTranslation(param)).toBe('orphan_param');
+    });
   });
 
   describe('loadRawTranslations()', () => {
@@ -473,6 +491,21 @@ describe('Translations', () => {
       const result = await loadRawTranslations('user', 'nonexistent_locale');
       // The loader returns null for unknown locales, which gets stored as null
       // loadRawTranslations returns loadedTranslations[cacheKey] ?? {}
+      expect(result).toEqual({});
+    });
+
+    it('catches translation loading error and assigns empty object', async () => {
+      // Register a translations loader that throws for a specific locale
+      const failingLoader = {
+        load: async (schemaId: string, locale: string) => {
+          if (locale === 'zz') throw new Error('load error');
+          return entityTranslationsLoader.load(schemaId, locale);
+        },
+      };
+      registerTranslationsLoader(failingLoader);
+
+      const result = await loadRawTranslations('user', 'zz');
+      // Should not throw, and should assign empty object via the catch block
       expect(result).toEqual({});
     });
   });

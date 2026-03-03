@@ -175,4 +175,59 @@ describe('Pagination', () => {
 
     expect(wrapper.find('nav').attributes('aria-label')).toBe('navigation par pages');
   });
+
+  it('navigates to previous page when button clicked', async () => {
+    const onUpdate = vi.fn();
+    const wrapper = mount(Pagination, {
+      props: { modelValue: 3, count: 5, 'onUpdate:modelValue': onUpdate },
+    });
+    const prevBtn = wrapper.findAll('button')[0];
+    await prevBtn.trigger('click');
+    vi.advanceTimersByTime(500);
+    expect(onUpdate).toHaveBeenCalledWith(2);
+  });
+
+  it('navigates to next page when button clicked', async () => {
+    const onUpdate = vi.fn();
+    const wrapper = mount(Pagination, {
+      props: { modelValue: 1, count: 5, 'onUpdate:modelValue': onUpdate },
+    });
+    const buttons = wrapper.findAll('button');
+    const nextBtn = buttons[buttons.length - 1];
+    await nextBtn.trigger('click');
+    vi.advanceTimersByTime(500);
+    expect(onUpdate).toHaveBeenCalledWith(2);
+  });
+
+  it('does not show ellipsis when pages fit without gap (count=5, page=3)', () => {
+    const wrapper = mount(Pagination, {
+      props: { modelValue: 3, count: 5, 'onUpdate:modelValue': () => {} },
+    });
+    const items = wrapper.findAll('li');
+    const ellipsisItems = items.filter((li) => li.text() === '...');
+    expect(ellipsisItems.length).toBe(0);
+  });
+
+  it('shows both ellipses when current page is in the middle of a large range', () => {
+    const wrapper = mount(Pagination, {
+      props: { modelValue: 10, count: 20, 'onUpdate:modelValue': () => {} },
+    });
+    const items = wrapper.findAll('li');
+    const ellipsisItems = items.filter((li) => li.text() === '...');
+    expect(ellipsisItems.length).toBe(2);
+  });
+
+  it('handles count=2 correctly', () => {
+    const wrapper = mount(Pagination, {
+      props: { modelValue: 1, count: 2, 'onUpdate:modelValue': () => {} },
+    });
+    const pageButtons = wrapper.findAll('button').filter((b) => /^\d+$/.test(b.text()));
+    expect(pageButtons).toHaveLength(2);
+    expect(pageButtons[0].text()).toBe('1');
+    expect(pageButtons[1].text()).toBe('2');
+    // No ellipsis
+    const items = wrapper.findAll('li');
+    const ellipsisItems = items.filter((li) => li.text() === '...');
+    expect(ellipsisItems.length).toBe(0);
+  });
 });

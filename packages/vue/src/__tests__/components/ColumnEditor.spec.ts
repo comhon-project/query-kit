@@ -222,4 +222,84 @@ describe('ColumnEditor', () => {
     const updatedOption = getSelectOptions(wrapper).find((o) => o.attributes('value') === 'first_name');
     expect(updatedOption!.text()).toBe('prénom');
   });
+
+  describe('keyboard reorder feedback', () => {
+    it('announces grab action via live message', async () => {
+      wrapper = mountWithPlugin(ColumnEditor, {
+        props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
+      });
+      await flushAll();
+      await openModal(wrapper);
+
+      // Find the grip button on the first item and trigger Enter (grab)
+      const items = wrapper.findAll('li');
+      const firstItem = items[0];
+      // Trigger keydown Enter on the li element (which has the keyboard bindings from useDragAndDrop)
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+
+      const liveRegion = wrapper.find('[aria-live="assertive"]');
+      expect(liveRegion.text()).toContain('grabbed');
+    });
+
+    it('announces cancel action via live message', async () => {
+      wrapper = mountWithPlugin(ColumnEditor, {
+        props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
+      });
+      await flushAll();
+      await openModal(wrapper);
+
+      const items = wrapper.findAll('li');
+      const firstItem = items[0];
+      // Grab
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+      // Cancel with Escape
+      await firstItem.trigger('keydown', { key: 'Escape' });
+      await flushAll();
+
+      const liveRegion = wrapper.find('[aria-live="assertive"]');
+      expect(liveRegion.text()).toContain('cancelled');
+    });
+
+    it('announces move action via live message', async () => {
+      wrapper = mountWithPlugin(ColumnEditor, {
+        props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
+      });
+      await flushAll();
+      await openModal(wrapper);
+
+      const items = wrapper.findAll('li');
+      const firstItem = items[0];
+      // Grab
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+      // Move down
+      await firstItem.trigger('keydown', { key: 'ArrowDown' });
+      await flushAll();
+
+      const liveRegion = wrapper.find('[aria-live="assertive"]');
+      expect(liveRegion.text()).toContain('moved');
+    });
+
+    it('announces drop action via live message', async () => {
+      wrapper = mountWithPlugin(ColumnEditor, {
+        props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
+      });
+      await flushAll();
+      await openModal(wrapper);
+
+      const items = wrapper.findAll('li');
+      const firstItem = items[0];
+      // Grab
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+      // Drop (Enter again)
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+
+      const liveRegion = wrapper.find('[aria-live="assertive"]');
+      expect(liveRegion.text()).toContain('dropped');
+    });
+  });
 });

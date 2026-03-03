@@ -487,4 +487,130 @@ describe('Collection', () => {
       expect(cells[0].props('requestTimezone')).toBe('UTC');
     });
   });
+
+  describe('orderBy handling', () => {
+    it('initializes empty orderBy when orderBy is undefined', async () => {
+      const { calls } = mountCollection();
+      await flushAll();
+      expect(calls).toHaveLength(1);
+      expect(calls[0].order).toBeUndefined();
+    });
+  });
+
+  describe('infinite scroll toggle', () => {
+    it('toggles from pagination to infinite scroll when button clicked', async () => {
+      mountCollection({ allowedCollectionTypes: ['pagination', 'infinite'] });
+      await flushAll();
+
+      // Initially shows pagination
+      expect(wrapper.find('nav').exists()).toBe(true);
+
+      // Click the toggle button
+      const toggleButton = wrapper.findAll('button').find((b) => {
+        const label = b.attributes('aria-label') ?? '';
+        return label.includes('infinite') || label.includes('paginated');
+      });
+      expect(toggleButton).toBeTruthy();
+      await toggleButton!.trigger('click');
+      await flushAll();
+
+      // Should now be in infinite scroll mode - no pagination nav
+      expect(wrapper.find('nav').exists()).toBe(false);
+    });
+  });
+
+  describe('keyboard navigation on clickable rows', () => {
+    it('handles Enter key on clickable row', async () => {
+      const onRowClick = vi.fn();
+      mountCollection({ onRowClick });
+      await flushAll();
+
+      const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
+      expect(dataRow).toBeTruthy();
+      await dataRow!.trigger('keydown', { key: 'Enter' });
+      expect(onRowClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
+    });
+
+    it('handles Space key on clickable row', async () => {
+      const onRowClick = vi.fn();
+      mountCollection({ onRowClick });
+      await flushAll();
+
+      const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
+      expect(dataRow).toBeTruthy();
+      await dataRow!.trigger('keydown', { key: ' ' });
+      expect(onRowClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
+    });
+
+    it('ignores other keys on clickable row', async () => {
+      const onRowClick = vi.fn();
+      mountCollection({ onRowClick });
+      await flushAll();
+
+      const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
+      await dataRow!.trigger('keydown', { key: 'Tab' });
+      expect(onRowClick).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('flattened requester', () => {
+    it('detects flattened requester correctly', async () => {
+      const { requester: flatRequester } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester: { request: (flatRequester as any).request, flattened: true },
+        },
+      });
+      await flushAll();
+
+      const cells = wrapper.findAllComponents(Cell);
+      expect(cells.length).toBeGreaterThan(0);
+      expect(cells[0].props('flattened')).toBe(true);
+    });
+  });
+
+  describe('multi-sort', () => {
+    it('adds multiple sort columns with shift-click', async () => {
+      const orderBy = ref<any[]>([]);
+      const { requester } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name', 'last_name'],
+          'onUpdate:columns': () => {},
+          requester,
+          orderBy: orderBy.value,
+          'onUpdate:orderBy': (v: any[]) => {
+            orderBy.value = v;
+            wrapper.setProps({ orderBy: v });
+          },
+        },
+      });
+      await flushAll();
+
+      const sortButtons = wrapper.findAll('th button');
+      expect(sortButtons.length).toBe(2);
+
+      // Click first header
+      await sortButtons[0].trigger('click');
+      await flushAll();
+      expect(orderBy.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+
+      // Ctrl-click second header (Header passes e.ctrlKey as multi flag)
+      await sortButtons[1].trigger('click', { ctrlKey: true });
+      await flushAll();
+      expect(orderBy.value).toHaveLength(2);
+      expect(orderBy.value).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ column: 'first_name' }),
+          expect.objectContaining({ column: 'last_name' }),
+        ]),
+      );
+    });
+  });
 });

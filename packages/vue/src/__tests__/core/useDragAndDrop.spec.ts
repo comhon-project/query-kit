@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { effectScope, type EffectScope } from 'vue';
+import { effectScope, nextTick, type EffectScope } from 'vue';
 import { useDragAndDrop } from '@core/useDragAndDrop';
 
 type DragAndDropReturn = ReturnType<typeof useDragAndDrop>;
@@ -252,6 +252,32 @@ describe('useDragAndDrop', () => {
       expect(dnd.getItemBindings(0)['data-dragging']).toBeUndefined();
     });
 
+    it('adjusts drop index when dropping after original position (from < index)', () => {
+      // Drag item 0 and drop on zone at index 2
+      // Since from (0) < index (2), to should be index - 1 = 1
+      dnd.onGripStart(new MouseEvent('mousedown'));
+      const bindings0 = dnd.getItemBindings(0);
+      bindings0.onDragstart(createDragEvent('dragstart'));
+
+      const bindings2 = dnd.getItemBindings(2);
+      bindings2.onDrop(createDragEvent('drop'));
+
+      expect(moved).toEqual([[0, 1]]);
+    });
+
+    it('uses exact drop index when dropping before original position (from > index)', () => {
+      // Drag item 2 and drop on zone at index 0
+      // Since from (2) > index (0), to should be index = 0
+      dnd.onGripStart(new MouseEvent('mousedown'));
+      const bindings2 = dnd.getItemBindings(2);
+      bindings2.onDragstart(createDragEvent('dragstart'));
+
+      const bindings0 = dnd.getItemBindings(0);
+      bindings0.onDrop(createDragEvent('drop'));
+
+      expect(moved).toEqual([[2, 0]]);
+    });
+
     it('onDragLeave clears dragOverIndex', () => {
       // Start a drag from item 0
       dnd.onGripStart(new MouseEvent('mousedown'));
@@ -326,6 +352,51 @@ describe('useDragAndDrop', () => {
 
       // from=0, index=3 >= length(3), so to = length - 1 = 2
       expect(moved).toEqual([[0, 2]]);
+    });
+  });
+
+  describe('onItemFocusout', () => {
+    it('resets grabbed index when focus leaves all items', async () => {
+      // Grab item 1
+      const bindings1 = dnd.getItemBindings(1);
+      bindings1.onKeydown(createKeyboardEvent(' ', 1));
+      expect(dnd.lastAction.value).toEqual({ type: 'grab', index: 1 });
+
+      // Simulate focusout where activeElement is NOT one of the items
+      // (e.g., focus moved to document.body)
+      Object.defineProperty(document, 'activeElement', { value: document.body, configurable: true });
+      bindings1.onFocusout();
+      await nextTick();
+
+      // grabbedIndex should be reset (lastAction stays as 'grab' but data-grabbed should be gone)
+      const updatedBindings1 = dnd.getItemBindings(1);
+      expect(updatedBindings1['data-grabbed']).toBeUndefined();
+    });
+
+    it('keeps grabbed index when focus moves to another item', async () => {
+      // Grab item 1
+      const bindings1 = dnd.getItemBindings(1);
+      bindings1.onKeydown(createKeyboardEvent(' ', 1));
+      expect(dnd.lastAction.value).toEqual({ type: 'grab', index: 1 });
+
+      // Simulate focusout where activeElement IS one of the items
+      Object.defineProperty(document, 'activeElement', { value: items[2], configurable: true });
+      bindings1.onFocusout();
+      await nextTick();
+
+      // grabbedIndex should still be set
+      const updatedBindings1 = dnd.getItemBindings(1);
+      expect(updatedBindings1['data-grabbed']).toBe(true);
+    });
+
+    it('does nothing when no item is grabbed', async () => {
+      // No item grabbed - focusout should be a no-op
+      const bindings0 = dnd.getItemBindings(0);
+      bindings0.onFocusout();
+      await nextTick();
+
+      // Nothing should change
+      expect(dnd.lastAction.value).toBeNull();
     });
   });
 });

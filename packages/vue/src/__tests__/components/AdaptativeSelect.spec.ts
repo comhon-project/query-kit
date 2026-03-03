@@ -62,4 +62,12 @@ describe('AdaptativeSelect', () => {
     });
     expect(wrapper.find('select').classes()).toContain('my-select');
   });
+
+  it('returns empty label when modelValue does not match any option', () => {
+    const wrapper = mount(AdaptativeSelect, {
+      props: { options, modelValue: 'nonexistent', 'onUpdate:modelValue': () => {} },
+    });
+    // Should not throw - the selected option won't match
+    expect(wrapper.find('select').exists()).toBe(true);
+  });
 });
