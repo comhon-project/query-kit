@@ -573,6 +573,272 @@ describe('Collection', () => {
     });
   });
 
+  describe('infinite scroll behavior', () => {
+    it('sets end when server returns fewer items than limit', async () => {
+      const { requester } = createMockRequester({ collection: [sampleRows[0]], count: 1 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester,
+          allowedCollectionTypes: ['infinite'],
+        },
+      });
+      await flushAll();
+      // With only 1 item returned when limit is 10, infinite scroll should reach the end
+      // The observer sentinel should be hidden (v-show becomes false when end=true)
+      const sentinel = wrapper.findAll('tbody tr').find((r) => r.attributes('style')?.includes('opacity: 0'));
+      expect(sentinel).toBeTruthy();
+      expect(sentinel!.isVisible()).toBe(false);
+    });
+
+    it('appends rows on subsequent pages instead of replacing', async () => {
+      const page = ref(1);
+      let callCount = 0;
+      const requester = {
+        request: vi.fn(async () => {
+          callCount++;
+          if (callCount === 1) {
+            return { collection: [{ id: 1, first_name: 'A' }], count: 20 };
+          }
+          return { collection: [{ id: 2, first_name: 'B' }], count: 20 };
+        }),
+      };
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester,
+          allowedCollectionTypes: ['infinite'],
+          page: page.value,
+          'onUpdate:page': (v: number) => {
+            page.value = v;
+            wrapper.setProps({ page: v });
+          },
+        },
+      });
+      await flushAll();
+      expect(requester.request).toHaveBeenCalledTimes(1);
+
+      // Simulate page increment (as IntersectionObserver would trigger)
+      await wrapper.setProps({ page: 2 });
+      await flushAll();
+      expect(requester.request).toHaveBeenCalledTimes(2);
+      // Both rows should be present (appended, not replaced)
+      expect(wrapper.text()).toContain('A');
+      expect(wrapper.text()).toContain('B');
+    });
+  });
+
+  describe('stale request handling', () => {
+    it('discards stale request response when a newer request has started', async () => {
+      let resolvers: Array<(v: any) => void> = [];
+      const requester = {
+        request: vi.fn(() => new Promise((resolve) => { resolvers.push(resolve); })),
+      };
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester,
+          page: 1,
+          'onUpdate:page': () => {},
+        },
+      });
+      await flushAll();
+      expect(resolvers).toHaveLength(1);
+
+      // Trigger a second request by changing page
+      await wrapper.setProps({ page: 2 });
+      await flushAll();
+      expect(resolvers).toHaveLength(2);
+
+      // Resolve first request (stale) - should be discarded
+      resolvers[0]({ collection: [{ id: 99, first_name: 'Stale' }], count: 1 });
+      await flushAll();
+      expect(wrapper.text()).not.toContain('Stale');
+
+      // Resolve second request (current)
+      resolvers[1]({ collection: [{ id: 1, first_name: 'Current' }], count: 1 });
+      await flushAll();
+      expect(wrapper.text()).toContain('Current');
+    });
+  });
+
+  describe('error handling', () => {
+    it('throws when allowedCollectionTypes is empty', () => {
+      expect(() => {
+        mountCollection({ allowedCollectionTypes: [] });
+      }).toThrow('allowedCollectionTypes prop must be not empty array');
+    });
+
+    it('throws when allowedCollectionTypes contains invalid type', () => {
+      expect(() => {
+        mountCollection({ allowedCollectionTypes: ['unknown' as any] });
+      }).toThrow('invalide allowed collection type');
+    });
+  });
+
+  describe('async postRequest', () => {
+    it('awaits async postRequest before updating collection', async () => {
+      const order: string[] = [];
+      const postRequest = vi.fn(async () => {
+        order.push('postRequest');
+        await new Promise((r) => setTimeout(r, 0));
+        order.push('postRequestDone');
+      });
+      mountCollection({ postRequest });
+      await flushAll();
+      expect(postRequest).toHaveBeenCalled();
+      expect(order).toEqual(['postRequest', 'postRequestDone']);
+    });
+  });
+
+  describe('requester function shorthand', () => {
+    it('accepts a plain function as requester', async () => {
+      const fn = vi.fn(async () => ({ collection: sampleRows, count: 2 }));
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester: fn,
+        },
+      });
+      await flushAll();
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(wrapper.text()).toContain('John');
+    });
+  });
+
+  describe('resetCollection', () => {
+    it('resets page to 1 when filter changes and page is not 1', async () => {
+      const page = ref(1);
+      const { requester, calls } = createMockRequester({ collection: sampleRows, count: 100 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester,
+          page: page.value,
+          'onUpdate:page': (v: number) => {
+            page.value = v;
+            wrapper.setProps({ page: v });
+          },
+          filter: undefined,
+        },
+      });
+      await flushAll();
+
+      // Set page to 2
+      await wrapper.setProps({ page: 2 });
+      await flushAll();
+
+      const callsBefore = calls.length;
+
+      // Change filter triggers resetCollection, which should reset page to 1
+      await wrapper.setProps({ filter: { type: 'group', operator: 'and', filters: [] } });
+      await flushAll();
+
+      expect(page.value).toBe(1);
+      expect(calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  describe('orderBy with relationship', () => {
+    it('resolves relationship sort using unique_identifier fallback', async () => {
+      const orderBy = ref<any[]>([{ column: 'company', order: 'asc' }]);
+      const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['company'],
+          'onUpdate:columns': () => {},
+          requester,
+          orderBy: orderBy.value,
+          'onUpdate:orderBy': (v: any[]) => { orderBy.value = v; },
+        },
+      });
+      await flushAll();
+      // organization has no default_sort → uses unique_identifier 'id'
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall.order).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ property: 'company.id', order: 'asc' }),
+        ]),
+      );
+    });
+  });
+
+  describe('allowedCollectionTypes watcher', () => {
+    it('preserves preferred mode when still allowed after change', async () => {
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester: createMockRequester({ collection: sampleRows, count: 2 }).requester,
+          allowedCollectionTypes: ['pagination', 'infinite'],
+        },
+      });
+      await flushAll();
+      expect(wrapper.find('nav').exists()).toBe(true);
+
+      // Switch to infinite
+      const toggleButton = wrapper.findAll('button').find((b) => {
+        const label = b.attributes('aria-label') ?? '';
+        return label.includes('infinite') || label.includes('paginated');
+      });
+      await toggleButton!.trigger('click');
+      await flushAll();
+      expect(wrapper.find('nav').exists()).toBe(false);
+
+      // Change order of allowedCollectionTypes but keep infinite → should stay infinite
+      await wrapper.setProps({ allowedCollectionTypes: ['infinite', 'pagination'] });
+      await flushAll();
+      expect(wrapper.find('nav').exists()).toBe(false);
+    });
+
+    it('falls back when preferred mode is no longer allowed', async () => {
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['first_name'],
+          'onUpdate:columns': () => {},
+          requester: createMockRequester({ collection: sampleRows, count: 2 }).requester,
+          allowedCollectionTypes: ['pagination', 'infinite'],
+        },
+      });
+      await flushAll();
+
+      // Switch to infinite
+      const toggleButton = wrapper.findAll('button').find((b) => {
+        const label = b.attributes('aria-label') ?? '';
+        return label.includes('infinite') || label.includes('paginated');
+      });
+      await toggleButton!.trigger('click');
+      await flushAll();
+      expect(wrapper.find('nav').exists()).toBe(false);
+
+      // Remove infinite → should fall back to pagination
+      await wrapper.setProps({ allowedCollectionTypes: ['pagination'] });
+      await flushAll();
+      expect(wrapper.find('nav').exists()).toBe(true);
+    });
+  });
+
   describe('multi-sort', () => {
     it('adds multiple sort columns with shift-click', async () => {
       const orderBy = ref<any[]>([]);

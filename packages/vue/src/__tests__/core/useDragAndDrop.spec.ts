@@ -333,6 +333,134 @@ describe('useDragAndDrop', () => {
     });
   });
 
+  describe('native drag and drop edge cases', () => {
+    it('onDragOver does nothing when not dragging (draggedIndex is null)', () => {
+      const bindings1 = dnd.getItemBindings(1);
+      const dragOverEvent = createDragEvent('dragover');
+      const preventSpy = vi.spyOn(dragOverEvent, 'preventDefault');
+      bindings1.onDragover(dragOverEvent);
+
+      // Should not call preventDefault when no drag is active
+      expect(preventSpy).not.toHaveBeenCalled();
+      // data-drag-over should not be set
+      expect(dnd.getItemBindings(1)['data-drag-over']).toBeUndefined();
+    });
+
+    it('onDragLeave does not clear dragOverIndex when relatedTarget is within currentTarget', () => {
+      // Start a drag
+      dnd.onGripStart(new MouseEvent('mousedown'));
+      const bindings0 = dnd.getItemBindings(0);
+      bindings0.onDragstart(createDragEvent('dragstart'));
+
+      // Drag over item 2
+      const bindings2 = dnd.getItemBindings(2);
+      bindings2.onDragover(createDragEvent('dragover'));
+      expect(dnd.getItemBindings(2)['data-drag-over']).toBe(true);
+
+      // Drag leave where relatedTarget is a child of currentTarget
+      const child = document.createElement('span');
+      items[2].appendChild(child);
+      const leaveEvent = createDragEvent('dragleave', {
+        relatedTarget: child,
+        currentTarget: items[2],
+      } as any);
+      bindings2.onDragleave(leaveEvent);
+
+      // dragOverIndex should NOT be cleared (relatedTarget is inside currentTarget)
+      expect(dnd.getItemBindings(2)['data-drag-over']).toBe(true);
+      child.remove();
+    });
+
+    it('onDrop on same index does not call move', () => {
+      dnd.onGripStart(new MouseEvent('mousedown'));
+      const bindings1 = dnd.getItemBindings(1);
+      bindings1.onDragstart(createDragEvent('dragstart'));
+
+      // Drop on the same index
+      bindings1.onDrop(createDragEvent('drop'));
+
+      // move should not be called
+      expect(moved).toEqual([]);
+    });
+
+    it('onDragStart resets keyboard grabbedIndex', () => {
+      // First grab via keyboard
+      const bindings1 = dnd.getItemBindings(1);
+      bindings1.onKeydown(createKeyboardEvent(' ', 1));
+      expect(dnd.getItemBindings(1)['data-grabbed']).toBe(true);
+
+      // Then start a native drag (after grip mouse)
+      dnd.onGripStart(new MouseEvent('mousedown'));
+      const bindings0 = dnd.getItemBindings(0);
+      bindings0.onDragstart(createDragEvent('dragstart'));
+
+      // Keyboard grabbed should be cleared
+      expect(dnd.getItemBindings(1)['data-grabbed']).toBeUndefined();
+    });
+  });
+
+  describe('onGripStart edge cases', () => {
+    it('does nothing for KeyboardEvent with non-Space/Enter key', () => {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'target', { value: items[0] });
+      dnd.onGripStart(event);
+
+      // No action should be set
+      expect(dnd.lastAction.value).toBeNull();
+    });
+
+    it('does nothing when KeyboardEvent target has no draggable ancestor', () => {
+      const orphanEl = document.createElement('span');
+      document.body.appendChild(orphanEl);
+
+      const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'target', { value: orphanEl });
+      dnd.onGripStart(event);
+
+      expect(dnd.lastAction.value).toBeNull();
+      orphanEl.remove();
+    });
+
+    it('does nothing when draggable element is not in itemRefs', () => {
+      const outsideEl = document.createElement('div');
+      outsideEl.setAttribute('draggable', 'true');
+      document.body.appendChild(outsideEl);
+
+      const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'target', { value: outsideEl });
+      dnd.onGripStart(event);
+
+      expect(dnd.lastAction.value).toBeNull();
+      outsideEl.remove();
+    });
+  });
+
+  describe('onKeydown target filtering', () => {
+    it('ignores keydown when event target is not currentTarget (bubbling)', () => {
+      const child = document.createElement('span');
+      items[1].appendChild(child);
+
+      const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+      Object.defineProperty(event, 'target', { value: child });
+      Object.defineProperty(event, 'currentTarget', { value: items[1] });
+
+      const bindings1 = dnd.getItemBindings(1);
+      bindings1.onKeydown(event);
+
+      // Should not grab because target !== currentTarget
+      expect(dnd.lastAction.value).toBeNull();
+      child.remove();
+    });
+
+    it('Escape does nothing when nothing is grabbed', () => {
+      const bindings1 = dnd.getItemBindings(1);
+      bindings1.onKeydown(createKeyboardEvent('Escape', 1));
+
+      // No action should be set since nothing was grabbed
+      expect(dnd.lastAction.value).toBeNull();
+    });
+  });
+
   describe('getDropZoneBindings', () => {
     it('returns bindings for drop zone (index = items.length)', () => {
       const dropZoneBindings = dnd.getDropZoneBindings();

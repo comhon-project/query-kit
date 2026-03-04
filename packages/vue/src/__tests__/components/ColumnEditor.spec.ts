@@ -223,6 +223,75 @@ describe('ColumnEditor', () => {
     expect(updatedOption!.text()).toBe('prénom');
   });
 
+  it('shows custom open column with label function in options', async () => {
+    wrapper = mountWithPlugin(ColumnEditor, {
+      props: {
+        entitySchema: userSchema,
+        modelValue: ['first_name'],
+        customColumns: { actions: { open: true, label: (loc: string) => `Actions-${loc}` } },
+        'onUpdate:modelValue': () => {},
+      },
+    });
+    await flushAll();
+    await openModal(wrapper);
+
+    const options = getSelectOptions(wrapper);
+    const actionsOption = options.find((o) => o.attributes('value') === 'actions');
+    expect(actionsOption).toBeTruthy();
+    expect(actionsOption!.text()).toBe('Actions-en');
+  });
+
+  it('does not add column when no property is selected', async () => {
+    wrapper = mountWithPlugin(ColumnEditor, {
+      props: { entitySchema: userSchema, modelValue: ['first_name'], 'onUpdate:modelValue': () => {} },
+    });
+    await flushAll();
+    await openModal(wrapper);
+
+    // Click add button without selecting anything
+    const addButton = wrapper.find('dialog').findAll('button').find((b) => b.attributes('aria-label')?.includes('add'));
+    await addButton!.trigger('click');
+    await flushAll();
+
+    // Should still have 1 column
+    expect(getColumnItems(wrapper).length).toBe(1);
+  });
+
+  it('excludes custom open columns already added from options', async () => {
+    wrapper = mountWithPlugin(ColumnEditor, {
+      props: {
+        entitySchema: userSchema,
+        modelValue: ['actions'],
+        customColumns: { actions: { open: true, label: 'Actions' } },
+        'onUpdate:modelValue': () => {},
+      },
+    });
+    await flushAll();
+    await openModal(wrapper);
+
+    const options = getSelectOptions(wrapper);
+    const values = options.map((o) => o.attributes('value'));
+    expect(values).not.toContain('actions');
+  });
+
+  it('uses custom label function for existing column items in options', async () => {
+    wrapper = mountWithPlugin(ColumnEditor, {
+      props: {
+        entitySchema: userSchema,
+        modelValue: [],
+        customColumns: { first_name: { label: (loc: string) => `Custom-${loc}` } },
+        'onUpdate:modelValue': () => {},
+      },
+    });
+    await flushAll();
+    await openModal(wrapper);
+
+    const options = getSelectOptions(wrapper);
+    const firstNameOption = options.find((o) => o.attributes('value') === 'first_name');
+    expect(firstNameOption).toBeTruthy();
+    expect(firstNameOption!.text()).toBe('Custom-en');
+  });
+
   describe('keyboard reorder feedback', () => {
     it('announces grab action via live message', async () => {
       wrapper = mountWithPlugin(ColumnEditor, {
@@ -300,6 +369,52 @@ describe('ColumnEditor', () => {
 
       const liveRegion = wrapper.find('[aria-live="assertive"]');
       expect(liveRegion.text()).toContain('dropped');
+    });
+
+    it('uses custom label function for announcement', async () => {
+      wrapper = mountWithPlugin(ColumnEditor, {
+        props: {
+          entitySchema: userSchema,
+          modelValue: ['custom_col', 'first_name'],
+          customColumns: { custom_col: { open: true, label: (loc: string) => `Custom-${loc}` } },
+          'onUpdate:modelValue': () => {},
+        },
+      });
+      await flushAll();
+      await openModal(wrapper);
+
+      const items = wrapper.findAll('li');
+      const firstItem = items[0];
+      // Grab
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+
+      const liveRegion = wrapper.find('[aria-live="assertive"]');
+      // Should use the custom label function for the announcement
+      expect(liveRegion.text()).toContain('Custom-en');
+    });
+
+    it('falls back to columnId when property path resolution fails', async () => {
+      wrapper = mountWithPlugin(ColumnEditor, {
+        props: {
+          entitySchema: userSchema,
+          modelValue: ['unknown_col', 'first_name'],
+          customColumns: { unknown_col: { open: true, label: undefined as any } },
+          'onUpdate:modelValue': () => {},
+        },
+      });
+      await flushAll();
+      await openModal(wrapper);
+
+      const items = wrapper.findAll('li');
+      const firstItem = items[0];
+      // Grab triggers getColumnLabel with 'unknown_col' which will fail resolution
+      await firstItem.trigger('keydown', { key: 'Enter' });
+      await flushAll();
+
+      const liveRegion = wrapper.find('[aria-live="assertive"]');
+      // Should fall back to using the column ID itself
+      expect(liveRegion.text()).toContain('unknown_col');
     });
   });
 });

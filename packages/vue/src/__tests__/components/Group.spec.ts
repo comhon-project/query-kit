@@ -99,6 +99,35 @@ describe('Group', () => {
     expect(wrapper.emitted('exit')).toBeTruthy();
   });
 
+  it('toggles collapse via tree-toggle custom event on treeitem', async () => {
+    const filter: GroupFilter = {
+      key: 6,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 61, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountGroup(filter);
+    await flushAll();
+
+    const treeitem = wrapper.find('[role="tree"] > [role="treeitem"]');
+    // Initially expanded (collapsed=false → aria-expanded=true)
+    expect(treeitem.attributes('aria-expanded')).toBe('true');
+
+    // Dispatch tree-toggle custom event to trigger toggleCollapse
+    treeitem.element.dispatchEvent(new CustomEvent('tree-toggle', { bubbles: false }));
+    await flushAll();
+
+    // Should now be collapsed
+    expect(treeitem.attributes('aria-expanded')).toBe('false');
+
+    // Toggle again to expand
+    treeitem.element.dispatchEvent(new CustomEvent('tree-toggle', { bubbles: false }));
+    await flushAll();
+    expect(treeitem.attributes('aria-expanded')).toBe('true');
+  });
+
   it('initializes tabindex on mount (first treeitem gets tabindex=0)', async () => {
     const filter: GroupFilter = {
       key: 5,

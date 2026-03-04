@@ -41,4 +41,21 @@ describe('Icon', () => {
 
     expect(wrapper.text()).toBe('ajouter');
   });
+
+  describe('plugin integration', () => {
+    it('renders with a custom iconComponent', () => {
+      registerIcons({ add: { class: 'icon-add' } }, 'my-icon');
+      const wrapper = mount(Icon, { props: { icon: 'add' } });
+      expect(wrapper.find('my-icon').exists()).toBe(true);
+      expect(wrapper.find('my-icon').attributes('class')).toBe('icon-add');
+      expect(wrapper.find('i').exists()).toBe(false);
+    });
+
+    it('renders with a custom iconPropName', () => {
+      registerIcons({ add: { name: 'plus' } }, undefined, 'name');
+      const wrapper = mount(Icon, { props: { icon: 'add' } });
+      expect(wrapper.find('i').exists()).toBe(true);
+      expect(wrapper.find('i').attributes('name')).toBe('plus');
+    });
+  });
 });

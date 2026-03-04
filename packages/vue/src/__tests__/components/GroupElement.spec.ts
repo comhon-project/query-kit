@@ -184,6 +184,38 @@ describe('GroupElement', () => {
     expect(li.attributes('aria-expanded')).toBeUndefined();
   });
 
+  it('toggles collapse via tree-toggle custom event on expandable group', async () => {
+    const filter: GroupFilter = {
+      key: 12,
+      type: 'group',
+      operator: 'and',
+      filters: [
+        { key: 121, type: 'condition', operator: '=', property: 'first_name', value: 'A' },
+      ],
+    };
+    mountGroupElement(filter);
+    await flushAll();
+
+    const li = wrapper.find('li');
+    expect(li.attributes('aria-expanded')).toBe('true');
+
+    // Dispatch tree-toggle to trigger toggleCollapse
+    li.element.dispatchEvent(new CustomEvent('tree-toggle', { bubbles: false }));
+    await flushAll();
+
+    expect(li.attributes('aria-expanded')).toBe('false');
+  });
+
+  it('throws error for invalid filter type', () => {
+    expect(() => {
+      mountGroupElement({
+        key: 13,
+        type: 'invalid_type' as any,
+        property: 'x',
+      });
+    }).toThrow('invalid type invalid_type');
+  });
+
   it('sets aria-expanded for relationship_condition with nested condition (not expandable)', async () => {
     const filter: RelationshipConditionFilter = {
       key: 11,

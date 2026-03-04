@@ -10,6 +10,7 @@ import {
   loadRawTranslations,
 } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
+import { registerComputedScopes } from '@core/ComputedScopesManager';
 import { entitySchemaLoader } from '@tests/assets/SchemaLoader';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
@@ -248,5 +249,104 @@ describe('Scope', () => {
 
     // In FR, the parameter translation is 'valeur texte'
     expect(wrapper.text()).toContain('valeur texte');
+  });
+
+  describe('computed scopes (plugin integration)', () => {
+    it('renders a computed scope name', async () => {
+      registerComputedScopes({
+        user: [{ id: 'cs_active', name: 'Active Users', computed: () => ({ active: true }) }],
+      });
+
+      const filter: ScopeFilter = reactive({
+        type: 'scope',
+        id: 'cs_active',
+        key: 11,
+      });
+      mountScope(filter);
+      await flushAll();
+
+      expect(wrapper.findComponent(InvalidScope).exists()).toBe(false);
+      expect(wrapper.text()).toContain('Active Users');
+    });
+
+    it('renders a computed scope with translation function', async () => {
+      registerComputedScopes({
+        user: [{
+          id: 'cs_translated',
+          computed: () => ({}),
+          translation: (loc: string) => loc === 'fr' ? 'Utilisateurs actifs' : 'Active Users',
+        }],
+      });
+
+      const filter: ScopeFilter = reactive({
+        type: 'scope',
+        id: 'cs_translated',
+        key: 12,
+      });
+      mountScope(filter);
+      await flushAll();
+
+      expect(wrapper.text()).toContain('Active Users');
+
+      locale.value = 'fr';
+      await flushAll();
+
+      expect(wrapper.text()).toContain('Utilisateurs actifs');
+    });
+
+    it('renders parameter inputs for a computed scope with parameters', async () => {
+      registerComputedScopes({
+        user: [{
+          id: 'cs_with_params',
+          name: 'Parameterized',
+          computed: (params: unknown[]) => ({ min_age: params[0] }),
+          parameters: [{ id: 'min_age', type: 'integer', name: 'Minimum Age' }],
+        }],
+      });
+
+      const filter: ScopeFilter = reactive({
+        type: 'scope',
+        id: 'cs_with_params',
+        parameters: [18],
+        key: 13,
+      });
+      mountScope(filter);
+      await flushAll();
+
+      expect(wrapper.text()).toContain('Parameterized');
+      expect(wrapper.text()).toContain('Minimum Age');
+      expect(wrapper.findComponent(ArrayableInput).exists()).toBe(true);
+    });
+
+    it('uses computed scope parameter translation function', async () => {
+      registerComputedScopes({
+        user: [{
+          id: 'cs_param_translated',
+          name: 'With Param',
+          computed: () => ({}),
+          parameters: [{
+            id: 'threshold',
+            type: 'integer',
+            translation: (loc: string) => loc === 'fr' ? 'Seuil' : 'Threshold',
+          }],
+        }],
+      });
+
+      const filter: ScopeFilter = reactive({
+        type: 'scope',
+        id: 'cs_param_translated',
+        parameters: [10],
+        key: 14,
+      });
+      mountScope(filter);
+      await flushAll();
+
+      expect(wrapper.text()).toContain('Threshold');
+
+      locale.value = 'fr';
+      await flushAll();
+
+      expect(wrapper.text()).toContain('Seuil');
+    });
   });
 });

@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { defineComponent, h } from 'vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
+import { registerComponents } from '@core/InputManager';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
@@ -120,5 +122,44 @@ describe('UniqueInput', () => {
     await flushAll();
 
     expect(wrapper.find('input').attributes('aria-label')).toBe('prénom');
+  });
+
+  describe('plugin integration', () => {
+    it('renders a custom Vue component registered via registerComponents', async () => {
+      const CustomStringInput = defineComponent({
+        name: 'CustomStringInput',
+        props: ['modelValue', 'disabled', 'ariaLabel'],
+        render() {
+          return h('textarea', { 'data-testid': 'custom-input' }, this.modelValue);
+        },
+      });
+      registerComponents({ string: CustomStringInput });
+
+      const property = schema.getProperty('first_name');
+      mountInput(property);
+      await flushAll();
+
+      expect(wrapper.find('input[type="text"]').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="custom-input"]').exists()).toBe(true);
+    });
+
+    it('passes timezone props to custom Vue component', async () => {
+      const TimezoneAwareInput = defineComponent({
+        name: 'TimezoneAwareInput',
+        props: ['modelValue', 'userTimezone', 'requestTimezone', 'disabled', 'ariaLabel', 'entitySchema', 'target', 'multiple'],
+        render() {
+          return h('div', { 'data-user-tz': this.userTimezone, 'data-req-tz': this.requestTimezone });
+        },
+      });
+      registerComponents({ string: TimezoneAwareInput });
+
+      const property = schema.getProperty('first_name');
+      mountInput(property);
+      await flushAll();
+
+      const el = wrapper.find('[data-user-tz]');
+      expect(el.attributes('data-user-tz')).toBe('UTC');
+      expect(el.attributes('data-req-tz')).toBe('UTC');
+    });
   });
 });

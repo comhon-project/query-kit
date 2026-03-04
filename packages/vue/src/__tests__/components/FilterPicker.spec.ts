@@ -197,6 +197,44 @@ describe('FilterPicker', () => {
     expect(wrapper.emitted('validate')).toBeFalsy();
   });
 
+  it('emits validate with unique key only after modal is closed (onClosed)', async () => {
+    mountFilterPicker();
+    await flushAll();
+
+    // Select a property and submit
+    const select = wrapper.find('select');
+    await select.setValue('first_name');
+    await wrapper.find('form').trigger('submit');
+    await flushAll();
+    await nextTick();
+    await flushAll();
+
+    // The validate emission should include a unique key
+    const emitted = wrapper.emitted('validate');
+    expect(emitted).toBeTruthy();
+    expect(emitted![0][0]).toEqual(
+      expect.objectContaining({ type: 'condition', key: expect.any(Number) }),
+    );
+  });
+
+  it('switches type back to condition when condition radio is clicked after group', async () => {
+    mountFilterPicker();
+    await flushAll();
+
+    const radios = wrapper.findAll('input[type="radio"]');
+    // Select group
+    await radios[1].trigger('click');
+    await nextTick();
+
+    const select = wrapper.find('select');
+    expect(select.attributes('disabled')).toBeDefined();
+
+    // Switch back to condition
+    await radios[0].trigger('click');
+    await nextTick();
+    expect(select.attributes('disabled')).toBeUndefined();
+  });
+
   it('lists computed scopes in options', async () => {
     // Import and register a computed scope
     const { registerComputedScopes } = await import('@core/ComputedScopesManager');

@@ -21,6 +21,7 @@ export default defineConfig({
     setupFiles: ['./__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'html'],
       reportsDirectory: '../coverage',
       include: ['core/**', 'components/**', 'i18n/**', 'config/**'],
       exclude: ['**/__tests__/**', 'i18n/locales/**', 'core/types.ts'],

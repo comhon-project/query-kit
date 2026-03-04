@@ -3,6 +3,8 @@ import { defineComponent, h } from 'vue';
 import Cell from '@components/Collection/Cell.vue';
 import { resolve, registerLoader, registerTranslationsLoader, loadRawTranslations } from '@core/EntitySchema';
 import { registerLoader as registerEnumLoader, registerTranslationsLoader as registerEnumTranslationsLoader } from '@core/EnumSchema';
+import { registerTypeRenderers, registerPropertyRenderers } from '@core/CellRendererManager';
+import { registerClasses } from '@core/ClassManager';
 import { locale } from '@i18n/i18n';
 import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
@@ -175,5 +177,83 @@ describe('Cell', () => {
     locale.value = 'fr';
     await flushAll();
     expect(wrapper.find('td').text()).toBe('M.');
+  });
+
+  describe('plugin integration', () => {
+    it('uses a custom type renderer component registered via registerTypeRenderers', () => {
+      const CustomStringRenderer = defineComponent({
+        props: ['value'],
+        render() {
+          return h('em', `custom:${this.value}`);
+        },
+      });
+      registerTypeRenderers({ string: CustomStringRenderer });
+
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps, property },
+      });
+      expect(wrapper.find('em').text()).toBe('custom:John');
+    });
+
+    it('uses a custom type renderer RenderFunction registered via registerTypeRenderers', () => {
+      registerTypeRenderers({ string: (value: unknown) => `rendered:${value}` });
+
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps, property },
+      });
+      expect(wrapper.find('td').text()).toBe('rendered:John');
+    });
+
+    it('uses a custom property renderer registered via registerPropertyRenderers', () => {
+      const CustomPropRenderer = defineComponent({
+        props: ['value'],
+        render() {
+          return h('mark', String(this.value));
+        },
+      });
+      registerPropertyRenderers({ user: { first_name: CustomPropRenderer } });
+
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps, property },
+      });
+      expect(wrapper.find('mark').text()).toBe('John');
+    });
+
+    it('property renderer takes priority over type renderer', () => {
+      const TypeRenderer = defineComponent({
+        props: ['value'],
+        render() {
+          return h('em', 'type');
+        },
+      });
+      const PropRenderer = defineComponent({
+        props: ['value'],
+        render() {
+          return h('strong', 'property');
+        },
+      });
+      registerTypeRenderers({ string: TypeRenderer });
+      registerPropertyRenderers({ user: { first_name: PropRenderer } });
+
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps, property },
+      });
+      expect(wrapper.find('strong').text()).toBe('property');
+      expect(wrapper.find('em').exists()).toBe(false);
+    });
+
+    it('uses custom CSS class registered via registerClasses', () => {
+      registerClasses({ collection_cell: 'my-custom-cell' });
+
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps, property },
+      });
+      expect(wrapper.find('td').classes()).toContain('my-custom-cell');
+    });
   });
 });

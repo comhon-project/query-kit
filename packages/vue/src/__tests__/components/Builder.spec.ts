@@ -754,6 +754,54 @@ describe('Builder', () => {
     });
   });
 
+  // ==================== Scope without parameters ====================
+  describe('scope without parameters', () => {
+    it('keeps scope with no parameters defined in schema', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'scope', id: 'scope', parameters: [] } as ScopeFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const scope = filter.filters.find((f) => f.type === 'scope') as ScopeFilter;
+      expect(scope).toBeDefined();
+      expect(scope.id).toBe('scope');
+    });
+  });
+
+  // ==================== Relationship condition with null/not_null ====================
+  describe('relationship condition operators', () => {
+    it('keeps relationship condition with null/not_null operator even without child filter', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          {
+            type: 'relationship_condition',
+            operator: 'has',
+            property: 'company',
+            filter: {
+              type: 'condition',
+              property: 'brand_name',
+              operator: 'null',
+              value: undefined,
+            },
+          } as RelationshipConditionFilter,
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const rc = filter.filters[0] as RelationshipConditionFilter;
+      // null operator keeps the child filter
+      expect(rc.filter).toBeDefined();
+    });
+  });
+
   // ==================== Reset / Undo / Redo ====================
   describe('reset / undo / redo', () => {
     it('reset restores original filter', async () => {

@@ -373,4 +373,45 @@ describe('Condition', () => {
 
     expect(wrapper.findComponent(AdaptativeSelect).exists()).toBe(false);
   });
+
+  describe('plugin integration', () => {
+    it('restricts operator options via allowedOperators config', async () => {
+      const filter: ConditionFilter = reactive({
+        type: 'condition',
+        property: 'first_name',
+        operator: '=',
+        value: 'test',
+        key: 22,
+      });
+      mountCondition(filter, {
+        allowedOperators: { condition: { basic: ['=', '<>'] } },
+      });
+      await flushAll();
+
+      const select = wrapper.findComponent(AdaptativeSelect);
+      const optionValues = select.findAll('option').map((o) => o.element.value);
+      expect(optionValues).toContain('=');
+      expect(optionValues).toContain('<>');
+      expect(optionValues).not.toContain('like');
+      expect(optionValues).not.toContain('null');
+    });
+
+    it('shows single operator (no select) when allowedOperators has one option', async () => {
+      const filter: ConditionFilter = reactive({
+        type: 'condition',
+        property: 'first_name',
+        operator: '=',
+        value: 'test',
+        key: 23,
+      });
+      mountCondition(filter, {
+        allowedOperators: { condition: { basic: ['='] } },
+      });
+      await flushAll();
+
+      const select = wrapper.findComponent(AdaptativeSelect);
+      // canEditOperator is false when only 1 option → select is disabled
+      expect(select.props('disabled')).toBe(true);
+    });
+  });
 });

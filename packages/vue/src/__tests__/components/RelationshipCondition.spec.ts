@@ -439,6 +439,26 @@ describe('RelationshipCondition', () => {
     expect(filter.filter).toBeUndefined();
   });
 
+  it('renders Scope component when end filter is a scope', async () => {
+    const Scope = (await import('@components/Filter/Scope.vue')).default;
+    const filter: RelationshipConditionFilter = reactive({
+      type: 'relationship_condition',
+      operator: 'has',
+      property: 'company',
+      key: 18,
+      filter: {
+        type: 'scope',
+        id: 'scope',
+        parameters: [],
+        key: 181,
+      } as any,
+    });
+    mountRelationshipCondition(filter);
+    await flushAll();
+
+    expect(wrapper.findComponent(Scope).exists()).toBe(true);
+  });
+
   it('passes collapsed model to end filter ChildGroup component', async () => {
     const filter: RelationshipConditionFilter = reactive({
       type: 'relationship_condition',
