@@ -6,6 +6,7 @@ import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import { classes } from '@core/ClassManager';
+import { config as globalConfig } from '@config/config';
 import { translate } from '@i18n/i18n';
 import { getContainerOperators, type AllowedOperators } from '@core/OperatorManager';
 import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
@@ -44,19 +45,14 @@ interface Emits {
 const modelValue = defineModel<Filter | null>({ default: null });
 const emit = defineEmits<Emits>();
 
+// undefined: prevent Vue from casting absent boolean props to false
 const props = withDefaults(defineProps<Props>(), {
-  allowReset: true,
-  allowUndo: true,
-  allowRedo: true,
-  displayOperator: true,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-  debounce: 1000,
-  manual: false,
+  allowReset: undefined,
+  allowUndo: undefined,
+  allowRedo: undefined,
+  displayOperator: undefined,
+  manual: undefined,
 });
-
-const config = reactive<BuilderConfig>({});
-provide(builderConfigKey, config);
 
 let isInitialEmit = true;
 let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -65,7 +61,10 @@ let lastEmitted: GroupFilter;
 const internalModel = ref<GroupFilter>(null!);
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
+const config = reactive<BuilderConfig>({} as BuilderConfig);
 const { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory } = useHistory();
+
+provide(builderConfigKey, config);
 
 function prepareFilters(filter: Filter): void {
   const stack: Filter[] = [filter];
@@ -252,19 +251,38 @@ function scheduleEmit(): void {
     lastEmitted = stripped;
     modelValue.value = stripped;
 
-    if (!props.manual || isInitialEmit) {
+    if (!config.manual || isInitialEmit) {
       isInitialEmit = false;
       emit('computed', await getComputedFilter(), false);
     }
-  }, props.debounce);
+  }, config.debounce);
 }
 
 async function validate(): Promise<void> {
   emit('computed', await getComputedFilter(), true);
 }
 
+function goToCollection(): void {
+  if (props.collectionId) location.hash = props.collectionId;
+}
+
 onUnmounted(() => {
   if (timeoutId) clearTimeout(timeoutId);
+});
+
+// Must be before the other watches: config must be populated before scheduleEmit runs
+watchEffect(() => {
+  config.allowedScopes = props.allowedScopes;
+  config.allowedProperties = props.allowedProperties;
+  config.allowedOperators = props.allowedOperators;
+  config.displayOperator = props.displayOperator ?? globalConfig.displayOperator;
+  config.userTimezone = props.userTimezone ?? globalConfig.userTimezone;
+  config.requestTimezone = props.requestTimezone ?? globalConfig.requestTimezone;
+  config.allowReset = props.allowReset ?? globalConfig.allowReset;
+  config.allowUndo = props.allowUndo ?? globalConfig.allowUndo;
+  config.allowRedo = props.allowRedo ?? globalConfig.allowRedo;
+  config.debounce = props.debounce ?? globalConfig.debounce;
+  config.manual = props.manual ?? globalConfig.manual;
 });
 
 watch(
@@ -281,15 +299,6 @@ watch(
 );
 watch(internalModel, scheduleEmit, { deep: true, immediate: true });
 
-watchEffect(() => {
-  config.allowedScopes = props.allowedScopes;
-  config.allowedProperties = props.allowedProperties;
-  config.allowedOperators = props.allowedOperators;
-  config.displayOperator = props.displayOperator;
-  config.userTimezone = props.userTimezone;
-  config.requestTimezone = props.requestTimezone;
-});
-
 watchEffect(async () => {
   try {
     entitySchema.value = await resolve(props.entity);
@@ -299,10 +308,6 @@ watchEffect(async () => {
     validEntity.value = false;
   }
 });
-
-function goToCollection(): void {
-  if (props.collectionId) location.hash = props.collectionId;
-}
 </script>
 
 <template>
@@ -311,10 +316,10 @@ function goToCollection(): void {
     <InvalidEntity v-if="!validEntity" :entity="entity" />
     <Group v-else-if="entitySchema" :model-value="internalModel" :entity-schema="entitySchema" @exit="goToCollection">
       <template #builder_actions>
-        <IconButton v-if="allowUndo" icon="undo" :disabled="!canUndo" @click="performUndo" />
-        <IconButton v-if="allowRedo" icon="redo" :disabled="!canRedo" @click="performRedo" />
-        <IconButton v-if="allowReset" icon="reset" @click="reset" />
-        <IconButton v-if="manual" icon="search" @click="validate" />
+        <IconButton v-if="config.allowUndo" icon="undo" :disabled="!canUndo" @click="performUndo" />
+        <IconButton v-if="config.allowRedo" icon="redo" :disabled="!canRedo" @click="performRedo" />
+        <IconButton v-if="config.allowReset" icon="reset" @click="reset" />
+        <IconButton v-if="config.manual" icon="search" @click="validate" />
       </template>
     </Group>
   </section>

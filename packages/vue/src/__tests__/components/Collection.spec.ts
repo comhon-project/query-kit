@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { defineComponent, h, markRaw, ref } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
-import Cell from '@components/Collection/Cell.vue';
 import { registerLoader, registerTranslationsLoader, loadRawTranslations } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
 import { registerRequester } from '@core/Requester';
@@ -468,23 +467,36 @@ describe('Collection', () => {
     });
   });
 
-  describe('timezone props', () => {
-    it('passes userTimezone and requestTimezone to Cell components', async () => {
-      mountCollection({ userTimezone: 'Europe/Paris', requestTimezone: 'America/New_York' });
-      await flushAll();
-      const cells = wrapper.findAllComponents(Cell);
-      expect(cells.length).toBeGreaterThan(0);
-      expect(cells[0].props('userTimezone')).toBe('Europe/Paris');
-      expect(cells[0].props('requestTimezone')).toBe('America/New_York');
-    });
-
-    it('defaults timezones to UTC', async () => {
+  describe('config defaults and overrides', () => {
+    it('uses global config defaults when no props are provided', async () => {
       mountCollection();
       await flushAll();
-      const cells = wrapper.findAllComponents(Cell);
-      expect(cells.length).toBeGreaterThan(0);
-      expect(cells[0].props('userTimezone')).toBe('UTC');
-      expect(cells[0].props('requestTimezone')).toBe('UTC');
+      const vm = wrapper.vm as any;
+      expect(vm.config.userTimezone).toBe('UTC');
+      expect(vm.config.requestTimezone).toBe('UTC');
+      expect(vm.config.quickSort).toBe(true);
+      expect(vm.config.displayCount).toBe(true);
+      expect(vm.config.editColumns).toBe(false);
+      expect(vm.config.allowedCollectionTypes).toEqual(['pagination']);
+    });
+
+    it('overrides all config properties via props', async () => {
+      mountCollection({
+        userTimezone: 'Europe/Paris',
+        requestTimezone: 'America/New_York',
+        quickSort: false,
+        displayCount: false,
+        editColumns: true,
+        allowedCollectionTypes: ['infinite'],
+      });
+      await flushAll();
+      const vm = wrapper.vm as any;
+      expect(vm.config.userTimezone).toBe('Europe/Paris');
+      expect(vm.config.requestTimezone).toBe('America/New_York');
+      expect(vm.config.quickSort).toBe(false);
+      expect(vm.config.displayCount).toBe(false);
+      expect(vm.config.editColumns).toBe(true);
+      expect(vm.config.allowedCollectionTypes).toEqual(['infinite']);
     });
   });
 
@@ -567,9 +579,8 @@ describe('Collection', () => {
       });
       await flushAll();
 
-      const cells = wrapper.findAllComponents(Cell);
-      expect(cells.length).toBeGreaterThan(0);
-      expect(cells[0].props('flattened')).toBe(true);
+      const collectionVm = wrapper.vm as any;
+      expect(collectionVm.config.isResultFlattened).toBe(true);
     });
   });
 
@@ -601,9 +612,9 @@ describe('Collection', () => {
         request: vi.fn(async () => {
           callCount++;
           if (callCount === 1) {
-            return { collection: [{ id: 1, first_name: 'A' }], count: 20 };
+            return { collection: [{ id: 1, first_name: 'A' }], count: 20, limit: 10 };
           }
-          return { collection: [{ id: 2, first_name: 'B' }], count: 20 };
+          return { collection: [{ id: 2, first_name: 'B' }], count: 20, limit: 10 };
         }),
       };
       wrapper = mountWithPlugin(Collection, {
@@ -660,12 +671,12 @@ describe('Collection', () => {
       expect(resolvers).toHaveLength(2);
 
       // Resolve first request (stale) - should be discarded
-      resolvers[0]({ collection: [{ id: 99, first_name: 'Stale' }], count: 1 });
+      resolvers[0]({ collection: [{ id: 99, first_name: 'Stale' }], count: 1, limit: 10 });
       await flushAll();
       expect(wrapper.text()).not.toContain('Stale');
 
       // Resolve second request (current)
-      resolvers[1]({ collection: [{ id: 1, first_name: 'Current' }], count: 1 });
+      resolvers[1]({ collection: [{ id: 1, first_name: 'Current' }], count: 1, limit: 10 });
       await flushAll();
       expect(wrapper.text()).toContain('Current');
     });
@@ -702,7 +713,7 @@ describe('Collection', () => {
 
   describe('requester function shorthand', () => {
     it('accepts a plain function as requester', async () => {
-      const fn = vi.fn(async () => ({ collection: sampleRows, count: 2 }));
+      const fn = vi.fn(async () => ({ collection: sampleRows, count: 2, limit: 25 }));
       wrapper = mountWithPlugin(Collection, {
         props: {
           entity: 'user',

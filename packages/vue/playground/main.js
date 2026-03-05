@@ -96,7 +96,8 @@ createApp(App)
         console.log('main-requester');
         console.log(query);
         const lastCompleteBulk = 3;
-        const limit = query.offset > lastCompleteBulk * query.limit ? query.limit - 1 : query.limit;
+        const queryLimit = query.limit ?? 20;
+        const limit = query.offset > lastCompleteBulk * queryLimit ? queryLimit - 1 : queryLimit;
         const collection = [];
         for (let index = 0; index < limit; index++) {
           const rowObject = {};
@@ -151,8 +152,9 @@ createApp(App)
         return new Promise((resolve) => {
           setTimeout(() => {
             resolve({
-              count: lastCompleteBulk * query.limit + (query.limit - 1),
+              count: lastCompleteBulk * queryLimit + (queryLimit - 1),
               collection: collection,
+              limit: queryLimit,
             });
           }, 1000);
         });

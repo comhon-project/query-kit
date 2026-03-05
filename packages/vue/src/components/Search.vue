@@ -34,7 +34,7 @@ interface Props {
   manual?: boolean;
   directQuery?: boolean;
   debounce?: number;
-  limit: number;
+  limit?: number;
   quickSort?: boolean;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
@@ -47,8 +47,18 @@ const filter = defineModel<Filter | null>('filter', { default: null });
 const columns = defineModel<string[]>('columns', { required: true });
 const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
 const page = defineModel<number>('page', { default: 1 });
+
+// undefined: prevent Vue from casting absent boolean props to false
 const props = withDefaults(defineProps<Props>(), {
-  manual: true,
+  allowReset: undefined,
+  allowUndo: undefined,
+  allowRedo: undefined,
+  displayOperator: undefined,
+  manual: undefined,
+  directQuery: undefined,
+  quickSort: undefined,
+  displayCount: undefined,
+  editColumns: undefined,
 });
 
 const uniqueId = getUniqueId();

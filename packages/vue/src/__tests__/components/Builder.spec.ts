@@ -802,6 +802,44 @@ describe('Builder', () => {
     });
   });
 
+  // ==================== Config defaults and overrides ====================
+  describe('config defaults and overrides', () => {
+    it('uses global config defaults when no props are provided', async () => {
+      await mountBuilder();
+      const vm = wrapper.vm as any;
+      expect(vm.config.userTimezone).toBe('UTC');
+      expect(vm.config.requestTimezone).toBe('UTC');
+      expect(vm.config.displayOperator).toBe(true);
+      expect(vm.config.allowReset).toBe(true);
+      expect(vm.config.allowUndo).toBe(true);
+      expect(vm.config.allowRedo).toBe(true);
+      expect(vm.config.debounce).toBe(1000);
+      expect(vm.config.manual).toBe(false);
+    });
+
+    it('overrides all config properties via props', async () => {
+      await mountBuilder({
+        userTimezone: 'Europe/Paris',
+        requestTimezone: 'America/New_York',
+        displayOperator: false,
+        allowReset: false,
+        allowUndo: false,
+        allowRedo: false,
+        debounce: 500,
+        manual: true,
+      });
+      const vm = wrapper.vm as any;
+      expect(vm.config.userTimezone).toBe('Europe/Paris');
+      expect(vm.config.requestTimezone).toBe('America/New_York');
+      expect(vm.config.displayOperator).toBe(false);
+      expect(vm.config.allowReset).toBe(false);
+      expect(vm.config.allowUndo).toBe(false);
+      expect(vm.config.allowRedo).toBe(false);
+      expect(vm.config.debounce).toBe(500);
+      expect(vm.config.manual).toBe(true);
+    });
+  });
+
   // ==================== Reset / Undo / Redo ====================
   describe('reset / undo / redo', () => {
     it('reset restores original filter', async () => {

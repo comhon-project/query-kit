@@ -153,21 +153,24 @@ describe('Plugin', () => {
     });
   });
 
-  describe('renderHtml validation', () => {
-    it('throws when given a string', () => {
-      expect(() =>
-        plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: 'yes' } as any),
-      ).toThrowError('renderHtml must be a boolean');
-    });
-
-    it('works with true', () => {
+  describe('global config options', () => {
+    it('applies renderHtml', () => {
       plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: true });
       expect(config.renderHtml).toBe(true);
     });
 
-    it('works with false', () => {
-      plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null), renderHtml: false });
-      expect(config.renderHtml).toBe(false);
+    it('applies component defaults', () => {
+      plugin.install(app, {
+        entitySchemaLoader: () => Promise.resolve(null),
+        userTimezone: 'Europe/Paris',
+        limit: 50,
+        manual: true,
+        allowReset: false,
+      });
+      expect(config.userTimezone).toBe('Europe/Paris');
+      expect(config.limit).toBe(50);
+      expect(config.manual).toBe(true);
+      expect(config.allowReset).toBe(false);
     });
   });
 

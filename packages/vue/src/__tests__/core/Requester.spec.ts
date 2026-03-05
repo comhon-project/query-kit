@@ -10,7 +10,7 @@ describe('Requester', () => {
 
   it('registerRequester sets the requester', () => {
     const mockRequester: Requester = {
-      request: async () => ({ collection: [], count: 0 }),
+      request: async () => ({ collection: [], count: 0, limit: 25 }),
     };
 
     registerRequester(mockRequester);
@@ -19,10 +19,10 @@ describe('Requester', () => {
 
   it('registerRequester replaces a previously registered requester', () => {
     const first: Requester = {
-      request: async () => ({ collection: [], count: 0 }),
+      request: async () => ({ collection: [], count: 0, limit: 25 }),
     };
     const second: Requester = {
-      request: async () => ({ collection: [{ id: 1 }], count: 1 }),
+      request: async () => ({ collection: [{ id: 1 }], count: 1, limit: 25 }),
     };
 
     registerRequester(first);
@@ -34,7 +34,7 @@ describe('Requester', () => {
 
   it('_resetForTesting clears the requester back to undefined', () => {
     const mockRequester: Requester = {
-      request: async () => ({ collection: [], count: 0 }),
+      request: async () => ({ collection: [], count: 0, limit: 25 }),
     };
 
     registerRequester(mockRequester);

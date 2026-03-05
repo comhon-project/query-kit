@@ -29,7 +29,7 @@ import {
   type SchemaLoader as RequestSchemaLoader,
   type RequestSchema,
 } from '@core/RequestSchema';
-import { applyOptions } from '@config/config';
+import { applyOptions, type Config } from '@config/config';
 import { registerRequester, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
 import { registerOperators, type AllowedOperators } from '@core/OperatorManager';
 import { registerComputedScopes, type ComputedScopes } from '@core/ComputedScopesManager';
@@ -64,6 +64,19 @@ export interface PluginOptions {
   computedScopes?: ComputedScopes;
   requester?: Requester | RequesterFunction;
   renderHtml?: boolean;
+  userTimezone?: Config['userTimezone'];
+  requestTimezone?: Config['requestTimezone'];
+  limit?: Config['limit'];
+  debounce?: Config['debounce'];
+  manual?: Config['manual'];
+  allowReset?: Config['allowReset'];
+  allowUndo?: Config['allowUndo'];
+  allowRedo?: Config['allowRedo'];
+  displayOperator?: Config['displayOperator'];
+  quickSort?: Config['quickSort'];
+  displayCount?: Config['displayCount'];
+  editColumns?: Config['editColumns'];
+  allowedCollectionTypes?: Config['allowedCollectionTypes'];
 }
 
 export default {

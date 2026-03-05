@@ -18,7 +18,7 @@ import { locale, loadedTranslations } from '@i18n/i18n';
 import fr from '@i18n/locales/fr';
 import type { VueWrapper } from '@vue/test-utils';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { GroupFilter } from '@core/types';
+import type { GroupFilter, ConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 let schema: EntitySchema;
@@ -297,7 +297,7 @@ describe('ChildGroup', () => {
     await nextTick();
 
     expect(filter.filters).toHaveLength(1);
-    expect(filter.filters[0].property).toBe('last_name');
+    expect((filter.filters[0] as ConditionFilter).property).toBe('last_name');
   });
 
   it('opens FilterPicker when add button is clicked', async () => {
@@ -460,7 +460,7 @@ describe('ChildGroup', () => {
     expect(collapseBtn.exists()).toBe(true);
 
     // Initially not collapsed
-    expect(wrapper.props('collapsed')).toBe(false);
+    expect((wrapper.props() as Record<string, unknown>).collapsed).toBe(false);
 
     // Click the collapse button to toggle
     await collapseBtn.find('button').trigger('click');

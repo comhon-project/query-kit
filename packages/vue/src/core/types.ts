@@ -52,7 +52,7 @@ export interface RequestParams {
   entity: string;
   order?: { property: string; order: string }[];
   page: number;
-  limit: number;
+  limit?: number;
   filter?: Filter;
   properties: string[];
 }
@@ -61,6 +61,7 @@ export interface RequestParams {
 export interface RequestResponse {
   collection: Record<string, unknown>[];
   count: number;
+  limit: number;
 }
 
 /** Requester interface */
@@ -188,7 +189,24 @@ export interface BuilderConfig {
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;
-  displayOperator?: DisplayOperator;
-  userTimezone?: string;
-  requestTimezone?: string;
+  displayOperator: DisplayOperator;
+  userTimezone: string;
+  requestTimezone: string;
+  allowReset: boolean;
+  allowUndo: boolean;
+  allowRedo: boolean;
+  debounce: number;
+  manual: boolean;
+}
+
+// ==================== Collection Config (Provide/Inject) ====================
+
+export interface CollectionConfig {
+  userTimezone: string;
+  requestTimezone: string;
+  quickSort: boolean;
+  displayCount: boolean;
+  editColumns: boolean;
+  allowedCollectionTypes: CollectionType[];
+  isResultFlattened: boolean;
 }

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import type { EntitySchema, Property } from '@core/EntitySchema';
-import type { ConditionFilter, GroupFilter, RelationshipConditionFilter, BuilderConfig } from '@core/types';
+import type { ConditionFilter, GroupFilter, RelationshipConditionFilter } from '@core/types';
+import { defaultBuilderConfig } from '@tests/helpers/provideConfig';
 
 function mockProperty(overrides: Partial<Property> = {}): Property {
   return { id: 'test', type: 'string', owner: 'user', ...overrides } as Property;
@@ -34,7 +35,7 @@ describe('useFilterWithOperator', () => {
   describe('isRemovable', () => {
     it('is true by default', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { isRemovable } = useFilterWithOperator({}, {
+      const { isRemovable } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition(),
       });
@@ -43,7 +44,7 @@ describe('useFilterWithOperator', () => {
 
     it('is false when removable is explicitly false', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { isRemovable } = useFilterWithOperator({}, {
+      const { isRemovable } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition({ removable: false }),
       });
@@ -52,7 +53,7 @@ describe('useFilterWithOperator', () => {
 
     it('is true when removable is undefined', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { isRemovable } = useFilterWithOperator({}, {
+      const { isRemovable } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition({ removable: undefined }),
       });
@@ -63,7 +64,7 @@ describe('useFilterWithOperator', () => {
   describe('isEditable', () => {
     it('is true by default', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { isEditable } = useFilterWithOperator({}, {
+      const { isEditable } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition(),
       });
@@ -72,7 +73,7 @@ describe('useFilterWithOperator', () => {
 
     it('is false when editable is explicitly false', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { isEditable } = useFilterWithOperator({}, {
+      const { isEditable } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition({ editable: false }),
       });
@@ -84,7 +85,7 @@ describe('useFilterWithOperator', () => {
     it('uses getConditionOperators for condition filters', () => {
       const prop = mockProperty({ id: 'first_name' });
       const schema = mockEntitySchema({ first_name: prop });
-      const config: BuilderConfig = { allowedOperators: { condition: { string: ['=', '<>'] } } };
+      const config = defaultBuilderConfig({ allowedOperators: { condition: { string: ['=', '<>'] } } });
       const { operatorOptions } = useFilterWithOperator(config, {
         entitySchema: schema,
         modelValue: makeCondition(),
@@ -98,7 +99,7 @@ describe('useFilterWithOperator', () => {
 
     it('uses getContainerOperators for group filters', () => {
       const schema = mockEntitySchema();
-      const { operatorOptions } = useFilterWithOperator({}, {
+      const { operatorOptions } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeGroup(),
       });
@@ -111,7 +112,7 @@ describe('useFilterWithOperator', () => {
 
     it('uses getContainerOperators for relationship_condition filters', () => {
       const schema = mockEntitySchema();
-      const { operatorOptions } = useFilterWithOperator({}, {
+      const { operatorOptions } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeRelationshipCondition(),
       });
@@ -124,7 +125,7 @@ describe('useFilterWithOperator', () => {
 
     it('adds current operator if not in available options', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const config: BuilderConfig = { allowedOperators: { condition: { string: ['=', '<>'] } } };
+      const config = defaultBuilderConfig({ allowedOperators: { condition: { string: ['=', '<>'] } } });
       const { operatorOptions } = useFilterWithOperator(config, {
         entitySchema: schema,
         modelValue: makeCondition({ operator: 'like' }),
@@ -136,7 +137,7 @@ describe('useFilterWithOperator', () => {
 
     it('does not duplicate current operator if already in options', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const config: BuilderConfig = { allowedOperators: { condition: { string: ['=', '<>'] } } };
+      const config = defaultBuilderConfig({ allowedOperators: { condition: { string: ['=', '<>'] } } });
       const { operatorOptions } = useFilterWithOperator(config, {
         entitySchema: schema,
         modelValue: makeCondition({ operator: '=' }),
@@ -146,7 +147,7 @@ describe('useFilterWithOperator', () => {
     });
 
     it('passes allowedOperators from config', () => {
-      const config: BuilderConfig = { allowedOperators: { condition: { string: ['='] } } };
+      const config = defaultBuilderConfig({ allowedOperators: { condition: { string: ['='] } } });
       const schema = mockEntitySchema({ first_name: mockProperty() });
       const { operatorOptions } = useFilterWithOperator(config, {
         entitySchema: schema,
@@ -160,7 +161,7 @@ describe('useFilterWithOperator', () => {
   describe('canEditOperator', () => {
     it('is true when editable and multiple operators', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { canEditOperator } = useFilterWithOperator({}, {
+      const { canEditOperator } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition(),
       });
@@ -168,7 +169,7 @@ describe('useFilterWithOperator', () => {
     });
 
     it('is false when only one operator', () => {
-      const config: BuilderConfig = { allowedOperators: { condition: { string: ['='] } } };
+      const config = defaultBuilderConfig({ allowedOperators: { condition: { string: ['='] } } });
       const schema = mockEntitySchema({ first_name: mockProperty() });
       const { canEditOperator } = useFilterWithOperator(config, {
         entitySchema: schema,
@@ -179,7 +180,7 @@ describe('useFilterWithOperator', () => {
 
     it('is false when not editable even with multiple operators', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });
-      const { canEditOperator } = useFilterWithOperator({}, {
+      const { canEditOperator } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
         modelValue: makeCondition({ editable: false }),
       });

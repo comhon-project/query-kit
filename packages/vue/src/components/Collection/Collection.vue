@@ -1,10 +1,22 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, shallowRef, shallowReactive, computed, useTemplateRef } from 'vue';
+import {
+  ref,
+  reactive,
+  watch,
+  watchEffect,
+  onMounted,
+  onUnmounted,
+  shallowRef,
+  shallowReactive,
+  computed,
+  useTemplateRef,
+} from 'vue';
 import { requester as baseRequester } from '@core/Requester';
 import { classes } from '@core/ClassManager';
 import { resolve, getPropertyPath, type Property, type EntitySchema } from '@core/EntitySchema';
 import { PropertyNotFoundError } from '@core/errors';
 import { translate } from '@i18n/i18n';
+import { config as globalConfig } from '@config/config';
 import Icon from '@components/Common/Icon.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
@@ -16,6 +28,7 @@ import type {
   CustomColumnConfig,
   OrderByItem,
   CollectionType,
+  CollectionConfig,
   Requester,
   RequesterFunction,
   Filter,
@@ -26,7 +39,7 @@ interface Props {
   customColumns?: Record<string, CustomColumnConfig>;
   filter?: Filter;
   directQuery?: boolean;
-  limit: number;
+  limit?: number;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
@@ -47,12 +60,13 @@ interface IndexedOrderByEntry {
 const columns = defineModel<string[]>('columns', { required: true });
 const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
 const page = defineModel<number>('page', { default: 1 });
+
+// undefined: prevent Vue from casting absent boolean props to false
 const props = withDefaults(defineProps<Props>(), {
   directQuery: true,
-  quickSort: true,
-  allowedCollectionTypes: () => ['pagination'],
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
+  quickSort: undefined,
+  displayCount: undefined,
+  editColumns: undefined,
 });
 
 let hasExecFirstQuery = false;
@@ -62,15 +76,18 @@ const requesting = ref<boolean>(false);
 const columnsProperties = shallowRef<Record<string, Property | undefined>>({});
 const collection = shallowReactive<Record<string, unknown>[]>([]);
 const count = ref<number>(0);
+const limit = ref<number | undefined>();
 const end = ref<boolean>(false);
-const infiniteScroll = ref<boolean>(isInfiniteAccordingProps());
 const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
 const entitySchema = ref<EntitySchema>();
 const rowKeyProperty = ref<string>();
 const indexedOrderBy = shallowRef<Record<string, IndexedOrderByEntry>>({});
 const invalidColumns = ref<string[]>([]);
-
+const config = reactive<CollectionConfig>({} as CollectionConfig);
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
+const infiniteScroll = ref<boolean>(
+  (props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes)[0] === 'infinite',
+);
 let observer: IntersectionObserver | undefined;
 
 const activeRequester = computed<Requester | RequesterFunction>(() => {
@@ -91,7 +108,7 @@ const showInfiniteScrollObserver = computed(() => {
   return infiniteScroll.value && !end.value && !requesting.value && hasExecFirstQuery;
 });
 
-const pageCount = computed(() => Math.max(1, Math.ceil(count.value / props.limit)));
+const pageCount = computed(() => (limit.value ? Math.max(1, Math.ceil(count.value / limit.value)) : 0));
 
 const rowEvents = (row: Record<string, unknown>) =>
   props.onRowClick
@@ -265,7 +282,7 @@ async function requestServer(): Promise<void> {
       entity: props.entity,
       order,
       page: page.value,
-      limit: props.limit,
+      limit: limit.value,
       filter: props.filter,
       properties: properties,
     });
@@ -279,6 +296,7 @@ async function requestServer(): Promise<void> {
       );
     }
     count.value = response.count;
+    limit.value = response.limit;
     if (props.postRequest) {
       const res = props.postRequest(response.collection);
       if (res instanceof Promise) {
@@ -291,7 +309,7 @@ async function requestServer(): Promise<void> {
     if (shouldReplace) collection.length = 0;
     collection.push(...response.collection);
 
-    if (infiniteScroll.value && response.collection.length < props.limit) {
+    if (infiniteScroll.value && response.collection.length < limit.value!) {
       end.value = true;
     }
 
@@ -311,22 +329,19 @@ async function requestServer(): Promise<void> {
   }
 }
 
-function isInfiniteAccordingProps(preferred: boolean | null = null): boolean {
-  if (!props.allowedCollectionTypes.length) {
+function isInfiniteAccordingConfig(): boolean {
+  if (!config.allowedCollectionTypes.length) {
     throw new Error('allowedCollectionTypes prop must be not empty array');
   }
-  for (const type of props.allowedCollectionTypes) {
+  for (const type of config.allowedCollectionTypes) {
     if (type != 'infinite' && type != 'pagination') {
       throw new Error('invalide allowed collection type ' + type);
     }
   }
-  if (preferred !== null) {
-    const preferredType = preferred ? 'infinite' : 'pagination';
-    if (props.allowedCollectionTypes.includes(preferredType)) {
-      return preferred;
-    }
-  }
-  return props.allowedCollectionTypes[0] == 'infinite';
+  const preferredType = infiniteScroll.value ? 'infinite' : 'pagination';
+  return config.allowedCollectionTypes.includes(preferredType)
+    ? infiniteScroll.value
+    : config.allowedCollectionTypes[0] == 'infinite';
 }
 
 onMounted(async () => {
@@ -345,6 +360,19 @@ onUnmounted(() => {
   observer?.disconnect();
 });
 
+// Must be before the other watches: config must be populated before isInfiniteAccordingConfig runs
+watchEffect(() => {
+  config.userTimezone = props.userTimezone ?? globalConfig.userTimezone;
+  config.requestTimezone = props.requestTimezone ?? globalConfig.requestTimezone;
+  config.quickSort = props.quickSort ?? globalConfig.quickSort;
+  config.displayCount = props.displayCount ?? globalConfig.displayCount;
+  config.editColumns = props.editColumns ?? globalConfig.editColumns;
+  config.allowedCollectionTypes = props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes;
+  config.isResultFlattened = isResultFlattened.value;
+});
+watchEffect(() => {
+  limit.value = props.limit ?? globalConfig.limit;
+});
 watch([() => props.entity, columns, orderBy], async () => {
   await init();
   resetCollection();
@@ -352,8 +380,9 @@ watch([() => props.entity, columns, orderBy], async () => {
 watch([() => props.filter, infiniteScroll], resetCollection);
 watch(page, requestServer);
 watch(
-  () => props.allowedCollectionTypes,
-  () => (infiniteScroll.value = isInfiniteAccordingProps(infiniteScroll.value)),
+  () => config.allowedCollectionTypes,
+  () => (infiniteScroll.value = isInfiniteAccordingConfig()),
+  { immediate: true },
 );
 </script>
 
@@ -362,22 +391,28 @@ watch(
     <a v-if="builderId" :href="'#' + builderId" :class="classes.skip_link">{{ translate('go_to_filter') }}</a>
     <div>
       <div
-        v-if="displayCount || !infiniteScroll || onExport || allowedCollectionTypes.length > 1"
+        v-if="
+          config.displayCount ||
+          !infiniteScroll ||
+          onExport ||
+          config.allowedCollectionTypes.length > 1 ||
+          config.editColumns
+        "
         :class="classes.collection_header"
       >
         <div>
-          <div v-if="displayCount">{{ translate('results') }} : {{ count }}</div>
+          <div v-if="config.displayCount">{{ translate('results') }} : {{ count }}</div>
         </div>
-        <Pagination v-if="!infiniteScroll" v-model="page" :count="pageCount" :lock="requesting" />
+        <Pagination v-if="!infiniteScroll && pageCount" v-model="page" :count="pageCount" :lock="requesting" />
         <div :class="classes.collection_actions">
           <IconButton v-if="onExport" icon="export" @click="() => onExport!(filter)" />
           <IconButton
-            v-if="allowedCollectionTypes.length > 1"
+            v-if="config.allowedCollectionTypes.length > 1"
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
           <ColumnEditor
-            v-if="editColumns && entitySchema"
+            v-if="config.editColumns && entitySchema"
             v-model="columns"
             :custom-columns="customColumns"
             :entity-schema="entitySchema"
@@ -422,10 +457,10 @@ watch(
                 :column-id="columnId"
                 :property="columnsProperties[columnId]"
                 :row-value="object"
-                :flattened="isResultFlattened"
-                :user-timezone="userTimezone"
-                :request-timezone="requestTimezone"
                 :renderer="customColumns?.[columnId]?.renderer"
+                :user-timezone="config.userTimezone"
+                :request-timezone="config.requestTimezone"
+                :flattened="config.isResultFlattened"
                 @click="customColumns?.[columnId]?.onCellClick"
               />
             </template>

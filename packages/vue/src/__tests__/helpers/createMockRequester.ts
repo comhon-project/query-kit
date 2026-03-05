@@ -14,6 +14,7 @@ export function createMockRequester(
         return {
           collection: response.collection ?? [],
           count: response.count ?? 0,
+          limit: response.limit ?? 25,
         };
       }),
     },

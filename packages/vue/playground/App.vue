@@ -272,7 +272,8 @@ let requester = {
     console.log('prop-requester');
     console.log(query);
     const lastPage = 5;
-    const limit = query.page >= lastPage ? query.limit - 1 : query.limit;
+    const queryLimit = query.limit ?? 20;
+    const limit = query.page >= lastPage ? queryLimit - 1 : queryLimit;
     const collection = [];
     for (let index = 0; index < limit; index++) {
       const element = {};
@@ -317,8 +318,9 @@ let requester = {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          count: lastPage * query.limit - 1,
+          count: lastPage * queryLimit - 1,
           collection: collection,
+          limit: queryLimit,
         });
       }, 1000);
     });
@@ -385,9 +387,8 @@ watch(page, () => {
         user-timezone="Europe/Paris"
         :display-operator="displayOperator"
         :debounce="1000"
-        :manual="true"
-        :direct-query="false"
-        :limit="20"
+        :manual="false"
+        :direct-query="true"
         :quick-sort="true"
         :post-request="completeCollection"
         :allowed-collection-types="['infinite', 'pagination']"

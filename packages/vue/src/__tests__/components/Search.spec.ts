@@ -69,7 +69,8 @@ describe('Search', () => {
     });
 
     it('renders Collection after Builder emits computed filter', async () => {
-      await mountSearchAndTriggerComputed();
+      const { requester } = createMockRequester();
+      await mountSearchAndTriggerComputed({ requester });
       expect(wrapper.findComponent(Collection).exists()).toBe(true);
     });
   });
@@ -178,12 +179,12 @@ describe('Search', () => {
   describe('onComputed', () => {
     it('sets location.hash when validate is triggered', async () => {
       const { requester } = createMockRequester();
-      await mountSearchAndTriggerComputed({ requester });
+      await mountSearchAndTriggerComputed({ requester, manual: true });
 
       const collection = wrapper.findComponent(Collection);
       const collectionId = collection.attributes('id');
 
-      // Click the search/validate button in Builder (manual defaults to true)
+      // Click the search/validate button in Builder (manual must be explicitly true)
       const builder = wrapper.findComponent(Builder);
       const searchBtn = builder.findAll('button').find((b) => b.attributes('aria-label')?.includes('search'));
       expect(searchBtn).toBeDefined();
