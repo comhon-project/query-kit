@@ -45,6 +45,7 @@ import {
 } from './core/SchemaLoader';
 import CellInteger from './components/CellInteger.vue';
 import CountryInput from './components/CountryInput.vue';
+import LastNameInput from './components/LastNameInput.vue';
 
 library.add([faPlus, faXmark, faRotateLeft, faBackward, faForward, faChevronDown, faCheck]);
 
@@ -58,8 +59,13 @@ createApp(App)
     enumTranslationsLoader,
     requestSchemaLoader,
     classes: {},
-    inputs: {
+    typeInputs: {
       choice: new MultipleCapableComponent(CountryInput),
+    },
+    propertyInputs: {
+      user: {
+        last_name: LastNameInput,
+      },
     },
     cellTypeRenderers: {
       integer: CellInteger,

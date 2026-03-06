@@ -164,15 +164,19 @@
   padding: 0;
   margin: 0;
   margin-top: var(--qkit-gap-spacer);
-  /* allows focus outlines to overflow and prevents content overflows during collapse transition */
-  overflow: clip;
-  overflow-clip-margin: 4px;
   transition:
     height var(--qkit-transition-duration) ease,
-    margin-top var(--qkit-transition-duration) ease;
+    margin-top var(--qkit-transition-duration) ease,
+    overflow 0s var(--qkit-transition-duration);
+  transition-behavior: allow-discrete;
 }
 .qkit-group-list[collapsed] {
   margin-top: 0;
+  overflow: hidden;
+  transition:
+    height var(--qkit-transition-duration) ease,
+    margin-top var(--qkit-transition-duration) ease,
+    overflow 0s;
 }
 
 .qkit-group-list-item:not(:has([data-group])) > * {

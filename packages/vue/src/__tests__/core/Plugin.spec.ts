@@ -221,6 +221,7 @@ describe('Plugin', () => {
   });
 
   it('installs with full config', () => {
+    const CustomInput = defineComponent({ template: '<input />' });
     const options = {
       icons: {
         add: 'icon_add',
@@ -230,9 +231,12 @@ describe('Plugin', () => {
         modal: 'my-modal',
         search: 'my-search',
       },
-      inputs: {
+      typeInputs: {
         integer: 'my_integer',
         date: 'my_date',
+      },
+      propertyInputs: {
+        user: { first_name: CustomInput },
       },
       defaultLocale: 'es',
       fallbackLocale: 'fr',
@@ -262,6 +266,7 @@ describe('Plugin', () => {
     expect(getComponent({ type: 'date' })).toBe('my_date');
     expect(getComponent({ type: 'string' })).toBe('text');
     expect(getComponent({ type: 'string', enum: 'gender' })).toBe(SelectEnum);
+    expect(getComponent({ type: 'string' }, { owner: 'user', id: 'first_name' })).toBe(CustomInput);
 
     expect(config.renderHtml).toBe(true);
   });

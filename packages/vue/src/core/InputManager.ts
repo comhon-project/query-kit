@@ -39,6 +39,10 @@ export type ComponentEntry = NativeHtmlComponent | Component | MultipleCapableCo
 
 export type ComponentList = Record<string, ComponentEntry>;
 
+export type PropertyInputs = Record<string, ComponentList>;
+
+type PropertyContext = { owner: string; id: string };
+
 const componentList: ComponentList = {
   string: 'text',
   html: 'text',
@@ -51,27 +55,55 @@ const componentList: ComponentList = {
   boolean: BooleanInput,
 };
 
-const registerComponents = (custom: Partial<ComponentList>): void => {
-  Object.assign(componentList, custom);
+const typeInputs: ComponentList = {};
+const propertyInputs: PropertyInputs = {};
+
+const registerTypeInputs = (custom: ComponentList): void => {
+  Object.assign(typeInputs, custom);
 };
 
-const getComponent = (container: TypeContainer): NativeHtmlComponent | Component => {
+const registerPropertyInputs = (custom: PropertyInputs): void => {
+  for (const entity in custom) {
+    if (!propertyInputs[entity]) propertyInputs[entity] = {};
+    Object.assign(propertyInputs[entity], custom[entity]);
+  }
+};
+
+const resolveEntry = (entry: ComponentEntry): NativeHtmlComponent | Component => {
+  return entry instanceof MultipleCapableComponent ? entry.component : entry;
+};
+
+const getComponent = (container: TypeContainer, property?: PropertyContext): NativeHtmlComponent | Component => {
   const type = container.enum ? 'enum' : container.type;
+
+  if (property) {
+    const propEntry = propertyInputs[property.owner]?.[property.id];
+    if (propEntry !== undefined) return resolveEntry(propEntry);
+  }
+
+  const typeEntry = typeInputs[type];
+  if (typeEntry !== undefined) return resolveEntry(typeEntry);
+
   const entry = componentList[type];
   if (!entry) {
     throw new Error('invalid type ' + type);
   }
-  if (entry instanceof MultipleCapableComponent) {
-    return entry.component;
-  }
-  return entry;
+  return resolveEntry(entry);
 };
 
-const supportsMultiple = (container: ArrayableTypeContainer): boolean => {
+const supportsMultiple = (container: ArrayableTypeContainer, property?: PropertyContext): boolean => {
   const leaf = getLeafTypeContainer(container);
   const type = leaf.enum ? 'enum' : leaf.type;
-  const entry = componentList[type];
-  return entry instanceof MultipleCapableComponent;
+
+  if (property) {
+    const propEntry = propertyInputs[property.owner]?.[property.id];
+    if (propEntry !== undefined) return propEntry instanceof MultipleCapableComponent;
+  }
+
+  const typeEntry = typeInputs[type];
+  if (typeEntry !== undefined) return typeEntry instanceof MultipleCapableComponent;
+
+  return componentList[type] instanceof MultipleCapableComponent;
 };
 
 const isNativeHtmlComponent = (component: string | Component): boolean => {
@@ -83,6 +115,16 @@ const defaultComponentList: ComponentList = { ...componentList };
 function _resetForTesting(): void {
   for (const key in componentList) delete componentList[key];
   Object.assign(componentList, defaultComponentList);
+  for (const key in typeInputs) delete typeInputs[key];
+  for (const key in propertyInputs) delete propertyInputs[key];
 }
 
-export { registerComponents, getComponent, supportsMultiple, isNativeHtmlComponent, MultipleCapableComponent, _resetForTesting };
+export {
+  registerTypeInputs,
+  registerPropertyInputs,
+  getComponent,
+  supportsMultiple,
+  isNativeHtmlComponent,
+  MultipleCapableComponent,
+  _resetForTesting,
+};

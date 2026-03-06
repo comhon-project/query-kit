@@ -3,7 +3,7 @@ import { defineComponent, h } from 'vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
-import { registerComponents } from '@core/InputManager';
+import { registerTypeInputs } from '@core/InputManager';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
@@ -133,7 +133,7 @@ describe('UniqueInput', () => {
           return h('textarea', { 'data-testid': 'custom-input' }, this.modelValue);
         },
       });
-      registerComponents({ string: CustomStringInput });
+      registerTypeInputs({ string: CustomStringInput });
 
       const property = schema.getProperty('first_name');
       mountInput(property);
@@ -151,7 +151,7 @@ describe('UniqueInput', () => {
           return h('div', { 'data-user-tz': this.userTimezone, 'data-req-tz': this.requestTimezone });
         },
       });
-      registerComponents({ string: TimezoneAwareInput });
+      registerTypeInputs({ string: TimezoneAwareInput });
 
       const property = schema.getProperty('first_name');
       mountInput(property);

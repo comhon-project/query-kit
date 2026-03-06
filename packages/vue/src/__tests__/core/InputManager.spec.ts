@@ -5,7 +5,8 @@ import {
   getComponent,
   supportsMultiple,
   isNativeHtmlComponent,
-  registerComponents,
+  registerTypeInputs,
+  registerPropertyInputs,
   MultipleCapableComponent,
   _resetForTesting,
 } from '@core/InputManager';
@@ -154,37 +155,83 @@ describe('InputManager', () => {
     });
   });
 
-  describe('registerComponents', () => {
+  describe('registerTypeInputs', () => {
     it('overrides an existing component mapping', () => {
       const CustomBooleanInput = defineComponent({ template: '<span />' });
-      registerComponents({ boolean: CustomBooleanInput });
+      registerTypeInputs({ boolean: CustomBooleanInput });
       expect(getComponent(container('boolean'))).toBe(CustomBooleanInput);
     });
 
     it('registers a new custom type component', () => {
       const CustomInput = defineComponent({ template: '<input />' });
-      registerComponents({ currency: CustomInput });
+      registerTypeInputs({ currency: CustomInput });
       expect(getComponent(container('currency'))).toBe(CustomInput);
     });
 
     it('allows registering a MultipleCapableComponent', () => {
       const CustomSelect = defineComponent({ template: '<select />' });
-      registerComponents({ custom_enum: new MultipleCapableComponent(CustomSelect) });
+      registerTypeInputs({ custom_enum: new MultipleCapableComponent(CustomSelect) });
       expect(getComponent(container('custom_enum'))).toBe(CustomSelect);
       expect(supportsMultiple(container('custom_enum') as ArrayableTypeContainer)).toBe(true);
     });
 
     it('allows registering a native HTML component string', () => {
-      registerComponents({ custom: 'email' });
+      registerTypeInputs({ custom: 'email' });
       expect(getComponent(container('custom'))).toBe('email');
       expect(isNativeHtmlComponent('email')).toBe(true);
+    });
+
+    it('takes priority over built-in defaults', () => {
+      const Custom = defineComponent({ template: '<div />' });
+      registerTypeInputs({ string: Custom });
+      expect(getComponent(container('string'))).toBe(Custom);
+    });
+  });
+
+  describe('registerPropertyInputs', () => {
+    it('overrides by entity + property id', () => {
+      const CustomInput = defineComponent({ template: '<input />' });
+      registerPropertyInputs({ user: { name: CustomInput } });
+      expect(getComponent(container('string'), { owner: 'user', id: 'name' })).toBe(CustomInput);
+    });
+
+    it('falls back to typeInputs when property not registered', () => {
+      const TypeInput = defineComponent({ template: '<input />' });
+      registerTypeInputs({ string: TypeInput });
+      expect(getComponent(container('string'), { owner: 'user', id: 'email' })).toBe(TypeInput);
+    });
+
+    it('falls back to default when neither property nor type is registered', () => {
+      expect(getComponent(container('string'), { owner: 'user', id: 'email' })).toBe('text');
+    });
+
+    it('property override takes priority over type override', () => {
+      const TypeInput = defineComponent({ template: '<span />' });
+      const PropInput = defineComponent({ template: '<input />' });
+      registerTypeInputs({ string: TypeInput });
+      registerPropertyInputs({ user: { name: PropInput } });
+      expect(getComponent(container('string'), { owner: 'user', id: 'name' })).toBe(PropInput);
+      expect(getComponent(container('string'), { owner: 'user', id: 'email' })).toBe(TypeInput);
+    });
+
+    it('supports MultipleCapableComponent at property level', () => {
+      const CustomSelect = defineComponent({ template: '<select />' });
+      registerPropertyInputs({ order: { status: new MultipleCapableComponent(CustomSelect) } });
+      expect(getComponent(container('string'), { owner: 'order', id: 'status' })).toBe(CustomSelect);
+      expect(supportsMultiple(container('string') as ArrayableTypeContainer, { owner: 'order', id: 'status' })).toBe(true);
+    });
+
+    it('property without owner context does not use property overrides', () => {
+      const PropInput = defineComponent({ template: '<input />' });
+      registerPropertyInputs({ user: { name: PropInput } });
+      expect(getComponent(container('string'))).toBe('text');
     });
   });
 
   describe('_resetForTesting', () => {
     it('restores default component mappings after override', () => {
       const Custom = defineComponent({ template: '<div />' });
-      registerComponents({ string: Custom });
+      registerTypeInputs({ string: Custom });
       expect(getComponent(container('string'))).toBe(Custom);
 
       _resetForTesting();
@@ -193,7 +240,7 @@ describe('InputManager', () => {
 
     it('removes custom type registrations', () => {
       const Custom = defineComponent({ template: '<div />' });
-      registerComponents({ currency: Custom });
+      registerTypeInputs({ currency: Custom });
       expect(getComponent(container('currency'))).toBe(Custom);
 
       _resetForTesting();
@@ -201,7 +248,7 @@ describe('InputManager', () => {
     });
 
     it('restores boolean to BooleanInput', () => {
-      registerComponents({ boolean: 'checkbox' });
+      registerTypeInputs({ boolean: 'checkbox' });
       expect(getComponent(container('boolean'))).toBe('checkbox');
 
       _resetForTesting();
@@ -209,7 +256,7 @@ describe('InputManager', () => {
     });
 
     it('restores datetime to DateTimeInput', () => {
-      registerComponents({ datetime: 'datetime-local' });
+      registerTypeInputs({ datetime: 'datetime-local' });
       expect(getComponent(container('datetime'))).toBe('datetime-local');
 
       _resetForTesting();
@@ -218,7 +265,7 @@ describe('InputManager', () => {
 
     it('restores enum to SelectEnum via MultipleCapableComponent', () => {
       const Custom = defineComponent({ template: '<div />' });
-      registerComponents({ enum: Custom });
+      registerTypeInputs({ enum: Custom });
       expect(getComponent(container('string', { enum: 'status' }))).toBe(Custom);
 
       _resetForTesting();

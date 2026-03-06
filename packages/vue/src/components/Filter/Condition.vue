@@ -68,7 +68,7 @@ watchEffect(() => {
   validOperator.value = isValidOperator('condition', props.modelValue.operator);
   if (property.value) {
     try {
-      getComponent(getLeafTypeContainer(property.value));
+      getComponent(getLeafTypeContainer(property.value), property.value);
       validType.value = true;
     } catch {
       validType.value = false;

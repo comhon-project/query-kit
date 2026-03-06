@@ -2,7 +2,7 @@ import type { App } from 'vue';
 import { locale, fallback } from '@i18n/i18n';
 import { registerClasses, type ClassList } from '@core/ClassManager';
 import { registerIcons, defaultIcons, type IconList } from '@core/IconManager';
-import { registerComponents, type ComponentList } from '@core/InputManager';
+import { registerTypeInputs, registerPropertyInputs, type ComponentList, type PropertyInputs } from '@core/InputManager';
 import {
   registerPropertyRenderers,
   registerTypeRenderers,
@@ -55,7 +55,8 @@ export interface PluginOptions {
   iconComponent?: string;
   iconPropName?: string;
   classes?: Partial<ClassList>;
-  inputs?: Partial<ComponentList>;
+  typeInputs?: ComponentList;
+  propertyInputs?: PropertyInputs;
   cellTypeRenderers?: TypeRenderers;
   cellPropertyRenderers?: PropertyRenderers;
   defaultLocale?: string;
@@ -92,8 +93,11 @@ export default {
     if (options.classes) {
       registerClasses(options.classes);
     }
-    if (options.inputs) {
-      registerComponents(options.inputs);
+    if (options.typeInputs) {
+      registerTypeInputs(options.typeInputs);
+    }
+    if (options.propertyInputs) {
+      registerPropertyInputs(options.propertyInputs);
     }
     if (options.cellTypeRenderers) {
       registerTypeRenderers(options.cellTypeRenderers);

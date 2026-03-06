@@ -30,9 +30,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const config = inject(builderConfigKey)!;
 
+// undefined for computed scope parameters (no owner)
+const propertyOrScope = computed(() => 'owner' in props.target ? props.target : undefined);
+
 const inputType = computed<NativeHtmlComponent | Component | undefined>(() => {
   try {
-    return getComponent(getLeafTypeContainer(props.target));
+    return getComponent(getLeafTypeContainer(props.target), propertyOrScope.value);
   } catch {
     return undefined;
   }

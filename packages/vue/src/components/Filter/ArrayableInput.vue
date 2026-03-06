@@ -19,7 +19,12 @@ const props = withDefaults(defineProps<Props>(), {
   isArray: false,
 });
 
-const componentSupportsMultiple = computed(() => supportsMultiple(props.target));
+// undefined for computed scope parameters (no owner)
+const propertyOrScope = computed(() => 'owner' in props.target ? props.target : undefined);
+
+const componentSupportsMultiple = computed(() =>
+  supportsMultiple(props.target, propertyOrScope.value),
+);
 
 const useCollection = computed(() => {
   return props.isArray && !componentSupportsMultiple.value;
