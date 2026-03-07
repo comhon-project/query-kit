@@ -21,6 +21,7 @@ import {
 } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 import { useHistory } from '@components/Filter/Composable/History';
+import { deepEqual } from '@core/Utils';
 
 interface Props {
   entity: string;
@@ -58,6 +59,7 @@ let isInitialEmit = true;
 let timeoutId: ReturnType<typeof setTimeout> | undefined;
 let originalFilter: GroupFilter;
 let lastEmitted: GroupFilter;
+let lastComputedEmitted: GroupFilter | undefined;
 const internalModel = ref<GroupFilter>(null!);
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
@@ -100,6 +102,7 @@ function init(value: Filter | null): void {
 
   clearHistory();
   isInitialEmit = true;
+  lastComputedEmitted = undefined;
   internalModel.value = structuredClone(originalFilter);
 }
 
@@ -165,6 +168,9 @@ function isScopeFilled(scope: Scope | ComputedScope, filter: ScopeFilter): boole
 function mustKeepFilter(filter: Filter, entitySchema: EntitySchema): boolean {
   if ('operator' in filter && (filter.operator == 'null' || filter.operator == 'not_null')) {
     return true;
+  }
+  if (filter.type == 'group') {
+    return filter.filters.some((child) => mustKeepFilter(child, entitySchema));
   }
   if (filter.type == 'scope') {
     const scope = getScopeDefinition(filter.id, entitySchema);
@@ -253,7 +259,11 @@ function scheduleEmit(): void {
 
     if (!config.manual || isInitialEmit) {
       isInitialEmit = false;
-      emit('computed', await getComputedFilter(), false);
+      const computed = await getComputedFilter();
+      if (!deepEqual(computed, lastComputedEmitted)) {
+        lastComputedEmitted = computed;
+        emit('computed', computed, false);
+      }
     }
   }, config.debounce);
 }

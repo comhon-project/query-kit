@@ -27,10 +27,7 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-async function mountBuilder(
-  props: Record<string, unknown> = {},
-  modelValue: Filter | null = null,
-) {
+async function mountBuilder(props: Record<string, unknown> = {}, modelValue: Filter | null = null) {
   wrapper = mountWithPlugin(Builder, {
     props: {
       entity: 'user',
@@ -118,9 +115,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'or',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Bob' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Bob' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed');
@@ -137,6 +132,57 @@ describe('Builder', () => {
           value: 'Bob',
         }),
       );
+    });
+  });
+
+  // ==================== Deduplication ====================
+  describe('computed deduplication', () => {
+    it('does not emit computed when adding an empty filter (computed result unchanged)', async () => {
+      await mountBuilder();
+      const emittedAfterInit = wrapper.emitted('computed')!.length;
+
+      // Add an empty condition (no value) — computed filter stays the same empty group
+      const groupComp = wrapper.findComponent(Group);
+      const internalGroup = groupComp.props('modelValue') as GroupFilter;
+      internalGroup.filters.push({
+        type: 'condition',
+        property: 'first_name',
+        operator: '=',
+        value: undefined,
+        key: 99,
+      });
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      expect(wrapper.emitted('computed')!.length).toBe(emittedAfterInit);
+    });
+
+    it('emits computed when a filled filter is added', async () => {
+      await mountBuilder();
+      const emittedAfterInit = wrapper.emitted('computed')!.length;
+
+      const groupComp = wrapper.findComponent(Group);
+      const internalGroup = groupComp.props('modelValue') as GroupFilter;
+      internalGroup.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 99 });
+      await flushAll();
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      expect(wrapper.emitted('computed')!.length).toBeGreaterThan(emittedAfterInit);
+      const lastFilter = wrapper.emitted('computed')!.at(-1)![0] as GroupFilter;
+      expect(lastFilter.filters).toHaveLength(1);
+    });
+
+    it('emits computed after re-init even if computed result is identical', async () => {
+      await mountBuilder();
+      const emittedAfterInit = wrapper.emitted('computed')!.length;
+
+      // Set a new but equivalent modelValue — triggers re-init which resets lastComputedEmitted
+      await wrapper.setProps({ modelValue: { type: 'group', operator: 'and', filters: [] } });
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      expect(wrapper.emitted('computed')!.length).toBeGreaterThan(emittedAfterInit);
     });
   });
 
@@ -184,9 +230,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
       };
       await mountBuilder({ manual: true }, group);
 
@@ -194,9 +238,7 @@ describe('Builder', () => {
       const newGroup: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Bob' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Bob' }],
       };
       await wrapper.setProps({ modelValue: newGroup });
       await flushAll();
@@ -218,17 +260,13 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
       };
       await mountBuilder({ manual: true }, group);
 
       // Find the search button (only shown in manual mode) and click it
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const searchButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'search',
-      );
+      const searchButton = iconButtons.find((btn) => btn.props('icon') === 'search');
       expect(searchButton).toBeTruthy();
       await searchButton!.trigger('click');
       await flushAll();
@@ -283,18 +321,14 @@ describe('Builder', () => {
       const filter = emitted[emitted.length - 1][0] as GroupFilter;
       // Empty condition (value=undefined) should be removed
       expect(filter.filters).toHaveLength(1);
-      expect(filter.filters[0]).toEqual(
-        expect.objectContaining({ property: 'first_name', value: 'Alice' }),
-      );
+      expect(filter.filters[0]).toEqual(expect.objectContaining({ property: 'first_name', value: 'Alice' }));
     });
 
     it('wraps like operator value with %', async () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: 'like', value: 'test' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: 'like', value: 'test' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -309,9 +343,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: 'begins_with', value: 'Al' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: 'begins_with', value: 'Al' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -325,9 +357,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: 'ends_with', value: 'ice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: 'ends_with', value: 'ice' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -341,9 +371,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: 'doesnt_begin_with', value: 'Al' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: 'doesnt_begin_with', value: 'Al' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -357,9 +385,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: 'doesnt_end_with', value: 'ice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: 'doesnt_end_with', value: 'ice' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -373,9 +399,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -425,9 +449,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: 'not_like', value: 'test' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: 'not_like', value: 'test' }],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -443,9 +465,7 @@ describe('Builder', () => {
     it('undo button is disabled initially', async () => {
       await mountBuilder();
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const undoButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'undo',
-      );
+      const undoButton = iconButtons.find((btn) => btn.props('icon') === 'undo');
       expect(undoButton).toBeTruthy();
       expect(undoButton!.props('disabled')).toBe(true);
     });
@@ -453,9 +473,7 @@ describe('Builder', () => {
     it('redo button is disabled initially', async () => {
       await mountBuilder();
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const redoButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'redo',
-      );
+      const redoButton = iconButtons.find((btn) => btn.props('icon') === 'redo');
       expect(redoButton).toBeTruthy();
       expect(redoButton!.props('disabled')).toBe(true);
     });
@@ -466,9 +484,7 @@ describe('Builder', () => {
     it('reset button is rendered by default', async () => {
       await mountBuilder();
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const resetButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'reset',
-      );
+      const resetButton = iconButtons.find((btn) => btn.props('icon') === 'reset');
       expect(resetButton).toBeTruthy();
     });
   });
@@ -487,45 +503,35 @@ describe('Builder', () => {
     it('hides undo button when allowUndo=false', async () => {
       await mountBuilder({ allowUndo: false });
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const undoButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'undo',
-      );
+      const undoButton = iconButtons.find((btn) => btn.props('icon') === 'undo');
       expect(undoButton).toBeUndefined();
     });
 
     it('hides redo button when allowRedo=false', async () => {
       await mountBuilder({ allowRedo: false });
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const redoButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'redo',
-      );
+      const redoButton = iconButtons.find((btn) => btn.props('icon') === 'redo');
       expect(redoButton).toBeUndefined();
     });
 
     it('hides reset button when allowReset=false', async () => {
       await mountBuilder({ allowReset: false });
       const iconButtons = wrapper.findAllComponents(IconButton);
-      const resetButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'reset',
-      );
+      const resetButton = iconButtons.find((btn) => btn.props('icon') === 'reset');
       expect(resetButton).toBeUndefined();
     });
 
     it('shows search button only in manual mode', async () => {
       await mountBuilder({ manual: false });
       let iconButtons = wrapper.findAllComponents(IconButton);
-      let searchButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'search',
-      );
+      let searchButton = iconButtons.find((btn) => btn.props('icon') === 'search');
       expect(searchButton).toBeUndefined();
 
       wrapper.unmount();
 
       await mountBuilder({ manual: true });
       iconButtons = wrapper.findAllComponents(IconButton);
-      searchButton = iconButtons.find(
-        (btn) => btn.props('icon') === 'search',
-      );
+      searchButton = iconButtons.find((btn) => btn.props('icon') === 'search');
       expect(searchButton).toBeTruthy();
     });
   });
@@ -595,9 +601,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'test_computed', parameters: ['Alice'] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'test_computed', parameters: ['Alice'] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -621,9 +625,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'scope', parameters: [['a', undefined, 'b']] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'scope', parameters: [['a', undefined, 'b']] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -639,9 +641,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'string_scope', parameters: [undefined] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'string_scope', parameters: [undefined] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -654,9 +654,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'string_scope', parameters: ['hello'] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'string_scope', parameters: ['hello'] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -672,9 +670,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'string_scope', parameters: [[]] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'string_scope', parameters: [[]] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -687,15 +683,84 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'string_scope', parameters: [null] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'string_scope', parameters: [null] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
       const filter = emitted[emitted.length - 1][0] as GroupFilter;
       // Scope with null non-nullable parameter should be removed
       expect(filter.filters.find((f) => f.type === 'scope')).toBeUndefined();
+    });
+  });
+
+  // ==================== Empty group stripping ====================
+  describe('empty group stripping', () => {
+    it('strips empty nested group from computed output', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
+          { type: 'group', operator: 'or', filters: [] },
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      expect(filter.filters).toHaveLength(1);
+      expect(filter.filters[0]).toMatchObject({ type: 'condition', property: 'first_name' });
+    });
+
+    it('strips nested group containing only empty conditions from computed output', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
+          {
+            type: 'group',
+            operator: 'or',
+            filters: [{ type: 'condition', property: 'last_name', operator: '=', value: undefined }],
+          },
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      expect(filter.filters).toHaveLength(1);
+      expect(filter.filters[0]).toMatchObject({ type: 'condition', property: 'first_name' });
+    });
+
+    it('keeps nested group that has at least one filled condition', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [
+          {
+            type: 'group',
+            operator: 'or',
+            filters: [{ type: 'condition', property: 'last_name', operator: '=', value: 'Smith' }],
+          },
+        ],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      expect(filter.filters).toHaveLength(1);
+      expect(filter.filters[0].type).toBe('group');
+    });
+
+    it('does not emit computed when adding an empty subgroup (computed result unchanged)', async () => {
+      await mountBuilder();
+      const emittedAfterInit = wrapper.emitted('computed')!.length;
+
+      const groupComp = wrapper.findComponent(Group);
+      const internalGroup = groupComp.props('modelValue') as GroupFilter;
+      internalGroup.filters.push({ type: 'group', operator: 'or', filters: [] });
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+
+      expect(wrapper.emitted('computed')!.length).toBe(emittedAfterInit);
     });
   });
 
@@ -760,9 +825,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'scope', id: 'scope', parameters: [] } as ScopeFilter,
-        ],
+        filters: [{ type: 'scope', id: 'scope', parameters: [] } as ScopeFilter],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
@@ -846,9 +909,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
       };
       await mountBuilder({}, group);
 
@@ -882,9 +943,7 @@ describe('Builder', () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'and',
-        filters: [
-          { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' },
-        ],
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
       };
       await mountBuilder({}, group);
 
