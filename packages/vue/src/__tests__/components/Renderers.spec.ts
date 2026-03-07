@@ -295,7 +295,7 @@ describe('Renderers', () => {
       const wrapper = mount(ArrayRenderer, {
         props: baseProps({
           value: ['a', 'b', 'c'],
-          type: { type: 'array', children: { type: 'string' } },
+          type: { type: 'array', items: { type: 'string' } },
         }),
       });
 
@@ -306,7 +306,7 @@ describe('Renderers', () => {
       const wrapper = mount(ArrayRenderer, {
         props: baseProps({
           value: [],
-          type: { type: 'array', children: { type: 'string' } },
+          type: { type: 'array', items: { type: 'string' } },
         }),
       });
 
@@ -317,7 +317,7 @@ describe('Renderers', () => {
       const wrapper = mount(ArrayRenderer, {
         props: baseProps({
           value: null,
-          type: { type: 'array', children: { type: 'string' } },
+          type: { type: 'array', items: { type: 'string' } },
         }),
       });
 

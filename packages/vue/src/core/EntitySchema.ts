@@ -9,7 +9,7 @@ export interface TypeContainer {
 }
 
 export interface ArrayableTypeContainer extends TypeContainer {
-  children?: ArrayableTypeContainer;
+  items?: ArrayableTypeContainer;
 }
 
 // Raw types - before compute()
@@ -305,8 +305,8 @@ const resolve = (id: string): Promise<EntitySchema> => {
 };
 
 const getLeafTypeContainer = (container: ArrayableTypeContainer): TypeContainer => {
-  while (container.type === 'array' && container.children) {
-    container = container.children;
+  while (container.type === 'array' && container.items) {
+    container = container.items;
   }
   return container;
 };

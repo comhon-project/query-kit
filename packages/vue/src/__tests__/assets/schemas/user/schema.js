@@ -62,7 +62,7 @@ export default {
       id: 'favorite_fruits',
       name: 'favorite fruits',
       type: 'array',
-      children: {
+      items: {
         type: 'string',
         enum: 'fruit',
       },

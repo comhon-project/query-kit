@@ -11,7 +11,7 @@ const elementComponent = computed<Component | null>(() => {
 });
 
 const renderer = computed<Component | RenderFunction | null>(() => {
-  return getTypeRenderer(props.type.children!);
+  return getTypeRenderer(props.type.items!);
 });
 
 const subValues = computed<unknown[]>(() => {
@@ -32,7 +32,7 @@ const subValues = computed<unknown[]>(() => {
       :is="elementComponent"
       :column-id="columnId"
       :property="property"
-      :type="type.children"
+      :type="type.items"
       :value="subValue"
       :row-value="rowValue"
       :request-timezone="requestTimezone"

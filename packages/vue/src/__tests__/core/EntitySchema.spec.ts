@@ -168,7 +168,7 @@ describe('compute() via resolve()', () => {
         id: 'favorite_fruits',
         name: 'favorite fruits',
         type: 'array',
-        children: { type: 'string', enum: 'fruit' },
+        items: { type: 'string', enum: 'fruit' },
         owner: 'user',
       },
       company: {
@@ -305,7 +305,7 @@ describe('getLeafTypeContainer()', () => {
   it('unwraps a single-level array', () => {
     const container: ArrayableTypeContainer = {
       type: 'array',
-      children: { type: 'string', enum: 'fruit' },
+      items: { type: 'string', enum: 'fruit' },
     };
     const leaf = getLeafTypeContainer(container);
     expect(leaf).toEqual({ type: 'string', enum: 'fruit' });
@@ -314,16 +314,16 @@ describe('getLeafTypeContainer()', () => {
   it('unwraps nested arrays recursively', () => {
     const container: ArrayableTypeContainer = {
       type: 'array',
-      children: {
+      items: {
         type: 'array',
-        children: { type: 'integer' },
+        items: { type: 'integer' },
       },
     };
     const leaf = getLeafTypeContainer(container);
     expect(leaf).toEqual({ type: 'integer' });
   });
 
-  it('returns array container when children is undefined', () => {
+  it('returns array container when items is undefined', () => {
     const container: ArrayableTypeContainer = { type: 'array' };
     const leaf = getLeafTypeContainer(container);
     expect(leaf).toEqual({ type: 'array' });

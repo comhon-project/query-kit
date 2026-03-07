@@ -87,7 +87,7 @@ describe('Messages', () => {
     it('extracts nested array leaf type', () => {
       const wrapper = mount(InvalidType, {
         props: {
-          typeContainer: { type: 'array', children: { type: 'nested_type' } },
+          typeContainer: { type: 'array', items: { type: 'nested_type' } },
         },
       });
       expect(wrapper.text()).toContain('nested_type');

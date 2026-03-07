@@ -22,7 +22,7 @@ function container(type: string, extra: Partial<TypeContainer> = {}): TypeContai
 function arrayContainer(childType: string, childExtra: Partial<TypeContainer> = {}): ArrayableTypeContainer {
   return {
     type: 'array',
-    children: { type: childType, ...childExtra },
+    items: { type: childType, ...childExtra },
   };
 }
 

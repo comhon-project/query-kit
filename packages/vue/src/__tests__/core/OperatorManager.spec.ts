@@ -82,7 +82,7 @@ describe('OperatorManager', () => {
     it('unwraps array type using getLeafTypeContainer', () => {
       const property = mockProperty({
         type: 'array',
-        children: { type: 'string' },
+        items: { type: 'string' },
       });
       // Array type without array operators defined: returns leaf operators unfiltered
       const ops = getConditionOperators(property);
@@ -98,7 +98,7 @@ describe('OperatorManager', () => {
       });
       const property = mockProperty({
         type: 'array',
-        children: { type: 'string' },
+        items: { type: 'string' },
       });
       const ops = getConditionOperators(property);
       expect(ops).toEqual(['=', '<>', 'null', 'not_null']);
@@ -127,7 +127,7 @@ describe('OperatorManager', () => {
     it('uses allowed array operators to filter when property is array type', () => {
       const property = mockProperty({
         type: 'array',
-        children: { type: 'enum', enum: 'status' },
+        items: { type: 'enum', enum: 'status' },
       });
       const allowed = {
         condition: {
