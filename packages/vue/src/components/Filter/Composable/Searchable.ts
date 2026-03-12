@@ -30,11 +30,11 @@ const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchem
     }
     const properties: Property[] = [];
     const invalid: string[] = [];
-    const hasRelationshipOperator = getContainerOperators('relationship_condition', config.allowedOperators).length;
+    const hasRelationshipOperator = getContainerOperators('entity_condition', config.allowedOperators).length;
     for (const propertyName of propertyNames) {
       try {
         const property = props.entitySchema.getProperty(propertyName);
-        if (property.type === 'relationship') {
+        if (property.type === 'relationship' || property.type === 'object') {
           if (hasRelationshipOperator) {
             properties.push(property);
           }
@@ -88,10 +88,21 @@ const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchem
   });
 
   const hasSearchableItems = computed(() => {
-    return !!(searchableProperties.value.length || searchableScopes.value.length || searchableComputedScopes.value.length);
+    return !!(
+      searchableProperties.value.length ||
+      searchableScopes.value.length ||
+      searchableComputedScopes.value.length
+    );
   });
 
-  return { searchableProperties, searchableScopes, searchableComputedScopes, invalidProperties, invalidScopes, hasSearchableItems };
+  return {
+    searchableProperties,
+    searchableScopes,
+    searchableComputedScopes,
+    invalidProperties,
+    invalidScopes,
+    hasSearchableItems,
+  };
 };
 
 export { useSearchable };

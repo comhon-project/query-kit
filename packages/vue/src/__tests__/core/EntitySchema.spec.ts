@@ -90,9 +90,9 @@ describe('resolve()', () => {
 // ---------------------------------------------------------------------------
 describe('compute() via resolve()', () => {
   it('filters out morph_to relationships', async () => {
-    // The user schema has no morph_to properties, so all 14 properties should be present
+    // The user schema has no morph_to properties, so all 15 properties should be present
     const schema = await resolve('user');
-    expect(schema.properties).toHaveLength(14);
+    expect(schema.properties).toHaveLength(15);
 
     // Verify no morph_to properties exist in the computed schema
     for (const property of schema.properties) {
@@ -187,6 +187,13 @@ describe('compute() via resolve()', () => {
         related: 'user',
         owner: 'user',
       },
+      metadata: {
+        id: 'metadata',
+        name: 'metadata',
+        type: 'object',
+        entity: 'user.metadata',
+        owner: 'user',
+      },
     });
   });
 
@@ -221,6 +228,96 @@ describe('compute() via resolve()', () => {
 });
 
 // ---------------------------------------------------------------------------
+// 3b. Inline entities
+// ---------------------------------------------------------------------------
+describe('Inline entities', () => {
+  it('registers inline entities as resolvable schemas', async () => {
+    await resolve('user');
+    const metadata = await resolve('user.metadata');
+    expect(metadata).toBeDefined();
+    expect(metadata.id).toBe('user.metadata');
+
+    const address = await resolve('user.address');
+    expect(address).toBeDefined();
+    expect(address.id).toBe('user.address');
+  });
+
+  it('inline entity has correct properties with owner set', async () => {
+    await resolve('user');
+    const metadata = await resolve('user.metadata');
+    expect(metadata.properties).toHaveLength(3);
+    expect(metadata.getProperty('label')).toEqual({
+      id: 'label',
+      name: 'label',
+      type: 'string',
+      owner: 'user.metadata',
+    });
+    expect(metadata.getProperty('address')).toEqual({
+      id: 'address',
+      name: 'address',
+      type: 'object',
+      entity: 'user.address',
+      owner: 'user.metadata',
+    });
+  });
+
+  it('nested inline entity has correct properties', async () => {
+    await resolve('user');
+    const address = await resolve('user.address');
+    expect(address.properties).toHaveLength(2);
+    expect(address.getProperty('city')).toEqual({
+      id: 'city',
+      name: 'city',
+      type: 'string',
+      owner: 'user.address',
+    });
+    expect(address.getProperty('zip')).toEqual({
+      id: 'zip',
+      name: 'zip',
+      type: 'string',
+      owner: 'user.address',
+    });
+  });
+
+  it('loads inline entity translations from parent translations', async () => {
+    await resolve('user');
+    await loadRawTranslations('user', 'en');
+    const metadata = await resolve('user.metadata');
+    const label = metadata.getProperty('label');
+    expect(getPropertyTranslation(label)).toBe('the label');
+  });
+
+  it('loads inline entity translations for different locales', async () => {
+    await resolve('user');
+    await loadRawTranslations('user', 'fr');
+    const metadata = await resolve('user.metadata');
+    const label = metadata.getProperty('label');
+    locale.value = 'fr';
+    expect(getPropertyTranslation(label)).toBe('le libellé');
+    locale.value = 'en';
+  });
+
+  it('loads nested inline entity translations', async () => {
+    await resolve('user');
+    await loadRawTranslations('user', 'en');
+    const address = await resolve('user.address');
+    const city = address.getProperty('city');
+    expect(getPropertyTranslation(city)).toBe('the city');
+  });
+
+  it('falls back to property name when inline translation is missing', async () => {
+    await resolve('user');
+    await loadRawTranslations('user', 'es');
+    const metadata = await resolve('user.metadata');
+    const label = metadata.getProperty('label');
+    locale.value = 'es';
+    expect(getPropertyTranslation(label)).toBe('the label');
+    locale.value = 'en';
+  });
+
+});
+
+// ---------------------------------------------------------------------------
 // 4. getPropertyPath()
 // ---------------------------------------------------------------------------
 describe('getPropertyPath()', () => {
@@ -248,6 +345,30 @@ describe('getPropertyPath()', () => {
   it('throws for invalid nested property in dotted path', async () => {
     await expect(getPropertyPath('user', 'company.nonexistent')).rejects.toThrow(PropertyNotFoundError);
   });
+
+  it('throws when trying to traverse through a non-traversable property type', async () => {
+    await expect(getPropertyPath('user', 'first_name.something')).rejects.toThrow(PropertyNotFoundError);
+  });
+
+  it('traverses through object entity properties', async () => {
+    const path = await getPropertyPath('user', 'metadata.label');
+    expect(path).toHaveLength(2);
+    expect(path[0].id).toBe('metadata');
+    expect(path[0].owner).toBe('user');
+    expect(path[0].entity).toBe('user.metadata');
+    expect(path[1].id).toBe('label');
+    expect(path[1].owner).toBe('user.metadata');
+  });
+
+  it('traverses through nested object entities', async () => {
+    const path = await getPropertyPath('user', 'metadata.address.city');
+    expect(path).toHaveLength(3);
+    expect(path[0].id).toBe('metadata');
+    expect(path[1].id).toBe('address');
+    expect(path[1].entity).toBe('user.address');
+    expect(path[2].id).toBe('city');
+    expect(path[2].owner).toBe('user.address');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -259,7 +380,9 @@ describe('isPropertySortable()', () => {
     registerRequestLoader({
       load: async (entityId) => ({
         sortable: ({
-          user: ['first_name', 'last_name', 'age', 'company'],
+          user: ['first_name', 'last_name', 'age', 'company', 'metadata', 'commentable'],
+          'user.metadata': ['label', 'address', 'description'],
+          'user.address': ['city', 'zip'],
           organization: ['brand_name', 'address'],
         } as Record<string, string[]>)[entityId] ?? [],
       }),
@@ -288,6 +411,42 @@ describe('isPropertySortable()', () => {
 
   it('returns false when path is invalid (catches error gracefully)', async () => {
     const result = await isPropertySortable('user', 'nonexistent_property');
+    expect(result).toBe(false);
+  });
+
+  it('returns true for any descendant of a sortable object property', async () => {
+    const result = await isPropertySortable('user', 'metadata.label');
+    expect(result).toBe(true);
+  });
+
+  it('returns true for deeply nested descendant of a sortable object property', async () => {
+    const result = await isPropertySortable('user', 'metadata.address.city');
+    expect(result).toBe(true);
+  });
+
+  it('returns false for object property that is not sortable', async () => {
+    // 'metadata' is not in organization's sortable list
+    const result = await isPropertySortable('organization', 'metadata');
+    expect(result).toBe(false);
+  });
+
+  it('returns false for object property whose entity has no default_sort nor unique_identifier', async () => {
+    const result = await isPropertySortable('user', 'metadata.address');
+    expect(result).toBe(false);
+  });
+
+  it('returns true for object property whose entity has default_sort', async () => {
+    const result = await isPropertySortable('user', 'metadata');
+    expect(result).toBe(true);
+  });
+
+  it('returns true for relationship whose entity has unique_identifier', async () => {
+    const result = await isPropertySortable('user', 'company');
+    expect(result).toBe(true);
+  });
+
+  it('returns false for morph_to relationship', async () => {
+    const result = await isPropertySortable('user', 'commentable');
     expect(result).toBe(false);
   });
 });
@@ -526,6 +685,18 @@ describe('_resetForTesting()', () => {
     // But they should have the same structure
     expect(schema1.id).toBe(schema2.id);
     expect(schema1.properties.length).toBe(schema2.properties.length);
+  });
+
+  it('clears inline entity caches', async () => {
+    await resolve('user');
+    const metadata1 = await resolve('user.metadata');
+    _resetForTesting();
+    registerLoader(entitySchemaLoader);
+    registerTranslationsLoader(entityTranslationsLoader);
+    await resolve('user');
+    const metadata2 = await resolve('user.metadata');
+    expect(metadata1).not.toBe(metadata2);
+    expect(metadata1.id).toBe(metadata2.id);
   });
 
   it('clears translation caches', async () => {

@@ -75,10 +75,10 @@ function validate(): void {
       };
     } else {
       const property = props.entitySchema.getProperty(target);
-      if (property.type == 'relationship') {
-        const operators = getContainerOperators('relationship_condition', config.allowedOperators);
+      if (property.type == 'relationship' || property.type === 'object') {
+        const operators = getContainerOperators('entity_condition', config.allowedOperators);
         condition = {
-          type: 'relationship_condition',
+          type: 'entity_condition',
           operator: operators[0],
           property: target,
         };

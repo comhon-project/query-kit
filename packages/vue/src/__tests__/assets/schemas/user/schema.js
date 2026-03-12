@@ -81,6 +81,18 @@ export default {
       relationship_type: 'belongs_to',
       related: 'user',
     },
+    {
+      id: 'commentable',
+      name: 'commentable',
+      type: 'relationship',
+      relationship_type: 'morph_to',
+    },
+    {
+      id: 'metadata',
+      name: 'metadata',
+      type: 'object',
+      entity: 'user.metadata',
+    },
   ],
   unique_identifier: 'id',
   primary_identifiers: ['last_name', 'first_name'],
@@ -128,4 +140,41 @@ export default {
       ],
     },
   ],
+  entities: {
+    metadata: {
+      properties: [
+        {
+          id: 'label',
+          name: 'label',
+          type: 'string',
+        },
+        {
+          id: 'description',
+          name: 'description',
+          type: 'string',
+        },
+        {
+          id: 'address',
+          name: 'address',
+          type: 'object',
+          entity: 'user.address',
+        },
+      ],
+      default_sort: ['label'],
+    },
+    address: {
+      properties: [
+        {
+          id: 'city',
+          name: 'city',
+          type: 'string',
+        },
+        {
+          id: 'zip',
+          name: 'zip',
+          type: 'string',
+        },
+      ],
+    },
+  },
 };

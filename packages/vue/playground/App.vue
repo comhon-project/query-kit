@@ -7,7 +7,7 @@ const entity = ref('user');
 const displayOperator = ref({
   group: true,
   condition: true,
-  relationship_condition: true,
+  entity_condition: true,
 });
 const columns = ref([
   'first_name',
@@ -27,6 +27,7 @@ const columns = ref([
   'invalid_column_test',
   'friend.invalid_column_test',
   'no_property',
+  'profile.address.city',
 ]);
 
 const customColumns = ref({
@@ -178,7 +179,7 @@ const group = {
           visible: false,
         },
         {
-          type: 'relationship_condition',
+          type: 'entity_condition',
           operator: 'has',
           property: 'company',
           filter: {
@@ -195,11 +196,11 @@ const group = {
           editable: false,
         },
         {
-          type: 'relationship_condition',
+          type: 'entity_condition',
           operator: 'has',
           property: 'company',
           filter: {
-            type: 'relationship_condition',
+            type: 'entity_condition',
             operator: 'has_not',
             property: 'contacts',
             filter: {
@@ -379,7 +380,7 @@ watch(page, () => {
         :allowed-scopes="{ user: null }"
         :allowed-operators="{
           group: ['or'],
-          relationship_condition: null,
+          entity_condition: null,
           condition: {
             integer: ['not_null', 'in'],
           },

@@ -1,9 +1,13 @@
-export interface RequestSchema {
+export interface InlineRequestSchema {
   filtrable?: {
     properties?: string[];
     scopes?: string[];
   };
   sortable?: string[];
+}
+
+export interface RequestSchema extends InlineRequestSchema {
+  entities?: Record<string, InlineRequestSchema>;
 }
 
 export interface SchemaLoader {
@@ -21,6 +25,15 @@ async function compute(id: string): Promise<RequestSchema> {
   const requestSchema = structuredClone(loadedRequest);
 
   if (!requestSchema) throw new Error(`Request schema "${id}" not found`);
+
+  if (requestSchema.entities) {
+    for (const [key, inlineSchema] of Object.entries(requestSchema.entities)) {
+      const entityId = `${id}.${key}`;
+      if (!computedRequests[entityId]) {
+        computedRequests[entityId] = Promise.resolve(structuredClone(inlineSchema));
+      }
+    }
+  }
 
   return requestSchema;
 }

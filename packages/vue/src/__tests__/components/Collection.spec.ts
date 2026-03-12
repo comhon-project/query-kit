@@ -766,6 +766,30 @@ describe('Collection', () => {
   });
 
   describe('orderBy with relationship', () => {
+    it('resolves object sort using default_sort', async () => {
+      const orderBy = ref<any[]>([{ column: 'metadata', order: 'asc' }]);
+      const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          columns: ['metadata'],
+          'onUpdate:columns': () => {},
+          requester,
+          orderBy: orderBy.value,
+          'onUpdate:orderBy': (v: any[]) => { orderBy.value = v; },
+        },
+      });
+      await flushAll();
+      // metadata entity has default_sort: ['label']
+      const lastCall = calls[calls.length - 1];
+      expect(lastCall.order).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ property: 'metadata.label', order: 'asc' }),
+        ]),
+      );
+    });
+
     it('resolves relationship sort using unique_identifier fallback', async () => {
       const orderBy = ref<any[]>([{ column: 'company', order: 'asc' }]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });

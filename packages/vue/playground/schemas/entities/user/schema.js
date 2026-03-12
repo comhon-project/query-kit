@@ -100,7 +100,60 @@ export default {
       relationship_type: 'has_many',
       related: 'car',
     },
+    {
+      id: 'profile',
+      name: 'profile',
+      type: 'object',
+      entity: 'user.profile',
+    },
   ],
+  entities: {
+    profile: {
+      properties: [
+        {
+          id: 'bio',
+          name: 'bio',
+          type: 'string',
+        },
+        {
+          id: 'nickname',
+          name: 'nickname',
+          type: 'string',
+        },
+        {
+          id: 'avatar_url',
+          name: 'avatar url',
+          type: 'string',
+        },
+        {
+          id: 'address',
+          name: 'address',
+          type: 'object',
+          entity: 'user.profile.address',
+        },
+      ],
+      default_sort: ['nickname'],
+    },
+    'profile.address': {
+      properties: [
+        {
+          id: 'city',
+          name: 'city',
+          type: 'string',
+        },
+        {
+          id: 'zip_code',
+          name: 'zip code',
+          type: 'string',
+        },
+        {
+          id: 'street',
+          name: 'street',
+          type: 'string',
+        },
+      ],
+    },
+  },
   unique_identifier: 'id',
   primary_identifiers: ['last_name', 'first_name'],
   default_sort: ['last_name', 'first_name'],

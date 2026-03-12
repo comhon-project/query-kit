@@ -13,6 +13,22 @@ export default {
     company: 'companie',
     friend: 'ami(e)',
     favorite_fruits: 'fruits favoris',
+    metadata: 'métadonnées',
+  },
+  entities: {
+    metadata: {
+      properties: {
+        label: 'le libellé',
+        description: 'la description',
+        address: "l'adresse",
+      },
+    },
+    address: {
+      properties: {
+        city: 'la ville',
+        zip: 'le code postal',
+      },
+    },
   },
   scopes: {
     scope_string_definition: 'scope string définition',

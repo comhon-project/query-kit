@@ -146,8 +146,8 @@ describe('OperatorManager', () => {
       expect(ops).toEqual(['and', 'or']);
     });
 
-    it('returns relationship operators for "relationship_condition" filter type', () => {
-      const ops = getContainerOperators('relationship_condition');
+    it('returns relationship operators for "entity_condition" filter type', () => {
+      const ops = getContainerOperators('entity_condition');
       expect(ops).toEqual(['has', 'has_not']);
     });
 
@@ -156,9 +156,9 @@ describe('OperatorManager', () => {
       expect(ops).toEqual(['and']);
     });
 
-    it('uses allowedOperators when provided for relationship_condition', () => {
-      const ops = getContainerOperators('relationship_condition', {
-        relationship_condition: ['has'],
+    it('uses allowedOperators when provided for entity_condition', () => {
+      const ops = getContainerOperators('entity_condition', {
+        entity_condition: ['has'],
       });
       expect(ops).toEqual(['has']);
     });
@@ -212,7 +212,7 @@ describe('OperatorManager', () => {
     });
 
     it('translates relationship operators via i18n', () => {
-      const result = getOperatorTranslation('relationship_condition', 'has');
+      const result = getOperatorTranslation('entity_condition', 'has');
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
     });
@@ -228,7 +228,7 @@ describe('OperatorManager', () => {
     });
 
     it('returns true for a valid relationship operator', () => {
-      expect(isValidOperator('relationship_condition', 'has')).toBe(true);
+      expect(isValidOperator('entity_condition', 'has')).toBe(true);
     });
 
     it('returns false for an invalid operator', () => {
@@ -266,8 +266,8 @@ describe('OperatorManager', () => {
     });
 
     it('overrides relationship operators', () => {
-      registerOperators({ relationship_condition: ['has_not'] });
-      const ops = getContainerOperators('relationship_condition');
+      registerOperators({ entity_condition: ['has_not'] });
+      const ops = getContainerOperators('entity_condition');
       expect(ops).toEqual(['has_not']);
     });
 
@@ -277,7 +277,7 @@ describe('OperatorManager', () => {
       const condOps = getConditionOperators(mockProperty({ type: 'boolean' }));
       expect(condOps).toEqual(['=', 'null', 'not_null']);
       // Relationship operators should remain unchanged
-      const relOps = getContainerOperators('relationship_condition');
+      const relOps = getContainerOperators('entity_condition');
       expect(relOps).toEqual(['has', 'has_not']);
     });
 
@@ -318,11 +318,11 @@ describe('OperatorManager', () => {
     });
 
     it('restores default relationship operators after override', () => {
-      registerOperators({ relationship_condition: ['has'] });
-      expect(getContainerOperators('relationship_condition')).toEqual(['has']);
+      registerOperators({ entity_condition: ['has'] });
+      expect(getContainerOperators('entity_condition')).toEqual(['has']);
 
       _resetForTesting();
-      expect(getContainerOperators('relationship_condition')).toEqual(['has', 'has_not']);
+      expect(getContainerOperators('entity_condition')).toEqual(['has', 'has_not']);
     });
   });
 });

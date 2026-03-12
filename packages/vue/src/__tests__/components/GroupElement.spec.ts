@@ -3,7 +3,7 @@ import GroupElement from '@components/Filter/GroupElement.vue';
 import Condition from '@components/Filter/Condition.vue';
 import ScopeComponent from '@components/Filter/Scope.vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
-import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
+import EntityCondition from '@components/Filter/EntityCondition.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -13,7 +13,7 @@ import { builderConfigProvide } from '@tests/helpers/provideConfig';
 import { flushAll } from '@tests/helpers/flushAsync';
 import type { VueWrapper } from '@vue/test-utils';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { ConditionFilter, ScopeFilter, GroupFilter, RelationshipConditionFilter } from '@core/types';
+import type { ConditionFilter, ScopeFilter, GroupFilter, EntityConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 let schema: EntitySchema;
@@ -93,16 +93,16 @@ describe('GroupElement', () => {
     expect(wrapper.findComponent(ChildGroup).exists()).toBe(true);
   });
 
-  it('renders RelationshipCondition component for relationship_condition filter type', async () => {
-    const filter: RelationshipConditionFilter = {
+  it('renders EntityCondition component for entity_condition filter type', async () => {
+    const filter: EntityConditionFilter = {
       key: 8,
-      type: 'relationship_condition',
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
     };
     mountGroupElement(filter);
     await flushAll();
-    expect(wrapper.findComponent(RelationshipCondition).exists()).toBe(true);
+    expect(wrapper.findComponent(EntityCondition).exists()).toBe(true);
   });
 
   it('sets aria-expanded for group filter (expandable)', async () => {
@@ -150,10 +150,10 @@ describe('GroupElement', () => {
     expect(wrapper.emitted('remove')![0]).toEqual([7]);
   });
 
-  it('sets aria-expanded for relationship_condition with nested group', async () => {
-    const filter: RelationshipConditionFilter = {
+  it('sets aria-expanded for entity_condition with nested group', async () => {
+    const filter: EntityConditionFilter = {
       key: 9,
-      type: 'relationship_condition',
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       filter: {
@@ -171,10 +171,10 @@ describe('GroupElement', () => {
     expect(li.attributes('aria-expanded')).toBe('true');
   });
 
-  it('does not set aria-expanded for relationship_condition without filter', async () => {
-    const filter: RelationshipConditionFilter = {
+  it('does not set aria-expanded for entity_condition without filter', async () => {
+    const filter: EntityConditionFilter = {
       key: 10,
-      type: 'relationship_condition',
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
     };
@@ -216,10 +216,10 @@ describe('GroupElement', () => {
     }).toThrow('invalid type invalid_type');
   });
 
-  it('sets aria-expanded for relationship_condition with nested condition (not expandable)', async () => {
-    const filter: RelationshipConditionFilter = {
+  it('sets aria-expanded for entity_condition with nested condition (not expandable)', async () => {
+    const filter: EntityConditionFilter = {
       key: 11,
-      type: 'relationship_condition',
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       filter: {
@@ -233,7 +233,7 @@ describe('GroupElement', () => {
     mountGroupElement(filter);
     await flushAll();
     const li = wrapper.find('li');
-    // A relationship_condition with a condition child is NOT expandable (condition has no children)
+    // A entity_condition with a condition child is NOT expandable (condition has no children)
     expect(li.attributes('aria-expanded')).toBeUndefined();
   });
 });

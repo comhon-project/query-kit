@@ -21,7 +21,9 @@ const selectedProperty = ref<string | null>(null);
 const expandable = computed<boolean>(() => {
   if (!resolvedPath.value) return false;
   const property = resolvedPath.value[resolvedPath.value.length - 1];
-  return property?.type == 'relationship' && isOneToOneRelationship(property);
+  if (property?.type === 'object') return true;
+  if (property?.type === 'relationship' && isOneToOneRelationship(property)) return true;
+  return false;
 });
 
 const options = computed<Property[] | null>(() => {
@@ -30,11 +32,13 @@ const options = computed<Property[] | null>(() => {
   }
   const opts: Property[] = [];
   for (const property of lastRelatedSchema.value.properties) {
-    if (property.type != 'relationship') {
-      if (!props.columns.includes(propertyPath.value + '.' + property.id)) {
+    if (property.type === 'object') {
+      opts.push(property);
+    } else if (property.type === 'relationship') {
+      if (isOneToOneRelationship(property)) {
         opts.push(property);
       }
-    } else if (isOneToOneRelationship(property)) {
+    } else if (!props.columns.includes(propertyPath.value + '.' + property.id)) {
       opts.push(property);
     }
   }
@@ -61,7 +65,8 @@ function reduceProperty(): void {
 
 watch(resolvedPath, async () => {
   if (!resolvedPath.value || !resolvedPath.value.length) return;
-  const lastRelatedSchemaId = resolvedPath.value[resolvedPath.value.length - 1].related;
+  const lastProperty = resolvedPath.value[resolvedPath.value.length - 1];
+  const lastRelatedSchemaId = lastProperty.type === 'object' ? lastProperty.entity : lastProperty.related;
   if (lastRelatedSchemaId) {
     lastRelatedSchema.value = await resolve(lastRelatedSchemaId);
   }

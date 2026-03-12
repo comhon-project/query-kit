@@ -79,7 +79,7 @@ function prepareFilters(filter: Filter): void {
       }
       stack.push(...current.filters);
     }
-    if (current.type === 'relationship_condition' && current.filter) {
+    if (current.type === 'entity_condition' && current.filter) {
       stack.push(current.filter);
     }
   }
@@ -115,7 +115,7 @@ function stripKeys(filter: GroupFilter): GroupFilter {
     if (current.type === 'group') {
       stack.push(...current.filters);
     }
-    if (current.type === 'relationship_condition' && current.filter) {
+    if (current.type === 'entity_condition' && current.filter) {
       stack.push(current.filter);
     }
   }
@@ -191,9 +191,10 @@ async function getComputedFilter(): Promise<GroupFilter> {
   const stack: Array<[Filter, EntitySchema]> = [[computedFilter, entitySchema]];
   while (stack.length) {
     const [currentFilter, currentSchema] = stack.pop()!;
-    if (currentFilter.type == 'relationship_condition') {
+    if (currentFilter.type == 'entity_condition') {
       if (currentFilter.filter) {
-        const schemaId = currentSchema.getProperty(currentFilter.property).related!;
+        const property = currentSchema.getProperty(currentFilter.property);
+        const schemaId = property.type === 'object' ? property.entity! : property.related!;
         const childSchema = await resolve(schemaId);
         if (mustKeepFilter(currentFilter.filter, childSchema)) {
           stack.push([currentFilter.filter, childSchema]);

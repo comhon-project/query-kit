@@ -5,11 +5,11 @@ import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithO
 import { useSearchable } from '@components/Filter/Composable/Searchable';
 import FilterPicker from '@components/Filter/FilterPicker.vue';
 import IconButton from '@components/Common/IconButton.vue';
-import { type RelationshipConditionFilter, type Filter } from '@core/types';
+import { type EntityConditionFilter, type Filter } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
-  modelValue: RelationshipConditionFilter;
+  modelValue: EntityConditionFilter;
   entitySchema: EntitySchema;
 }
 

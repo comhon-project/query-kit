@@ -2,7 +2,7 @@
 import { ref, computed, type Component } from 'vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
-import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
+import EntityCondition from '@components/Filter/EntityCondition.vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import { translate } from '@i18n/i18n';
 import { classes } from '@core/ClassManager';
@@ -25,7 +25,7 @@ const collapsed = ref<boolean>(false);
 
 function hasExpandableContent(filter: Filter): boolean {
   if (filter.type === 'group') return true;
-  if (filter.type === 'relationship_condition' && filter.filter) {
+  if (filter.type === 'entity_condition' && filter.filter) {
     return hasExpandableContent(filter.filter);
   }
   return false;
@@ -41,8 +41,8 @@ const component = computed<Component>(() => {
       return Condition;
     case 'scope':
       return Scope;
-    case 'relationship_condition':
-      return RelationshipCondition;
+    case 'entity_condition':
+      return EntityCondition;
     case 'group':
       return ChildGroup;
     default:

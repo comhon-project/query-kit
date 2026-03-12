@@ -9,7 +9,7 @@ import DateRenderer from '@components/Common/Renderers/Date.vue';
 import DateTimeRenderer from '@components/Common/Renderers/DateTime.vue';
 import TimeRenderer from '@components/Common/Renderers/Time.vue';
 import EnumRenderer from '@components/Common/Renderers/Enum.vue';
-import ForeignEntityRenderer from '@components/Common/Renderers/ForeignEntity.vue';
+import EntityRenderer from '@components/Common/Renderers/Entity.vue';
 import HtmlRenderer from '@components/Common/Renderers/Html.vue';
 import ArrayRenderer from '@components/Common/Renderers/Array.vue';
 import { registerLoader as registerEnumLoader } from '@core/EnumSchema';
@@ -46,7 +46,7 @@ describe('Renderers', () => {
       expect(RendererExports.Date).toBeDefined();
       expect(RendererExports.DateTime).toBeDefined();
       expect(RendererExports.Enum).toBeDefined();
-      expect(RendererExports.ForeignEntity).toBeDefined();
+      expect(RendererExports.Entity).toBeDefined();
       expect(RendererExports.Html).toBeDefined();
       expect(RendererExports.Time).toBeDefined();
     });
@@ -208,10 +208,10 @@ describe('Renderers', () => {
     });
   });
 
-  // ──────────── ForeignEntity ────────────
-  describe('ForeignEntity', () => {
+  // ──────────── Entity ────────────
+  describe('Entity', () => {
     it('renders primary identifiers joined with space', async () => {
-      const wrapper = mount(ForeignEntityRenderer, {
+      const wrapper = mount(EntityRenderer, {
         props: baseProps({
           value: { brand_name: 'Acme Corp', id: 1 },
           property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' },
@@ -227,7 +227,7 @@ describe('Renderers', () => {
         load: async () => ({ properties: [], unique_identifier: 'id' }),
       });
 
-      const wrapper = mount(ForeignEntityRenderer, {
+      const wrapper = mount(EntityRenderer, {
         props: baseProps({
           value: { id: 42, name: 'Acme' },
           property: { id: 'company', type: 'relationship', owner: 'user', related: 'no_primary' },
@@ -243,7 +243,7 @@ describe('Renderers', () => {
         load: () => new Promise(() => {}),
       });
 
-      const wrapper = mount(ForeignEntityRenderer, {
+      const wrapper = mount(EntityRenderer, {
         props: baseProps({
           property: { id: 'company', type: 'relationship', owner: 'user', related: 'pending' },
         }),
@@ -252,7 +252,7 @@ describe('Renderers', () => {
     });
 
     it('uses dot notation from rowValue when value is null', async () => {
-      const wrapper = mount(ForeignEntityRenderer, {
+      const wrapper = mount(EntityRenderer, {
         props: baseProps({
           columnId: 'company',
           value: null,

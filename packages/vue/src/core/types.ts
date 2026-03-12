@@ -7,8 +7,8 @@ import type { AllowedOperators } from '@core/OperatorManager';
  */
 
 // Filter types used throughout the filter system
-export type FilterType = 'condition' | 'scope' | 'group' | 'relationship_condition';
-export type ContainerFilterType = 'group' | 'relationship_condition';
+export type FilterType = 'condition' | 'scope' | 'group' | 'entity_condition';
+export type ContainerFilterType = 'group' | 'entity_condition';
 
 // Render function signature for custom cell renderers
 export type RenderFunction = (
@@ -115,15 +115,15 @@ export interface GroupFilter extends BaseFilter, WithOperator {
   filters: Filter[];
 }
 
-export interface RelationshipConditionFilter extends BaseFilter, WithOperator {
-  type: 'relationship_condition';
+export interface EntityConditionFilter extends BaseFilter, WithOperator {
+  type: 'entity_condition';
   property: string;
   filter?: Filter;
 }
 
-export type Filter = ConditionFilter | ScopeFilter | GroupFilter | RelationshipConditionFilter;
+export type Filter = ConditionFilter | ScopeFilter | GroupFilter | EntityConditionFilter;
 
-export type FilterWithOperator = ConditionFilter | GroupFilter | RelationshipConditionFilter;
+export type FilterWithOperator = ConditionFilter | GroupFilter | EntityConditionFilter;
 
 // ==================== Collection Types ====================
 
@@ -159,7 +159,7 @@ export type ButtonClass = 'btn_primary' | 'btn_danger' | 'btn';
 export interface DisplayOperatorConfig {
   condition?: boolean;
   group?: boolean;
-  relationship_condition?: boolean;
+  entity_condition?: boolean;
 }
 
 export type DisplayOperator = boolean | DisplayOperatorConfig;

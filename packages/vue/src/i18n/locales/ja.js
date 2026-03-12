@@ -30,7 +30,7 @@ export default {
   yes: 'はい',
   no: 'いいえ',
   condition: '条件',
-  relationship_condition: '関連条件',
+  entity_condition: '関連条件',
   group: 'グループ',
   operator: '演算子',
   export: 'エクスポート',

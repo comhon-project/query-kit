@@ -30,7 +30,7 @@ export default {
   yes: 'да',
   no: 'нет',
   condition: 'условие',
-  relationship_condition: 'условие связи',
+  entity_condition: 'условие связи',
   group: 'группа',
   operator: 'оператор',
   export: 'экспорт',

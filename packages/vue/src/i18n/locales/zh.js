@@ -30,7 +30,7 @@ export default {
   yes: '是',
   no: '否',
   condition: '条件',
-  relationship_condition: '关联条件',
+  entity_condition: '关联条件',
   group: '分组',
   operator: '运算符',
   export: '导出',

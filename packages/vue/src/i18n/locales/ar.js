@@ -30,7 +30,7 @@ export default {
   yes: 'نعم',
   no: 'لا',
   condition: 'شرط',
-  relationship_condition: 'شرط العلاقة',
+  entity_condition: 'شرط العلاقة',
   group: 'مجموعة',
   operator: 'عامل',
   export: 'تصدير',

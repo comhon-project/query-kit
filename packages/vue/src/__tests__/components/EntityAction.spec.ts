@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { reactive } from 'vue';
-import RelationshipAction from '@components/Filter/RelationshipAction.vue';
+import EntityAction from '@components/Filter/EntityAction.vue';
 import FilterPicker from '@components/Filter/FilterPicker.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import {
@@ -16,7 +16,7 @@ import { builderConfigProvide } from '@tests/helpers/provideConfig';
 import { flushAll } from '@tests/helpers/flushAsync';
 import type { VueWrapper } from '@vue/test-utils';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { RelationshipConditionFilter } from '@core/types';
+import type { EntityConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 let orgSchema: EntitySchema;
@@ -33,11 +33,11 @@ afterEach(() => {
 });
 
 function mountAction(
-  filter: RelationshipConditionFilter,
+  filter: EntityConditionFilter,
   configOverrides: Record<string, unknown> = {},
   entitySchema: EntitySchema = orgSchema,
 ) {
-  wrapper = mountWithPlugin(RelationshipAction, {
+  wrapper = mountWithPlugin(EntityAction, {
     props: {
       modelValue: filter,
       entitySchema,
@@ -46,10 +46,10 @@ function mountAction(
   });
 }
 
-describe('RelationshipAction', () => {
+describe('EntityAction', () => {
   it('shows add button when searchable items exist and editable', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 1,
@@ -65,8 +65,8 @@ describe('RelationshipAction', () => {
   });
 
   it('hides add button when editable=false', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       editable: false,
@@ -82,8 +82,8 @@ describe('RelationshipAction', () => {
   });
 
   it('hides add button when no searchable items', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 3,
@@ -99,8 +99,8 @@ describe('RelationshipAction', () => {
   });
 
   it('opens FilterPicker on add button click', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 4,
@@ -121,8 +121,8 @@ describe('RelationshipAction', () => {
   });
 
   it('emits add with filter from FilterPicker', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 5,

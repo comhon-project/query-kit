@@ -15,6 +15,7 @@ export default {
       "country",
       "favorite_fruits",
       "cars",
+      "profile",
       "does_not_exist",
     ],
     scopes: [
@@ -26,5 +27,18 @@ export default {
       "multi_param_scope",
     ],
   },
-  sortable: ["first_name", "company", "friend"],
+  sortable: ["first_name", "company", "friend", "profile"],
+  entities: {
+    profile: {
+      filtrable: {
+        properties: ["bio", "nickname", "address"],
+      },
+      sortable: ["nickname"],
+    },
+    'profile.address': {
+      filtrable: {
+        properties: ["city", "zip_code", "street"],
+      },
+    },
+  },
 };

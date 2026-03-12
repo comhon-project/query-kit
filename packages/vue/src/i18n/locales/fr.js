@@ -30,7 +30,7 @@ export default {
   yes: 'oui',
   no: 'non',
   condition: 'condition',
-  relationship_condition: 'condition de parenté',
+  entity_condition: 'condition de parenté',
   group: 'groupe',
   operator: 'opérateur',
   export: 'exporter',

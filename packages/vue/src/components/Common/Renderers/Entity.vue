@@ -24,9 +24,9 @@ const computedValue = computed<unknown>(() => {
 });
 
 onBeforeMount(async () => {
-  const related = props.property.related;
-  if (related) {
-    schema.value = await resolve(related);
+  const entityId = props.property.related ?? props.property.entity;
+  if (entityId) {
+    schema.value = await resolve(entityId);
   }
 });
 </script>

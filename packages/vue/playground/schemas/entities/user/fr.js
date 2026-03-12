@@ -14,6 +14,24 @@ export default {
     friend: "ami(e)",
     favorite_fruits: "fruits favoris",
     cars: "voitures",
+    profile: "profil",
+  },
+  entities: {
+    profile: {
+      properties: {
+        bio: "biographie",
+        nickname: "surnom",
+        avatar_url: "URL de l'avatar",
+        address: "adresse",
+      },
+    },
+    'profile.address': {
+      properties: {
+        city: "ville",
+        zip_code: "code postal",
+        street: "rue",
+      },
+    },
   },
   scopes: {
     scope_string_definition: "scope string définition",

@@ -57,6 +57,7 @@ describe('RequestSchema', () => {
         'birth_date',
         'company',
         'favorite_fruits',
+        'metadata',
       ]);
     });
 
@@ -91,7 +92,7 @@ describe('RequestSchema', () => {
   describe('getSortableProperties()', () => {
     it('returns correct list of sortable properties', async () => {
       const sortable = await getSortableProperties('user');
-      expect(sortable).toEqual(['first_name', 'last_name', 'age']);
+      expect(sortable).toEqual(['first_name', 'last_name', 'age', 'metadata']);
     });
 
     it('returns empty array when sortable properties are not defined', async () => {
@@ -102,6 +103,36 @@ describe('RequestSchema', () => {
 
       const sortable = await getSortableProperties('empty');
       expect(sortable).toEqual([]);
+    });
+  });
+
+  describe('inline entities', () => {
+    it('registers inline entities when resolving parent schema', async () => {
+      await resolve('user');
+      const metadata = await resolve('user.metadata');
+      expect(metadata).toBeDefined();
+      expect(metadata.filtrable?.properties).toEqual(['label', 'address']);
+    });
+
+    it('returns filtrable properties for inline entity', async () => {
+      await resolve('user');
+      const properties = await getFiltrableProperties('user.metadata');
+      expect(properties).toEqual(['label', 'address']);
+    });
+
+    it('resolves deeply nested inline entities', async () => {
+      await resolve('user');
+      const address = await resolve('user.address');
+      expect(address).toBeDefined();
+      expect(address.filtrable?.properties).toEqual(['city', 'zip']);
+    });
+
+    it('does not overwrite already cached inline entity', async () => {
+      await resolve('user');
+      const first = await resolve('user.metadata');
+      await resolve('user');
+      const second = await resolve('user.metadata');
+      expect(first).toBe(second);
     });
   });
 

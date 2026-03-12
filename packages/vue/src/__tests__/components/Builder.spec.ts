@@ -11,7 +11,7 @@ import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
 import { flushAll } from '@tests/helpers/flushAsync';
 import type { VueWrapper } from '@vue/test-utils';
-import type { ConditionFilter, GroupFilter, Filter, ScopeFilter, RelationshipConditionFilter } from '@core/types';
+import type { ConditionFilter, GroupFilter, Filter, ScopeFilter, EntityConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 
@@ -772,7 +772,7 @@ describe('Builder', () => {
         operator: 'and',
         filters: [
           {
-            type: 'relationship_condition',
+            type: 'entity_condition',
             operator: 'has',
             property: 'company',
             filter: {
@@ -781,13 +781,13 @@ describe('Builder', () => {
               operator: '=',
               value: undefined,
             },
-          } as RelationshipConditionFilter,
+          } as EntityConditionFilter,
         ],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
       const filter = emitted[emitted.length - 1][0] as GroupFilter;
-      const rc = filter.filters[0] as RelationshipConditionFilter;
+      const rc = filter.filters[0] as EntityConditionFilter;
       // Child filter with undefined value should be removed
       expect(rc.filter).toBeUndefined();
     });
@@ -798,7 +798,7 @@ describe('Builder', () => {
         operator: 'and',
         filters: [
           {
-            type: 'relationship_condition',
+            type: 'entity_condition',
             operator: 'has',
             property: 'company',
             filter: {
@@ -807,13 +807,13 @@ describe('Builder', () => {
               operator: '=',
               value: 'Acme',
             },
-          } as RelationshipConditionFilter,
+          } as EntityConditionFilter,
         ],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
       const filter = emitted[emitted.length - 1][0] as GroupFilter;
-      const rc = filter.filters[0] as RelationshipConditionFilter;
+      const rc = filter.filters[0] as EntityConditionFilter;
       expect(rc.filter).toBeDefined();
       expect((rc.filter as ConditionFilter).value).toBe('Acme');
     });
@@ -844,7 +844,7 @@ describe('Builder', () => {
         operator: 'and',
         filters: [
           {
-            type: 'relationship_condition',
+            type: 'entity_condition',
             operator: 'has',
             property: 'company',
             filter: {
@@ -853,13 +853,13 @@ describe('Builder', () => {
               operator: 'null',
               value: undefined,
             },
-          } as RelationshipConditionFilter,
+          } as EntityConditionFilter,
         ],
       };
       await mountBuilder({}, group);
       const emitted = wrapper.emitted('computed')!;
       const filter = emitted[emitted.length - 1][0] as GroupFilter;
-      const rc = filter.filters[0] as RelationshipConditionFilter;
+      const rc = filter.filters[0] as EntityConditionFilter;
       // null operator keeps the child filter
       expect(rc.filter).toBeDefined();
     });

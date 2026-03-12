@@ -30,7 +30,7 @@ export default {
   yes: 'हाँ',
   no: 'नहीं',
   condition: 'शर्त',
-  relationship_condition: 'संबंध शर्त',
+  entity_condition: 'संबंध शर्त',
   group: 'समूह',
   operator: 'ऑपरेटर',
   export: 'निर्यात',

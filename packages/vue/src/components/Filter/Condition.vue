@@ -116,7 +116,7 @@ watch(
   <div v-else-if="property" :class="classes.condition_or_scope">
     <div>
       <div :class="classes.condition_or_scope_header">
-        <slot name="relationship" />
+        <slot name="entity-queue" />
         <span :class="classes.property_label">{{ propertyName }}</span>
         <template v-if="mustDisplayOperator">
           <AdaptativeSelect

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { reactive } from 'vue';
-import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
+import EntityQueueElement from '@components/Filter/EntityQueueElement.vue';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import { resolve, registerLoader, registerTranslationsLoader, loadRawTranslations } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
@@ -12,7 +12,7 @@ import { flushAll } from '@tests/helpers/flushAsync';
 import { locale } from '@i18n/i18n';
 import type { VueWrapper } from '@vue/test-utils';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { RelationshipConditionFilter } from '@core/types';
+import type { EntityConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 let schema: EntitySchema;
@@ -28,8 +28,8 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-function mountQueueElement(filter: RelationshipConditionFilter, configOverrides: Record<string, unknown> = {}) {
-  wrapper = mountWithPlugin(RelationshipQueueElement, {
+function mountQueueElement(filter: EntityConditionFilter, configOverrides: Record<string, unknown> = {}) {
+  wrapper = mountWithPlugin(EntityQueueElement, {
     props: {
       modelValue: filter,
       entitySchema: schema,
@@ -38,10 +38,10 @@ function mountQueueElement(filter: RelationshipConditionFilter, configOverrides:
   });
 }
 
-describe('RelationshipQueueElement', () => {
+describe('EntityQueueElement', () => {
   it('renders property label', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 1,
@@ -53,8 +53,8 @@ describe('RelationshipQueueElement', () => {
   });
 
   it('renders operator select when displayOperator=true', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 2,
@@ -66,8 +66,8 @@ describe('RelationshipQueueElement', () => {
   });
 
   it('hides operator select when displayOperator=false', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 3,
@@ -78,22 +78,22 @@ describe('RelationshipQueueElement', () => {
     expect(wrapper.findComponent(AdaptativeSelect).exists()).toBe(false);
   });
 
-  it('hides operator select when displayOperator={relationship_condition: false}', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+  it('hides operator select when displayOperator={entity_condition: false}', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 4,
     });
-    mountQueueElement(filter, { displayOperator: { relationship_condition: false } });
+    mountQueueElement(filter, { displayOperator: { entity_condition: false } });
     await flushAll();
 
     expect(wrapper.findComponent(AdaptativeSelect).exists()).toBe(false);
   });
 
   it('renders as li element', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 5,
@@ -107,8 +107,8 @@ describe('RelationshipQueueElement', () => {
   it('updates property label when locale changes', async () => {
     await loadRawTranslations('user', 'fr');
 
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 6,
@@ -125,8 +125,8 @@ describe('RelationshipQueueElement', () => {
   });
 
   it('updates operator label when locale changes', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 7,

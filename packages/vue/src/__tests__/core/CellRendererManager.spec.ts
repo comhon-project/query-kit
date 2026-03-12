@@ -15,7 +15,7 @@ import {
   Date as DateRenderer,
   DateTime,
   Enum,
-  ForeignEntity,
+  Entity,
   Html,
   Time,
 } from '@components/Common/Renderers';
@@ -66,8 +66,12 @@ describe('CellRendererManager', () => {
       expect(getTypeRenderer(container('boolean'))).toBe(BooleanRenderer);
     });
 
-    it('returns ForeignEntity component for relationship type', () => {
-      expect(getTypeRenderer(container('relationship'))).toBe(ForeignEntity);
+    it('returns Entity component for relationship type', () => {
+      expect(getTypeRenderer(container('relationship'))).toBe(Entity);
+    });
+
+    it('returns Entity component for object type', () => {
+      expect(getTypeRenderer(container('object'))).toBe(Entity);
     });
 
     it('returns ArrayRenderer component for array type', () => {
@@ -257,7 +261,7 @@ describe('CellRendererManager', () => {
       expect(getTypeRenderer(container('datetime'))).toBe(DateTime);
       expect(getTypeRenderer(container('time'))).toBe(Time);
       expect(getTypeRenderer(container('boolean'))).toBe(BooleanRenderer);
-      expect(getTypeRenderer(container('relationship'))).toBe(ForeignEntity);
+      expect(getTypeRenderer(container('relationship'))).toBe(Entity);
       expect(getTypeRenderer(container('array'))).toBe(ArrayRenderer);
     });
   });

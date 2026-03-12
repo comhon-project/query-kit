@@ -30,7 +30,7 @@ export default {
   yes: 'yes',
   no: 'no',
   condition: 'condition',
-  relationship_condition: 'relationship condition',
+  entity_condition: 'relationship condition',
   group: 'group',
   operator: 'operator',
   export: 'export',

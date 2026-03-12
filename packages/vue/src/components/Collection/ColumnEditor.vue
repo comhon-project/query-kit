@@ -37,11 +37,13 @@ const options = computed<SelectOption<string>[]>(() => {
   const opts: SelectOption<string>[] = [];
   for (const property of props.entitySchema.properties) {
     let selectableProperty: Property | null = null;
-    if (property.type != 'relationship') {
-      if (!columnIds.value.includes(property.id)) {
+    if (property.type === 'object') {
+      selectableProperty = property;
+    } else if (property.type === 'relationship') {
+      if (isOneToOneRelationship(property)) {
         selectableProperty = property;
       }
-    } else if (isOneToOneRelationship(property)) {
+    } else if (!columnIds.value.includes(property.id)) {
       selectableProperty = property;
     }
     if (selectableProperty) {

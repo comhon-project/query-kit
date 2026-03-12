@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { nextTick } from 'vue';
 import { useSearchable } from '@components/Filter/Composable/Searchable';
-import { EntitySchema } from '@core/EntitySchema';
+import { EntitySchema, resolve as resolveEntity, registerLoader as registerEntityLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import type { Property, Scope } from '@core/EntitySchema';
-import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
+import { registerLoader as registerRequestLoader, resolve as resolveRequest } from '@core/RequestSchema';
+import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { registerComputedScopes } from '@core/ComputedScopesManager';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { defaultBuilderConfig } from '@tests/helpers/provideConfig';
@@ -32,8 +33,12 @@ async function flushWatchEffects() {
 }
 
 describe('useSearchable', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    registerEntityLoader(entitySchemaLoader);
+    registerTranslationsLoader(entityTranslationsLoader);
     registerRequestLoader(requestSchemaLoader);
+    await resolveEntity('user');
+    await resolveRequest('user');
   });
 
   describe('searchableProperties', () => {
@@ -70,11 +75,44 @@ describe('useSearchable', () => {
       expect(searchableProperties.value).toEqual([]);
     });
 
-    it('includes relationship properties only when relationship_condition operators exist', async () => {
+    it('includes object properties when entity_condition operators exist', async () => {
+      const objProp = makeProp('metadata', 'object');
+      const schema = makeSchema([objProp]);
+
+      const { searchableProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      await flushWatchEffects();
+
+      expect(searchableProperties.value).toEqual([objProp]);
+    });
+
+    it('excludes object properties when no entity_condition operators are configured', async () => {
+      const objProp = makeProp('metadata', 'object');
+      const schema = makeSchema([objProp]);
+
+      const config = defaultBuilderConfig({ allowedOperators: { entity_condition: [] } });
+      const { searchableProperties } = useSearchable(config, { entitySchema: schema });
+      await flushWatchEffects();
+
+      expect(searchableProperties.value).toEqual([]);
+    });
+
+    it('excludes non-filtrable properties from inline entity schemas', async () => {
+      const metadataSchema = await resolveEntity('user.metadata');
+
+      const { searchableProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: metadataSchema });
+      await flushWatchEffects();
+
+      const ids = searchableProperties.value.map((p) => p.id);
+      expect(ids).toContain('label');
+      expect(ids).toContain('address');
+      expect(ids).not.toContain('description');
+    });
+
+    it('includes relationship properties only when entity_condition operators exist', async () => {
       const relProp = makeProp('company', 'relationship');
       const schema = makeSchema([relProp]);
 
-      const config = defaultBuilderConfig({ allowedOperators: { relationship_condition: [] } });
+      const config = defaultBuilderConfig({ allowedOperators: { entity_condition: [] } });
       const { searchableProperties } = useSearchable(config, { entitySchema: schema });
       await flushWatchEffects();
 

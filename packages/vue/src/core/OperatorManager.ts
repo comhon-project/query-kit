@@ -21,12 +21,12 @@ export type ConditionOperator =
   | 'not_null';
 
 export type GroupOperator = 'and' | 'or';
-export type RelationshipOperator = 'has' | 'has_not';
+export type EntityConditionOperator = 'has' | 'has_not';
 
 interface OperatorNames {
   condition: Record<ConditionOperator, string>;
   group: Record<GroupOperator, string>;
-  relationship_condition: Record<RelationshipOperator, string>;
+  entity_condition: Record<EntityConditionOperator, string>;
 }
 
 interface ConditionOperators {
@@ -43,13 +43,13 @@ interface ConditionOperators {
 interface Operators {
   condition: ConditionOperators;
   group: GroupOperator[];
-  relationship_condition: RelationshipOperator[];
+  entity_condition: EntityConditionOperator[];
 }
 
 export interface AllowedOperators {
   condition?: Partial<ConditionOperators>;
   group?: GroupOperator[];
-  relationship_condition?: RelationshipOperator[];
+  entity_condition?: EntityConditionOperator[];
 }
 
 const operatorNames: OperatorNames = {
@@ -75,7 +75,7 @@ const operatorNames: OperatorNames = {
     and: 'and',
     or: 'or',
   },
-  relationship_condition: {
+  entity_condition: {
     has: 'has',
     has_not: 'has_not',
   },
@@ -108,13 +108,13 @@ const operators: Operators = {
     boolean: ['=', 'null', 'not_null'],
   },
   group: ['and', 'or'],
-  relationship_condition: ['has', 'has_not'],
+  entity_condition: ['has', 'has_not'],
 };
 
 const getContainerOperators = (
   filterType: ContainerFilterType,
   allowedOperators?: AllowedOperators | null,
-): GroupOperator[] | RelationshipOperator[] => {
+): GroupOperator[] | EntityConditionOperator[] => {
   return allowedOperators?.[filterType] || operators[filterType];
 };
 
@@ -144,7 +144,7 @@ const getConditionOperators = (
 };
 
 const getOperatorTranslation = (
-  container: 'condition' | 'group' | 'relationship_condition',
+  container: 'condition' | 'group' | 'entity_condition',
   operator: string,
 ): string => {
   const names = operatorNames[container] as Record<string, string>;
@@ -153,7 +153,7 @@ const getOperatorTranslation = (
 };
 
 const isValidOperator = (
-  container: 'condition' | 'group' | 'relationship_condition',
+  container: 'condition' | 'group' | 'entity_condition',
   operator: string | undefined | null,
 ): boolean => {
   if (!operator) return false;
@@ -168,19 +168,19 @@ const registerOperators = (operatorsConfig: AllowedOperators): void => {
   if (operatorsConfig.group) {
     operators.group = operatorsConfig.group;
   }
-  if (operatorsConfig.relationship_condition) {
-    operators.relationship_condition = operatorsConfig.relationship_condition;
+  if (operatorsConfig.entity_condition) {
+    operators.entity_condition = operatorsConfig.entity_condition;
   }
 };
 
 const defaultConditionOperators: ConditionOperators = { ...operators.condition };
 const defaultGroupOperators: GroupOperator[] = [...operators.group];
-const defaultRelationshipOperators: RelationshipOperator[] = [...operators.relationship_condition];
+const defaultEntityConditionOperators: EntityConditionOperator[] = [...operators.entity_condition];
 
 function _resetForTesting(): void {
   operators.condition = { ...defaultConditionOperators };
   operators.group = [...defaultGroupOperators];
-  operators.relationship_condition = [...defaultRelationshipOperators];
+  operators.entity_condition = [...defaultEntityConditionOperators];
 }
 
 export {

@@ -257,14 +257,14 @@
   margin-right: auto;
 }
 
-.qkit-relationship-condition-container > *:first-child {
+.qkit-entity-condition-container > *:first-child {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: var(--qkit-gap-spacer);
 }
 
-.qkit-relationship-queue {
+.qkit-entity-condition-queue {
   display: flex;
   flex-wrap: wrap;
   gap: var(--qkit-gap-spacer);
@@ -273,7 +273,7 @@
   margin: 0;
 }
 
-.qkit-relationship-queue-item {
+.qkit-entity-condition-queue-item {
   display: flex;
   gap: var(--qkit-gap-spacer);
   align-items: center;

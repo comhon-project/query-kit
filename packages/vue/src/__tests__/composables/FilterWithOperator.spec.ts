@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import type { EntitySchema, Property } from '@core/EntitySchema';
-import type { ConditionFilter, GroupFilter, RelationshipConditionFilter } from '@core/types';
+import type { ConditionFilter, GroupFilter, EntityConditionFilter } from '@core/types';
 import { defaultBuilderConfig } from '@tests/helpers/provideConfig';
 
 function mockProperty(overrides: Partial<Property> = {}): Property {
@@ -27,8 +27,8 @@ function makeGroup(overrides: Partial<GroupFilter> = {}): GroupFilter {
   return { type: 'group', operator: 'and', filters: [], ...overrides };
 }
 
-function makeRelationshipCondition(overrides: Partial<RelationshipConditionFilter> = {}): RelationshipConditionFilter {
-  return { type: 'relationship_condition', property: 'company', operator: 'has', ...overrides };
+function makeEntityCondition(overrides: Partial<EntityConditionFilter> = {}): EntityConditionFilter {
+  return { type: 'entity_condition', property: 'company', operator: 'has', ...overrides };
 }
 
 describe('useFilterWithOperator', () => {
@@ -110,11 +110,11 @@ describe('useFilterWithOperator', () => {
       ]);
     });
 
-    it('uses getContainerOperators for relationship_condition filters', () => {
+    it('uses getContainerOperators for entity_condition filters', () => {
       const schema = mockEntitySchema();
       const { operatorOptions } = useFilterWithOperator(defaultBuilderConfig(), {
         entitySchema: schema,
-        modelValue: makeRelationshipCondition(),
+        modelValue: makeEntityCondition(),
       });
 
       expect(operatorOptions.value).toEqual([

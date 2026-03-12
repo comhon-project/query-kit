@@ -30,7 +30,7 @@ export default {
   yes: 'হ্যাঁ',
   no: 'না',
   condition: 'শর্ত',
-  relationship_condition: 'সম্পর্ক শর্ত',
+  entity_condition: 'সম্পর্ক শর্ত',
   group: 'গ্রুপ',
   operator: 'অপারেটর',
   export: 'রপ্তানি',

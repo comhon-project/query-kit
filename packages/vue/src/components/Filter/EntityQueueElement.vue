@@ -5,17 +5,16 @@ import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithO
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import { type RelationshipConditionFilter } from '@core/types';
+import { type EntityConditionFilter } from '@core/types';
 import { builderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
-  modelValue: RelationshipConditionFilter;
+  modelValue: EntityConditionFilter;
   entitySchema: EntitySchema;
 }
 
 interface Emits {
   remove: [];
-  'end:relationship': [];
 }
 
 defineEmits<Emits>();
@@ -28,9 +27,9 @@ const label = computed<string>(() => {
 </script>
 
 <template>
-  <li :class="classes.relationship_queue_item">
+  <li :class="classes.entity_condition_queue_item">
     <div
-      v-if="config.displayOperator === true || (config.displayOperator && config.displayOperator.relationship_condition)"
+      v-if="config.displayOperator === true || (config.displayOperator && config.displayOperator.entity_condition)"
     >
       <AdaptativeSelect
         v-model="modelValue.operator"

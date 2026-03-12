@@ -4,26 +4,26 @@ import { resolve, getPropertyTranslation, type EntitySchema, type Property } fro
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
-import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
+import EntityQueueElement from '@components/Filter/EntityQueueElement.vue';
 import { isValidOperator } from '@core/OperatorManager';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidOperator from '@components/Messages/InvalidOperator.vue';
 import IconButton from '@components/Common/IconButton.vue';
-import RelationshipAction from '@components/Filter/RelationshipAction.vue';
+import EntityAction from '@components/Filter/EntityAction.vue';
 import { getUniqueId } from '@core/Utils';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import type { RelationshipConditionFilter, Filter, ConditionFilter, ScopeFilter, GroupFilter } from '@core/types';
+import type { EntityConditionFilter, Filter, ConditionFilter, ScopeFilter, GroupFilter } from '@core/types';
 
 interface QueueElement {
   key: string | number;
-  value: RelationshipConditionFilter;
+  value: EntityConditionFilter;
   schema: EntitySchema;
 }
 
 interface Props {
-  modelValue: RelationshipConditionFilter;
+  modelValue: EntityConditionFilter;
   entitySchema: EntitySchema;
 }
 
@@ -51,7 +51,8 @@ const endQueuePropertySchemaId = computed<string>(() => {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
-  return lastQueueSchema.getProperty(lastQueueElement.value.property).related!;
+  const property = lastQueueSchema.getProperty(lastQueueElement.value.property);
+  return property.type === 'object' ? property.entity! : property.related!;
 });
 
 const endQueueComponent = computed<Component | null>(() => {
@@ -72,13 +73,14 @@ async function addFilter(filter: Filter): Promise<void> {
   const resolvedSchema = await resolve(endQueuePropertySchemaId.value);
 
   queue.value[queue.value.length - 1].value.filter = filter;
-  if (filter.type == 'relationship_condition') {
+  if (filter.type == 'entity_condition') {
     queue.value.push({
       key: getUniqueId(),
       value: filter,
       schema: resolvedSchema,
     });
-    endQueuePropertySchema.value = await resolve(resolvedSchema.getProperty(filter.property).related!);
+    const addedProperty = resolvedSchema.getProperty(filter.property);
+    endQueuePropertySchema.value = await resolve(addedProperty.type === 'object' ? addedProperty.entity! : addedProperty.related!);
   } else {
     endQueueFilter.value = filter;
   }
@@ -109,13 +111,13 @@ async function setChild(schema: EntitySchema): Promise<void> {
   let childSchema = schema;
   let childFilter: Filter | undefined | null = props.modelValue;
   const tempQueue: QueueElement[] = [];
-  while (childFilter?.type == 'relationship_condition') {
+  while (childFilter?.type == 'entity_condition') {
     tempQueue.push({
       key: getUniqueId(),
       value: childFilter,
       schema: childSchema,
     });
-    if (!isValidOperator('relationship_condition', childFilter.operator)) {
+    if (!isValidOperator('entity_condition', childFilter.operator)) {
       invalidOperator.value = childFilter.operator;
       return;
     }
@@ -132,7 +134,7 @@ async function setChild(schema: EntitySchema): Promise<void> {
       throw new Error('not handle morph_to relationship');
     }
 
-    const childSchemaId = property.related!;
+    const childSchemaId = property.type === 'object' ? property.entity! : property.related!;
     try {
       childSchema = await resolve(childSchemaId);
     } catch {
@@ -162,17 +164,17 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
   </div>
   <template v-else-if="queue">
     <Transition name="qkit-collapse-horizontal-list" mode="out-in">
-      <div v-if="!endQueueFilter" :class="classes.relationship_container">
+      <div v-if="!endQueueFilter" :class="classes.entity_condition_container">
         <div>
-          <ol :class="classes.relationship_queue">
-            <RelationshipQueueElement
+          <ol :class="classes.entity_condition_queue">
+            <EntityQueueElement
               v-for="elmnt in queue"
               :key="elmnt.key"
               :model-value="elmnt.value"
               :entity-schema="elmnt.schema"
             />
           </ol>
-          <RelationshipAction
+          <EntityAction
             v-if="endQueuePropertySchema"
             :entity-schema="endQueuePropertySchema"
             :model-value="queue[queue.length - 1].value"
@@ -196,9 +198,9 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
         v-model:collapsed="collapsed"
         @remove="removeEndFilter"
       >
-        <template #relationship>
-          <ol :class="classes.relationship_queue">
-            <RelationshipQueueElement
+        <template #entity-queue>
+          <ol :class="classes.entity_condition_queue">
+            <EntityQueueElement
               v-for="elmnt in queue"
               :key="elmnt.key"
               :model-value="elmnt.value"

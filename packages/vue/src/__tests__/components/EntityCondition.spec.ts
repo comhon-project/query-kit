@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { reactive } from 'vue';
-import RelationshipCondition from '@components/Filter/RelationshipCondition.vue';
-import RelationshipQueueElement from '@components/Filter/RelationshipQueueElement.vue';
-import RelationshipAction from '@components/Filter/RelationshipAction.vue';
+import EntityCondition from '@components/Filter/EntityCondition.vue';
+import EntityQueueElement from '@components/Filter/EntityQueueElement.vue';
+import EntityAction from '@components/Filter/EntityAction.vue';
 import Condition from '@components/Filter/Condition.vue';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
@@ -24,7 +24,7 @@ import { builderConfigProvide } from '@tests/helpers/provideConfig';
 import { flushAll } from '@tests/helpers/flushAsync';
 import type { VueWrapper } from '@vue/test-utils';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { RelationshipConditionFilter } from '@core/types';
+import type { EntityConditionFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 let schema: EntitySchema;
@@ -40,11 +40,11 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-function mountRelationshipCondition(
-  filter: RelationshipConditionFilter,
+function mountEntityCondition(
+  filter: EntityConditionFilter,
   configOverrides: Record<string, unknown> = {},
 ) {
-  wrapper = mountWithPlugin(RelationshipCondition, {
+  wrapper = mountWithPlugin(EntityCondition, {
     props: {
       modelValue: filter,
       entitySchema: schema,
@@ -53,37 +53,37 @@ function mountRelationshipCondition(
   });
 }
 
-describe('RelationshipCondition', () => {
+describe('EntityCondition', () => {
   it('renders relationship queue with property label', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 1,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
-    expect(wrapper.findComponent(RelationshipQueueElement).exists()).toBe(true);
+    expect(wrapper.findComponent(EntityQueueElement).exists()).toBe(true);
     expect(wrapper.text()).toContain('the company');
   });
 
-  it('renders RelationshipAction when no end filter', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+  it('renders EntityAction when no end filter', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 2,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
-    expect(wrapper.findComponent(RelationshipAction).exists()).toBe(true);
+    expect(wrapper.findComponent(EntityAction).exists()).toBe(true);
   });
 
   it('renders end filter component when condition is present', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 3,
@@ -95,7 +95,7 @@ describe('RelationshipCondition', () => {
         key: 31,
       },
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     expect(wrapper.findComponent(Condition).exists()).toBe(true);
@@ -103,13 +103,13 @@ describe('RelationshipCondition', () => {
   });
 
   it('shows InvalidProperty for unknown property', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'nonexistent_property',
       key: 4,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     expect(wrapper.findComponent(InvalidProperty).exists()).toBe(true);
@@ -117,13 +117,13 @@ describe('RelationshipCondition', () => {
   });
 
   it('shows InvalidOperator for invalid operator', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'invalid_op',
       property: 'company',
       key: 5,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     expect(wrapper.findComponent(InvalidOperator).exists()).toBe(true);
@@ -145,14 +145,14 @@ describe('RelationshipCondition', () => {
     registerRequestLoader(requestSchemaLoader);
     schema = await resolve('user');
 
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company', // related to 'organization' which won't resolve
       key: 6,
     });
 
-    wrapper = mount(RelationshipCondition, {
+    wrapper = mount(EntityCondition, {
       props: {
         modelValue: filter,
         entitySchema: schema,
@@ -172,13 +172,13 @@ describe('RelationshipCondition', () => {
   });
 
   it('emits remove when delete clicked on invalid state', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'invalid_op',
       property: 'company',
       key: 7,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // In invalid state, there's a delete IconButton
@@ -191,13 +191,13 @@ describe('RelationshipCondition', () => {
   });
 
   it('emits remove when delete clicked on relationship container (no end filter)', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 8,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // In the relationship_container state (no endQueueFilter), there's a delete IconButton
@@ -210,14 +210,14 @@ describe('RelationshipCondition', () => {
   });
 
   it('hides delete button when removable=false', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       removable: false,
       key: 9,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // No delete button should be rendered
@@ -228,8 +228,8 @@ describe('RelationshipCondition', () => {
   });
 
   it('renders queue elements in relationship slot of end filter', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 10,
@@ -241,21 +241,21 @@ describe('RelationshipCondition', () => {
         key: 101,
       },
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // The Condition component should be rendered with a relationship slot
-    // containing a RelationshipQueueElement
-    const queueElements = wrapper.findAllComponents(RelationshipQueueElement);
+    // containing a EntityQueueElement
+    const queueElements = wrapper.findAllComponents(EntityQueueElement);
     expect(queueElements.length).toBeGreaterThan(0);
 
     // The queue element should show the company label
     expect(queueElements[0].text()).toContain('the company');
   });
 
-  it('removes end filter and shows RelationshipAction again', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+  it('removes end filter and shows EntityAction again', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 11,
@@ -267,7 +267,7 @@ describe('RelationshipCondition', () => {
         key: 111,
       },
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // Should show the Condition component
@@ -278,20 +278,20 @@ describe('RelationshipCondition', () => {
     condition.vm.$emit('remove');
     await flushAll();
 
-    // After removing the end filter, it should show RelationshipAction again
+    // After removing the end filter, it should show EntityAction again
     expect(wrapper.findComponent(Condition).exists()).toBe(false);
-    expect(wrapper.findComponent(RelationshipAction).exists()).toBe(true);
+    expect(wrapper.findComponent(EntityAction).exists()).toBe(true);
     expect(filter.filter).toBeUndefined();
   });
 
   it('handles chained relationship conditions (user -> company -> contacts)', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 12,
       filter: {
-        type: 'relationship_condition',
+        type: 'entity_condition',
         operator: 'has',
         property: 'contacts',
         key: 121,
@@ -304,28 +304,28 @@ describe('RelationshipCondition', () => {
         },
       },
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // Should render multiple queue elements
-    const queueElements = wrapper.findAllComponents(RelationshipQueueElement);
+    const queueElements = wrapper.findAllComponents(EntityQueueElement);
     expect(queueElements.length).toBe(2);
     // The end filter should be rendered
     expect(wrapper.findComponent(Condition).exists()).toBe(true);
   });
 
-  it('adds a condition filter via RelationshipAction add event', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+  it('adds a condition filter via EntityAction add event', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 13,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
-    // Should show RelationshipAction (no end filter yet)
-    const action = wrapper.findComponent(RelationshipAction);
+    // Should show EntityAction (no end filter yet)
+    const action = wrapper.findComponent(EntityAction);
     expect(action.exists()).toBe(true);
 
     // Emit 'add' with a condition filter
@@ -351,49 +351,49 @@ describe('RelationshipCondition', () => {
     );
   });
 
-  it('adds a chained relationship_condition via RelationshipAction add event', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+  it('adds a chained entity_condition via EntityAction add event', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 14,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
-    // Should show RelationshipAction (no end filter yet)
-    const action = wrapper.findComponent(RelationshipAction);
+    // Should show EntityAction (no end filter yet)
+    const action = wrapper.findComponent(EntityAction);
     expect(action.exists()).toBe(true);
 
-    // Emit 'add' with a relationship_condition filter
+    // Emit 'add' with a entity_condition filter
     action.vm.$emit('add', {
-      type: 'relationship_condition',
+      type: 'entity_condition',
       operator: 'has',
       property: 'contacts',
       key: 141,
     });
     await flushAll();
 
-    // After adding a chained relationship_condition, there should be 2 queue elements
-    const queueElements = wrapper.findAllComponents(RelationshipQueueElement);
+    // After adding a chained entity_condition, there should be 2 queue elements
+    const queueElements = wrapper.findAllComponents(EntityQueueElement);
     expect(queueElements.length).toBe(2);
   });
 
   it('removes queue element and emits remove when last element removed', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 15,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
-    // Should show RelationshipAction (no end filter)
-    const action = wrapper.findComponent(RelationshipAction);
+    // Should show EntityAction (no end filter)
+    const action = wrapper.findComponent(EntityAction);
     expect(action.exists()).toBe(true);
 
-    // Emit 'remove' from RelationshipAction, which triggers removeQueueFilter
+    // Emit 'remove' from EntityAction, which triggers removeQueueFilter
     action.vm.$emit('remove');
 
     // Since there was only one queue element, removing it should emit 'remove'
@@ -404,20 +404,20 @@ describe('RelationshipCondition', () => {
     wrapper.unmount();
   });
 
-  it('removes chained queue element and falls back to RelationshipAction', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+  it('removes chained queue element and falls back to EntityAction', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 16,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
-    // First, add a chained relationship_condition
-    const action = wrapper.findComponent(RelationshipAction);
+    // First, add a chained entity_condition
+    const action = wrapper.findComponent(EntityAction);
     action.vm.$emit('add', {
-      type: 'relationship_condition',
+      type: 'entity_condition',
       operator: 'has',
       property: 'contacts',
       key: 161,
@@ -425,24 +425,24 @@ describe('RelationshipCondition', () => {
     await flushAll();
 
     // Now there should be 2 queue elements
-    expect(wrapper.findAllComponents(RelationshipQueueElement).length).toBe(2);
+    expect(wrapper.findAllComponents(EntityQueueElement).length).toBe(2);
 
-    // Find the new RelationshipAction (at the end of the chain) and emit 'remove'
-    const newAction = wrapper.findComponent(RelationshipAction);
+    // Find the new EntityAction (at the end of the chain) and emit 'remove'
+    const newAction = wrapper.findComponent(EntityAction);
     newAction.vm.$emit('remove');
     await flushAll();
 
-    // After removing, should be back to 1 queue element with RelationshipAction
-    expect(wrapper.findAllComponents(RelationshipQueueElement).length).toBe(1);
-    expect(wrapper.findComponent(RelationshipAction).exists()).toBe(true);
+    // After removing, should be back to 1 queue element with EntityAction
+    expect(wrapper.findAllComponents(EntityQueueElement).length).toBe(1);
+    expect(wrapper.findComponent(EntityAction).exists()).toBe(true);
     // The chained filter should have been removed
     expect(filter.filter).toBeUndefined();
   });
 
   it('renders Scope component when end filter is a scope', async () => {
     const Scope = (await import('@components/Filter/Scope.vue')).default;
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 18,
@@ -453,15 +453,15 @@ describe('RelationshipCondition', () => {
         key: 181,
       } as any,
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     expect(wrapper.findComponent(Scope).exists()).toBe(true);
   });
 
   it('passes collapsed model to end filter ChildGroup component', async () => {
-    const filter: RelationshipConditionFilter = reactive({
-      type: 'relationship_condition',
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
       operator: 'has',
       property: 'company',
       key: 17,
@@ -473,7 +473,7 @@ describe('RelationshipCondition', () => {
         ],
       },
     });
-    mountRelationshipCondition(filter);
+    mountEntityCondition(filter);
     await flushAll();
 
     // ChildGroup accepts v-model:collapsed

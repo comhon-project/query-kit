@@ -85,7 +85,7 @@ watchEffect(() => {
       <InvalidScope v-if="!validScope" :id="modelValue.id" />
       <template v-else-if="scope">
         <div :class="classes.condition_or_scope_header">
-          <slot name="relationship" />
+          <slot name="entity-queue" />
           <span :class="classes.property_label">{{ scopeName }}</span>
         </div>
         <div v-if="parametersWithTranslations.length" :class="classes.scope_parameters">

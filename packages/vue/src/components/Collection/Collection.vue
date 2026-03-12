@@ -145,16 +145,17 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
       colsProps[columnId] = property;
 
       if (property) {
-        if (property.type != 'relationship') {
-          properties.push(columnId);
-        } else if (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one') {
-          const propertySchema = await resolve(property.related!);
+        if (property.type === 'object' || (property.type === 'relationship' && (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one'))) {
+          const entityId = property.type === 'object' ? property.entity! : property.related!;
+          const propertySchema = await resolve(entityId);
           properties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
           if (propertySchema.primary_identifiers) {
             for (const propertyId of propertySchema.primary_identifiers) {
               properties.push(columnId + '.' + propertyId);
             }
           }
+        } else if (property.type !== 'relationship') {
+          properties.push(columnId);
         }
       }
     } catch (e) {
@@ -193,16 +194,17 @@ async function initOrderBy(
         const propertyPath = await getPropertyPath(entity, column);
         const property = propertyPath[propertyPath.length - 1];
 
-        if (property.type != 'relationship') {
-          reqProps = [column];
-        } else {
-          const schema = await resolve(property.related!);
+        if (property.type === 'object' || property.type === 'relationship') {
+          const entityId = property.type === 'object' ? property.entity! : property.related!;
+          const schema = await resolve(entityId);
           if (schema.default_sort) {
             reqProps = schema.default_sort.map((prop) => column + '.' + prop);
           } else {
             const idProperty = schema.unique_identifier || 'id';
             reqProps = [column + '.' + idProperty];
           }
+        } else {
+          reqProps = [column];
         }
       }
       indexed[column] = { order, properties: reqProps };

@@ -63,10 +63,10 @@ describe('FilterPicker', () => {
     await flushAll();
 
     const options = wrapper.findAll('select option');
-    // user filtrable properties: first_name, last_name, age, gender, married, birth_date, company, favorite_fruits
+    // user filtrable properties: first_name, last_name, age, gender, married, birth_date, company, favorite_fruits, metadata
     // user filtrable scopes: scope, string_scope, datetime_scope, enum_scope
-    // total = 8 properties + 4 scopes = 12
-    expect(options.length).toBe(12);
+    // total = 9 properties + 4 scopes = 13
+    expect(options.length).toBe(13);
   });
 
   it('defaults to condition radio selected', async () => {
@@ -110,7 +110,23 @@ describe('FilterPicker', () => {
     ]);
   });
 
-  it('emits validate with relationship_condition for relationship property', async () => {
+  it('emits validate with entity_condition filter for object property', async () => {
+    mountFilterPicker();
+    await flushAll();
+
+    const select = wrapper.find('select');
+    await select.setValue('metadata');
+    await wrapper.find('form').trigger('submit');
+    await flushAll();
+    await nextTick();
+    await flushAll();
+
+    expect(wrapper.emitted('validate')).toEqual([
+      [expect.objectContaining({ type: 'entity_condition', property: 'metadata', operator: 'has' })],
+    ]);
+  });
+
+  it('emits validate with entity_condition for relationship property', async () => {
     mountFilterPicker();
     await flushAll();
 
@@ -122,7 +138,7 @@ describe('FilterPicker', () => {
     await flushAll();
 
     expect(wrapper.emitted('validate')).toEqual([
-      [expect.objectContaining({ type: 'relationship_condition', property: 'company', operator: 'has' })],
+      [expect.objectContaining({ type: 'entity_condition', property: 'company', operator: 'has' })],
     ]);
   });
 

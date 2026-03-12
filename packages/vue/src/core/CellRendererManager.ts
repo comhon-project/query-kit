@@ -1,7 +1,7 @@
 import type { Component } from 'vue';
 import type { RenderFunction } from '@core/types';
 import type { Property, TypeContainer } from '@core/EntitySchema';
-import { Array, Boolean, Date, DateTime, Enum, ForeignEntity, Html, Time } from '@components/Common/Renderers';
+import { Array, Boolean, Date, DateTime, Entity, Enum, Html, Time } from '@components/Common/Renderers';
 
 export type TypeRenderer = Component | RenderFunction | null;
 export type TypeRenderers = Record<string, TypeRenderer>;
@@ -17,7 +17,8 @@ const typeRenderers: TypeRenderers = {
   datetime: DateTime,
   time: Time,
   boolean: Boolean,
-  relationship: ForeignEntity,
+  relationship: Entity,
+  object: Entity,
   array: Array,
 };
 

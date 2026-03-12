@@ -30,14 +30,19 @@ export interface RawProperty extends ArrayableTypeContainer {
   name?: string;
   related?: string;
   relationship_type?: 'belongs_to' | 'has_one' | 'has_many' | 'belongs_to_many' | 'morph_to' | 'morph_to_many';
+  entity?: string;
 }
 
-export interface RawEntitySchema {
+export interface RawInlineEntitySchema {
   properties: RawProperty[];
   scopes?: (string | RawScope)[];
   unique_identifier?: string;
   primary_identifiers?: string[];
+}
+
+export interface RawEntitySchema extends RawInlineEntitySchema {
   default_sort?: string[];
+  entities?: Record<string, RawInlineEntitySchema>;
 }
 
 // Computed types - after compute()
@@ -59,6 +64,7 @@ export interface EntityTranslations {
   properties?: Record<string, string>;
   scopes?: Record<string, string>;
   parameters?: Record<string, Record<string, string>>;
+  entities?: Record<string, EntityTranslations>;
 }
 
 export interface EntitySchemaLoader {
@@ -184,36 +190,24 @@ function getScopeParameterTranslation(parameter: ScopeParameter): string {
   return translation ?? parameter.name ?? parameter.id;
 }
 
-async function compute(id: string): Promise<EntitySchema> {
-  if (!schemaLoader) {
-    throw new Error('Entity schema loader not configured');
-  }
-  const translationPromises: Promise<EntityTranslations>[] = [];
-  if (translationsLoader) {
-    translationPromises.push(loadRawTranslations(id, locale.value));
-    if (locale.value !== fallback.value) {
-      translationPromises.push(loadRawTranslations(id, fallback.value));
-    }
-  }
-
-  const [rawSchema] = await Promise.all([schemaLoader.load(id), ...translationPromises]);
-
-  if (!rawSchema) throw new Error(`Entity schema "${id}" not found`);
-
+function buildEntitySchema(
+  id: string,
+  raw: RawInlineEntitySchema,
+): EntitySchema {
   const mapProperties: Record<string, Property> = {};
   const mapScopes: Record<string, Scope> = {};
   const properties: Property[] = [];
   const scopes: Scope[] = [];
 
-  for (const rawProperty of rawSchema.properties) {
+  for (const rawProperty of raw.properties) {
     if (rawProperty.relationship_type === 'morph_to') continue;
     const property: Property = { ...structuredClone(rawProperty), owner: id };
     properties.push(property);
     mapProperties[property.id] = property;
   }
 
-  if (rawSchema.scopes && Array.isArray(rawSchema.scopes)) {
-    for (const current of rawSchema.scopes) {
+  if (raw.scopes && Array.isArray(raw.scopes)) {
+    for (const current of raw.scopes) {
       const rawScope = typeof current === 'object' ? structuredClone(current) : { id: current, name: current };
       const parameters: ScopeParameter[] | undefined = rawScope.parameters?.map((param) => ({
         ...param,
@@ -232,10 +226,40 @@ async function compute(id: string): Promise<EntitySchema> {
     mapProperties,
     scopes,
     mapScopes,
-    rawSchema.unique_identifier,
-    rawSchema.primary_identifiers,
-    rawSchema.default_sort,
+    raw.unique_identifier,
+    raw.primary_identifiers,
+    (raw as RawEntitySchema).default_sort,
   );
+}
+
+async function compute(id: string): Promise<EntitySchema> {
+  if (!schemaLoader) {
+    throw new Error('Entity schema loader not configured');
+  }
+  const translationPromises: Promise<EntityTranslations>[] = [];
+  if (translationsLoader) {
+    translationPromises.push(loadRawTranslations(id, locale.value));
+    if (locale.value !== fallback.value) {
+      translationPromises.push(loadRawTranslations(id, fallback.value));
+    }
+  }
+
+  const [rawSchema] = await Promise.all([schemaLoader.load(id), ...translationPromises]);
+
+  if (!rawSchema) throw new Error(`Entity schema "${id}" not found`);
+
+  const schema = buildEntitySchema(id, rawSchema);
+
+  if (rawSchema.entities) {
+    for (const [key, inlineRaw] of Object.entries(rawSchema.entities)) {
+      const entityId = `${id}.${key}`;
+      if (!computedSchemas[entityId]) {
+        computedSchemas[entityId] = Promise.resolve(buildEntitySchema(entityId, inlineRaw));
+      }
+    }
+  }
+
+  return schema;
 }
 
 async function loadRawTranslations(schemaId: string, targetLocale: string): Promise<EntityTranslations> {
@@ -245,7 +269,16 @@ async function loadRawTranslations(schemaId: string, targetLocale: string): Prom
   const cacheKey = `${schemaId}.${targetLocale}`;
   if (!loadedTranslations[cacheKey]) {
     try {
-      loadedTranslations[cacheKey] = await translationsLoader.load(schemaId, targetLocale);
+      const translations = await translationsLoader.load(schemaId, targetLocale);
+      loadedTranslations[cacheKey] = translations;
+      if (translations?.entities) {
+        for (const [key, inlineTranslations] of Object.entries(translations.entities)) {
+          const entityCacheKey = `${schemaId}.${key}.${targetLocale}`;
+          if (!loadedTranslations[entityCacheKey]) {
+            loadedTranslations[entityCacheKey] = inlineTranslations;
+          }
+        }
+      }
     } catch {
       loadedTranslations[cacheKey] = {};
     }
@@ -263,9 +296,17 @@ async function isPropertySortable(schemaId: string, path: string): Promise<boole
       if (!sortableProperties.includes(property.id)) {
         return false;
       }
-      if (property.related) {
+      if (property.type === 'object') {
+        currentEntity = property.entity!;
+      } else if (property.related) {
         currentEntity = property.related;
       }
+    }
+    const lastProperty = propertyPath[propertyPath.length - 1];
+    const relatedEntityId = lastProperty.relationship_type !== 'morph_to' ? (lastProperty.related ?? lastProperty.entity) : null;
+    if (relatedEntityId) {
+      const schema = await resolve(relatedEntityId);
+      return !!(schema.default_sort || schema.unique_identifier);
     }
     return true;
   } catch {
@@ -282,7 +323,13 @@ async function getPropertyPath(schemaId: string, path: string): Promise<Property
     const property = schema.getProperty(segments[i]);
     properties.push(property);
     if (i < segments.length - 1) {
-      schema = await resolve(property.related!);
+      if (property.type === 'object') {
+        schema = await resolve(property.entity!);
+      } else if (property.type === 'relationship' && property.relationship_type !== 'morph_to') {
+        schema = await resolve(property.related!);
+      } else {
+        throw new PropertyNotFoundError(segments[i + 1], schema.id);
+      }
     }
   }
 
