@@ -481,4 +481,81 @@ describe('EntityCondition', () => {
     expect(childGroup.exists()).toBe(true);
     expect(childGroup.props('collapsed')).toBe(false);
   });
+
+  it('does not render EntityAction when object property has has_not operator', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
+      operator: 'has_not',
+      property: 'metadata',
+      key: 180,
+    });
+    mountEntityCondition(filter);
+    await flushAll();
+
+    expect(wrapper.findComponent(EntityAction).exists()).toBe(false);
+  });
+
+  it('removes child filter when object property operator changes to has_not', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
+      operator: 'has',
+      property: 'metadata',
+      key: 181,
+      filter: {
+        type: 'condition',
+        operator: '=',
+        property: 'label',
+        value: 'test',
+        key: 182,
+      },
+    });
+    mountEntityCondition(filter);
+    await flushAll();
+
+    expect(wrapper.findComponent(Condition).exists()).toBe(true);
+
+    filter.operator = 'has_not';
+    await flushAll();
+
+    expect(filter.filter).toBeUndefined();
+    expect(wrapper.findComponent(Condition).exists()).toBe(false);
+    expect(wrapper.findComponent(EntityAction).exists()).toBe(false);
+  });
+
+  it('truncates queue when non-last object element operator changes to has_not', async () => {
+    const filter: EntityConditionFilter = reactive({
+      type: 'entity_condition',
+      operator: 'has',
+      property: 'metadata',
+      key: 190,
+      filter: {
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'address',
+        key: 191,
+        filter: {
+          type: 'condition',
+          operator: '=',
+          property: 'city',
+          value: 'Paris',
+          key: 192,
+        },
+      },
+    });
+    mountEntityCondition(filter);
+    await flushAll();
+
+    // Should have 2 queue elements (metadata + address) and a Condition end filter
+    expect(wrapper.findAllComponents(EntityQueueElement).length).toBe(2);
+    expect(wrapper.findComponent(Condition).exists()).toBe(true);
+
+    // Change first element (metadata) operator to has_not
+    filter.operator = 'has_not';
+    await flushAll();
+
+    // Should truncate: only 1 queue element, no child filter
+    expect(wrapper.findAllComponents(EntityQueueElement).length).toBe(1);
+    expect(filter.filter).toBeUndefined();
+    expect(wrapper.findComponent(Condition).exists()).toBe(false);
+  });
 });

@@ -55,6 +55,13 @@ const endQueuePropertySchemaId = computed<string>(() => {
   return property.type === 'object' ? property.entity! : property.related!;
 });
 
+const canAddFilter = computed<boolean>(() => {
+  if (!queue.value?.length) return false;
+  const lastElement = queue.value[queue.value.length - 1];
+  const property = lastElement.schema.getProperty(lastElement.value.property);
+  return !(property.type === 'object' && lastElement.value.operator === 'has_not');
+});
+
 const endQueueComponent = computed<Component | null>(() => {
   switch (endQueueFilter.value?.type) {
     case 'condition':
@@ -172,10 +179,11 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
               :key="elmnt.key"
               :model-value="elmnt.value"
               :entity-schema="elmnt.schema"
+              @truncate="setChild(props.entitySchema)"
             />
           </ol>
           <EntityAction
-            v-if="endQueuePropertySchema"
+            v-if="endQueuePropertySchema && canAddFilter"
             :entity-schema="endQueuePropertySchema"
             :model-value="queue[queue.length - 1].value"
             @remove="removeQueueFilter"
@@ -205,6 +213,7 @@ watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(
               :key="elmnt.key"
               :model-value="elmnt.value"
               :entity-schema="elmnt.schema"
+              @truncate="setChild(props.entitySchema)"
             />
           </ol>
         </template>
