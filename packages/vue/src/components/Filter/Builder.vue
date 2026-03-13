@@ -194,7 +194,7 @@ async function getComputedFilter(): Promise<GroupFilter> {
     if (currentFilter.type == 'entity_condition') {
       if (currentFilter.filter) {
         const property = currentSchema.getProperty(currentFilter.property);
-        const schemaId = property.type === 'object' ? property.entity! : property.related!;
+        const schemaId = property.entity!;
         const childSchema = await resolve(schemaId);
         if (mustKeepFilter(currentFilter.filter, childSchema)) {
           stack.push([currentFilter.filter, childSchema]);

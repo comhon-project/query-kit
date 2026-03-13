@@ -146,8 +146,7 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
 
       if (property) {
         if (property.type === 'object' || (property.type === 'relationship' && (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one'))) {
-          const entityId = property.type === 'object' ? property.entity! : property.related!;
-          const propertySchema = await resolve(entityId);
+          const propertySchema = await resolve(property.entity!);
           properties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
           if (propertySchema.primary_identifiers) {
             for (const propertyId of propertySchema.primary_identifiers) {
@@ -195,8 +194,7 @@ async function initOrderBy(
         const property = propertyPath[propertyPath.length - 1];
 
         if (property.type === 'object' || property.type === 'relationship') {
-          const entityId = property.type === 'object' ? property.entity! : property.related!;
-          const schema = await resolve(entityId);
+          const schema = await resolve(property.entity!);
           if (schema.default_sort) {
             reqProps = schema.default_sort.map((prop) => column + '.' + prop);
           } else {

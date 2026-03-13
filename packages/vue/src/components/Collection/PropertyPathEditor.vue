@@ -66,9 +66,8 @@ function reduceProperty(): void {
 watch(resolvedPath, async () => {
   if (!resolvedPath.value || !resolvedPath.value.length) return;
   const lastProperty = resolvedPath.value[resolvedPath.value.length - 1];
-  const lastRelatedSchemaId = lastProperty.type === 'object' ? lastProperty.entity : lastProperty.related;
-  if (lastRelatedSchemaId) {
-    lastRelatedSchema.value = await resolve(lastRelatedSchemaId);
+  if (lastProperty.entity) {
+    lastRelatedSchema.value = await resolve(lastProperty.entity);
   }
 });
 watch(selectedProperty, () => {

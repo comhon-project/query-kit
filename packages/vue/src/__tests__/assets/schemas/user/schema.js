@@ -72,14 +72,14 @@ export default {
       name: 'the company',
       type: 'relationship',
       relationship_type: 'belongs_to',
-      related: 'organization',
+      entity: 'organization',
     },
     {
       id: 'friend',
       name: 'the friend',
       type: 'relationship',
       relationship_type: 'belongs_to',
-      related: 'user',
+      entity: 'user',
     },
     {
       id: 'commentable',

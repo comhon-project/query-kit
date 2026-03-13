@@ -28,7 +28,6 @@ export interface RawScope {
 export interface RawProperty extends ArrayableTypeContainer {
   id: string;
   name?: string;
-  related?: string;
   relationship_type?: 'belongs_to' | 'has_one' | 'has_many' | 'belongs_to_many' | 'morph_to' | 'morph_to_many';
   entity?: string;
 }
@@ -316,14 +315,12 @@ async function isPropertySortable(schemaId: string, path: string): Promise<boole
       if (!sortableProperties.includes(property.id)) {
         return false;
       }
-      if (property.type === 'object') {
-        currentEntity = property.entity!;
-      } else if (property.related) {
-        currentEntity = property.related;
+      if (property.entity) {
+        currentEntity = property.entity;
       }
     }
     const lastProperty = propertyPath[propertyPath.length - 1];
-    const relatedEntityId = lastProperty.relationship_type !== 'morph_to' ? (lastProperty.related ?? lastProperty.entity) : null;
+    const relatedEntityId = lastProperty.relationship_type !== 'morph_to' ? lastProperty.entity : null;
     if (relatedEntityId) {
       const schema = await resolve(relatedEntityId);
       return !!(schema.default_sort || schema.unique_identifier);
@@ -343,10 +340,8 @@ async function getPropertyPath(schemaId: string, path: string): Promise<Property
     const property = schema.getProperty(segments[i]);
     properties.push(property);
     if (i < segments.length - 1) {
-      if (property.type === 'object') {
-        schema = await resolve(property.entity!);
-      } else if (property.type === 'relationship' && property.relationship_type !== 'morph_to') {
-        schema = await resolve(property.related!);
+      if (property.entity) {
+        schema = await resolve(property.entity);
       } else {
         throw new PropertyNotFoundError(segments[i + 1], schema.id);
       }

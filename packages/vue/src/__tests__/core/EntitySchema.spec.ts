@@ -177,7 +177,7 @@ describe('compute() via resolve()', () => {
         name: 'the company',
         type: 'relationship',
         relationship_type: 'belongs_to',
-        related: 'organization',
+        entity: 'organization',
         owner: 'user',
       },
       friend: {
@@ -185,7 +185,7 @@ describe('compute() via resolve()', () => {
         name: 'the friend',
         type: 'relationship',
         relationship_type: 'belongs_to',
-        related: 'user',
+        entity: 'user',
         owner: 'user',
       },
       metadata: {
@@ -334,7 +334,7 @@ describe('getPropertyPath()', () => {
     expect(path).toHaveLength(2);
     expect(path[0].id).toBe('company');
     expect(path[0].owner).toBe('user');
-    expect(path[0].related).toBe('organization');
+    expect(path[0].entity).toBe('organization');
     expect(path[1].id).toBe('brand_name');
     expect(path[1].owner).toBe('organization');
   });

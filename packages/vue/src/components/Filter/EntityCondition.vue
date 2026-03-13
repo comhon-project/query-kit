@@ -52,7 +52,7 @@ const endQueuePropertySchemaId = computed<string>(() => {
   const lastQueueElement = queue.value[queue.value.length - 1];
   const lastQueueSchema = lastQueueElement.schema;
   const property = lastQueueSchema.getProperty(lastQueueElement.value.property);
-  return property.type === 'object' ? property.entity! : property.related!;
+  return property.entity!;
 });
 
 const canAddFilter = computed<boolean>(() => {
@@ -87,7 +87,7 @@ async function addFilter(filter: Filter): Promise<void> {
       schema: resolvedSchema,
     });
     const addedProperty = resolvedSchema.getProperty(filter.property);
-    endQueuePropertySchema.value = await resolve(addedProperty.type === 'object' ? addedProperty.entity! : addedProperty.related!);
+    endQueuePropertySchema.value = await resolve(addedProperty.entity!);
   } else {
     endQueueFilter.value = filter;
   }
@@ -141,7 +141,7 @@ async function setChild(schema: EntitySchema): Promise<void> {
       throw new Error('not handle morph_to relationship');
     }
 
-    const childSchemaId = property.type === 'object' ? property.entity! : property.related!;
+    const childSchemaId = property.entity!;
     try {
       childSchema = await resolve(childSchemaId);
     } catch {

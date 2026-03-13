@@ -27,7 +27,7 @@ export default {
       name: 'the contacts',
       type: 'relationship',
       relationship_type: 'has_many',
-      related: 'user',
+      entity: 'user',
     },
   ],
   unique_identifier: 'id',

@@ -214,7 +214,7 @@ describe('Renderers', () => {
       const wrapper = mount(EntityRenderer, {
         props: baseProps({
           value: { brand_name: 'Acme Corp', id: 1 },
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' },
+          property: { id: 'company', type: 'relationship', owner: 'user', entity: 'organization' },
         }),
       });
 
@@ -230,7 +230,7 @@ describe('Renderers', () => {
       const wrapper = mount(EntityRenderer, {
         props: baseProps({
           value: { id: 42, name: 'Acme' },
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'no_primary' },
+          property: { id: 'company', type: 'relationship', owner: 'user', entity: 'no_primary' },
         }),
       });
 
@@ -245,7 +245,7 @@ describe('Renderers', () => {
 
       const wrapper = mount(EntityRenderer, {
         props: baseProps({
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'pending' },
+          property: { id: 'company', type: 'relationship', owner: 'user', entity: 'pending' },
         }),
       });
       expect(wrapper.text()).toBe('');
@@ -257,7 +257,7 @@ describe('Renderers', () => {
           columnId: 'company',
           value: null,
           rowValue: { 'company.brand_name': 'Acme Corp', 'company.id': 1 },
-          property: { id: 'company', type: 'relationship', owner: 'user', related: 'organization' },
+          property: { id: 'company', type: 'relationship', owner: 'user', entity: 'organization' },
         }),
       });
 
