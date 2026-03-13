@@ -1,7 +1,7 @@
 <script setup>
 import { markRaw, ref, watch } from 'vue';
 import CellFirstName from './components/CellFirstName.vue';
-import { locale } from '@query-kit/vue';
+import { locale, getEntityTranslation } from '@query-kit/vue';
 
 const entity = ref('user');
 const displayOperator = ref({
@@ -369,6 +369,7 @@ watch(page, () => {
         <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
       </div>
     </div>
+    <h1>{{ getEntityTranslation(entity) }}</h1>
     <div style="height: 90vh">
       <QkitSearch
         v-model:order-by="orderBy"

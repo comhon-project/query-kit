@@ -61,6 +61,7 @@ export interface Property extends RawProperty {
 }
 
 export interface EntityTranslations {
+  name?: string;
   properties?: Record<string, string>;
   scopes?: Record<string, string>;
   parameters?: Record<string, Record<string, string>>;
@@ -123,6 +124,25 @@ function ensureTranslationsLoaded(schemaId: string): void {
   }
 }
 
+function getEntityTranslationForLocale(schemaId: string, targetLocale: string): string {
+  const current = loadedTranslations[`${schemaId}.${targetLocale}`];
+  if (current?.name) return current.name;
+
+  const fallbackTranslations = loadedTranslations[`${schemaId}.${fallback.value}`];
+  if (fallbackTranslations?.name) return fallbackTranslations.name;
+
+  return schemaId;
+}
+
+function getEntityTranslation(schemaId: string): string {
+  ensureTranslationsLoaded(schemaId);
+
+  const cacheKey = `${schemaId}.${locale.value}`;
+  const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
+
+  return getEntityTranslationForLocale(schemaId, targetLocale);
+}
+
 function getPropertyTranslationForLocale(property: Property, targetLocale: string): string {
   const current = loadedTranslations[`${property.owner}.${targetLocale}`];
   if (current?.properties?.[property.id]) return current.properties[property.id];
@@ -131,6 +151,15 @@ function getPropertyTranslationForLocale(property: Property, targetLocale: strin
   if (fallbackTranslations?.properties?.[property.id]) return fallbackTranslations.properties[property.id];
 
   return property.name ?? property.id;
+}
+
+function getPropertyTranslation(property: Property): string {
+  ensureTranslationsLoaded(property.owner);
+
+  const cacheKey = `${property.owner}.${locale.value}`;
+  const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
+
+  return getPropertyTranslationForLocale(property, targetLocale);
 }
 
 function getScopeTranslationForLocale(scope: Scope, targetLocale: string): string {
@@ -150,15 +179,6 @@ function getScopeTranslation(scope: Scope): string {
   const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
 
   return getScopeTranslationForLocale(scope, targetLocale);
-}
-
-function getPropertyTranslation(property: Property): string {
-  ensureTranslationsLoaded(property.owner);
-
-  const cacheKey = `${property.owner}.${locale.value}`;
-  const targetLocale = loadingTranslations[cacheKey] ? previousLocale : locale.value;
-
-  return getPropertyTranslationForLocale(property, targetLocale);
 }
 
 function getParameterTranslationForLocale(
@@ -373,6 +393,7 @@ export {
   resolve,
   getPropertyPath,
   isPropertySortable,
+  getEntityTranslation,
   getPropertyTranslation,
   getScopeTranslation,
   getScopeParameterTranslation,

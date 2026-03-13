@@ -6,6 +6,7 @@ import {
   registerTranslationsLoader,
   getPropertyPath,
   isPropertySortable,
+  getEntityTranslation,
   getPropertyTranslation,
   getScopeTranslation,
   getScopeParameterTranslation,
@@ -493,6 +494,32 @@ describe('getLeafTypeContainer()', () => {
 // 7. Translations
 // ---------------------------------------------------------------------------
 describe('Translations', () => {
+  describe('getEntityTranslation()', () => {
+    it('returns translation with default locale (en)', async () => {
+      await loadRawTranslations('user', 'en');
+      expect(getEntityTranslation('user')).toBe('User');
+    });
+
+    it('returns translation with fr locale', async () => {
+      locale.value = 'fr';
+      await loadRawTranslations('user', 'fr');
+      expect(getEntityTranslation('user')).toBe('Utilisateur');
+    });
+
+    it('falls back to fallback locale when current has no name', async () => {
+      fallback.value = 'en';
+      locale.value = 'xx';
+      await loadRawTranslations('user', 'en');
+      expect(getEntityTranslation('user')).toBe('User');
+    });
+
+    it('falls back to schemaId when no translations at all', async () => {
+      _resetForTesting();
+      registerLoader(entitySchemaLoader);
+      expect(getEntityTranslation('user')).toBe('user');
+    });
+  });
+
   describe('getPropertyTranslation()', () => {
     it('returns translation with default locale (en)', async () => {
       await loadRawTranslations('user', 'en');

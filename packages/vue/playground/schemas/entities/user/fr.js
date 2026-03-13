@@ -1,4 +1,5 @@
 export default {
+  name: 'Utilisateur',
   properties: {
     first_name: "prénom",
     last_name: "nom",

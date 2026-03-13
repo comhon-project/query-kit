@@ -87,8 +87,8 @@ function confirm(): void {
   showModal.value = false;
 }
 
-function cancel(): void {
-  showModal.value = false;
+function closed(): void {
+  keyedColumns.value = columns.value.map((id) => ({ id, key: getUniqueId() }));
 }
 
 function removeColumn(index: number): void {
@@ -143,7 +143,7 @@ watchEffect(() => (keyedColumns.value = columns.value.map((id) => ({ id, key: ge
 
 <template>
   <IconButton icon="columns" @click="openModal" />
-  <Modal v-model:show="showModal" :disable-confirm="disableConfirm" @confirm="confirm" @cancel="cancel">
+  <Modal v-model:show="showModal" :disable-confirm="disableConfirm" @confirm="confirm" @closed="closed">
     <template #header>
       <h1>{{ translate('columns') }}</h1>
     </template>
