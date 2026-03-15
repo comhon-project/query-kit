@@ -25,12 +25,12 @@ function computeQuickSearch(parameters) {
     filters: [
       {
         property: 'first_name',
-        operator: 'like',
+        operator: 'ilike',
         value: value,
       },
       {
         property: 'last_name',
-        operator: 'like',
+        operator: 'ilike',
         value: value,
       },
     ],
@@ -79,9 +79,32 @@ createApp(App)
     defaultLocale: 'en',
     fallbackLocale: 'fr',
     renderHtml: true,
+    aliasInsensitiveLabels: true,
+    operators: {
+      condition: {
+        basic: [
+          '=',
+          '<>',
+          '<',
+          '<=',
+          '>',
+          '>=',
+          'in',
+          'not_in',
+          'ilike',
+          'not_ilike',
+          'ibegins_with',
+          'idoesnt_begin_with',
+          'iends_with',
+          'idoesnt_end_with',
+          'null',
+          'not_null',
+        ],
+      },
+    },
     allowedOperators: {
       condition: {
-        choice: ['like', 'not_in'],
+        choice: ['ilike', 'not_in'],
         datetime: ['=', 'not_in'],
         array: ['=', 'in'],
       },

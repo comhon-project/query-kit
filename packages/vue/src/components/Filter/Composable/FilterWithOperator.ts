@@ -35,9 +35,11 @@ const useFilterWithOperator = (
           )
         : getContainerOperators(filterType, config.allowedOperators);
 
+    const alias = config.aliasInsensitiveLabels;
+
     for (const operator of currentOperators) {
       options.push({
-        label: getOperatorTranslation(filterType, operator),
+        label: getOperatorTranslation(filterType, operator, alias),
         value: operator,
       });
     }
@@ -50,7 +52,7 @@ const useFilterWithOperator = (
     }
     if (!has && props.modelValue.operator) {
       options.push({
-        label: getOperatorTranslation(filterType, props.modelValue.operator),
+        label: getOperatorTranslation(filterType, props.modelValue.operator, alias),
         value: props.modelValue.operator,
       });
     }

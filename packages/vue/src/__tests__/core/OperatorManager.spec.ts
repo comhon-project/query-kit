@@ -248,6 +248,45 @@ describe('OperatorManager', () => {
     });
   });
 
+  describe('case-insensitive operator variants', () => {
+    it('are all recognized as valid operators', () => {
+      for (const op of ['ilike', 'not_ilike', 'ibegins_with', 'idoesnt_begin_with', 'iends_with', 'idoesnt_end_with']) {
+        expect(isValidOperator('condition', op)).toBe(true);
+      }
+    });
+
+    it('have their own translations different from case-sensitive counterparts', () => {
+      expect(getOperatorTranslation('condition', 'ilike')).not.toBe(getOperatorTranslation('condition', 'like'));
+      expect(getOperatorTranslation('condition', 'not_ilike')).not.toBe(getOperatorTranslation('condition', 'not_like'));
+      expect(getOperatorTranslation('condition', 'ibegins_with')).not.toBe(getOperatorTranslation('condition', 'begins_with'));
+      expect(getOperatorTranslation('condition', 'idoesnt_begin_with')).not.toBe(getOperatorTranslation('condition', 'doesnt_begin_with'));
+      expect(getOperatorTranslation('condition', 'iends_with')).not.toBe(getOperatorTranslation('condition', 'ends_with'));
+      expect(getOperatorTranslation('condition', 'idoesnt_end_with')).not.toBe(getOperatorTranslation('condition', 'doesnt_end_with'));
+    });
+
+    it('are not included in default basic operators', () => {
+      const ops = getConditionOperators(mockProperty({ type: 'string' }));
+      for (const op of ['ilike', 'not_ilike', 'ibegins_with', 'idoesnt_begin_with', 'iends_with', 'idoesnt_end_with']) {
+        expect(ops).not.toContain(op);
+      }
+    });
+
+    it('can replace case-sensitive counterparts via registerOperators', () => {
+      registerOperators({
+        condition: {
+          basic: ['=', '<>', 'ilike', 'not_ilike', 'ibegins_with', 'idoesnt_begin_with', 'iends_with', 'idoesnt_end_with', 'null', 'not_null'],
+        },
+      });
+      const ops = getConditionOperators(mockProperty({ type: 'string' }));
+      expect(ops).toContain('ilike');
+      expect(ops).toContain('ibegins_with');
+      expect(ops).toContain('iends_with');
+      expect(ops).not.toContain('like');
+      expect(ops).not.toContain('begins_with');
+      expect(ops).not.toContain('ends_with');
+    });
+  });
+
   describe('registerOperators', () => {
     it('overrides condition operators for a type', () => {
       registerOperators({

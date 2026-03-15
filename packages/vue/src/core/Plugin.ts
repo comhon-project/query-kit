@@ -78,6 +78,7 @@ export interface PluginOptions {
   displayCount?: Config['displayCount'];
   editColumns?: Config['editColumns'];
   allowedCollectionTypes?: Config['allowedCollectionTypes'];
+  aliasInsensitiveLabels?: Config['aliasInsensitiveLabels'];
 }
 
 export default {

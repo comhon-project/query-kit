@@ -41,6 +41,7 @@ interface Props {
   editColumns?: boolean;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
+  aliasInsensitiveLabels?: boolean;
 }
 
 const filter = defineModel<Filter | null>('filter', { default: null });
@@ -59,6 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
   quickSort: undefined,
   displayCount: undefined,
   editColumns: undefined,
+  aliasInsensitiveLabels: undefined,
 });
 
 const uniqueId = getUniqueId();
@@ -90,6 +92,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       :user-timezone="userTimezone"
       :request-timezone="requestTimezone"
       :debounce="debounce"
+      :alias-insensitive-labels="aliasInsensitiveLabels"
       :manual="manual"
       :collection-id="collectionId"
       @computed="onComputed"

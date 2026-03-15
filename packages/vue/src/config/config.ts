@@ -15,6 +15,7 @@ export interface Config {
   displayCount: boolean;
   editColumns: boolean;
   allowedCollectionTypes: CollectionType[];
+  aliasInsensitiveLabels: boolean;
 }
 
 const defaults: Config = {
@@ -32,6 +33,7 @@ const defaults: Config = {
   displayCount: true,
   editColumns: false,
   allowedCollectionTypes: ['pagination'],
+  aliasInsensitiveLabels: false,
 };
 
 const config: Config = { ...defaults };

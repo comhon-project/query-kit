@@ -197,6 +197,7 @@ export interface BuilderConfig {
   allowRedo: boolean;
   debounce: number;
   manual: boolean;
+  aliasInsensitiveLabels: boolean;
 }
 
 // ==================== Collection Config (Provide/Inject) ====================

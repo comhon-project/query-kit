@@ -458,6 +458,90 @@ describe('Builder', () => {
       expect(condition.operator).toBe('not_like');
       expect(condition.value).toBe('%test%');
     });
+
+    it('wraps ilike operator value with %', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'ilike', value: 'test' }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('ilike');
+      expect(condition.value).toBe('%test%');
+    });
+
+    it('wraps not_ilike operator value with %', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'not_ilike', value: 'test' }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('not_ilike');
+      expect(condition.value).toBe('%test%');
+    });
+
+    it('converts ibegins_with to ilike with trailing %', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'ibegins_with', value: 'Al' }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('ilike');
+      expect(condition.value).toBe('Al%');
+    });
+
+    it('converts idoesnt_begin_with to not_ilike with trailing %', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'idoesnt_begin_with', value: 'Al' }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('not_ilike');
+      expect(condition.value).toBe('Al%');
+    });
+
+    it('converts iends_with to ilike with leading %', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'iends_with', value: 'ice' }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('ilike');
+      expect(condition.value).toBe('%ice');
+    });
+
+    it('converts idoesnt_end_with to not_ilike with leading %', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'idoesnt_end_with', value: 'ice' }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('not_ilike');
+      expect(condition.value).toBe('%ice');
+    });
   });
 
   // ==================== Undo/Redo ====================
@@ -878,6 +962,7 @@ describe('Builder', () => {
       expect(vm.config.allowRedo).toBe(true);
       expect(vm.config.debounce).toBe(1000);
       expect(vm.config.manual).toBe(false);
+      expect(vm.config.aliasInsensitiveLabels).toBe(false);
     });
 
     it('overrides all config properties via props', async () => {
@@ -890,6 +975,7 @@ describe('Builder', () => {
         allowRedo: false,
         debounce: 500,
         manual: true,
+        aliasInsensitiveLabels: true,
       });
       const vm = wrapper.vm as any;
       expect(vm.config.userTimezone).toBe('Europe/Paris');
@@ -900,6 +986,7 @@ describe('Builder', () => {
       expect(vm.config.allowRedo).toBe(false);
       expect(vm.config.debounce).toBe(500);
       expect(vm.config.manual).toBe(true);
+      expect(vm.config.aliasInsensitiveLabels).toBe(true);
     });
   });
 

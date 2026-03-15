@@ -11,6 +11,7 @@ export function defaultBuilderConfig(overrides: Partial<BuilderConfig> = {}): Bu
     allowRedo: true,
     debounce: 1000,
     manual: false,
+    aliasInsensitiveLabels: false,
     ...overrides,
   };
 }

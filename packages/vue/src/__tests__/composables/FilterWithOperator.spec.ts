@@ -158,6 +158,83 @@ describe('useFilterWithOperator', () => {
     });
   });
 
+  describe('aliasInsensitiveLabels', () => {
+    it('defaults to false and shows (A=a) labels for insensitive operators', () => {
+      const schema = mockEntitySchema({ first_name: mockProperty() });
+      const config = defaultBuilderConfig({
+        allowedOperators: { condition: { string: ['like', 'ilike', 'begins_with', 'ibegins_with', 'ends_with', 'iends_with'] } },
+      });
+      expect(config.aliasInsensitiveLabels).toBe(false);
+      const { operatorOptions } = useFilterWithOperator(config, {
+        entitySchema: schema,
+        modelValue: makeCondition({ operator: 'ilike' }),
+      });
+
+      const labels = Object.fromEntries(operatorOptions.value.map((o) => [o.value, o.label]));
+      // case-sensitive: no (A=a)
+      expect(labels['like']).toBe('contains');
+      expect(labels['begins_with']).toBe('begins with');
+      expect(labels['ends_with']).toBe('ends with');
+      // case-insensitive: has (A=a)
+      expect(labels['ilike']).toBe('contains (A=a)');
+      expect(labels['ibegins_with']).toBe('begins with (A=a)');
+      expect(labels['iends_with']).toBe('ends with (A=a)');
+    });
+
+    it('aliases all insensitive operator labels to their sensitive counterparts when true', () => {
+      const schema = mockEntitySchema({ first_name: mockProperty() });
+      const config = defaultBuilderConfig({
+        aliasInsensitiveLabels: true,
+        allowedOperators: { condition: { string: ['ilike', 'not_ilike', 'ibegins_with', 'idoesnt_begin_with', 'iends_with', 'idoesnt_end_with'] } },
+      });
+      const { operatorOptions } = useFilterWithOperator(config, {
+        entitySchema: schema,
+        modelValue: makeCondition({ operator: 'ilike' }),
+      });
+
+      const labels = Object.fromEntries(operatorOptions.value.map((o) => [o.value, o.label]));
+      expect(labels['ilike']).toBe('contains');
+      expect(labels['not_ilike']).toBe("doesn't contain");
+      expect(labels['ibegins_with']).toBe('begins with');
+      expect(labels['idoesnt_begin_with']).toBe("doesn't begin with");
+      expect(labels['iends_with']).toBe('ends with');
+      expect(labels['idoesnt_end_with']).toBe("doesn't end with");
+    });
+
+    it('does not affect non-insensitive operators when true', () => {
+      const schema = mockEntitySchema({ first_name: mockProperty() });
+      const config = defaultBuilderConfig({
+        aliasInsensitiveLabels: true,
+        allowedOperators: { condition: { string: ['=', '<>', 'like', 'not_like'] } },
+      });
+      const { operatorOptions } = useFilterWithOperator(config, {
+        entitySchema: schema,
+        modelValue: makeCondition(),
+      });
+
+      const labels = Object.fromEntries(operatorOptions.value.map((o) => [o.value, o.label]));
+      expect(labels['=']).toBe('=');
+      expect(labels['<>']).toBe('≠');
+      expect(labels['like']).toBe('contains');
+      expect(labels['not_like']).toBe("doesn't contain");
+    });
+
+    it('aliases fallback operator label when current operator is not in allowed list', () => {
+      const schema = mockEntitySchema({ first_name: mockProperty() });
+      const config = defaultBuilderConfig({
+        aliasInsensitiveLabels: true,
+        allowedOperators: { condition: { string: ['='] } },
+      });
+      const { operatorOptions } = useFilterWithOperator(config, {
+        entitySchema: schema,
+        modelValue: makeCondition({ operator: 'ilike' }),
+      });
+
+      const ilikeOption = operatorOptions.value.find((o) => o.value === 'ilike')!;
+      expect(ilikeOption.label).toBe('contains');
+    });
+  });
+
   describe('canEditOperator', () => {
     it('is true when editable and multiple operators', () => {
       const schema = mockEntitySchema({ first_name: mockProperty() });

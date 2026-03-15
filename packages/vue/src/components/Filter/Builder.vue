@@ -37,6 +37,7 @@ interface Props {
   debounce?: number;
   collectionId?: string;
   manual?: boolean;
+  aliasInsensitiveLabels?: boolean;
 }
 
 interface Emits {
@@ -53,6 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   allowRedo: undefined,
   displayOperator: undefined,
   manual: undefined,
+  aliasInsensitiveLabels: undefined,
 });
 
 let isInitialEmit = true;
@@ -215,11 +217,19 @@ async function getComputedFilter(): Promise<GroupFilter> {
         currentFilter.value = (currentFilter.value as unknown[]).filter((value) => value !== undefined);
       } else if (currentFilter.operator == 'like' || currentFilter.operator == 'not_like') {
         currentFilter.value = `%${currentFilter.value}%`;
+      } else if (currentFilter.operator == 'ilike' || currentFilter.operator == 'not_ilike') {
+        currentFilter.value = `%${currentFilter.value}%`;
       } else if (currentFilter.operator == 'begins_with' || currentFilter.operator == 'doesnt_begin_with') {
         currentFilter.operator = currentFilter.operator == 'begins_with' ? 'like' : 'not_like';
         currentFilter.value = `${currentFilter.value}%`;
+      } else if (currentFilter.operator == 'ibegins_with' || currentFilter.operator == 'idoesnt_begin_with') {
+        currentFilter.operator = currentFilter.operator == 'ibegins_with' ? 'ilike' : 'not_ilike';
+        currentFilter.value = `${currentFilter.value}%`;
       } else if (currentFilter.operator == 'ends_with' || currentFilter.operator == 'doesnt_end_with') {
         currentFilter.operator = currentFilter.operator == 'ends_with' ? 'like' : 'not_like';
+        currentFilter.value = `%${currentFilter.value}`;
+      } else if (currentFilter.operator == 'iends_with' || currentFilter.operator == 'idoesnt_end_with') {
+        currentFilter.operator = currentFilter.operator == 'iends_with' ? 'ilike' : 'not_ilike';
         currentFilter.value = `%${currentFilter.value}`;
       }
     } else if (currentFilter.type == 'scope') {
@@ -294,6 +304,7 @@ watchEffect(() => {
   config.allowRedo = props.allowRedo ?? globalConfig.allowRedo;
   config.debounce = props.debounce ?? globalConfig.debounce;
   config.manual = props.manual ?? globalConfig.manual;
+  config.aliasInsensitiveLabels = props.aliasInsensitiveLabels ?? globalConfig.aliasInsensitiveLabels;
 });
 
 watch(

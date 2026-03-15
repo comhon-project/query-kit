@@ -11,10 +11,16 @@ export type ConditionOperator =
   | '>='
   | 'like'
   | 'not_like'
+  | 'ilike'
+  | 'not_ilike'
   | 'ends_with'
   | 'doesnt_end_with'
+  | 'iends_with'
+  | 'idoesnt_end_with'
   | 'begins_with'
   | 'doesnt_begin_with'
+  | 'ibegins_with'
+  | 'idoesnt_begin_with'
   | 'in'
   | 'not_in'
   | 'null'
@@ -62,10 +68,16 @@ const operatorNames: OperatorNames = {
     '>=': '>=',
     like: 'like',
     not_like: 'not_like',
+    ilike: 'ilike',
+    not_ilike: 'not_ilike',
     ends_with: 'ends_with',
     doesnt_end_with: 'doesnt_end_with',
+    iends_with: 'iends_with',
+    idoesnt_end_with: 'idoesnt_end_with',
     begins_with: 'begins_with',
     doesnt_begin_with: 'doesnt_begin_with',
+    ibegins_with: 'ibegins_with',
+    idoesnt_begin_with: 'idoesnt_begin_with',
     in: 'in',
     not_in: 'not_in',
     null: 'null',
@@ -146,9 +158,14 @@ const getConditionOperators = (
 const getOperatorTranslation = (
   container: 'condition' | 'group' | 'entity_condition',
   operator: string,
+  aliasInsensitive = false,
 ): string => {
   const names = operatorNames[container] as Record<string, string>;
-  const label = names[operator];
+  const resolvedOperator =
+    aliasInsensitive && operator in insensitiveToSensitiveMap
+      ? insensitiveToSensitiveMap[operator as keyof typeof insensitiveToSensitiveMap]!
+      : operator;
+  const label = names[resolvedOperator];
   return label.charAt(0).match(/[a-z]/i) ? translate(label) ?? label : label;
 };
 
@@ -176,6 +193,15 @@ const registerOperators = (operatorsConfig: AllowedOperators): void => {
 const defaultConditionOperators: ConditionOperators = { ...operators.condition };
 const defaultGroupOperators: GroupOperator[] = [...operators.group];
 const defaultEntityConditionOperators: EntityConditionOperator[] = [...operators.entity_condition];
+
+const insensitiveToSensitiveMap: Partial<Record<ConditionOperator, ConditionOperator>> = {
+  ilike: 'like',
+  not_ilike: 'not_like',
+  ibegins_with: 'begins_with',
+  idoesnt_begin_with: 'doesnt_begin_with',
+  iends_with: 'ends_with',
+  idoesnt_end_with: 'doesnt_end_with',
+};
 
 function _resetForTesting(): void {
   operators.condition = { ...defaultConditionOperators };
