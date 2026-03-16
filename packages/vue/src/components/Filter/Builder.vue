@@ -231,6 +231,12 @@ async function getComputedFilter(): Promise<GroupFilter> {
       } else if (currentFilter.operator == 'iends_with' || currentFilter.operator == 'idoesnt_end_with') {
         currentFilter.operator = currentFilter.operator == 'iends_with' ? 'ilike' : 'not_ilike';
         currentFilter.value = `%${currentFilter.value}`;
+      } else if (currentFilter.operator == 'null') {
+        currentFilter.operator = '=';
+        currentFilter.value = null;
+      } else if (currentFilter.operator == 'not_null') {
+        currentFilter.operator = '<>';
+        currentFilter.value = null;
       }
     } else if (currentFilter.type == 'scope') {
       const parameters = currentFilter.parameters;

@@ -583,6 +583,34 @@ describe('Builder', () => {
       const condition = filter.filters[0] as ConditionFilter;
       expect(condition.value).toEqual(['apple', 'banana']);
     });
+
+    it('converts null operator to = with null value', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'null', value: undefined }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('=');
+      expect(condition.value).toBeNull();
+    });
+
+    it('converts not_null operator to <> with null value', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: 'not_null', value: undefined }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('<>');
+      expect(condition.value).toBeNull();
+    });
   });
 
   // ==================== Undo/Redo ====================
