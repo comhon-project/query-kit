@@ -80,6 +80,15 @@ export default {
       nullable: true,
     },
     {
+      id: 'tags',
+      name: 'tags',
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+      nullable: true,
+    },
+    {
       id: 'company',
       name: 'the company',
       type: 'relationship',

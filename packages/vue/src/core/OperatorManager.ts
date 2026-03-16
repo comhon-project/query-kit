@@ -1,5 +1,5 @@
 import { translate } from '@i18n/i18n';
-import { getLeafTypeContainer, type Property } from '@core/EntitySchema';
+import type { Property } from '@core/EntitySchema';
 import type { ContainerFilterType } from '@core/types';
 
 export type ConditionOperator =
@@ -21,6 +21,8 @@ export type ConditionOperator =
   | 'doesnt_begin_with'
   | 'ibegins_with'
   | 'idoesnt_begin_with'
+  | 'contains'
+  | 'not_contains'
   | 'in'
   | 'not_in'
   | 'null'
@@ -78,6 +80,8 @@ const operatorNames: OperatorNames = {
     doesnt_begin_with: 'doesnt_begin_with',
     ibegins_with: 'ibegins_with',
     idoesnt_begin_with: 'idoesnt_begin_with',
+    contains: 'contains',
+    not_contains: 'not_contains',
     in: 'in',
     not_in: 'not_in',
     null: 'null',
@@ -118,6 +122,7 @@ const operators: Operators = {
     time: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in', 'null', 'not_null'],
     datetime: ['=', '<>', '<', '<=', '>', '>=', 'in', 'not_in', 'null', 'not_null'],
     boolean: ['=', 'null', 'not_null'],
+    array: ['contains', 'not_contains', 'null', 'not_null'],
   },
   group: ['and', 'or'],
   entity_condition: ['has', 'has_not'],
@@ -134,10 +139,8 @@ const getConditionOperators = (
   property: Property,
   allowedOperators: AllowedOperators | null = null,
 ): ConditionOperator[] => {
-  const leaf = getLeafTypeContainer(property);
-  const isArray = property.type === 'array';
-  const type = leaf.enum ? 'enum' : leaf.type;
-  let currentOperators: ConditionOperator[] =
+  const type = property.enum ? 'enum' : property.type;
+  const currentOperators: ConditionOperator[] =
     allowedOperators?.condition?.[type] ||
     operators.condition[type] ||
     allowedOperators?.condition?.basic ||
@@ -145,12 +148,6 @@ const getConditionOperators = (
 
   if (!Array.isArray(currentOperators)) {
     throw new Error(`invalid operators definition for ${type}`);
-  }
-  if (isArray) {
-    const arrayOperators = allowedOperators?.condition?.array || operators?.condition?.array;
-    if (arrayOperators) {
-      currentOperators = currentOperators.filter((value) => arrayOperators.includes(value));
-    }
   }
   return currentOperators;
 };
@@ -167,6 +164,10 @@ const getOperatorTranslation = (
       : operator;
   const label = names[resolvedOperator];
   return label.charAt(0).match(/[a-z]/i) ? translate(label) ?? label : label;
+};
+
+const isArrayOperator = (operator: string): boolean => {
+  return operator === 'in' || operator === 'not_in' || operator === 'contains' || operator === 'not_contains';
 };
 
 const isValidOperator = (
@@ -213,6 +214,7 @@ export {
   getContainerOperators,
   getConditionOperators,
   getOperatorTranslation,
+  isArrayOperator,
   isValidOperator,
   registerOperators,
   _resetForTesting,

@@ -29,6 +29,8 @@ export default {
   not_in: 'ليس ضمن',
   null: 'فارغ',
   not_null: 'غير فارغ',
+  contains: 'يتضمن',
+  not_contains: 'لا يتضمن',
   and: 'و',
   or: 'أو',
   has: 'لديه',

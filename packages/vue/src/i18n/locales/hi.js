@@ -29,6 +29,8 @@ export default {
   not_in: 'में नहीं',
   null: 'खाली',
   not_null: 'खाली नहीं',
+  contains: 'सम्मिलित है',
+  not_contains: 'सम्मिलित नहीं है',
   and: 'और',
   or: 'या',
   has: 'है',

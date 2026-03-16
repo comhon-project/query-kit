@@ -29,6 +29,8 @@ export default {
   not_in: 'не в',
   null: 'пусто',
   not_null: 'не пусто',
+  contains: 'включает',
+  not_contains: 'не включает',
   and: 'и',
   or: 'или',
   has: 'имеет',

@@ -542,6 +542,47 @@ describe('Builder', () => {
       expect(condition.operator).toBe('not_ilike');
       expect(condition.value).toBe('%ice');
     });
+
+    it('passes contains operator with array value through without transformation', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'favorite_fruits', operator: 'contains', value: ['apple', 'banana'] }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('contains');
+      expect(condition.value).toEqual(['apple', 'banana']);
+    });
+
+    it('passes not_contains operator with array value through without transformation', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'favorite_fruits', operator: 'not_contains', value: ['banana'] }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.operator).toBe('not_contains');
+      expect(condition.value).toEqual(['banana']);
+    });
+
+    it('filters undefined values from contains array values', async () => {
+      const group: GroupFilter = {
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'favorite_fruits', operator: 'contains', value: ['apple', undefined, 'banana'] }],
+      };
+      await mountBuilder({}, group);
+      const emitted = wrapper.emitted('computed')!;
+      const filter = emitted[emitted.length - 1][0] as GroupFilter;
+      const condition = filter.filters[0] as ConditionFilter;
+      expect(condition.value).toEqual(['apple', 'banana']);
+    });
   });
 
   // ==================== Undo/Redo ====================

@@ -29,6 +29,8 @@ export default {
   not_in: '不在...中',
   null: '为空',
   not_null: '不为空',
+  contains: '包括',
+  not_contains: '不包括',
   and: '且',
   or: '或',
   has: '有',

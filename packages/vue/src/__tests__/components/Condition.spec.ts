@@ -414,4 +414,55 @@ describe('Condition', () => {
       expect(select.props('disabled')).toBe(true);
     });
   });
+
+  describe('contains / not_contains operators (array properties)', () => {
+    it('renders array input for contains operator', async () => {
+      const filter: ConditionFilter = reactive({
+        type: 'condition',
+        property: 'favorite_fruits',
+        operator: 'contains',
+        value: ['apple'],
+        key: 24,
+      });
+      mountCondition(filter);
+      await flushAll();
+
+      const arrayableInput = wrapper.findComponent(ArrayableInput);
+      expect(arrayableInput.exists()).toBe(true);
+      expect(arrayableInput.props('isArray')).toBe(true);
+    });
+
+    it('renders array input for not_contains operator', async () => {
+      const filter: ConditionFilter = reactive({
+        type: 'condition',
+        property: 'favorite_fruits',
+        operator: 'not_contains',
+        value: ['banana'],
+        key: 25,
+      });
+      mountCondition(filter);
+      await flushAll();
+
+      const arrayableInput = wrapper.findComponent(ArrayableInput);
+      expect(arrayableInput.exists()).toBe(true);
+      expect(arrayableInput.props('isArray')).toBe(true);
+    });
+
+    it('converts scalar value to array when switching from eq to contains', async () => {
+      const filter: ConditionFilter = reactive({
+        type: 'condition',
+        property: 'favorite_fruits',
+        operator: '=',
+        value: 'apple',
+        key: 27,
+      });
+      mountCondition(filter);
+      await flushAll();
+
+      filter.operator = 'contains';
+      await nextTick();
+
+      expect(filter.value).toEqual(['apple']);
+    });
+  });
 });

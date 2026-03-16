@@ -29,6 +29,8 @@ export default {
   not_in: '含まれない',
   null: '空',
   not_null: '空でない',
+  contains: '含む（要素）',
+  not_contains: '含まない（要素）',
   and: 'かつ',
   or: 'または',
   has: '持つ',

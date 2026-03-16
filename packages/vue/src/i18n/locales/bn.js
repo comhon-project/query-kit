@@ -29,6 +29,8 @@ export default {
   not_in: 'মধ্যে নেই',
   null: 'খালি',
   not_null: 'খালি নয়',
+  contains: 'অন্তর্ভুক্ত',
+  not_contains: 'অন্তর্ভুক্ত নয়',
   and: 'এবং',
   or: 'অথবা',
   has: 'আছে',

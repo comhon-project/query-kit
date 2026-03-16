@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, watchEffect, inject } from 'vue';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
-import { isValidOperator } from '@core/OperatorManager';
+import { isValidOperator, isArrayOperator } from '@core/OperatorManager';
 import {
   getPropertyTranslation,
   getLeafTypeContainer,
@@ -59,8 +59,8 @@ const propertyName = computed<string>(() => {
   return property.value ? getPropertyTranslation(property.value) : '';
 });
 
-const isArrayOperator = computed<boolean>(() => {
-  return props.modelValue.operator === 'in' || props.modelValue.operator === 'not_in';
+const hasArrayValue = computed<boolean>(() => {
+  return isArrayOperator(props.modelValue.operator);
 });
 
 watchEffect(() => {
@@ -83,15 +83,14 @@ watch(
       props.modelValue.value = undefined;
       return;
     }
-    const isOldOperatorIn = oldOperator == 'in' || oldOperator == 'not_in';
-    const isNewOperatorIn = newOperator == 'in' || newOperator == 'not_in';
-    const hasToggleOperatorIn = isOldOperatorIn !== isNewOperatorIn;
+    const wasArrayOperator = isArrayOperator(oldOperator!);
+    const nowArrayOperator = isArrayOperator(newOperator);
 
-    if (hasToggleOperatorIn) {
-      if (isOldOperatorIn && Array.isArray(props.modelValue.value)) {
+    if (wasArrayOperator !== nowArrayOperator) {
+      if (wasArrayOperator && Array.isArray(props.modelValue.value)) {
         props.modelValue.value = props.modelValue.value.length > 0 ? props.modelValue.value[0] : undefined;
       }
-      if (isNewOperatorIn && !Array.isArray(props.modelValue.value)) {
+      if (nowArrayOperator && !Array.isArray(props.modelValue.value)) {
         props.modelValue.value = props.modelValue.value !== undefined ? [props.modelValue.value] : undefined;
       }
     }
@@ -134,7 +133,7 @@ watch(
         :target="property"
         :entity-schema="entitySchema"
         :editable="isEditable"
-        :is-array="isArrayOperator"
+        :is-array="hasArrayValue"
       />
     </div>
     <IconButton

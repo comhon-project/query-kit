@@ -14,6 +14,7 @@ export default {
       "friend",
       "country",
       "favorite_fruits",
+      "tags",
       "cars",
       "profile",
       "does_not_exist",

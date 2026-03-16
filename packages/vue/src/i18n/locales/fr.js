@@ -29,6 +29,8 @@ export default {
   not_in: 'pas dans',
   null: 'nul',
   not_null: 'non nul',
+  contains: 'inclut',
+  not_contains: "n'inclut pas",
   and: 'et',
   or: 'ou',
   has: 'a',

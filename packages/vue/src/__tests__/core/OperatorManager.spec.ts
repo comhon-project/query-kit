@@ -79,18 +79,16 @@ describe('OperatorManager', () => {
       expect(ops).toContain('begins_with');
     });
 
-    it('unwraps array type using getLeafTypeContainer', () => {
+    it('returns default array operators for array type properties', () => {
       const property = mockProperty({
         type: 'array',
         items: { type: 'string' },
       });
-      // Array type without array operators defined: returns leaf operators unfiltered
       const ops = getConditionOperators(property);
-      expect(ops).toContain('=');
-      expect(ops).toContain('like');
+      expect(ops).toEqual(['contains', 'not_contains', 'null', 'not_null']);
     });
 
-    it('filters operators by array operators list when array type has array operators defined', () => {
+    it('replaces array operators when overridden via registerOperators', () => {
       registerOperators({
         condition: {
           array: ['=', '<>', 'null', 'not_null'],
@@ -124,7 +122,7 @@ describe('OperatorManager', () => {
       expect(ops).toEqual(['=', 'null']);
     });
 
-    it('uses allowed array operators to filter when property is array type', () => {
+    it('uses allowedOperators array to replace operators for array type', () => {
       const property = mockProperty({
         type: 'array',
         items: { type: 'enum', enum: 'status' },
@@ -135,7 +133,6 @@ describe('OperatorManager', () => {
         },
       };
       const ops = getConditionOperators(property, allowed);
-      // Enum operators filtered by allowed array operators
       expect(ops).toEqual(['=', 'in', 'not_in']);
     });
   });
@@ -245,6 +242,27 @@ describe('OperatorManager', () => {
 
     it('returns false for empty string', () => {
       expect(isValidOperator('condition', '')).toBe(false);
+    });
+  });
+
+  describe('contains / not_contains operators', () => {
+    it('are recognized as valid operators', () => {
+      expect(isValidOperator('condition', 'contains')).toBe(true);
+      expect(isValidOperator('condition', 'not_contains')).toBe(true);
+    });
+
+    it('translates contains to "includes"', () => {
+      expect(getOperatorTranslation('condition', 'contains')).toBe('includes');
+    });
+
+    it('translates not_contains to "doesn\'t include"', () => {
+      expect(getOperatorTranslation('condition', 'not_contains')).toBe("doesn't include");
+    });
+
+    it('are not included in default basic operators', () => {
+      const ops = getConditionOperators(mockProperty({ type: 'string' }));
+      expect(ops).not.toContain('contains');
+      expect(ops).not.toContain('not_contains');
     });
   });
 
@@ -362,6 +380,15 @@ describe('OperatorManager', () => {
 
       _resetForTesting();
       expect(getContainerOperators('entity_condition')).toEqual(['has', 'has_not']);
+    });
+
+    it('restores default array operators after override', () => {
+      registerOperators({ condition: { array: ['=', 'in'] } });
+      const property = mockProperty({ type: 'array', items: { type: 'string' } });
+      expect(getConditionOperators(property)).toEqual(['=', 'in']);
+
+      _resetForTesting();
+      expect(getConditionOperators(property)).toEqual(['contains', 'not_contains', 'null', 'not_null']);
     });
   });
 });
