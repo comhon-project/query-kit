@@ -40,7 +40,7 @@ export interface RawInlineEntitySchema {
 }
 
 export interface RawEntitySchema extends RawInlineEntitySchema {
-  default_sort?: string[];
+  natural_sort?: string[];
   entities?: Record<string, RawInlineEntitySchema>;
 }
 
@@ -84,7 +84,7 @@ export class EntitySchema {
     readonly mapScopes: Record<string, Scope>,
     readonly unique_identifier?: string,
     readonly primary_identifiers?: string[],
-    readonly default_sort?: string[],
+    readonly natural_sort?: string[],
   ) {}
 
   getProperty(id: string): Property {
@@ -247,7 +247,7 @@ function buildEntitySchema(
     mapScopes,
     raw.unique_identifier,
     raw.primary_identifiers,
-    (raw as RawEntitySchema).default_sort,
+    (raw as RawEntitySchema).natural_sort,
   );
 }
 
@@ -323,7 +323,7 @@ async function isPropertySortable(schemaId: string, path: string): Promise<boole
     const relatedEntityId = lastProperty.relationship_type !== 'morph_to' ? lastProperty.entity : null;
     if (relatedEntityId) {
       const schema = await resolve(relatedEntityId);
-      return !!(schema.default_sort || schema.unique_identifier);
+      return !!(schema.natural_sort || schema.unique_identifier);
     }
     return true;
   } catch {

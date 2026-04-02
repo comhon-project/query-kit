@@ -195,8 +195,8 @@ async function initOrderBy(
 
         if (property.type === 'object' || property.type === 'relationship') {
           const schema = await resolve(property.entity!);
-          if (schema.default_sort) {
-            reqProps = schema.default_sort.map((prop) => column + '.' + prop);
+          if (schema.natural_sort) {
+            reqProps = schema.natural_sort.map((prop) => column + '.' + prop);
           } else {
             const idProperty = schema.unique_identifier || 'id';
             reqProps = [column + '.' + idProperty];

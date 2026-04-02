@@ -146,9 +146,9 @@ describe('compute() via resolve()', () => {
     expect(schema.primary_identifiers).toEqual(['last_name', 'first_name']);
   });
 
-  it('preserves undefined default_sort when not provided', async () => {
+  it('preserves undefined natural_sort when not provided', async () => {
     const schema = await resolve('user');
-    expect(schema.default_sort).toBeUndefined();
+    expect(schema.natural_sort).toBeUndefined();
   });
 
   it('maps all properties correctly with their attributes', async () => {
@@ -431,12 +431,12 @@ describe('isPropertySortable()', () => {
     expect(result).toBe(false);
   });
 
-  it('returns false for object property whose entity has no default_sort nor unique_identifier', async () => {
+  it('returns false for object property whose entity has no natural_sort nor unique_identifier', async () => {
     const result = await isPropertySortable('user', 'metadata.address');
     expect(result).toBe(false);
   });
 
-  it('returns true for object property whose entity has default_sort', async () => {
+  it('returns true for object property whose entity has natural_sort', async () => {
     const result = await isPropertySortable('user', 'metadata');
     expect(result).toBe(true);
   });

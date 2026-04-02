@@ -141,7 +141,7 @@ export default {
           entity: 'user.profile.address',
         },
       ],
-      default_sort: ['nickname'],
+      natural_sort: ['nickname'],
     },
     'profile.address': {
       properties: [
@@ -165,7 +165,7 @@ export default {
   },
   unique_identifier: 'id',
   primary_identifiers: ['last_name', 'first_name'],
-  default_sort: ['last_name', 'first_name'],
+  natural_sort: ['last_name', 'first_name'],
   scopes: [
     {
       id: 'scope_string_definition',

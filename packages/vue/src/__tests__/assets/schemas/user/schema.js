@@ -160,7 +160,7 @@ export default {
           entity: 'user.address',
         },
       ],
-      default_sort: ['label'],
+      natural_sort: ['label'],
     },
     address: {
       properties: [

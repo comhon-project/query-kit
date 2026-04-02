@@ -766,7 +766,7 @@ describe('Collection', () => {
   });
 
   describe('orderBy with relationship', () => {
-    it('resolves object sort using default_sort', async () => {
+    it('resolves object sort using natural_sort', async () => {
       const orderBy = ref<any[]>([{ column: 'metadata', order: 'asc' }]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
@@ -781,7 +781,7 @@ describe('Collection', () => {
         },
       });
       await flushAll();
-      // metadata entity has default_sort: ['label']
+      // metadata entity has natural_sort: ['label']
       const lastCall = calls[calls.length - 1];
       expect(lastCall.order).toEqual(
         expect.arrayContaining([
@@ -805,7 +805,7 @@ describe('Collection', () => {
         },
       });
       await flushAll();
-      // organization has no default_sort → uses unique_identifier 'id'
+      // organization has no natural_sort → uses unique_identifier 'id'
       const lastCall = calls[calls.length - 1];
       expect(lastCall.order).toEqual(
         expect.arrayContaining([
