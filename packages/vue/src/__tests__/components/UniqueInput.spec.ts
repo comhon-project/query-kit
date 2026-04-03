@@ -74,7 +74,7 @@ describe('UniqueInput', () => {
     const property = schema.getProperty('country');
     mountInput(property);
     await flushAll();
-    expect(wrapper.text()).toContain('choice');
+    expect(wrapper.text()).toContain('country');
   });
 
   it('disables input when editable is false', async () => {

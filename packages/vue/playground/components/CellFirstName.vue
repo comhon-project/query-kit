@@ -33,19 +33,20 @@ const props = defineProps({
 function cellAlert(e) {
   e.stopPropagation();
   alert(
-    "|| " +
-      props.rowValue["company.id"] + // flattened
-      " - " +
-      props.rowValue["company.brand_name"] + // flattened
-      " ||\n|| " +
+    '|| ' +
+      props.rowValue['company.id'] + // flattened
+      ' - ' +
+      props.rowValue['company.brand_name'] + // flattened
+      ' ||\n|| ' +
       props.rowValue?.company?.id + // not flattened
-      " - " +
+      ' - ' +
       props.rowValue?.company?.brand_name + // not flattened
-      " || "
+      ' || ',
   );
 }
 </script>
 
 <template>
-  {{ value }}<button style="color: blue" @click="cellAlert">button</button>
+  {{ value }}
+  <button style="color: blue" @click="cellAlert">button</button>
 </template>

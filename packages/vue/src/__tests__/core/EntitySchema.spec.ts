@@ -164,7 +164,7 @@ describe('compute() via resolve()', () => {
       birth_date: { id: 'birth_date', name: 'birth date', type: 'datetime', owner: 'user' },
       birth_day: { id: 'birth_day', name: 'birth day', type: 'date', owner: 'user' },
       birth_hour: { id: 'birth_hour', name: 'birth hour', type: 'time', owner: 'user' },
-      country: { id: 'country', name: 'the country', type: 'choice', owner: 'user' },
+      country: { id: 'country', name: 'the country', type: 'country', owner: 'user' },
       favorite_fruits: {
         id: 'favorite_fruits',
         name: 'favorite fruits',

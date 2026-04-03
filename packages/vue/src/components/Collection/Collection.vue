@@ -145,17 +145,7 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
       colsProps[columnId] = property;
 
       if (property) {
-        if (property.type === 'object' || (property.type === 'relationship' && (property.relationship_type == 'belongs_to' || property.relationship_type == 'has_one'))) {
-          const propertySchema = await resolve(property.entity!);
-          properties.push(columnId + '.' + (propertySchema.unique_identifier || 'id'));
-          if (propertySchema.primary_identifiers) {
-            for (const propertyId of propertySchema.primary_identifiers) {
-              properties.push(columnId + '.' + propertyId);
-            }
-          }
-        } else if (property.type !== 'relationship') {
-          properties.push(columnId);
-        }
+        properties.push(columnId);
       }
     } catch (e) {
       if (e instanceof PropertyNotFoundError) {
@@ -195,10 +185,10 @@ async function initOrderBy(
 
         if (property.type === 'object' || property.type === 'relationship') {
           const schema = await resolve(property.entity!);
-          if (schema.natural_sort) {
+          if (schema.natural_sort?.length) {
             reqProps = schema.natural_sort.map((prop) => column + '.' + prop);
           } else {
-            const idProperty = schema.unique_identifier || 'id';
+            const idProperty = schema.unique_identifier;
             reqProps = [column + '.' + idProperty];
           }
         } else {

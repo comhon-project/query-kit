@@ -323,7 +323,7 @@ async function isPropertySortable(schemaId: string, path: string): Promise<boole
     const relatedEntityId = lastProperty.relationship_type !== 'morph_to' ? lastProperty.entity : null;
     if (relatedEntityId) {
       const schema = await resolve(relatedEntityId);
-      return !!(schema.natural_sort || schema.unique_identifier);
+      return !!(schema.natural_sort?.length || schema.unique_identifier);
     }
     return true;
   } catch {

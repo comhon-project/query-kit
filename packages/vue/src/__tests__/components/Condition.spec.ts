@@ -126,7 +126,7 @@ describe('Condition', () => {
     expect(wrapper.text()).toContain('invalid_op');
   });
 
-  it('shows InvalidType for country property (choice type)', async () => {
+  it('shows InvalidType for country property (country type)', async () => {
     const filter: ConditionFilter = reactive({
       type: 'condition',
       property: 'country',
@@ -137,7 +137,7 @@ describe('Condition', () => {
     await flushAll();
 
     expect(wrapper.findComponent(InvalidType).exists()).toBe(true);
-    expect(wrapper.text()).toContain('choice');
+    expect(wrapper.text()).toContain('country');
   });
 
   it('emits remove when delete button clicked', async () => {

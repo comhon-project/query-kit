@@ -259,12 +259,10 @@ describe('Collection', () => {
     expect(postRequest).toHaveBeenCalledWith(sampleRows);
   });
 
-  it('includes relationship properties (unique_identifier + primary_identifiers) in request', async () => {
-    const { calls } = mountCollection({ columns: ['company'] });
+  it('includes column names as-is in request properties', async () => {
+    const { calls } = mountCollection({ columns: ['first_name', 'age', 'company', 'metadata.label', 'unknown_prop'] });
     await flushAll();
-    // company is belongs_to organization: unique_identifier=id, primary_identifiers=[brand_name]
-    expect(calls[0].properties).toContain('company.id');
-    expect(calls[0].properties).toContain('company.brand_name');
+    expect(calls[0].properties).toEqual(['first_name', 'age', 'company', 'metadata.label']);
   });
 
   it('updates static translations when locale changes', async () => {

@@ -2,6 +2,7 @@
 import { markRaw, ref, watch } from 'vue';
 import CellFirstName from './components/CellFirstName.vue';
 import { locale, getEntityTranslation } from '@query-kit/vue';
+import { generateRow } from './core/MockDataGenerator';
 
 const entity = ref('user');
 const displayOperator = ref({
@@ -14,6 +15,7 @@ const columns = ref([
   'last_name',
   'weight',
   'age',
+  'country',
   'gender',
   'married',
   'favorite_fruits',
@@ -252,13 +254,10 @@ async function completeCollection(collection) {
   for (const row of collection) {
     if (row['company.description']) {
       // flattened
-      row['company.description'] += ' <span style="color: blue">lalala</span>';
+      row['company.description'] += ' <span style="color: blue">[*]</span>';
     } else if (row.company) {
       // not flattened
-      row.company.description += ' <span style="color: blue">lalala</span>';
-    }
-    if (row['first_name']) {
-      row['first_name'] += ' hehe';
+      row.company.description += ' <span style="color: blue">[*]</span>';
     }
   }
 }
@@ -277,44 +276,7 @@ let requester = {
     const limit = query.page >= lastPage ? queryLimit - 1 : queryLimit;
     const collection = [];
     for (let index = 0; index < limit; index++) {
-      const element = {};
-      for (const name of query.properties) {
-        let leafProperty = name.replaceAll('friend.', '');
-        leafProperty = leafProperty.replaceAll('company.', '');
-        switch (leafProperty) {
-          case 'birth_date':
-            element[name] = '2023-01-03T20:45:04Z';
-            break;
-          case 'birth_day':
-            element[name] = '2023-01-03';
-            break;
-          case 'birth_hour':
-            element[name] = '20:45:04';
-            break;
-          case 'gender':
-            element[name] = Math.random() > 0.5 ? 'male' : 'female';
-            break;
-          case 'married':
-            element[name] = Math.random() > 0.5 ? true : false;
-            break;
-          case 'weight':
-          case 'age':
-            element[name] = Math.floor(Math.random() * 100);
-            break;
-          case 'favorite_fruits': {
-            const count = Math.floor(Math.random() * 10);
-            element[name] = [];
-            for (let index = 0; index < count; index++) {
-              element[name].push(Math.floor(Math.random() * 3 + 1));
-            }
-            break;
-          }
-          default:
-            element[name] = name + Math.random().toString(36);
-            break;
-        }
-      }
-      collection.push(element);
+      collection.push(generateRow(query.entity, query.properties, true));
     }
     return new Promise((resolve) => {
       setTimeout(() => {

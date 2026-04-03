@@ -56,7 +56,7 @@ export default {
     {
       id: 'country',
       name: 'the country',
-      type: 'choice',
+      type: 'country',
     },
     {
       id: 'favorite_fruits',
