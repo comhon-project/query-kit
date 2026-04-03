@@ -67,7 +67,6 @@ export interface RequestResponse {
 /** Requester interface */
 export interface Requester {
   request: (params: RequestParams) => Promise<RequestResponse>;
-  flattened?: boolean;
 }
 
 export type RequesterFunction = (params: RequestParams) => Promise<RequestResponse>;
@@ -209,5 +208,4 @@ export interface CollectionConfig {
   displayCount: boolean;
   editColumns: boolean;
   allowedCollectionTypes: CollectionType[];
-  isResultFlattened: boolean;
 }

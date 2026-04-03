@@ -563,25 +563,6 @@ describe('Collection', () => {
     });
   });
 
-  describe('flattened requester', () => {
-    it('detects flattened requester correctly', async () => {
-      const { requester: flatRequester } = createMockRequester({ collection: sampleRows, count: 2 });
-      wrapper = mountWithPlugin(Collection, {
-        props: {
-          entity: 'user',
-          limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
-          requester: { request: (flatRequester as any).request, flattened: true },
-        },
-      });
-      await flushAll();
-
-      const collectionVm = wrapper.vm as any;
-      expect(collectionVm.config.isResultFlattened).toBe(true);
-    });
-  });
-
   describe('infinite scroll behavior', () => {
     it('sets end when server returns fewer items than limit', async () => {
       const { requester } = createMockRequester({ collection: [sampleRows[0]], count: 1 });

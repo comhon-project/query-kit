@@ -188,7 +188,6 @@ function setNested(row: Record<string, unknown>, path: string, value: unknown): 
 export function generateRow(
   rootEntityId: string,
   columnIds: string[],
-  flattened: boolean,
 ): Record<string, unknown> {
   const row: Record<string, unknown> = {};
 
@@ -202,21 +201,10 @@ export function generateRow(
       const targetEntityId = property.entity;
       if (!targetEntityId) continue;
       const data = generateEntityData(targetEntityId, rootSchema);
-
-      if (flattened) {
-        for (const [key, value] of Object.entries(data)) {
-          row[columnId + '.' + key] = value;
-        }
-      } else {
-        setNested(row, columnId, data);
-      }
+      setNested(row, columnId, data);
     } else {
       const value = generateValue(property);
-      if (flattened) {
-        row[columnId] = value;
-      } else {
-        setNested(row, columnId, value);
-      }
+      setNested(row, columnId, value);
     }
   }
 

@@ -130,7 +130,7 @@ createApp(App)
         const limit = query.offset > lastCompleteBulk * queryLimit ? queryLimit - 1 : queryLimit;
         const collection = [];
         for (let index = 0; index < limit; index++) {
-          collection.push(generateRow(query.entity, query.properties, false));
+          collection.push(generateRow(query.entity, query.properties));
         }
         console.log(structuredClone(collection));
         return new Promise((resolve) => {
@@ -143,7 +143,6 @@ createApp(App)
           }, 1000);
         });
       },
-      flattened: false,
     },
   })
   .mount('#app');

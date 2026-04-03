@@ -98,10 +98,6 @@ const activeRequester = computed<Requester | RequesterFunction>(() => {
   return requester;
 });
 
-const isResultFlattened = computed<boolean>(() => {
-  return typeof activeRequester.value == 'object' ? !!activeRequester.value.flattened : false;
-});
-
 const computedColumns = computed<string[]>(() => Object.keys(columnsProperties.value));
 
 const showInfiniteScrollObserver = computed(() => {
@@ -358,7 +354,6 @@ watchEffect(() => {
   config.displayCount = props.displayCount ?? globalConfig.displayCount;
   config.editColumns = props.editColumns ?? globalConfig.editColumns;
   config.allowedCollectionTypes = props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes;
-  config.isResultFlattened = isResultFlattened.value;
 });
 watchEffect(() => {
   limit.value = props.limit ?? globalConfig.limit;
@@ -450,7 +445,6 @@ watch(
                 :renderer="customColumns?.[columnId]?.renderer"
                 :user-timezone="config.userTimezone"
                 :request-timezone="config.requestTimezone"
-                :flattened="config.isResultFlattened"
                 @click="customColumns?.[columnId]?.onCellClick"
               />
             </template>

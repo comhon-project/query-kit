@@ -252,11 +252,7 @@ function printRow(object) {
 
 async function completeCollection(collection) {
   for (const row of collection) {
-    if (row['company.description']) {
-      // flattened
-      row['company.description'] += ' <span style="color: blue">[*]</span>';
-    } else if (row.company) {
-      // not flattened
+    if (row.company) {
       row.company.description += ' <span style="color: blue">[*]</span>';
     }
   }
@@ -276,7 +272,7 @@ let requester = {
     const limit = query.page >= lastPage ? queryLimit - 1 : queryLimit;
     const collection = [];
     for (let index = 0; index < limit; index++) {
-      collection.push(generateRow(query.entity, query.properties, true));
+      collection.push(generateRow(query.entity, query.properties));
     }
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -288,7 +284,6 @@ let requester = {
       }, 1000);
     });
   },
-  flattened: true,
 };
 
 const page = ref(3);

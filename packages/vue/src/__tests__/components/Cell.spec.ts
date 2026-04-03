@@ -43,14 +43,6 @@ describe('Cell', () => {
     expect(wrapper.find('td').text()).toBe('John');
   });
 
-  it('renders a flattened value directly from rowValue', () => {
-    const property = userSchema.getProperty('first_name');
-    wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property, flattened: true },
-    });
-    expect(wrapper.find('td').text()).toBe('John');
-  });
-
   it('renders a nested value via getNestedValue', () => {
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {

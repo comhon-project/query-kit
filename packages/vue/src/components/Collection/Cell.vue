@@ -13,7 +13,6 @@ interface Props {
   requestTimezone: string;
   userTimezone: string;
   property?: Property;
-  flattened?: boolean;
   renderer?: Component | RenderFunction | string;
   onClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
 }
@@ -30,9 +29,7 @@ const cellComponent = computed<Component | string | null>(() => {
 
 const value = computed<unknown>(() => {
   let cellValue: unknown = props.property
-    ? props.flattened
-      ? props.rowValue[props.columnId]
-      : getNestedValue(props.rowValue, props.columnId)
+    ? getNestedValue(props.rowValue, props.columnId)
     : undefined;
 
   if (typeof renderer.value == 'function') {

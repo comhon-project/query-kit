@@ -251,18 +251,18 @@ describe('Renderers', () => {
       expect(wrapper.text()).toBe('');
     });
 
-    it('uses dot notation from rowValue when value is null', async () => {
+    it('renders nothing when value is null', async () => {
       const wrapper = mount(EntityRenderer, {
         props: baseProps({
           columnId: 'company',
           value: null,
-          rowValue: { 'company.brand_name': 'Acme Corp', 'company.id': 1 },
+          rowValue: { company: { brand_name: 'Acme Corp', id: 1 } },
           property: { id: 'company', type: 'relationship', owner: 'user', entity: 'organization' },
         }),
       });
 
       await flushPromises();
-      expect(wrapper.text()).toBe('Acme Corp');
+      expect(wrapper.text()).toBe('');
     });
   });
 

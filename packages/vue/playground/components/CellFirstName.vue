@@ -34,13 +34,9 @@ function cellAlert(e) {
   e.stopPropagation();
   alert(
     '|| ' +
-      props.rowValue['company.id'] + // flattened
+      props.rowValue?.company?.id +
       ' - ' +
-      props.rowValue['company.brand_name'] + // flattened
-      ' ||\n|| ' +
-      props.rowValue?.company?.id + // not flattened
-      ' - ' +
-      props.rowValue?.company?.brand_name + // not flattened
+      props.rowValue?.company?.brand_name +
       ' || ',
   );
 }

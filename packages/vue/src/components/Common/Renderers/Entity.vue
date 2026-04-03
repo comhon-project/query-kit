@@ -8,19 +8,11 @@ const props = defineProps<CellRendererProps>();
 const schema = ref<EntitySchema | null>(null);
 
 const computedValue = computed<unknown>(() => {
-  if (!schema.value) return null;
-  const idProp = schema.value.unique_identifier || 'id';
+  if (!schema.value || !props.value) return null;
+  const value = props.value as Record<string, unknown>;
   return schema.value.primary_identifiers
-    ? schema.value.primary_identifiers
-        .map((property: string) => {
-          const object = (props.value || props.rowValue) as Record<string, unknown>;
-          const key = props.value ? property : props.columnId + '.' + property;
-          return object[key];
-        })
-        .join(' ')
-    : props.value
-    ? (props.value as Record<string, unknown>)[idProp]
-    : props.rowValue[props.columnId + '.' + idProp];
+    ? schema.value.primary_identifiers.map((property: string) => value[property]).join(' ')
+    : value[schema.value.unique_identifier ?? ''];
 });
 
 onBeforeMount(async () => {
