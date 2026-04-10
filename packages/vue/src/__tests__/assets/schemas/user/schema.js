@@ -82,8 +82,15 @@ export default {
       entity: 'user',
     },
     {
-      id: 'commentable',
-      name: 'commentable',
+      id: 'favorite_client',
+      name: 'favorite client',
+      type: 'relationship',
+      relationship_type: 'morph_to',
+      entities: ['user', 'organization'],
+    },
+    {
+      id: 'worst_client',
+      name: 'worst client',
       type: 'relationship',
       relationship_type: 'morph_to',
     },

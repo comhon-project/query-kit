@@ -88,8 +88,8 @@ describe('EntityAction', () => {
       property: 'company',
       key: 3,
     });
-    // Use allowedProperties to restrict organization to no properties
-    mountAction(filter, { allowedProperties: { organization: [] } });
+    // Use allowedProperties and allowedScopes to restrict organization to nothing
+    mountAction(filter, { allowedProperties: { organization: [] }, allowedScopes: { organization: [] } });
     await flushAll();
 
     const addButtons = wrapper.findAllComponents(IconButton).filter((btn) => {

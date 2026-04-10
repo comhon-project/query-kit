@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeMount, ref } from 'vue';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
+import { getNestedValue } from '@core/Utils';
 import type { CellRendererProps } from '@core/types';
 
 const props = defineProps<CellRendererProps>();
@@ -16,7 +17,9 @@ const computedValue = computed<unknown>(() => {
 });
 
 onBeforeMount(async () => {
-  const entityId = props.property.entity;
+  const entityId = props.property.relationship_type === 'morph_to'
+    ? getNestedValue(props.rowValue, props.columnId + '_type') as string | undefined
+    : props.property.entity;
   if (entityId) {
     schema.value = await resolve(entityId);
   }

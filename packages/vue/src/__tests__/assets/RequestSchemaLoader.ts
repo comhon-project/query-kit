@@ -3,7 +3,7 @@ import type { RequestSchema } from '@core/RequestSchema';
 const requestSchemas: Record<string, RequestSchema> = {
   user: {
     filtrable: {
-      properties: ['first_name', 'last_name', 'age', 'gender', 'married', 'birth_date', 'company', 'favorite_fruits', 'metadata'],
+      properties: ['first_name', 'last_name', 'age', 'gender', 'married', 'birth_date', 'company', 'favorite_fruits', 'favorite_client', 'worst_client', 'metadata'],
       scopes: ['scope', 'string_scope', 'datetime_scope', 'enum_scope'],
     },
     sortable: ['first_name', 'last_name', 'age', 'metadata'],
@@ -26,8 +26,8 @@ const requestSchemas: Record<string, RequestSchema> = {
   },
   organization: {
     filtrable: {
-      properties: ['brand_name'],
-      scopes: [],
+      properties: ['brand_name', 'country'],
+      scopes: ['scope'],
     },
     sortable: ['brand_name'],
   },

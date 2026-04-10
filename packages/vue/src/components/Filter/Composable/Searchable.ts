@@ -24,7 +24,8 @@ const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchem
   watchEffect(async () => {
     const entity = props.entitySchema.id;
     const filter = config.allowedProperties?.[entity];
-    let propertyNames = await getFiltrableProperties(entity);
+    const schemaPropertyIds = props.entitySchema.properties.map((p) => p.id);
+    let propertyNames = (await getFiltrableProperties(entity)).filter((name) => schemaPropertyIds.includes(name));
     if (propertyNames.length && filter) {
       propertyNames = propertyNames.filter((value) => filter.includes(value));
     }
@@ -56,7 +57,8 @@ const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchem
   watchEffect(async () => {
     const entity = props.entitySchema.id;
     const filter = config.allowedScopes?.[entity];
-    let scopeIds = await getFiltrableScopes(entity);
+    const schemaScopeIds = props.entitySchema.scopes.map((s) => s.id);
+    let scopeIds = (await getFiltrableScopes(entity)).filter((id) => schemaScopeIds.includes(id));
     if (scopeIds.length && filter) {
       scopeIds = scopeIds.filter((scopeId) => filter.includes(scopeId));
     }
@@ -75,6 +77,7 @@ const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchem
   });
 
   const searchableComputedScopes = computed((): ComputedScope[] => {
+    if (props.entitySchema.intersection) return [];
     const entity = props.entitySchema.id;
     const scopes = getComputedScopes(entity);
     if (!scopes.length) {

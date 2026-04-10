@@ -63,10 +63,10 @@ describe('FilterPicker', () => {
     await flushAll();
 
     const options = wrapper.findAll('select option');
-    // user filtrable properties: first_name, last_name, age, gender, married, birth_date, company, favorite_fruits, metadata
+    // user filtrable properties: first_name, last_name, age, gender, married, birth_date, company, favorite_fruits, favorite_client, worst_client, metadata
     // user filtrable scopes: scope, string_scope, datetime_scope, enum_scope
-    // total = 9 properties + 4 scopes = 13
-    expect(options.length).toBe(13);
+    // total = 11 properties + 4 scopes = 15
+    expect(options.length).toBe(15);
   });
 
   it('defaults to condition radio selected', async () => {

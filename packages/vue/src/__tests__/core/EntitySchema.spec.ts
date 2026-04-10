@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import {
   resolve,
+  resolveIntersection,
   registerLoader,
   registerTranslationsLoader,
   getPropertyPath,
@@ -90,17 +91,6 @@ describe('resolve()', () => {
 // 3. compute() (via resolve) - schema transformation
 // ---------------------------------------------------------------------------
 describe('compute() via resolve()', () => {
-  it('filters out morph_to relationships', async () => {
-    // The user schema has no morph_to properties, so all 15 properties should be present
-    const schema = await resolve('user');
-    expect(schema.properties).toHaveLength(15);
-
-    // Verify no morph_to properties exist in the computed schema
-    for (const property of schema.properties) {
-      expect(property.relationship_type).not.toBe('morph_to');
-    }
-  });
-
   it('handles object scope definitions with parameters', async () => {
     const schema = await resolve('user');
     const scope = schema.getScope('string_scope');
@@ -186,6 +176,21 @@ describe('compute() via resolve()', () => {
         type: 'relationship',
         relationship_type: 'belongs_to',
         entity: 'user',
+        owner: 'user',
+      },
+      favorite_client: {
+        id: 'favorite_client',
+        name: 'favorite client',
+        type: 'relationship',
+        relationship_type: 'morph_to',
+        entities: ['user', 'organization'],
+        owner: 'user',
+      },
+      worst_client: {
+        id: 'worst_client',
+        name: 'worst client',
+        type: 'relationship',
+        relationship_type: 'morph_to',
         owner: 'user',
       },
       metadata: {
@@ -381,7 +386,7 @@ describe('isPropertySortable()', () => {
     registerRequestLoader({
       load: async (entityId) => ({
         sortable: ({
-          user: ['first_name', 'last_name', 'age', 'company', 'metadata', 'commentable'],
+          user: ['first_name', 'last_name', 'age', 'company', 'metadata'],
           'user.metadata': ['label', 'address', 'description'],
           'user.address': ['city', 'zip'],
           organization: ['brand_name', 'address'],
@@ -446,14 +451,70 @@ describe('isPropertySortable()', () => {
     expect(result).toBe(true);
   });
 
-  it('returns false for morph_to relationship', async () => {
-    const result = await isPropertySortable('user', 'commentable');
+  it('returns false for morph_to relationship with entities', async () => {
+    const result = await isPropertySortable('user', 'favorite_client');
+    expect(result).toBe(false);
+  });
+
+  it('returns false for morph_to relationship without entities', async () => {
+    const result = await isPropertySortable('user', 'worst_client');
     expect(result).toBe(false);
   });
 });
 
 // ---------------------------------------------------------------------------
-// 6. getLeafTypeContainer()
+// 6. resolveIntersection()
+// ---------------------------------------------------------------------------
+describe('resolveIntersection()', () => {
+  it('returns the schema directly when only one entity', async () => {
+    const schema = await resolveIntersection(['user']);
+    const userSchema = await resolve('user');
+    expect(schema).toBe(userSchema);
+  });
+
+  it('returns intersection of properties with same id and type', async () => {
+    const schema = await resolveIntersection(['user', 'organization']);
+    const ids = schema.properties.map((p) => p.id);
+    // Common properties: id (string), country (country)
+    expect(ids).toContain('id');
+    expect(ids).toContain('country');
+    // Properties only in user
+    expect(ids).not.toContain('first_name');
+    expect(ids).not.toContain('age');
+    // Properties only in organization
+    expect(ids).not.toContain('brand_name');
+  });
+
+  it('excludes properties with same id but different type', async () => {
+    const schema = await resolveIntersection(['user', 'organization']);
+    const ids = schema.properties.map((p) => p.id);
+    // 'address' is 'object' in user.metadata but 'string' in organization — not a direct user property
+    // 'description' is not in user root either
+    expect(ids).not.toContain('description');
+  });
+
+  it('returns intersection of scopes with matching parameters', async () => {
+    const schema = await resolveIntersection(['user', 'organization']);
+    const scopeIds = schema.scopes.map((s) => s.id);
+    // 'scope' exists in both with empty parameters
+    expect(scopeIds).toContain('scope');
+    // 'string_scope' only in user
+    expect(scopeIds).not.toContain('string_scope');
+  });
+
+  it('marks the schema as intersection', async () => {
+    const schema = await resolveIntersection(['user', 'organization']);
+    expect(schema.intersection).toBe(true);
+  });
+
+  it('uses the first entity id', async () => {
+    const schema = await resolveIntersection(['user', 'organization']);
+    expect(schema.id).toBe('user');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. getLeafTypeContainer()
 // ---------------------------------------------------------------------------
 describe('getLeafTypeContainer()', () => {
   it('returns the same container for a non-array type', () => {

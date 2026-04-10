@@ -67,6 +67,7 @@ export default {
   invalid_operator: 'অবৈধ অপারেটর:',
   invalid_entity: 'অবৈধ সত্তা:',
   invalid_type: 'অবৈধ ধরন:',
+  entities: 'সত্তা',
   reorder: 'পুনর্বিন্যাস করুন',
   column_grabbed: 'ধরা হয়েছে, তীর কী দিয়ে সরান, স্পেস দিয়ে ছাড়ুন',
   column_moved: 'অবস্থানে সরানো হয়েছে',

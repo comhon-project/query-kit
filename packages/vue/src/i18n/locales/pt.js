@@ -67,6 +67,7 @@ export default {
   invalid_operator: 'operador inválido:',
   invalid_entity: 'entidade inválida:',
   invalid_type: 'tipo inválido:',
+  entities: 'entidades',
   reorder: 'reordenar',
   column_grabbed: 'agarrado, use as setas para mover, Espaço para soltar',
   column_moved: 'movido para a posição',

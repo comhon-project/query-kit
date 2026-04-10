@@ -30,6 +30,7 @@ export interface RawProperty extends ArrayableTypeContainer {
   name?: string;
   relationship_type?: 'belongs_to' | 'has_one' | 'has_many' | 'belongs_to_many' | 'morph_to' | 'morph_to_many';
   entity?: string;
+  entities?: string[];
 }
 
 export interface RawInlineEntitySchema {
@@ -85,6 +86,7 @@ export class EntitySchema {
     readonly unique_identifier?: string,
     readonly primary_identifiers?: string[],
     readonly natural_sort?: string[],
+    readonly intersection: boolean = false,
   ) {}
 
   getProperty(id: string): Property {
@@ -219,7 +221,6 @@ function buildEntitySchema(
   const scopes: Scope[] = [];
 
   for (const rawProperty of raw.properties) {
-    if (rawProperty.relationship_type === 'morph_to') continue;
     const property: Property = { ...structuredClone(rawProperty), owner: id };
     properties.push(property);
     mapProperties[property.id] = property;
@@ -320,12 +321,11 @@ async function isPropertySortable(schemaId: string, path: string): Promise<boole
       }
     }
     const lastProperty = propertyPath[propertyPath.length - 1];
-    const relatedEntityId = lastProperty.relationship_type !== 'morph_to' ? lastProperty.entity : null;
-    if (relatedEntityId) {
-      const schema = await resolve(relatedEntityId);
+    if (lastProperty.entity) {
+      const schema = await resolve(lastProperty.entity);
       return !!(schema.natural_sort?.length || schema.unique_identifier);
     }
-    return true;
+    return lastProperty.relationship_type !== 'morph_to';
   } catch {
     return false;
   }
@@ -366,6 +366,55 @@ const resolve = (id: string): Promise<EntitySchema> => {
   return computedSchemas[id];
 };
 
+function matchTypeContainer(a: ArrayableTypeContainer, b: ArrayableTypeContainer): boolean {
+  if (a.type !== b.type || a.enum !== b.enum) return false;
+  if (a.items && b.items) return matchTypeContainer(a.items, b.items);
+  return !a.items && !b.items;
+}
+
+function matchScopeParameters(a?: ScopeParameter[], b?: ScopeParameter[]): boolean {
+  if (!a && !b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((param, i) => param.id === b[i].id && matchTypeContainer(param, b[i]));
+}
+
+const resolveIntersection = async (entityIds: string[]): Promise<EntitySchema> => {
+  const schemas = await Promise.all(entityIds.map(resolve));
+  if (schemas.length === 1) return schemas[0];
+
+  const firstSchema = schemas[0];
+  const properties: Property[] = [];
+  const mapProperties: Record<string, Property> = {};
+  const scopes: Scope[] = [];
+  const mapScopes: Record<string, Scope> = {};
+
+  for (const [id, property] of Object.entries(firstSchema.mapProperties)) {
+    if (schemas.every((s) => s.mapProperties[id] && matchTypeContainer(s.mapProperties[id], property))) {
+      properties.push(property);
+      mapProperties[id] = property;
+    }
+  }
+
+  for (const [id, scope] of Object.entries(firstSchema.mapScopes)) {
+    if (schemas.every((s) => s.mapScopes[id] && matchScopeParameters(s.mapScopes[id].parameters, scope.parameters))) {
+      scopes.push(scope);
+      mapScopes[id] = scope;
+    }
+  }
+
+  return new EntitySchema(
+    firstSchema.id,
+    properties,
+    mapProperties,
+    scopes,
+    mapScopes,
+    undefined,
+    undefined,
+    undefined,
+    true,
+  );
+};
+
 const getLeafTypeContainer = (container: ArrayableTypeContainer): TypeContainer => {
   while (container.type === 'array' && container.items) {
     container = container.items;
@@ -386,6 +435,7 @@ export {
   registerLoader,
   registerTranslationsLoader,
   resolve,
+  resolveIntersection,
   getPropertyPath,
   isPropertySortable,
   getEntityTranslation,

@@ -125,16 +125,14 @@ describe('useSearchable', () => {
       expect(sp2.value).toEqual([relProp]);
     });
 
-    it('reports invalid properties (PropertyNotFoundError)', async () => {
+    it('ignores filtrable properties not in entity schema', async () => {
       const schema = makeSchema([]); // no properties defined
 
       const { searchableProperties, invalidProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableProperties.value).toEqual([]);
-      expect(invalidProperties.value).toContain('first_name');
-      expect(invalidProperties.value).toContain('last_name');
-      expect(invalidProperties.value.length).toBeGreaterThan(0);
+      expect(invalidProperties.value).toEqual([]);
     });
   });
 
@@ -161,15 +159,14 @@ describe('useSearchable', () => {
       expect(searchableScopes.value).toEqual([s1]);
     });
 
-    it('reports invalid scopes', async () => {
+    it('ignores filtrable scopes not in entity schema', async () => {
       const schema = makeSchema([], []); // no scopes defined
 
       const { searchableScopes, invalidScopes } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableScopes.value).toEqual([]);
-      expect(invalidScopes.value).toContain('scope');
-      expect(invalidScopes.value.length).toBeGreaterThan(0);
+      expect(invalidScopes.value).toEqual([]);
     });
   });
 

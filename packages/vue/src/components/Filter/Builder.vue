@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, watch, watchEffect, toRaw, onUnmounted, provide } from 'vue';
-import { resolve, type EntitySchema, type Scope } from '@core/EntitySchema';
+import { resolve, resolveIntersection, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getUniqueId } from '@core/Utils';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -196,8 +196,13 @@ async function getComputedFilter(): Promise<GroupFilter> {
     if (currentFilter.type == 'entity_condition') {
       if (currentFilter.filter) {
         const property = currentSchema.getProperty(currentFilter.property);
-        const schemaId = property.entity!;
-        const childSchema = await resolve(schemaId);
+        if (property.relationship_type === 'morph_to' && !currentFilter.entities?.length) {
+          throw new Error(`morph_to "${property.id}" should not have a filter without entities`);
+        }
+        const childSchema = property.relationship_type === 'morph_to'
+          ? await resolveIntersection(currentFilter.entities!)
+          : await resolve(property.entity!);
+
         if (mustKeepFilter(currentFilter.filter, childSchema)) {
           stack.push([currentFilter.filter, childSchema]);
         } else {

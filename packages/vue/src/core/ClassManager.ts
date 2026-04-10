@@ -18,9 +18,11 @@ export type ClassName =
   | 'scope_parameters'
   | 'scope_parameter'
   | 'error_message'
+  | 'error_message_bag'
   | 'entity_condition_container'
   | 'entity_condition_queue'
   | 'entity_condition_queue_item'
+  | 'entity_details'
   | 'btn'
   | 'btn_primary'
   | 'btn_danger'
@@ -70,9 +72,11 @@ const classList: ClassList = {
   scope_parameters: 'qkit-scope-parameters',
   scope_parameter: 'qkit-scope-parameter',
   error_message: 'qkit-error-message',
+  error_message_bag: 'qkit-error-message-bag',
   entity_condition_container: 'qkit-leaf-filter qkit-entity-condition-container',
   entity_condition_queue: 'qkit-entity-condition-queue',
   entity_condition_queue_item: 'qkit-entity-condition-queue-item',
+  entity_details: 'qkit-entity-details',
   btn: 'qkit-btn',
   btn_primary: 'qkit-btn qkit-btn-primary',
   btn_danger: 'qkit-btn qkit-btn-danger',

@@ -405,7 +405,9 @@ watch(
         </div>
       </div>
     </div>
-    <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
+    <div v-if="invalidColumns.length" :class="classes.error_message_bag">
+      <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
+    </div>
     <Transition name="qkit-collection-loading">
       <div v-if="requesting" :class="classes.loading" :position="infiniteScroll && page > 1 ? 'bottom' : 'top'">
         <Icon icon="loading" />

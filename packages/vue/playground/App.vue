@@ -30,6 +30,7 @@ const columns = ref([
   'friend.invalid_column_test',
   'no_property',
   'profile.address.city',
+  'worst_client',
 ]);
 
 const customColumns = ref({

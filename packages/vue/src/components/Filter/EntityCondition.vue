@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, type Component } from 'vue';
-import { resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
+import { resolve, resolveIntersection, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import ChildGroup from '@components/Filter/ChildGroup.vue';
 import Condition from '@components/Filter/Condition.vue';
 import Scope from '@components/Filter/Scope.vue';
@@ -47,13 +47,17 @@ const queue = ref<QueueElement[] | null>(null);
 const endQueueFilter = ref<ConditionFilter | ScopeFilter | GroupFilter | null | undefined>(null);
 const endQueuePropertySchema = ref<EntitySchema | null>(null);
 
-const endQueuePropertySchemaId = computed<string>(() => {
+function resolveEndQueueSchema(): Promise<EntitySchema> {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
   const lastQueueElement = queue.value[queue.value.length - 1];
+  const entities = lastQueueElement.value.entities;
+  if (entities?.length) {
+    return resolveIntersection(entities);
+  }
   const lastQueueSchema = lastQueueElement.schema;
   const property = lastQueueSchema.getProperty(lastQueueElement.value.property);
-  return property.entity!;
-});
+  return resolve(property.entity!);
+}
 
 const canAddFilter = computed<boolean>(() => {
   if (!queue.value?.length) return false;
@@ -77,7 +81,7 @@ const endQueueComponent = computed<Component | null>(() => {
 
 async function addFilter(filter: Filter): Promise<void> {
   if (!queue.value?.length) throw new Error('should not be called when queue is empty');
-  const resolvedSchema = await resolve(endQueuePropertySchemaId.value);
+  const resolvedSchema = await resolveEndQueueSchema();
 
   queue.value[queue.value.length - 1].value.filter = filter;
   if (filter.type == 'entity_condition') {
@@ -87,7 +91,9 @@ async function addFilter(filter: Filter): Promise<void> {
       schema: resolvedSchema,
     });
     const addedProperty = resolvedSchema.getProperty(filter.property);
-    endQueuePropertySchema.value = await resolve(addedProperty.entity!);
+    endQueuePropertySchema.value = addedProperty.relationship_type === 'morph_to'
+      ? (filter.entities?.length ? await resolveIntersection(filter.entities) : null)
+      : await resolve(addedProperty.entity!);
   } else {
     endQueueFilter.value = filter;
   }
@@ -137,15 +143,22 @@ async function setChild(schema: EntitySchema): Promise<void> {
     }
     childAriaLabelProperty.value = property;
 
-    if (property.relationship_type == 'morph_to') {
-      throw new Error('not handle morph_to relationship');
+    const isMorphToWithoutEntities = property.relationship_type === 'morph_to'
+      && (!childFilter.entities?.length || !property.entities?.length);
+    if (isMorphToWithoutEntities) {
+      childFilter.filter = undefined;
+      queue.value = tempQueue;
+      endQueueFilter.value = null;
+      endQueuePropertySchema.value = null;
+      return;
     }
 
-    const childSchemaId = property.entity!;
     try {
-      childSchema = await resolve(childSchemaId);
+      childSchema = property.relationship_type === 'morph_to'
+        ? await resolveIntersection(childFilter.entities!)
+        : await resolve(property.entity!);
     } catch {
-      invalidEntity.value = childSchemaId;
+      invalidEntity.value = property.entity ?? childFilter.entities?.join(', ')!;
       return;
     }
     childFilter = childFilter.filter;

@@ -110,6 +110,19 @@ export default {
       entity: 'car',
     },
     {
+      id: 'favorite_client',
+      name: 'favorite client',
+      type: 'relationship',
+      relationship_type: 'morph_to',
+      entities: ['user', 'organization'],
+    },
+    {
+      id: 'worst_client',
+      name: 'worst client',
+      type: 'relationship',
+      relationship_type: 'morph_to',
+    },
+    {
       id: 'profile',
       name: 'profile',
       type: 'object',

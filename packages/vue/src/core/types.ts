@@ -117,6 +117,7 @@ export interface GroupFilter extends BaseFilter, WithOperator {
 export interface EntityConditionFilter extends BaseFilter, WithOperator {
   type: 'entity_condition';
   property: string;
+  entities?: string[];
   filter?: Filter;
 }
 

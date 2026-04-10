@@ -57,6 +57,8 @@ describe('RequestSchema', () => {
         'birth_date',
         'company',
         'favorite_fruits',
+        'favorite_client',
+        'worst_client',
         'metadata',
       ]);
     });

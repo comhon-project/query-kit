@@ -23,6 +23,11 @@ export default {
       type: 'html',
     },
     {
+      id: 'country',
+      name: 'the country',
+      type: 'country',
+    },
+    {
       id: 'contacts',
       name: 'the contacts',
       type: 'relationship',
@@ -32,4 +37,10 @@ export default {
   ],
   unique_identifier: 'id',
   primary_identifiers: ['brand_name'],
+  scopes: [
+    {
+      id: 'scope',
+      parameters: [],
+    },
+  ],
 };

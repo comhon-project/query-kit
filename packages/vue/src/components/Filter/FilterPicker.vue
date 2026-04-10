@@ -81,6 +81,7 @@ function validate(): void {
           type: 'entity_condition',
           operator: operators[0],
           property: target,
+          ...(property.relationship_type === 'morph_to' ? { entities: [] } : {}),
         };
       } else {
         const operators = getConditionOperators(property, config.allowedOperators);
@@ -121,8 +122,10 @@ function submitForm(): void {
 <template>
   <Modal v-model:show="show" @confirm="submitForm" @closed="onClosed">
     <template #body>
-      <InvalidProperty v-for="name in invalidProperties" :key="name" :property="name" />
-      <InvalidScope v-for="id in invalidScopes" :key="id" :id="id" />
+      <div v-if="invalidProperties.length || invalidScopes.length" :class="classes.error_message_bag">
+        <InvalidProperty v-for="name in invalidProperties" :key="name" :property="name" />
+        <InvalidScope v-for="id in invalidScopes" :key="id" :id="id" />
+      </div>
       <form ref="form" :class="classes.filter_picker" @submit.prevent="validate">
         <fieldset>
           <legend :class="classes.sr_only">{{ translate('choose_condition_element') }}</legend>

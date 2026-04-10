@@ -67,6 +67,7 @@ export default {
   invalid_operator: '无效运算符：',
   invalid_entity: '无效实体：',
   invalid_type: '无效类型：',
+  entities: '实体',
   reorder: '重新排序',
   column_grabbed: '已抓取，使用方向键移动，空格键放下',
   column_moved: '已移动到位置',

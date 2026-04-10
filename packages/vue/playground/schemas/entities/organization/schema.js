@@ -27,6 +27,12 @@ export default {
       nullable: true,
     },
     {
+      id: "country",
+      name: "the country",
+      type: "country",
+      nullable: true,
+    },
+    {
       id: "contacts",
       name: "the contacts",
       type: "relationship",
@@ -43,5 +49,10 @@ export default {
   ],
   unique_identifier: "id",
   primary_identifiers: ["brand_name"],
-  scopes: [],
+  scopes: [
+    {
+      id: "scope",
+      parameters: [],
+    },
+  ],
 };

@@ -3,6 +3,7 @@ import { computed, inject, watch } from 'vue';
 import { getPropertyTranslation, type EntitySchema } from '@core/EntitySchema';
 import { useFilterWithOperator } from '@components/Filter/Composable/FilterWithOperator';
 import AdaptativeSelect from '@components/Common/AdaptativeSelect.vue';
+import SelectEntities from '@components/Common/SelectEntities.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { type EntityConditionFilter } from '@core/types';
@@ -24,6 +25,13 @@ const config = inject(builderConfigKey)!;
 const { canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
 const property = computed(() => props.entitySchema.getProperty(props.modelValue.property));
 const label = computed<string>(() => getPropertyTranslation(property.value));
+const isMorphToWithEntities = computed(() => property.value.relationship_type === 'morph_to' && !!property.value.entities?.length);
+
+function onEntitiesUpdate(value: string[]): void {
+  props.modelValue.entities = value;
+  props.modelValue.filter = undefined;
+  emit('truncate');
+}
 
 watch(
   () => props.modelValue.operator,
@@ -52,5 +60,11 @@ watch(
     <span :class="classes.property_label">
       {{ label }}
     </span>
+    <SelectEntities
+      v-if="isMorphToWithEntities"
+      :model-value="modelValue.entities ?? []"
+      :options="property.entities!"
+      @update:model-value="onEntitiesUpdate"
+    />
   </li>
 </template>

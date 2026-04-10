@@ -16,6 +16,8 @@ export default {
       "favorite_fruits",
       "tags",
       "cars",
+      "favorite_client",
+      "worst_client",
       "profile",
       "does_not_exist",
     ],

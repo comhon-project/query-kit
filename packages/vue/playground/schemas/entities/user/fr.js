@@ -14,6 +14,8 @@ export default {
     company: "companie",
     friend: "ami(e)",
     favorite_fruits: "fruits favoris",
+    favorite_client: "client favori",
+    worst_client: "pire client",
     cars: "voitures",
     profile: "profil",
   },

@@ -198,7 +198,14 @@ export function generateRow(
     const { property, rootSchema } = resolved;
 
     if (property.type === 'relationship' || property.type === 'object') {
-      const targetEntityId = property.entity;
+      let targetEntityId: string | undefined;
+      if (property.relationship_type === 'morph_to') {
+        const candidates = property.entities?.length ? property.entities : Object.keys(ENTITIES);
+        targetEntityId = candidates[Math.floor(Math.random() * candidates.length)];
+        setNested(row, columnId + '_type', targetEntityId);
+      } else {
+        targetEntityId = property.entity;
+      }
       if (!targetEntityId) continue;
       const data = generateEntityData(targetEntityId, rootSchema);
       setNested(row, columnId, data);
