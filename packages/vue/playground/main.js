@@ -140,7 +140,7 @@ createApp(App)
               collection: collection,
               limit: queryLimit,
             });
-          }, 1000);
+          }, 200);
         });
       },
     },
