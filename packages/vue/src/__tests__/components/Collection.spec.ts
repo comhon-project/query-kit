@@ -114,7 +114,7 @@ describe('Collection', () => {
   });
 
   it('sends sort order in request after sort click', async () => {
-    const orderBy = ref<any[]>([]);
+    const sort = ref<any[]>([]);
     const { requester } = createMockRequester({ collection: sampleRows, count: 2 });
     wrapper = mountWithPlugin(Collection, {
       props: {
@@ -123,8 +123,8 @@ describe('Collection', () => {
         columns: ['first_name', 'last_name'],
         'onUpdate:columns': () => {},
         requester,
-        orderBy: orderBy.value,
-        'onUpdate:orderBy': (v: any[]) => { orderBy.value = v; },
+        sort: sort.value,
+        'onUpdate:sort': (v: any[]) => { sort.value = v; },
       },
     });
     await flushAll();
@@ -134,11 +134,11 @@ describe('Collection', () => {
     await sortButton.trigger('click');
     await flushAll();
 
-    expect(orderBy.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+    expect(sort.value).toEqual([{ column: 'first_name', order: 'asc' }]);
   });
 
   it('cycles sort order: undefined → asc → desc → undefined', async () => {
-    const orderBy = ref<any[]>([]);
+    const sort = ref<any[]>([]);
     const { requester } = createMockRequester({ collection: sampleRows, count: 2 });
     wrapper = mountWithPlugin(Collection, {
       props: {
@@ -147,10 +147,10 @@ describe('Collection', () => {
         columns: ['first_name'],
         'onUpdate:columns': () => {},
         requester,
-        orderBy: orderBy.value,
-        'onUpdate:orderBy': (v: any[]) => {
-          orderBy.value = v;
-          wrapper.setProps({ orderBy: v });
+        sort: sort.value,
+        'onUpdate:sort': (v: any[]) => {
+          sort.value = v;
+          wrapper.setProps({ sort: v });
         },
       },
     });
@@ -161,17 +161,17 @@ describe('Collection', () => {
     // First click → asc
     await sortButton.trigger('click');
     await flushAll();
-    expect(orderBy.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+    expect(sort.value).toEqual([{ column: 'first_name', order: 'asc' }]);
 
     // Second click → desc
     await sortButton.trigger('click');
     await flushAll();
-    expect(orderBy.value).toEqual([{ column: 'first_name', order: 'desc' }]);
+    expect(sort.value).toEqual([{ column: 'first_name', order: 'desc' }]);
 
     // Third click → removed
     await sortButton.trigger('click');
     await flushAll();
-    expect(orderBy.value).toEqual([]);
+    expect(sort.value).toEqual([]);
   });
 
   it('passes filter to requester', async () => {
@@ -363,7 +363,7 @@ describe('Collection', () => {
     });
 
     it('uses custom order properties in sort request', async () => {
-      const orderBy = ref<any[]>([]);
+      const sort = ref<any[]>([]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
         props: {
@@ -372,12 +372,12 @@ describe('Collection', () => {
           columns: ['custom_col'],
           'onUpdate:columns': () => {},
           requester,
-          orderBy: orderBy.value,
-          'onUpdate:orderBy': (v: any[]) => {
-            orderBy.value = v;
-            wrapper.setProps({ orderBy: v });
+          sort: sort.value,
+          'onUpdate:sort': (v: any[]) => {
+            sort.value = v;
+            wrapper.setProps({ sort: v });
           },
-          customColumns: { custom_col: { label: 'Custom', open: true, order: ['sort_field_a', 'sort_field_b'] } },
+          customColumns: { custom_col: { label: 'Custom', open: true, sort: ['sort_field_a', 'sort_field_b'] } },
         },
       });
       await flushAll();
@@ -388,9 +388,9 @@ describe('Collection', () => {
       await flushAll();
       await flushAll();
 
-      expect(orderBy.value).toEqual([{ column: 'custom_col', order: 'asc' }]);
+      expect(sort.value).toEqual([{ column: 'custom_col', order: 'asc' }]);
       const lastCall = calls[calls.length - 1];
-      expect(lastCall.order).toEqual([
+      expect(lastCall.sort).toEqual([
         { property: 'sort_field_a', order: 'asc' },
         { property: 'sort_field_b', order: 'asc' },
       ]);
@@ -498,12 +498,12 @@ describe('Collection', () => {
     });
   });
 
-  describe('orderBy handling', () => {
-    it('initializes empty orderBy when orderBy is undefined', async () => {
+  describe('sort handling', () => {
+    it('initializes empty sort when sort is undefined', async () => {
       const { calls } = mountCollection();
       await flushAll();
       expect(calls).toHaveLength(1);
-      expect(calls[0].order).toBeUndefined();
+      expect(calls[0].sort).toBeUndefined();
     });
   });
 
@@ -744,9 +744,9 @@ describe('Collection', () => {
     });
   });
 
-  describe('orderBy with relationship', () => {
+  describe('sort with relationship', () => {
     it('resolves object sort using natural_sort', async () => {
-      const orderBy = ref<any[]>([{ column: 'metadata', order: 'asc' }]);
+      const sort = ref<any[]>([{ column: 'metadata', order: 'asc' }]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
         props: {
@@ -755,14 +755,14 @@ describe('Collection', () => {
           columns: ['metadata'],
           'onUpdate:columns': () => {},
           requester,
-          orderBy: orderBy.value,
-          'onUpdate:orderBy': (v: any[]) => { orderBy.value = v; },
+          sort: sort.value,
+          'onUpdate:sort': (v: any[]) => { sort.value = v; },
         },
       });
       await flushAll();
       // metadata entity has natural_sort: ['label']
       const lastCall = calls[calls.length - 1];
-      expect(lastCall.order).toEqual(
+      expect(lastCall.sort).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ property: 'metadata.label', order: 'asc' }),
         ]),
@@ -770,7 +770,7 @@ describe('Collection', () => {
     });
 
     it('resolves relationship sort using unique_identifier fallback', async () => {
-      const orderBy = ref<any[]>([{ column: 'company', order: 'asc' }]);
+      const sort = ref<any[]>([{ column: 'company', order: 'asc' }]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
         props: {
@@ -779,14 +779,14 @@ describe('Collection', () => {
           columns: ['company'],
           'onUpdate:columns': () => {},
           requester,
-          orderBy: orderBy.value,
-          'onUpdate:orderBy': (v: any[]) => { orderBy.value = v; },
+          sort: sort.value,
+          'onUpdate:sort': (v: any[]) => { sort.value = v; },
         },
       });
       await flushAll();
       // organization has no natural_sort → uses unique_identifier 'id'
       const lastCall = calls[calls.length - 1];
-      expect(lastCall.order).toEqual(
+      expect(lastCall.sort).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ property: 'company.id', order: 'asc' }),
         ]),
@@ -855,7 +855,7 @@ describe('Collection', () => {
 
   describe('multi-sort', () => {
     it('adds multiple sort columns with shift-click', async () => {
-      const orderBy = ref<any[]>([]);
+      const sort = ref<any[]>([]);
       const { requester } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
         props: {
@@ -864,10 +864,10 @@ describe('Collection', () => {
           columns: ['first_name', 'last_name'],
           'onUpdate:columns': () => {},
           requester,
-          orderBy: orderBy.value,
-          'onUpdate:orderBy': (v: any[]) => {
-            orderBy.value = v;
-            wrapper.setProps({ orderBy: v });
+          sort: sort.value,
+          'onUpdate:sort': (v: any[]) => {
+            sort.value = v;
+            wrapper.setProps({ sort: v });
           },
         },
       });
@@ -879,13 +879,13 @@ describe('Collection', () => {
       // Click first header
       await sortButtons[0].trigger('click');
       await flushAll();
-      expect(orderBy.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+      expect(sort.value).toEqual([{ column: 'first_name', order: 'asc' }]);
 
       // Ctrl-click second header (Header passes e.ctrlKey as multi flag)
       await sortButtons[1].trigger('click', { ctrlKey: true });
       await flushAll();
-      expect(orderBy.value).toHaveLength(2);
-      expect(orderBy.value).toEqual(
+      expect(sort.value).toHaveLength(2);
+      expect(sort.value).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ column: 'first_name' }),
           expect.objectContaining({ column: 'last_name' }),

@@ -33,7 +33,7 @@ async function mountSearch(props: Record<string, unknown> = {}) {
       columns: ['first_name', 'last_name'],
       'onUpdate:columns': (v: unknown) => wrapper.setProps({ columns: v }),
       'onUpdate:filter': (v: unknown) => wrapper.setProps({ filter: v }),
-      'onUpdate:orderBy': (v: unknown) => wrapper.setProps({ orderBy: v }),
+      'onUpdate:sort': (v: unknown) => wrapper.setProps({ sort: v }),
       'onUpdate:page': (v: unknown) => wrapper.setProps({ page: v }),
       ...props,
     },
@@ -153,15 +153,15 @@ describe('Search', () => {
       expect(wrapper.emitted('update:columns')?.pop()?.[0]).toEqual(['age']);
     });
 
-    it('propagates orderBy update from Collection', async () => {
+    it('propagates sort update from Collection', async () => {
       const { requester } = createMockRequester();
       await mountSearchAndTriggerComputed({ requester });
 
       const collection = wrapper.findComponent(Collection);
-      collection.vm.$emit('update:orderBy', [{ column: 'age', direction: 'desc' }]);
+      collection.vm.$emit('update:sort', [{ column: 'age', direction: 'desc' }]);
       await flushAll();
 
-      expect(wrapper.emitted('update:orderBy')?.pop()?.[0]).toEqual([{ column: 'age', direction: 'desc' }]);
+      expect(wrapper.emitted('update:sort')?.pop()?.[0]).toEqual([{ column: 'age', direction: 'desc' }]);
     });
 
     it('propagates page update from Collection', async () => {

@@ -13,7 +13,7 @@ interface Props {
   open?: boolean;
   label?: string | ((locale: string) => string);
   order?: 'asc' | 'desc';
-  hasCustomOrder?: boolean;
+  hasCustomSort?: boolean;
 }
 
 interface Emits {
@@ -25,7 +25,7 @@ const props = defineProps<Props>();
 
 const sortable = ref(false);
 const propertyPath = computed<string | undefined>(() => (props.open ? undefined : props.columnId));
-const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomOrder);
+const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomSort);
 const orderLabel = computed<string>(() => `(${translate(props.order ?? 'unsorted')})`);
 const ariaSort = computed(() =>
   isColumnSortable.value

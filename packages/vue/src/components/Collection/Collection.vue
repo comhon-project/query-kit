@@ -26,7 +26,7 @@ import ColumnEditor from '@components/Collection/ColumnEditor.vue';
 import InvalidColumn from '@components/Messages/InvalidColumn.vue';
 import type {
   CustomColumnConfig,
-  OrderByItem,
+  SortItem,
   CollectionType,
   CollectionConfig,
   Requester,
@@ -53,12 +53,12 @@ interface Props {
   builderId?: string;
 }
 
-interface IndexedOrderByEntry {
+interface IndexedSortEntry {
   order: 'asc' | 'desc';
   properties: string[];
 }
 const columns = defineModel<string[]>('columns', { required: true });
-const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
+const sort = defineModel<(string | SortItem)[]>('sort');
 const page = defineModel<number>('page', { default: 1 });
 
 // undefined: prevent Vue from casting absent boolean props to false
@@ -81,7 +81,7 @@ const end = ref<boolean>(false);
 const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
 const entitySchema = ref<EntitySchema>();
 const rowKeyProperty = ref<string>();
-const indexedOrderBy = shallowRef<Record<string, IndexedOrderByEntry>>({});
+const indexedSort = shallowRef<Record<string, IndexedSortEntry>>({});
 const invalidColumns = ref<string[]>([]);
 const config = reactive<CollectionConfig>({} as CollectionConfig);
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
@@ -122,7 +122,7 @@ const rowEvents = (row: Record<string, unknown>) =>
 async function init(): Promise<void> {
   entitySchema.value = await resolve(props.entity);
   await initColumns(entitySchema.value);
-  await initOrderBy(orderBy.value, computedColumns.value, entitySchema.value!.id, props.customColumns);
+  await initSort(sort.value, computedColumns.value, entitySchema.value!.id, props.customColumns);
 }
 
 async function initColumns(entitySchema: EntitySchema): Promise<void> {
@@ -155,26 +155,26 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
   columnsProperties.value = colsProps;
 }
 
-async function initOrderBy(
-  orderBy: (string | OrderByItem)[] | undefined,
+async function initSort(
+  sort: (string | SortItem)[] | undefined,
   columns: string[],
   entity: string,
   customColumns?: Record<string, CustomColumnConfig>,
 ): Promise<void> {
-  if (!orderBy) {
-    indexedOrderBy.value = {};
+  if (!sort) {
+    indexedSort.value = {};
     return;
   }
-  const indexed: Record<string, IndexedOrderByEntry> = {};
-  for (const value of orderBy) {
+  const indexed: Record<string, IndexedSortEntry> = {};
+  for (const value of sort) {
     try {
       const column = typeof value == 'string' ? value : value.column;
       if (!columns.includes(column)) continue;
       const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
 
       let reqProps: string[];
-      if (customColumns?.[column]?.order) {
-        reqProps = customColumns[column].order!;
+      if (customColumns?.[column]?.sort) {
+        reqProps = customColumns[column].sort!;
       } else {
         const propertyPath = await getPropertyPath(entity, column);
         const property = propertyPath[propertyPath.length - 1];
@@ -196,7 +196,7 @@ async function initOrderBy(
       if (!(e instanceof PropertyNotFoundError)) throw e;
     }
   }
-  indexedOrderBy.value = indexed;
+  indexedSort.value = indexed;
 }
 
 function nextOrder(current: 'asc' | 'desc' | undefined): 'asc' | 'desc' | undefined {
@@ -205,31 +205,31 @@ function nextOrder(current: 'asc' | 'desc' | undefined): 'asc' | 'desc' | undefi
   return undefined;
 }
 
-function updateOrder(columnId: string | undefined, multi: boolean): void {
+function updateSort(columnId: string | undefined, multi: boolean): void {
   if (!columnId) {
     return;
   }
-  const currentOrder = indexedOrderBy.value[columnId]?.order;
+  const currentOrder = indexedSort.value[columnId]?.order;
   const newOrder = nextOrder(currentOrder);
   if (multi) {
-    const updated: OrderByItem[] = Object.entries(indexedOrderBy.value).map(([col, entry]) => ({
+    const updated: SortItem[] = Object.entries(indexedSort.value).map(([col, entry]) => ({
       column: col,
       order: entry.order,
     }));
     const existingIndex = updated.findIndex((v) => v.column == columnId);
     if (newOrder) {
-      const newColumnOrder: OrderByItem = { column: columnId, order: newOrder };
+      const newColumnSort: SortItem = { column: columnId, order: newOrder };
       if (existingIndex != -1) {
-        updated[existingIndex] = newColumnOrder;
+        updated[existingIndex] = newColumnSort;
       } else {
-        updated.push(newColumnOrder);
+        updated.push(newColumnSort);
       }
     } else if (existingIndex != -1) {
       updated.splice(existingIndex, 1);
     }
-    orderBy.value = updated;
+    sort.value = updated;
   } else {
-    orderBy.value = newOrder ? [{ column: columnId, order: newOrder }] : [];
+    sort.value = newOrder ? [{ column: columnId, order: newOrder }] : [];
   }
 }
 
@@ -258,15 +258,15 @@ async function requestServer(): Promise<void> {
     const requesterValue = activeRequester.value;
     const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
 
-    const order = Object.keys(indexedOrderBy.value).length
-      ? Object.values(indexedOrderBy.value).flatMap((entry) =>
+    const sortRequest = Object.keys(indexedSort.value).length
+      ? Object.values(indexedSort.value).flatMap((entry) =>
           entry.properties.map((prop) => ({ property: prop, order: entry.order })),
         )
       : undefined;
 
     const response = await fetch({
       entity: props.entity,
-      order,
+      sort: sortRequest,
       page: page.value,
       limit: limit.value,
       filter: props.filter,
@@ -358,7 +358,7 @@ watchEffect(() => {
 watchEffect(() => {
   limit.value = props.limit ?? globalConfig.limit;
 });
-watch([() => props.entity, columns, orderBy], async () => {
+watch([() => props.entity, columns, sort], async () => {
   await init();
   resetCollection();
 });
@@ -425,9 +425,9 @@ watch(
               :column-id="columnId"
               :open="customColumns?.[columnId]?.open === true"
               :label="customColumns?.[columnId]?.label"
-              :order="indexedOrderBy[columnId]?.order"
-              :has-custom-order="customColumns?.[columnId]?.order != null"
-              @click="updateOrder"
+              :order="indexedSort[columnId]?.order"
+              :has-custom-sort="customColumns?.[columnId]?.sort != null"
+              @click="updateSort"
             />
           </tr>
         </thead>

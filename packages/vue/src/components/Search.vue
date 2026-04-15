@@ -11,7 +11,7 @@ import type {
   AllowedScopes,
   AllowedProperties,
   CustomColumnConfig,
-  OrderByItem,
+  SortItem,
   CollectionType,
   Requester,
   RequesterFunction,
@@ -46,7 +46,7 @@ interface Props {
 
 const filter = defineModel<Filter | null>('filter', { default: null });
 const columns = defineModel<string[]>('columns', { required: true });
-const orderBy = defineModel<(string | OrderByItem)[]>('orderBy');
+const sort = defineModel<(string | SortItem)[]>('sort');
 const page = defineModel<number>('page', { default: 1 });
 
 // undefined: prevent Vue from casting absent boolean props to false
@@ -101,7 +101,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       v-if="computedFilter"
       :id="collectionId"
       v-model:columns="columns"
-      v-model:order-by="orderBy"
+      v-model:sort="sort"
       v-model:page="page"
       :entity="entity"
       :custom-columns="customColumns"

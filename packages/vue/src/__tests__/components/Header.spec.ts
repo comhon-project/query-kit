@@ -43,9 +43,9 @@ describe('Header', () => {
     expect(wrapper.find('div').exists()).toBe(true);
   });
 
-  it('is sortable when hasCustomOrder is true even if property is not sortable', async () => {
+  it('is sortable when hasCustomSort is true even if property is not sortable', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'gender', hasCustomOrder: true },
+      props: { entitySchema: userSchema, columnId: 'gender', hasCustomSort: true },
     });
     await flushAll();
     expect(wrapper.find('button').exists()).toBe(true);

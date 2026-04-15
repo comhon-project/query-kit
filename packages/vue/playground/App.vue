@@ -59,14 +59,14 @@ const customColumns = ref({
   no_property_two: {
     label: 'no property two',
     open: true,
-    order: ['age', 'weight'],
+    sort: ['age', 'weight'],
     renderer: (cellValue, rowValue, columnId, locale) => {
       return rowValue['age'] + (locale == 'fr' ? ' ans' : ' years');
     },
   },
 });
 
-const orderBy = ref(['first_name']);
+const sort = ref(['first_name']);
 
 const group = {
   type: 'group',
@@ -295,8 +295,8 @@ watch(filter, () => {
 watch(columns, () => {
   console.log('------ app watch columns-------', columns.value);
 });
-watch(orderBy, () => {
-  console.log('------ app watch orderBy-------', orderBy.value);
+watch(sort, () => {
+  console.log('------ app watch sort-------', sort.value);
 });
 watch(page, () => {
   console.log('------ app watch page-------', page.value);
@@ -330,7 +330,7 @@ watch(page, () => {
     <h1>{{ getEntityTranslation(entity) }}</h1>
     <div style="height: 90vh">
       <QkitSearch
-        v-model:order-by="orderBy"
+        v-model:sort="sort"
         :entity="entity"
         v-model:columns="columns"
         v-model:page="page"

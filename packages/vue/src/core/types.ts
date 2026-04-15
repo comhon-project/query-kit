@@ -50,7 +50,7 @@ export type NativeHtmlComponent =
 /** Request parameters */
 export interface RequestParams {
   entity: string;
-  order?: { property: string; order: string }[];
+  sort?: { property: string; order: string }[];
   page: number;
   limit?: number;
   filter?: Filter;
@@ -127,14 +127,14 @@ export type FilterWithOperator = ConditionFilter | GroupFilter | EntityCondition
 
 // ==================== Collection Types ====================
 
-export interface OrderByItem {
+export interface SortItem {
   column: string;
   order: 'asc' | 'desc';
 }
 
 export interface CustomColumnConfig {
   label: string | ((locale: string) => string);
-  order?: string[];
+  sort?: string[];
   renderer?: Component | RenderFunction | string;
   onCellClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
   open?: boolean;
