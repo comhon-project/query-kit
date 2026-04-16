@@ -1,0 +1,8 @@
+- [Home](/)
+- [Installation](Installation)
+- [Plugin initialization](Plugin-initialization)
+- [Schemas](Schemas)
+- [Query filter format](Query-filter-format)
+- [Usage](Usage)
+- [I18n](I18n)
+- [Playground](Playground)
