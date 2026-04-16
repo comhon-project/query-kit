@@ -89,6 +89,7 @@ const infiniteScroll = ref<boolean>(
   (props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes)[0] === 'infinite',
 );
 let observer: IntersectionObserver | undefined;
+let requestTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
 const activeRequester = computed<Requester | RequesterFunction>(() => {
   const requester = props.requester ?? baseRequester;
@@ -344,6 +345,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   observer?.disconnect();
+  if (requestTimeoutId) clearTimeout(requestTimeoutId);
 });
 
 // Must be before the other watches: config must be populated before isInfiniteAccordingConfig runs
@@ -358,9 +360,18 @@ watchEffect(() => {
 watchEffect(() => {
   limit.value = props.limit ?? globalConfig.limit;
 });
-watch([() => props.entity, columns, sort], async () => {
+watch([() => props.entity, columns, sort], async (newVals, oldVals) => {
   await init();
-  resetCollection();
+  if (requestTimeoutId) clearTimeout(requestTimeoutId);
+  requestTimeoutId = undefined;
+  const onlySortChanged = newVals[0] === oldVals[0] && newVals[1] === oldVals[1];
+  if (onlySortChanged) {
+    // Debounce the server request so the user can quickly update
+    // the sort without triggering intermediate requests.
+    requestTimeoutId = setTimeout(() => resetCollection(), 500);
+  } else {
+    resetCollection();
+  }
 });
 watch([() => props.filter, infiniteScroll], resetCollection);
 watch(page, requestServer);

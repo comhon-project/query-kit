@@ -363,6 +363,7 @@ describe('Collection', () => {
     });
 
     it('uses custom order properties in sort request', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
       const sort = ref<any[]>([]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
@@ -386,6 +387,7 @@ describe('Collection', () => {
       expect(sortButton.exists()).toBe(true);
       await sortButton.trigger('click');
       await flushAll();
+      vi.advanceTimersByTime(500);
       await flushAll();
 
       expect(sort.value).toEqual([{ column: 'custom_col', order: 'asc' }]);
@@ -394,6 +396,7 @@ describe('Collection', () => {
         { property: 'sort_field_a', order: 'asc' },
         { property: 'sort_field_b', order: 'asc' },
       ]);
+      vi.useRealTimers();
     });
 
     it('skips property resolution for open custom column', async () => {
