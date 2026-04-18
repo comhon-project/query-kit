@@ -291,17 +291,26 @@ describe('Builder', () => {
       });
       await flushAll();
 
-      // After 1000ms (default), should NOT have emitted yet
+      // Initial emit is immediate (no debounce on first render)
+      vi.advanceTimersByTime(0);
+      await flushAll();
+      expect(wrapper.emitted('computed')?.length).toBe(1);
+
+      // Trigger an internal filter change (simulates user interaction)
+      const groupComp = wrapper.findComponent(Group);
+      const internalGroup = groupComp.props('modelValue') as GroupFilter;
+      internalGroup.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 99 });
+      await flushAll();
+
+      // After 1000ms, should NOT have emitted again (debounce is 2000ms)
       vi.advanceTimersByTime(1000);
       await flushAll();
-      expect(wrapper.emitted('computed')).toBeFalsy();
+      expect(wrapper.emitted('computed')?.length).toBe(1);
 
       // After another 1000ms (total 2000ms), should emit
       vi.advanceTimersByTime(1000);
       await flushAll();
-      const emitted = wrapper.emitted('computed');
-      expect(emitted).toBeTruthy();
-      expect(emitted!.length).toBeGreaterThanOrEqual(1);
+      expect(wrapper.emitted('computed')!.length).toBe(2);
     });
   });
 

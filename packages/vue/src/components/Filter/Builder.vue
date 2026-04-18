@@ -287,7 +287,7 @@ function scheduleEmit(): void {
         emit('computed', computed, false);
       }
     }
-  }, config.debounce);
+  }, isInitialEmit ? 0 : config.debounce);
 }
 
 async function validate(): Promise<void> {
