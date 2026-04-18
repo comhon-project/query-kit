@@ -22,13 +22,13 @@ export default {
     },
     {
       id: 'age',
-      name: 'the age',
+      name: 'age',
       type: 'integer',
       nullable: true,
     },
     {
       id: 'weight',
-      name: 'the weight',
+      name: 'weight',
       type: 'float',
       nullable: true,
     },
@@ -40,7 +40,7 @@ export default {
     },
     {
       id: 'gender',
-      name: 'the gender',
+      name: 'gender',
       type: 'string',
       enum: 'gender',
       nullable: true,
@@ -65,7 +65,7 @@ export default {
     },
     {
       id: 'country',
-      name: 'the country',
+      name: 'country',
       type: 'country',
       nullable: true,
     },
@@ -80,24 +80,15 @@ export default {
       nullable: true,
     },
     {
-      id: 'tags',
-      name: 'tags',
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-      nullable: true,
-    },
-    {
       id: 'company',
-      name: 'the company',
+      name: 'company',
       type: 'relationship',
       relationship_type: 'belongs_to',
       entity: 'organization',
     },
     {
       id: 'friend',
-      name: 'the friend',
+      name: 'friend',
       type: 'relationship',
       relationship_type: 'belongs_to',
       entity: 'user',
@@ -115,12 +106,6 @@ export default {
       type: 'relationship',
       relationship_type: 'morph_to',
       entities: ['user', 'organization'],
-    },
-    {
-      id: 'worst_client',
-      name: 'worst client',
-      type: 'relationship',
-      relationship_type: 'morph_to',
     },
     {
       id: 'profile',
@@ -181,10 +166,6 @@ export default {
   natural_sort: ['last_name', 'first_name'],
   scopes: [
     {
-      id: 'scope_string_definition',
-      parameters: [],
-    },
-    {
       id: 'scope',
       parameters: [],
     },
@@ -195,56 +176,6 @@ export default {
           id: 'value',
           name: 'value',
           type: 'string',
-          nullable: false,
-        },
-      ],
-    },
-    {
-      id: 'datetime_scope',
-      parameters: [
-        {
-          id: 'value',
-          name: 'value',
-          type: 'datetime',
-          nullable: false,
-        },
-      ],
-    },
-    {
-      id: 'enum_scope',
-      parameters: [
-        {
-          id: 'value',
-          name: 'value',
-          type: 'string',
-          enum: 'enum_scope_values',
-          nullable: false,
-        },
-      ],
-    },
-    {
-      id: 'multi_param_scope',
-      parameters: [
-        {
-          id: 'name',
-          name: 'name',
-          type: 'string',
-          nullable: false,
-        },
-        {
-          id: 'min_age',
-          name: 'min age',
-          type: 'integer',
-          nullable: true,
-        },
-        {
-          id: 'fruits',
-          name: 'fruits',
-          type: 'array',
-          items: {
-            type: 'string',
-            enum: 'fruit',
-          },
           nullable: false,
         },
       ],

@@ -3,7 +3,7 @@ export default {
   properties: {
     first_name: "prénom",
     last_name: "nom",
-    age: "age",
+    age: "âge",
     weight: "poids",
     married: "marié(e)",
     gender: "genre",
@@ -11,11 +11,10 @@ export default {
     birth_day: "jour de naissance",
     birth_hour: "heure de naissance",
     country: "pays",
-    company: "companie",
+    company: "entreprise",
     friend: "ami(e)",
     favorite_fruits: "fruits favoris",
     favorite_client: "client favori",
-    worst_client: "pire client",
     cars: "voitures",
     profile: "profil",
   },
@@ -37,27 +36,12 @@ export default {
     },
   },
   scopes: {
-    scope_string_definition: "scope string définition",
-    scope: "scope sans valeur",
-    string_scope: "scope string",
-    datetime_scope: "scope date time",
-    enum_scope: "scope énum",
-    multi_param_scope: "scope multi paramètres",
+    scope: "scope",
+    string_scope: "scope texte",
   },
   parameters: {
     string_scope: {
       value: "valeur",
-    },
-    datetime_scope: {
-      value: "valeur",
-    },
-    enum_scope: {
-      value: "valeur",
-    },
-    multi_param_scope: {
-      name: "nom",
-      min_age: "âge minimum",
-      fruits: "fruits",
     },
   },
 };

@@ -1,367 +1,281 @@
 <script setup>
-import { markRaw, ref, watch } from 'vue';
-import CellFirstName from './components/CellFirstName.vue';
-import { locale, getEntityTranslation } from '@query-kit/vue';
+import { reactive, ref, shallowRef } from 'vue';
+import { locale } from '@query-kit/vue';
 import { generateRow } from './core/MockDataGenerator';
+import RequestDisplay from './components/RequestDisplay.vue';
 
-const entity = ref('user');
-const displayOperator = ref({
-  group: true,
-  condition: true,
-  entity_condition: true,
-});
-const columns = ref([
-  'first_name',
-  'last_name',
-  'weight',
-  'age',
-  'country',
-  'gender',
-  'married',
-  'favorite_fruits',
-  'birth_date',
-  'birth_day',
-  'birth_hour',
-  'friend',
-  'company',
-  'company.description',
-  'company.address',
-  'invalid_column_test',
-  'friend.invalid_column_test',
-  'no_property',
-  'profile.address.city',
-  'worst_client',
-]);
+const activeTab = ref('default');
+const lastRequest = shallowRef(null);
 
-const customColumns = ref({
-  first_name: {
-    label: 'overrided first name',
-    renderer: markRaw(CellFirstName),
-  },
-  last_name: {
-    label: (localeValue) => (localeValue == 'fr' ? 'nom surchargé localisé' : 'name overrided localized'),
-  },
-  'company.description': {
-    onCellClick: (value, row, property, event) => {
-      event.stopPropagation();
-      console.log('cell click', property);
-      console.log(value);
-      console.log(row);
-    },
-  },
-  no_property: {
-    label: (localeValue) => (localeValue == 'fr' ? 'non propriété' : 'no property'),
-    open: true,
-    renderer: (cellValue, rowValue) => {
-      return rowValue['first_name'] + ' func';
-    },
-  },
-  no_property_two: {
-    label: 'no property two',
+const tabs = [
+  { id: 'default', label: 'Default' },
+  { id: 'prefilled', label: 'Pre-filled' },
+  { id: 'manual', label: 'Manual' },
+  { id: 'minimal', label: 'Minimal' },
+  { id: 'restricted', label: 'Restricted' },
+  { id: 'clicks', label: 'Clicks' },
+  { id: 'fixed', label: 'Fixed' },
+];
+
+const customColumns = {
+  age_weight: {
+    label: (locale) => (locale === 'fr' ? 'âge / poids' : 'age / weight'),
     open: true,
     sort: ['age', 'weight'],
     renderer: (cellValue, rowValue, columnId, locale) => {
-      return rowValue['age'] + (locale == 'fr' ? ' ans' : ' years');
+      const ageLabel = locale === 'fr' ? ' ans' : ' years';
+      return `${rowValue['age']}${ageLabel}, ${rowValue['weight']} kg`;
     },
   },
-});
-
-const sort = ref(['first_name']);
-
-const group = {
-  type: 'group',
-  operator: 'and',
-  filters: [
-    {
-      type: 'condition',
-      property: 'last_name',
-      operator: 'in',
-    },
-    {
-      type: 'condition',
-      property: 'last_name',
-      operator: 'in',
-      value: ['one', undefined],
-      editable: false,
-    },
-    {
-      type: 'condition',
-      property: 'last_name',
-      operator: '=',
-      value: 'one',
-      editable: false,
-    },
-    {
-      type: 'condition',
-      property: 'first_name',
-      value: 'azeaze',
-      operator: 'like',
-      removable: false,
-    },
-    {
-      type: 'condition',
-      property: 'first_name',
-      value: 'end',
-      operator: 'ends_with',
-    },
-    {
-      type: 'condition',
-      property: 'first_name',
-      value: 'not_end',
-      operator: 'doesnt_end_with',
-    },
-    {
-      type: 'condition',
-      property: 'first_name',
-      value: 'begin',
-      operator: 'begins_with',
-    },
-    {
-      type: 'condition',
-      property: 'first_name',
-      value: 'not_begin',
-      operator: 'doesnt_begin_with',
-    },
-    {
-      type: 'condition',
-      property: 'birth_date',
-      value: '2022-01-07T03:06:06.000Z',
-      operator: '=',
-    },
-    {
-      type: 'condition',
-      property: 'does_not_exist',
-      operator: '=',
-    },
-    {
-      type: 'condition',
-      property: 'age',
-      value: '20',
-      operator: '<',
-    },
-    {
-      type: 'condition',
-      property: 'married',
-      value: true,
-      operator: '=',
-      editable: false,
-    },
-    {
-      type: 'condition',
-      property: 'gender',
-      operator: '<>',
-      value: 'female',
-    },
-    {
-      type: 'scope',
-      id: 'enum_scope',
-      parameters: ['two'],
-    },
-    {
-      type: 'scope',
-      id: 'quick_search',
-      parameters: ['twozzzz'],
-    },
-    {
-      type: 'condition',
-      property: 'country',
-      operator: 'in',
-      value: ['3'],
-      editable: false,
-    },
-    {
-      type: 'group',
-      operator: 'or',
-      editable: false,
-      filters: [
-        {
-          type: 'condition',
-          property: 'first_name',
-          operator: '=',
-          value: 'invisible',
-          visible: false,
-        },
-        {
-          type: 'entity_condition',
-          operator: 'has',
-          property: 'company',
-          filter: {
-            type: 'condition',
-            property: 'address',
-            operator: '=',
-          },
-        },
-        {
-          type: 'condition',
-          property: 'first_name',
-          value: 'aaaaaaaaaaa',
-          operator: '=',
-          editable: false,
-        },
-        {
-          type: 'entity_condition',
-          operator: 'has',
-          property: 'company',
-          filter: {
-            type: 'entity_condition',
-            operator: 'has_not',
-            property: 'contacts',
-            filter: {
-              type: 'group',
-              operator: 'or',
-              filters: [
-                {
-                  type: 'condition',
-                  property: 'first_name',
-                  operator: '=',
-                },
-                {
-                  type: 'condition',
-                  property: 'first_name',
-                  operator: '=',
-                },
-                {
-                  type: 'condition',
-                  property: 'first_name',
-                  operator: '=',
-                },
-                {
-                  type: 'condition',
-                  property: 'first_name',
-                  operator: '=',
-                  value: 'plop',
-                },
-                {
-                  type: 'condition',
-                  property: 'first_name',
-                  operator: '=',
-                },
-              ],
-            },
-          },
-        },
-      ],
-    },
-  ],
 };
-const filter = ref(group);
 
-function printRow(object) {
-  console.log('row click');
-  console.log(object);
+function createState(entity, columns, filter = null) {
+  return reactive({
+    entity,
+    columns: [...columns],
+    sort: [],
+    filter,
+    page: 1,
+  });
 }
 
-async function completeCollection(collection) {
-  for (const row of collection) {
-    if (row.company) {
-      row.company.description += ' <span style="color: blue">[*]</span>';
-    }
-  }
-}
+const userColumns = ['first_name', 'last_name', 'age', 'gender', 'country', 'married', 'birth_date', 'company', 'favorite_fruits'];
 
-async function exportResults(newFilter) {
-  console.log('export');
-  console.log(newFilter);
-}
+const state = {
+  default: createState('user', [...userColumns, 'age_weight']),
+  prefilled: createState('user', userColumns, {
+    type: 'group',
+    operator: 'and',
+    filters: [
+      { type: 'condition', property: 'last_name', operator: 'ilike' },
+      { type: 'condition', property: 'age', operator: '>=', value: 18 },
+      { type: 'entity_condition', operator: 'has', property: 'company', count_operator: '>=', count: 1 },
+      { type: 'scope', id: 'quick_search', parameters: [''] },
+    ],
+  }),
+  manual: createState('user', userColumns),
+  minimal: createState('user', ['first_name', 'last_name', 'age', 'company']),
+  restricted: createState('user', ['first_name', 'last_name', 'age', 'gender', 'company']),
+  clicks: createState('user', ['first_name', 'last_name', 'age', 'company']),
+  fixed: createState('organization', ['brand_name', 'address', 'description', 'country', 'contacts'], {
+    type: 'group',
+    operator: 'and',
+    editable: false,
+    filters: [
+      { type: 'condition', property: 'brand_name', operator: 'ilike', removable: false },
+      { type: 'condition', property: 'country', operator: 'ilike', removable: false },
+      {
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'contacts',
+        count_operator: '>=',
+        count: 1,
+        removable: false,
+        filter: { type: 'condition', property: 'first_name', operator: 'ilike', removable: false },
+      },
+    ],
+  }),
+};
 
-let requester = {
+const requester = {
   request: (query) => {
-    console.log('prop-requester');
-    console.log(query);
+    lastRequest.value = structuredClone(query);
     const lastPage = 5;
     const queryLimit = query.limit ?? 20;
-    const limit = query.page >= lastPage ? queryLimit - 1 : queryLimit;
+    const count = lastPage * queryLimit - 1;
+    const remaining = Math.max(0, count - (query.page - 1) * queryLimit);
+    const limit = Math.min(queryLimit, remaining);
     const collection = [];
     for (let index = 0; index < limit; index++) {
       collection.push(generateRow(query.entity, query.properties));
     }
     return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          count: lastPage * queryLimit - 1,
-          collection: collection,
-          limit: queryLimit,
-        });
-      }, 200);
+      setTimeout(() => resolve({ count, collection, limit: queryLimit }), 200);
     });
   },
 };
 
-const page = ref(3);
+const clickedRow = shallowRef(null);
+const clickedCell = shallowRef(null);
 
-watch(filter, () => {
-  console.log('------ app watch filter-------', filter.value);
-});
-watch(columns, () => {
-  console.log('------ app watch columns-------', columns.value);
-});
-watch(sort, () => {
-  console.log('------ app watch sort-------', sort.value);
-});
-watch(page, () => {
-  console.log('------ app watch page-------', page.value);
-});
+function onRowClick(row) {
+  clickedRow.value = row;
+}
 
-// TODO export dist files and update main file in package.json
-// add tests
+function onCellClick(value, rowValue, columnId, event) {
+  event.stopPropagation();
+  clickedCell.value = { columnId, value };
+}
 </script>
 
 <template>
   <div class="root-app">
-    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap">
-      <button class="qkit-btn qkit-btn-primary" @click="() => page++">page++</button>
-      <button class="qkit-btn qkit-btn-primary" @click="() => (displayOperator = displayOperator ? false : true)">
-        toggle displayOperator
-      </button>
-      <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap">
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'en')">en</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'zh')">zh</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'hi')">hi</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'es')">es</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'fr')">fr</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ar')">ar</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'bn')">bn</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'pt')">pt</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ru')">ru</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'ja')">ja</button>
-        <button class="qkit-btn qkit-btn-primary" @click="() => (locale = 'de')">de</button>
+    <p class="playground-notice">There is no backend — data is randomly generated and not actually filtered.</p>
+    <div class="playground-toolbar">
+      <div class="playground-tabs">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          :class="{ active: activeTab === tab.id }"
+          @click="activeTab = tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+      <select v-model="locale" class="qkit-input" style="margin-left: auto">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+        <option value="pt">Português</option>
+        <option value="ru">Русский</option>
+        <option value="zh">中文</option>
+        <option value="ja">日本語</option>
+        <option value="ar">العربية</option>
+        <option value="hi">हिन्दी</option>
+        <option value="bn">বাংলা</option>
+      </select>
+    </div>
+
+    <!-- Default -->
+    <div v-if="activeTab === 'default'">
+      <p class="playground-description">All features enabled: column editor, pagination/infinite scroll, undo/redo, custom columns, sort.</p>
+      <div style="height: 80vh">
+        <QkitSearch
+          :entity="state.default.entity"
+          v-model:columns="state.default.columns"
+          v-model:sort="state.default.sort"
+          v-model:filter="state.default.filter"
+          v-model:page="state.default.page"
+          :requester="requester"
+          :custom-columns="customColumns"
+          :edit-columns="true"
+          :allowed-collection-types="['infinite', 'pagination']"
+          user-timezone="Europe/Paris"
+        />
       </div>
     </div>
-    <h1>{{ getEntityTranslation(entity) }}</h1>
-    <div style="height: 90vh">
-      <QkitSearch
-        v-model:sort="sort"
-        :entity="entity"
-        v-model:columns="columns"
-        v-model:page="page"
-        v-model:filter="filter"
-        :allowed-properties="{ user: null }"
-        :allowed-scopes="{ user: null }"
-        :allowed-operators="{
-          group: ['or'],
-          entity_condition: null,
-          condition: {
-            integer: ['not_null', 'in'],
-          },
-        }"
-        user-timezone="Europe/Paris"
-        :display-operator="displayOperator"
-        :debounce="1000"
-        :manual="false"
-        :direct-query="true"
-        :quick-sort="true"
-        :post-request="completeCollection"
-        :allowed-collection-types="['infinite', 'pagination']"
-        :allow-reset="true"
-        :allow-undo="true"
-        :allow-redo="true"
-        :display-count="true"
-        :edit-columns="true"
-        :custom-columns="customColumns"
-        :requester="requester"
-        @row-click="printRow"
-        @export="exportResults"
-      />
+
+    <!-- Pre-filled -->
+    <div v-if="activeTab === 'prefilled'">
+      <p class="playground-description">Filter is initialized with conditions, an entity condition with count, and a scope.</p>
+      <div style="height: 80vh">
+        <QkitSearch
+          :entity="state.prefilled.entity"
+          v-model:columns="state.prefilled.columns"
+          v-model:sort="state.prefilled.sort"
+          v-model:filter="state.prefilled.filter"
+          v-model:page="state.prefilled.page"
+          :requester="requester"
+          :edit-columns="true"
+          :allowed-collection-types="['infinite', 'pagination']"
+          user-timezone="Europe/Paris"
+        />
+      </div>
     </div>
+
+    <!-- Manual -->
+    <div v-if="activeTab === 'manual'">
+      <p class="playground-description">The query is not sent automatically. Click the search button to trigger the request.</p>
+      <div style="height: 80vh">
+        <QkitSearch
+          :entity="state.manual.entity"
+          v-model:columns="state.manual.columns"
+          v-model:sort="state.manual.sort"
+          v-model:filter="state.manual.filter"
+          v-model:page="state.manual.page"
+          :requester="requester"
+          :manual="true"
+          :edit-columns="true"
+          user-timezone="Europe/Paris"
+        />
+      </div>
+    </div>
+
+    <!-- Minimal -->
+    <div v-if="activeTab === 'minimal'">
+      <p class="playground-description">Stripped-down UI: no operators, no undo/redo/reset, no column editor, no result count.</p>
+      <div style="height: 80vh">
+        <QkitSearch
+          :entity="state.minimal.entity"
+          v-model:columns="state.minimal.columns"
+          v-model:sort="state.minimal.sort"
+          v-model:filter="state.minimal.filter"
+          v-model:page="state.minimal.page"
+          :requester="requester"
+          :display-operator="false"
+          :allow-reset="false"
+          :allow-undo="false"
+          :allow-redo="false"
+          :edit-columns="false"
+          :display-count="false"
+        />
+      </div>
+    </div>
+
+    <!-- Restricted -->
+    <div v-if="activeTab === 'restricted'">
+      <p class="playground-description">Only a few properties, one scope, and two operators (= and &lt;&gt;) are allowed.</p>
+      <div style="height: 80vh">
+        <QkitSearch
+          :entity="state.restricted.entity"
+          v-model:columns="state.restricted.columns"
+          v-model:sort="state.restricted.sort"
+          v-model:filter="state.restricted.filter"
+          v-model:page="state.restricted.page"
+          :requester="requester"
+          :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
+          :allowed-scopes="{ user: ['scope'] }"
+          :allowed-operators="{ condition: { basic: ['=', '<>'] }, group: ['and'] }"
+          :edit-columns="true"
+          user-timezone="Europe/Paris"
+        />
+      </div>
+    </div>
+
+    <!-- Clicks -->
+    <div v-if="activeTab === 'clicks'">
+      <p class="playground-description">Click a row or the company cell to see the event data below.</p>
+      <div style="height: 55vh">
+        <QkitSearch
+          :entity="state.clicks.entity"
+          v-model:columns="state.clicks.columns"
+          v-model:sort="state.clicks.sort"
+          v-model:filter="state.clicks.filter"
+          v-model:page="state.clicks.page"
+          :requester="requester"
+          :on-row-click="onRowClick"
+          :custom-columns="{ company: { onCellClick: onCellClick } }"
+        />
+      </div>
+      <div style="display: flex; gap: 1rem; margin-top: 0.75rem">
+        <div v-if="clickedRow" class="playground-panel" style="flex: 1">
+          <strong>Row clicked</strong>
+          <pre>{{ JSON.stringify(clickedRow, null, 2) }}</pre>
+        </div>
+        <div v-if="clickedCell" class="playground-panel" style="flex: 1">
+          <strong>Cell clicked: {{ clickedCell.columnId }}</strong>
+          <pre>{{ JSON.stringify(clickedCell.value, null, 2) }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed -->
+    <div v-if="activeTab === 'fixed'">
+      <p class="playground-description">Filter structure is fixed: conditions cannot be added or removed, only values can be changed.</p>
+      <div style="height: 80vh">
+        <QkitSearch
+          :entity="state.fixed.entity"
+          v-model:columns="state.fixed.columns"
+          v-model:sort="state.fixed.sort"
+          v-model:filter="state.fixed.filter"
+          v-model:page="state.fixed.page"
+          :requester="requester"
+          user-timezone="Europe/Paris"
+        />
+      </div>
+    </div>
+
+    <RequestDisplay :request="lastRequest" />
   </div>
 </template>
