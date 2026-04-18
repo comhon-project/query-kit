@@ -81,6 +81,7 @@ function validate(): void {
           type: 'entity_condition',
           operator: operators[0],
           property: target,
+          ...(property.type === 'relationship' ? { count_operator: '>=', count: 1 } : {}),
           ...(property.relationship_type === 'morph_to' ? { entities: [] } : {}),
         };
       } else {

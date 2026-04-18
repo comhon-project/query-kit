@@ -144,4 +144,123 @@ describe('EntityQueueElement', () => {
     const updatedOption = select.findAll('option').find((o) => o.element.value === 'has');
     expect(updatedOption?.text()).toBe('a');
   });
+
+  describe('count', () => {
+    it('shows count fields for relationship property with has operator', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'company',
+        count_operator: '>=',
+        count: 1,
+        key: 10,
+      });
+      mountQueueElement(filter, { displayOperator: true });
+      await flushAll();
+
+      const selects = wrapper.findAllComponents(AdaptativeSelect);
+      expect(selects).toHaveLength(2);
+      expect(wrapper.find('input[type="number"]').exists()).toBe(true);
+    });
+
+    it('auto-sets count defaults when missing on relationship with has', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'company',
+        key: 11,
+      });
+      mountQueueElement(filter, { displayOperator: true });
+      await flushAll();
+
+      expect(filter.count_operator).toBe('>=');
+      expect(filter.count).toBe(1);
+    });
+
+    it('hides count fields for object property', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'metadata',
+        key: 12,
+      });
+      mountQueueElement(filter, { displayOperator: true });
+      await flushAll();
+
+      const selects = wrapper.findAllComponents(AdaptativeSelect);
+      expect(selects).toHaveLength(1);
+      expect(wrapper.find('input[type="number"]').exists()).toBe(false);
+    });
+
+    it('hides count fields when operator is has_not', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has_not',
+        property: 'company',
+        key: 13,
+      });
+      mountQueueElement(filter, { displayOperator: true });
+      await flushAll();
+
+      const selects = wrapper.findAllComponents(AdaptativeSelect);
+      expect(selects).toHaveLength(1);
+      expect(wrapper.find('input[type="number"]').exists()).toBe(false);
+    });
+
+    it('clears count fields when switching to has_not', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'company',
+        count_operator: '>=',
+        count: 5,
+        key: 14,
+      });
+      mountQueueElement(filter, { displayOperator: true });
+      await flushAll();
+
+      filter.operator = 'has_not';
+      await flushAll();
+
+      expect(filter.count_operator).toBeUndefined();
+      expect(filter.count).toBeUndefined();
+    });
+
+    it('hides count fields when displayOperator is false', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'company',
+        count_operator: '>=',
+        count: 1,
+        key: 15,
+      });
+      mountQueueElement(filter, { displayOperator: false });
+      await flushAll();
+
+      expect(wrapper.findComponent(AdaptativeSelect).exists()).toBe(false);
+      expect(wrapper.find('input[type="number"]').exists()).toBe(false);
+    });
+
+    it('renders count operator options with translated labels', async () => {
+      const filter: EntityConditionFilter = reactive({
+        type: 'entity_condition',
+        operator: 'has',
+        property: 'company',
+        count_operator: '>=',
+        count: 1,
+        key: 16,
+      });
+      mountQueueElement(filter, { displayOperator: true });
+      await flushAll();
+
+      const selects = wrapper.findAllComponents(AdaptativeSelect);
+      const countSelect = selects[1];
+      const options = countSelect.findAll('option');
+      expect(options).toHaveLength(3);
+      expect(options[0].text()).toBe('at least');
+      expect(options[1].text()).toBe('at most');
+      expect(options[2].text()).toBe('exactly');
+    });
+  });
 });

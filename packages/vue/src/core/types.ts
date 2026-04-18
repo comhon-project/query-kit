@@ -119,6 +119,8 @@ export interface EntityConditionFilter extends BaseFilter, WithOperator {
   property: string;
   entities?: string[];
   filter?: Filter;
+  count_operator?: string;
+  count?: number;
 }
 
 export type Filter = ConditionFilter | ScopeFilter | GroupFilter | EntityConditionFilter;

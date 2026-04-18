@@ -351,6 +351,16 @@
   align-items: center;
 }
 
+.qkit-entity-condition-queue-item input[type='number'] {
+  field-sizing: content;
+}
+
+@supports not (field-sizing: content) {
+  .qkit-entity-condition-queue-item input[type='number'] {
+    width: 6ch;
+  }
+}
+
 .qkit-multi-input {
   display: flex;
   flex-wrap: wrap;

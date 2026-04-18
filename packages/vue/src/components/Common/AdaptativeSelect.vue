@@ -1,3 +1,5 @@
+<!-- Polyfill for field-sizing: content (not yet supported by Firefox).
+     Remove this component once all major browsers support it. -->
 <script setup lang="ts">
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { loadedTranslations, locale } from '@i18n/i18n';
