@@ -408,6 +408,50 @@ describe('Collection', () => {
       // open column should not be included in properties (no schema property)
       expect(calls[0].properties).not.toContain('virtual_col');
     });
+
+    it('declares additional properties for open column', async () => {
+      const { calls } = mountCollection({
+        columns: ['full_name'],
+        customColumns: {
+          full_name: { label: 'Full Name', open: true, properties: ['first_name', 'last_name'] },
+        },
+      });
+      await flushAll();
+      expect(calls[0].properties).toEqual(['first_name', 'last_name']);
+    });
+
+    it('adds properties to property-bound column', async () => {
+      const { calls } = mountCollection({
+        columns: ['first_name'],
+        customColumns: {
+          first_name: { label: 'Name', properties: ['gender'] },
+        },
+      });
+      await flushAll();
+      expect(calls[0].properties).toEqual(['first_name', 'gender']);
+    });
+
+    it('deduplicates properties', async () => {
+      const { calls } = mountCollection({
+        columns: ['first_name', 'age'],
+        customColumns: {
+          age: { label: 'Age', properties: ['first_name'] },
+        },
+      });
+      await flushAll();
+      expect(calls[0].properties).toEqual(['first_name', 'age']);
+    });
+
+    it('supports nested paths in properties', async () => {
+      const { calls } = mountCollection({
+        columns: ['full_info'],
+        customColumns: {
+          full_info: { label: 'Full Info', open: true, properties: ['company.brand_name', 'metadata.label'] },
+        },
+      });
+      await flushAll();
+      expect(calls[0].properties).toEqual(['company.brand_name', 'metadata.label']);
+    });
   });
 
   describe('allowedCollectionTypes', () => {

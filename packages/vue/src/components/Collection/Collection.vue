@@ -135,7 +135,8 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
   const invalid: string[] = [];
   for (const columnId of cols) {
     try {
-      const propertyPath = props.customColumns?.[columnId]?.open
+      const customColumn = props.customColumns?.[columnId];
+      const propertyPath = customColumn?.open
         ? undefined
         : await getPropertyPath(entitySchema.id, columnId);
       const property = propertyPath?.[propertyPath.length - 1];
@@ -143,6 +144,9 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
 
       if (property) {
         properties.push(columnId);
+      }
+      if (customColumn?.properties?.length) {
+        properties.push(...customColumn.properties);
       }
     } catch (e) {
       if (e instanceof PropertyNotFoundError) {
@@ -152,6 +156,7 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
       }
     }
   }
+  properties = [...new Set(properties)];
   invalidColumns.value = invalid;
   columnsProperties.value = colsProps;
 }

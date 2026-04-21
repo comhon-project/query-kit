@@ -67,7 +67,7 @@ function generateValue(property: RawProperty): unknown {
         default: return randomWord();
       }
     case 'integer':
-      return Math.floor(Math.random() * 1000);
+      return Math.floor(Math.random() * 100);
     case 'float':
       return +(Math.random() * 100).toFixed(2);
     case 'boolean':

@@ -186,6 +186,7 @@ Custom columns permit to customize columns header and cells. Each key must be a 
 | label       | string or function        | false    | The column header label. Use a function for i18n: `(locale) => string`.                |
 | renderer    | string, object or function| false    | The renderer that will display cell value. It might be a component or a callback.      |
 | sort        | array of strings          | false    | Properties to use for sorting this column (overrides default sorting behavior).         |
+| properties  | array of strings          | false    | Additional entity properties to declare in the request for this column (useful for `open` columns whose renderer reads multiple entity properties). |
 | onCellClick | function                  | false    | Function called on cell click: `(value, rowValue, columnId, event) => void`.           |
 
 Example:
@@ -201,10 +202,11 @@ const customColumns = {
       router.push(`/companies/${value.id}/overview`);
     },
   },
-  my_custom_column: {
-    open: true, // required !
-    label: (locale) => locale == 'fr' ? 'colonne custom' : 'custom column',
-    renderer: (cellValue, rowValue, columnId, locale) => rowValue.weight + ' kg',
+  full_name: {
+    open: true, // not bound to an entity property
+    label: (locale) => locale == 'fr' ? 'nom complet' : 'full name',
+    properties: ['first_name', 'last_name'], // declared in the request so the server knows the renderer needs them
+    renderer: (cellValue, rowValue) => `${rowValue.first_name} ${rowValue.last_name}`,
   },
 };
 ```

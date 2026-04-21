@@ -137,6 +137,7 @@ export interface SortItem {
 export interface CustomColumnConfig {
   label: string | ((locale: string) => string);
   sort?: string[];
+  properties?: string[];
   renderer?: Component | RenderFunction | string;
   onCellClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
   open?: boolean;

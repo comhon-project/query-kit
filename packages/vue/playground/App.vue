@@ -22,6 +22,7 @@ const customColumns = {
     label: (locale) => (locale === 'fr' ? 'âge / poids' : 'age / weight'),
     open: true,
     sort: ['age', 'weight'],
+    properties: ['age', 'weight'],
     renderer: (cellValue, rowValue, columnId, locale) => {
       const ageLabel = locale === 'fr' ? ' ans' : ' years';
       return `${rowValue['age']}${ageLabel}, ${rowValue['weight']} kg`;
@@ -39,7 +40,7 @@ function createState(entity, columns, filter = null) {
   });
 }
 
-const userColumns = ['first_name', 'last_name', 'age', 'gender', 'country', 'married', 'birth_date', 'company', 'favorite_fruits'];
+const userColumns = ['first_name', 'last_name', 'gender', 'country', 'married', 'birth_date', 'company', 'favorite_fruits'];
 
 const state = {
   default: createState('user', [...userColumns, 'age_weight']),
