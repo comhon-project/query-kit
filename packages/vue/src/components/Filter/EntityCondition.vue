@@ -168,9 +168,11 @@ async function setChild(schema: EntitySchema): Promise<void> {
   endQueuePropertySchema.value = childSchema;
 }
 
-watch([() => props.entitySchema, () => props.modelValue.filter], () => setChild(props.entitySchema), {
-  immediate: true,
-});
+watch(
+  [() => props.entitySchema, () => props.modelValue, () => props.modelValue.filter],
+  () => setChild(props.entitySchema),
+  { immediate: true },
+);
 </script>
 
 <template>

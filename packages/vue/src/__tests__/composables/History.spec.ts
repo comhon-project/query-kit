@@ -11,10 +11,10 @@ describe('useHistory', () => {
     it('records states in undo stack', () => {
       const { pushSnapshot, canUndo } = useHistory();
       pushSnapshot(makeGroup());
-      expect(canUndo.value).toBe(false); // only 1 entry
+      expect(canUndo.value).toBe(false);
 
       pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
-      expect(canUndo.value).toBe(true); // 2 entries
+      expect(canUndo.value).toBe(true);
     });
 
     it('clears redo stack on new snapshot', () => {
@@ -23,11 +23,8 @@ describe('useHistory', () => {
       pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
 
       undo();
-      // skip the pushSnapshot triggered by undo flag
-      pushSnapshot(makeGroup());
-      expect(canRedo.value).toBe(true); // redo still has the undone state
+      expect(canRedo.value).toBe(true);
 
-      // now a real new snapshot should clear redo
       pushSnapshot(makeGroup([{ type: 'condition', property: 'b', operator: '=' }]));
       expect(canRedo.value).toBe(false);
     });
@@ -40,13 +37,34 @@ describe('useHistory', () => {
       const state2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
       pushSnapshot(state2);
 
-      // mutate the original objects
       state1.operator = 'or';
       state2.filters.push({ type: 'condition', property: 'b', operator: '=' } as any);
 
       const restored = undo()!;
       expect(restored.operator).toBe('and');
       expect(restored.filters).toHaveLength(0);
+    });
+
+    it('skips a push whose reference matches the one returned by undo', () => {
+      const { pushSnapshot, undo, canUndo, canRedo } = useHistory();
+      pushSnapshot(makeGroup());
+      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+
+      const restored = undo()!;
+      pushSnapshot(restored);
+
+      expect(canUndo.value).toBe(false);
+      expect(canRedo.value).toBe(true);
+    });
+
+    it('only skips the exact restored reference, not unrelated pushes', () => {
+      const { pushSnapshot, undo, canUndo } = useHistory();
+      pushSnapshot(makeGroup());
+      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+
+      undo();
+      pushSnapshot(makeGroup([{ type: 'condition', property: 'x', operator: '=' }]));
+      expect(canUndo.value).toBe(true);
     });
   });
 
@@ -81,8 +99,6 @@ describe('useHistory', () => {
       pushSnapshot(makeGroup());
       pushSnapshot(makeGroup());
       undo();
-      // skip flag consumes this push, redo stack still has the undone entry
-      pushSnapshot(makeGroup());
       expect(canRedo.value).toBe(true);
     });
   });
@@ -107,8 +123,7 @@ describe('useHistory', () => {
       pushSnapshot(first);
       pushSnapshot(second);
 
-      const restored = undo();
-      expect(restored).toEqual(first);
+      expect(undo()).toEqual(first);
     });
 
     it('allows multiple undos', () => {
@@ -122,23 +137,7 @@ describe('useHistory', () => {
       pushSnapshot(s3);
 
       expect(undo()).toEqual(s2);
-      // skip flag
-      pushSnapshot(makeGroup());
       expect(undo()).toEqual(s1);
-    });
-
-    it('sets isUndoRedoInProgress so next pushSnapshot is skipped', () => {
-      const { pushSnapshot, undo, canUndo, canRedo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'b', operator: '<>' }]));
-
-      undo();
-      // This push should be skipped (flag is set)
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'x', operator: '=' }]));
-      // After the skip, undo stack should still have 2 entries, redo stack 1
-      expect(canUndo.value).toBe(true);
-      expect(canRedo.value).toBe(true);
     });
   });
 
@@ -157,28 +156,7 @@ describe('useHistory', () => {
       pushSnapshot(s2);
 
       undo();
-      // skip flag
-      pushSnapshot(makeGroup());
-
-      const restored = redo();
-      expect(restored).toEqual(s2);
-    });
-
-    it('sets isUndoRedoInProgress so next pushSnapshot is skipped', () => {
-      const { pushSnapshot, undo, redo, canUndo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
-
-      undo();
-      // skip flag from undo
-      pushSnapshot(makeGroup());
-
-      redo();
-      // skip flag from redo
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'x', operator: '=' }]));
-
-      // undo stack should have 2 entries again (s1, s2)
-      expect(canUndo.value).toBe(true);
+      expect(redo()).toEqual(s2);
     });
   });
 
@@ -188,11 +166,7 @@ describe('useHistory', () => {
       pushSnapshot(makeGroup());
       pushSnapshot(makeGroup());
       pushSnapshot(makeGroup());
-      // 3 entries in undo → canUndo=true
       undo();
-      // skip flag
-      pushSnapshot(makeGroup());
-      // undo stack has 2, redo stack has 1
 
       expect(canUndo.value).toBe(true);
       expect(canRedo.value).toBe(true);
@@ -200,6 +174,19 @@ describe('useHistory', () => {
       clearHistory();
       expect(canUndo.value).toBe(false);
       expect(canRedo.value).toBe(false);
+    });
+
+    it('resets the tracked reference so a pending restored ref is not muted', () => {
+      const { pushSnapshot, undo, clearHistory, canUndo } = useHistory();
+      pushSnapshot(makeGroup());
+      pushSnapshot(makeGroup());
+
+      const restored = undo()!;
+      clearHistory();
+      pushSnapshot(restored);
+      expect(canUndo.value).toBe(false);
+      pushSnapshot(makeGroup());
+      expect(canUndo.value).toBe(true);
     });
   });
 
@@ -214,23 +201,10 @@ describe('useHistory', () => {
       pushSnapshot(s2);
       pushSnapshot(s3);
 
-      // undo to s2
       expect(undo()).toEqual(s2);
-      pushSnapshot(makeGroup()); // skip
-
-      // undo to s1
       expect(undo()).toEqual(s1);
-      pushSnapshot(makeGroup()); // skip
-
-      // redo to s2
       expect(redo()).toEqual(s2);
-      pushSnapshot(makeGroup()); // skip
-
-      // redo to s3
       expect(redo()).toEqual(s3);
-      pushSnapshot(makeGroup()); // skip
-
-      // undo back to s2
       expect(undo()).toEqual(s2);
     });
   });

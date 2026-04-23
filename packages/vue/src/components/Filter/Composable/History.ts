@@ -4,43 +4,43 @@ import type { GroupFilter } from '@core/types';
 export function useHistory() {
   const undoStack = ref<GroupFilter[]>([]);
   const redoStack = ref<GroupFilter[]>([]);
-  // When undo/redo restores a state, it updates internalModel which triggers
-  // the deep watcher → scheduleEmit → pushSnapshot. Without this flag, the
-  // restored state would be recorded as a new history entry, corrupting both stacks.
-  // undo/redo sets the flag to true; pushSnapshot checks it, skips recording, and resets it.
-  let isUndoRedoInProgress = false;
+  // Tracks the reference returned by undo/redo, so a hypothetical watcher
+  // on the consumer side that calls pushSnapshot with it does not record it.
+  let lastEmitted: GroupFilter | null = null;
 
   const canUndo = computed(() => undoStack.value.length >= 2);
   const canRedo = computed(() => redoStack.value.length >= 1);
 
   function pushSnapshot(state: GroupFilter): void {
-    if (isUndoRedoInProgress) {
-      isUndoRedoInProgress = false;
+    const raw = toRaw(state);
+    if (raw === lastEmitted) {
+      lastEmitted = null;
       return;
     }
-    undoStack.value.push(structuredClone(toRaw(state)));
+    undoStack.value.push(structuredClone(raw));
     redoStack.value = [];
   }
 
   function undo(): GroupFilter | null {
     if (!canUndo.value) return null;
-    isUndoRedoInProgress = true;
     const current = undoStack.value.pop()!;
     redoStack.value.push(current);
-    return structuredClone(toRaw(undoStack.value.at(-1)!));
+    lastEmitted = structuredClone(toRaw(undoStack.value.at(-1)!));
+    return lastEmitted;
   }
 
   function redo(): GroupFilter | null {
     if (!canRedo.value) return null;
-    isUndoRedoInProgress = true;
     const state = redoStack.value.pop()!;
     undoStack.value.push(state);
-    return structuredClone(toRaw(state));
+    lastEmitted = structuredClone(toRaw(state));
+    return lastEmitted;
   }
 
   function clearHistory(): void {
     undoStack.value = [];
     redoStack.value = [];
+    lastEmitted = null;
   }
 
   return { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory };
