@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'constructor de consultas',
   filter: 'filtro',
   filters: 'filtros',
   add: 'agregar',
@@ -61,7 +62,7 @@ export default {
   collection: 'colección',
 
   go_to_collection: 'ir a los resultados de búsqueda',
-  go_to_filter: 'ir a filtrar',
+  go_to_query_builder: 'ir al constructor de consultas',
   undo: 'deshacer',
   redo: 'rehacer',
   invalid_column: 'columna inválida:',

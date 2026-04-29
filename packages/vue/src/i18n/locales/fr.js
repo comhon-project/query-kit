@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'générateur de requête',
   filter: 'filtre',
   filters: 'filtres',
   add: 'ajouter',
@@ -61,7 +62,7 @@ export default {
   collection: 'collection',
 
   go_to_collection: 'aller aux résultats de la recherche',
-  go_to_filter: 'aller au filtre',
+  go_to_query_builder: 'aller au générateur de requête',
   undo: 'annuler',
   redo: 'rétablir',
   invalid_column: 'colonne invalide :',

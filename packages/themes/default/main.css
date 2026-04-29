@@ -1,24 +1,79 @@
 :root {
-  --qkit-color-primary: oklch(58% 0.16 295);
-  --qkit-color-primary-emphasis: oklch(from var(--qkit-color-primary) calc(l - 0.06) c h);
-  --qkit-color-danger: oklch(58% 0.16 25);
-  --qkit-color-danger-emphasis: oklch(from var(--qkit-color-danger) calc(l - 0.06) c h);
-  --qkit-color-warning: oklch(58% 0.16 55);
-  --qkit-color-warning-emphasis: oklch(from var(--qkit-color-warning) calc(l - 0.06) c h);
-  --qkit-color-border: hsl(210, 14%, 83%);
-  --qkit-collection-background-color: white;
-  --qkit-collection-header-background: hsl(0, 0%, 90%);
-  --qkit-group-background: white;
-  --qkit-text-color: hsl(0, 0%, 13%);
-  --qkit-input-border-color: var(--qkit-color-border);
-  --qkit-input-border-color-hover: oklch(from var(--qkit-input-border-color) calc(l - 0.1) c h);
-  --qkit-input-background: white;
+  --qkit-color-primary: light-dark(
+    oklch(58% 0.16 295),
+    oklch(55% 0.12 295)
+  );
+  --qkit-color-primary-emphasis: light-dark(
+    oklch(from var(--qkit-color-primary) calc(l - 0.06) c h),
+    oklch(from var(--qkit-color-primary) calc(l + 0.08) c h)
+  );
+  --qkit-color-danger: light-dark(
+    oklch(58% 0.16 25),
+    oklch(55% 0.12 25)
+  );
+  --qkit-color-danger-emphasis: light-dark(
+    oklch(from var(--qkit-color-danger) calc(l - 0.06) c h),
+    oklch(from var(--qkit-color-danger) calc(l + 0.08) c h)
+  );
+  --qkit-color-warning: light-dark(
+    oklch(58% 0.16 55),
+    oklch(55% 0.12 55)
+  );
+  --qkit-color-warning-emphasis: light-dark(
+    oklch(from var(--qkit-color-warning) calc(l - 0.06) c h),
+    oklch(from var(--qkit-color-warning) calc(l + 0.08) c h)
+  );
+  --qkit-color-border: light-dark(
+    hsl(210, 14%, 83%),
+    hsl(220, 10%, 20%)
+  );
+  --qkit-collection-background-color: light-dark(
+    white,
+    hsl(220, 13%, 11%)
+  );
+  --qkit-collection-header-background: light-dark(
+    hsl(0, 0%, 90%),
+    hsl(220, 13%, 17%)
+  );
+  --qkit-query-builder-background: light-dark(
+    white,
+    hsl(220, 13%, 11%)
+  );
+  --qkit-group-background: var(--qkit-query-builder-background);
+  --qkit-text-color: light-dark(
+    hsl(0, 0%, 13%),
+    hsl(220, 10%, 92%)
+  );
+  --qkit-input-border-color: light-dark(
+    var(--qkit-color-border),
+    hsl(220, 12%, 42%)
+  );
+  --qkit-input-border-color-hover: light-dark(
+    oklch(from var(--qkit-input-border-color) calc(l - 0.1) c h),
+    oklch(from var(--qkit-input-border-color) calc(l + 0.1) c h)
+  );
+  --qkit-input-background: light-dark(
+    white,
+    hsl(220, 13%, 22%)
+  );
   --qkit-input-background-disabled: var(--qkit-input-background);
   --qkit-overlay-background: var(--qkit-input-background);
-  --qkit-modal-separator-color: hsl(0, 0%, 92%);
-  --qkit-btn-text-color: white;
-  --qkit-shadow-color: rgba(0, 0, 0, 0.3);
-  --qkit-loading-color: hsl(0, 0%, 40%);
+  --qkit-modal-separator-color: light-dark(
+    hsl(0, 0%, 92%),
+    hsl(220, 10%, 35%)
+  );
+  --qkit-btn-text-color: light-dark(
+    white,
+    hsl(0, 0%, 98%)
+  );
+  --qkit-shadow-color: light-dark(
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.6)
+  );
+  --qkit-loading-color: light-dark(
+    hsl(0, 0%, 40%),
+    hsl(0, 0%, 65%)
+  );
 
   --qkit-gap-spacer: 0.5rem;
   --qkit-icon-size: 0.75rem;
@@ -29,41 +84,6 @@
   --qkit-padding-md: 0.5rem;
   --qkit-padding-lg: 1rem;
   --qkit-table-row-gap: 0.25rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Couleurs sémantiques : plus claires et légèrement désaturées pour ne pas brûler les yeux */
-    --qkit-color-primary: oklch(55% 0.12 295);
-    --qkit-color-primary-emphasis: oklch(from var(--qkit-color-primary) calc(l + 0.08) c h);
-    --qkit-color-danger: oklch(55% 0.12 25);
-    --qkit-color-danger-emphasis: oklch(from var(--qkit-color-danger) calc(l + 0.08) c h);
-    --qkit-color-warning: oklch(55% 0.12 55);
-    --qkit-color-warning-emphasis: oklch(from var(--qkit-color-warning) calc(l + 0.08) c h);
-
-    /* Surfaces en couches : groupe (plus sombre) → cards/inputs (même niveau, distingués par bordure) → overlays (plus clair) */
-    --qkit-collection-background-color: hsl(220, 13%, 11%);
-    --qkit-collection-header-background: hsl(220, 13%, 17%);
-    --qkit-group-background: var(--qkit-collection-background-color);
-    --qkit-input-background: hsl(220, 13%, 22%);
-
-    /* Bordures subtiles : contraste juste ce qu'il faut pour délimiter sans agresser */
-    --qkit-color-border: hsl(220, 10%, 20%);
-    --qkit-modal-separator-color: hsl(220, 10%, 35%);
-    /* Bordure d'input plus marquée pour bien identifier les zones interactives */
-    --qkit-input-border-color: hsl(220, 12%, 42%);
-    --qkit-input-border-color-hover: oklch(from var(--qkit-input-border-color) calc(l + 0.1) c h);
-
-    /* Texte off-white pour réduire le contraste agressif */
-    --qkit-text-color: hsl(220, 10%, 92%);
-    --qkit-btn-text-color: hsl(0, 0%, 98%);
-
-    /* Shadow plus opaque car moins visible sur dark */
-    --qkit-shadow-color: rgba(0, 0, 0, 0.6);
-
-    /* Loading visible sur dark */
-    --qkit-loading-color: hsl(0, 0%, 65%);
-  }
 }
 
 .qkit-operator,
@@ -146,17 +166,22 @@
   text-align: right;
 }
 
-.qkit-search {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-.qkit-builder {
+.qkit-query-builder {
   position: relative;
-  color-scheme: light dark;
+  background: var(--qkit-query-builder-background);
+  border: 1px solid var(--qkit-color-border);
+  border-radius: var(--qkit-border-radius-md);
 }
 
-.qkit-search .qkit-builder .qkit-group:not(.qkit-group .qkit-group) {
+/* Outer group inside query-builder is transparent: the visible frame is on the wrapper.
+   Nested groups (.qkit-group .qkit-group) keep their own frame. */
+.qkit-query-builder .qkit-group:not(.qkit-group .qkit-group) {
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.qkit-search .qkit-query-builder {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
@@ -462,12 +487,8 @@
 
 .qkit-collection {
   position: relative;
-  color-scheme: light dark;
   border: 1px solid var(--qkit-color-border);
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 400px;
+  overflow: hidden;
 }
 
 .qkit-collection-header {
@@ -499,10 +520,10 @@
 
 .qkit-collection-content {
   position: relative;
-  overflow: auto;
   background: var(--qkit-collection-background-color);
   padding-inline: var(--qkit-padding-lg);
-  flex-grow: 1;
+  overflow: auto;
+  height: 75vh;
 }
 
 .qkit-collection-table {
@@ -1064,11 +1085,11 @@
   pointer-events: auto;
 }
 
-.qkit-builder [role='treeitem'] {
+.qkit-filter-builder [role='treeitem'] {
   border-radius: var(--qkit-border-radius-md);
 }
-.qkit-builder [role='treeitem']:focus:has(.qkit-collapse-horizontal-list-enter-active),
-.qkit-builder [role='treeitem']:focus:has(.qkit-collapse-horizontal-list-leave-active) {
+.qkit-filter-builder [role='treeitem']:focus:has(.qkit-collapse-horizontal-list-enter-active),
+.qkit-filter-builder [role='treeitem']:focus:has(.qkit-collapse-horizontal-list-leave-active) {
   outline: none;
 }
 

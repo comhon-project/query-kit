@@ -52,11 +52,13 @@ Loaders are called lazily on first use and results are cached.
 ### Component Hierarchy
 
 Three global components registered by the plugin:
-- **QkitSearch** (`components/Search.vue`) - Composite: Builder + Collection
-- **QkitBuilder** (`components/Filter/Builder.vue`) - Standalone filter tree builder
+- **QkitSearch** (`components/Search.vue`) - Composite: QueryBuilder + Collection
+- **QkitQueryBuilder** (`components/QueryBuilder.vue`) - Public pass-through wrapper around the internal `FilterBuilder`
 - **QkitCollection** (`components/Collection/Collection.vue`) - Data table with pagination/infinite scroll
 
-**Filter tree** (nested under Builder):
+Internal: `FilterBuilder` (`components/Filter/FilterBuilder.vue`) — the actual filter tree builder, used by `QueryBuilder` and `Search` directly. Not registered globally.
+
+**Filter tree** (nested under FilterBuilder):
 `Group` → `ChildGroup` → `GroupElement` → `Condition` | `Scope` | `RelationshipCondition`
 
 Input components: `UniqueInput`, `ArrayableInput`, `CollectionInput`
@@ -119,7 +121,7 @@ Schema fixtures, mock requesters, and translations used across tests.
 - Use `mountWithPlugin` for any component that relies on the plugin (most components)
 - Call `await flushAll()` after mount for components with async `watchEffect`
 - Always `afterEach(() => wrapper?.unmount())` to prevent stale watchEffects during reset
-- Use `vi.useFakeTimers()` for Builder tests (debounced emission)
+- Use `vi.useFakeTimers()` for FilterBuilder tests (debounced emission)
 - Use `vi.hoisted()` for variables referenced inside `vi.mock()` factories
 
 ## Rules

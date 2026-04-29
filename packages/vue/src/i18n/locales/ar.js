@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'منشئ الاستعلام',
   filter: 'تصفية',
   filters: 'تصفيات',
   add: 'إضافة',
@@ -61,7 +62,7 @@ export default {
   collection: 'مجموعة البيانات',
 
   go_to_collection: 'الانتقال إلى نتائج البحث',
-  go_to_filter: 'الانتقال إلى التصفية',
+  go_to_query_builder: 'الانتقال إلى منشئ الاستعلام',
   undo: 'تراجع',
   redo: 'إعادة',
   invalid_column: 'عمود غير صالح:',

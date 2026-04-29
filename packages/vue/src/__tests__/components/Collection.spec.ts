@@ -495,16 +495,16 @@ describe('Collection', () => {
     });
   });
 
-  describe('builderId', () => {
-    it('renders skip link when builderId is set', async () => {
-      mountCollection({ builderId: 'my-filter' });
+  describe('queryBuilderId', () => {
+    it('renders skip link when queryBuilderId is set', async () => {
+      mountCollection({ queryBuilderId: 'my-query-builder' });
       await flushAll();
-      const skipLink = wrapper.find('a[href="#my-filter"]');
+      const skipLink = wrapper.find('a[href="#my-query-builder"]');
       expect(skipLink.exists()).toBe(true);
-      expect(skipLink.text()).toBe('go to filter');
+      expect(skipLink.text()).toBe('go to query builder');
     });
 
-    it('does not render skip link without builderId', async () => {
+    it('does not render skip link without queryBuilderId', async () => {
       mountCollection();
       await flushAll();
       const skipLinks = wrapper.findAll('a').filter((a) => a.attributes('href')?.startsWith('#'));

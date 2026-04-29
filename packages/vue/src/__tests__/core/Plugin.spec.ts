@@ -200,7 +200,8 @@ describe('Plugin', () => {
 
     expect(classes.modal).toBe('qkit-modal');
     expect(classes.modal_header).toBe('qkit-modal-header');
-    expect(classes.builder).toBe('qkit-builder');
+    expect(classes.query_builder).toBe('qkit-query-builder');
+    expect(classes.filter_builder).toBe('qkit-filter-builder');
     expect(classes.search).toBe('qkit-search');
     expect(classes.btn).toBe('qkit-btn');
     expect(classes.group).toBe('qkit-group');
@@ -260,7 +261,7 @@ describe('Plugin', () => {
 
     expect(classes.modal).toBe('my-modal');
     expect(classes.search).toBe('my-search');
-    expect(classes.builder).toBe('qkit-builder');
+    expect(classes.filter_builder).toBe('qkit-filter-builder');
 
     expect(getComponent({ type: 'integer' })).toBe('my_integer');
     expect(getComponent({ type: 'date' })).toBe('my_date');
@@ -300,13 +301,13 @@ describe('Plugin', () => {
     ).not.toThrow();
   });
 
-  it('calls app.component 3 times for QkitSearch, QkitCollection, QkitBuilder', () => {
+  it('calls app.component 3 times for QkitSearch, QkitCollection, QkitQueryBuilder', () => {
     plugin.install(app, { entitySchemaLoader: () => Promise.resolve(null) });
 
     expect(componentSpy).toHaveBeenCalledTimes(3);
     expect(componentSpy).toHaveBeenCalledWith('QkitSearch', expect.anything());
     expect(componentSpy).toHaveBeenCalledWith('QkitCollection', expect.anything());
-    expect(componentSpy).toHaveBeenCalledWith('QkitBuilder', expect.anything());
+    expect(componentSpy).toHaveBeenCalledWith('QkitQueryBuilder', expect.anything());
   });
 
   it('registers operators when provided', () => {

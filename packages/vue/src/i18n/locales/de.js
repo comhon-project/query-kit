@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'Abfrage-Generator',
   filter: 'Filter',
   filters: 'Filter',
   add: 'hinzufügen',
@@ -61,7 +62,7 @@ export default {
   collection: 'Sammlung',
 
   go_to_collection: 'zu den Suchergebnissen gehen',
-  go_to_filter: 'zum Filter gehen',
+  go_to_query_builder: 'zum Abfrage-Generator gehen',
   undo: 'rückgängig',
   redo: 'wiederherstellen',
   invalid_column: 'ungültige Spalte:',

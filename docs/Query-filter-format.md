@@ -1,5 +1,5 @@
 # Intro
-Query filter permits to build complex requests to fetch data from server according to a given filter. There are 4 types of filter: condition, scope, group and entity condition. When you pass query filter to `Builder` or `Search` components it must be of type group.
+Query filter permits to build complex requests to fetch data from server according to a given filter. There are 4 types of filter: condition, scope, group and entity condition.
 
 # Condition
 A condition filter contains at least a property and an operator. It may contain a value. The property MUST NOT correspond to a relationship.
@@ -200,7 +200,7 @@ const filter = ref({
 </script>
 
 <template>
-  <QkitBuilder entity="user" v-model="filter"/>
+  <QkitQueryBuilder entity="user" v-model="filter"/>
 </template>
 ```
 The builder will appear with an empty condition on last_name, a filled condition on birth_date, and a relationship condition on company.

@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'কোয়েরি বিল্ডার',
   filter: 'ফিল্টার',
   filters: 'ফিল্টার',
   add: 'যোগ করুন',
@@ -61,7 +62,7 @@ export default {
   collection: 'সংগ্রহ',
 
   go_to_collection: 'অনুসন্ধান ফলাফলে যান',
-  go_to_filter: 'ফিল্টারে যান',
+  go_to_query_builder: 'কোয়েরি বিল্ডারে যান',
   undo: 'পূর্বাবস্থায় ফেরান',
   redo: 'পুনরায় করুন',
   invalid_column: 'অবৈধ কলাম:',

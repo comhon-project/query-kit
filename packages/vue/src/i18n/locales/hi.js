@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'क्वेरी बिल्डर',
   filter: 'फ़िल्टर',
   filters: 'फ़िल्टर',
   add: 'जोड़ें',
@@ -61,7 +62,7 @@ export default {
   collection: 'संग्रह',
 
   go_to_collection: 'खोज परिणामों पर जाएं',
-  go_to_filter: 'फ़िल्टर पर जाएं',
+  go_to_query_builder: 'क्वेरी बिल्डर पर जाएं',
   undo: 'पूर्ववत करें',
   redo: 'फिर से करें',
   invalid_column: 'अमान्य कॉलम:',

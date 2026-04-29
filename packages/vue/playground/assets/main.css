@@ -1,20 +1,17 @@
 :root {
   scroll-behavior: smooth;
+  color-scheme: light dark;
 }
 
 body {
-  background: white;
-  color: hsl(0, 0%, 13%);
-  font-family: system-ui, -apple-system, sans-serif;
+  background: light-dark(white, hsl(220, 13%, 8%));
+  color: light-dark(hsl(0, 0%, 13%), hsl(220, 10%, 92%));
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   margin: 0;
   padding: 1rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background: hsl(220, 13%, 8%);
-    color: hsl(220, 10%, 92%);
-  }
 }
 
 @media (min-width: 1000px) {
@@ -97,4 +94,8 @@ body {
   margin: 0;
   font-size: 0.85em;
   overflow-x: auto;
+}
+
+.qkit-collection-content {
+  height: 60vh;
 }

@@ -40,7 +40,16 @@ function createState(entity, columns, filter = null) {
   });
 }
 
-const userColumns = ['first_name', 'last_name', 'gender', 'country', 'married', 'birth_date', 'company', 'favorite_fruits'];
+const userColumns = [
+  'first_name',
+  'last_name',
+  'gender',
+  'country',
+  'married',
+  'birth_date',
+  'company',
+  'favorite_fruits',
+];
 
 const state = {
   default: createState('user', [...userColumns, 'age_weight']),
@@ -50,8 +59,8 @@ const state = {
     filters: [
       { type: 'condition', property: 'last_name', operator: 'ilike' },
       { type: 'condition', property: 'age', operator: '>=', value: 18 },
+      { type: 'condition', property: 'country', operator: '=' },
       { type: 'entity_condition', operator: 'has', property: 'company', count_operator: '>=', count: 1 },
-      { type: 'scope', id: 'quick_search', parameters: [''] },
     ],
   }),
   manual: createState('user', userColumns),
@@ -107,6 +116,11 @@ function onCellClick(value, rowValue, columnId, event) {
   event.stopPropagation();
   clickedCell.value = { columnId, value };
 }
+
+const theme = ref('auto');
+function onThemeChange() {
+  document.documentElement.style.colorScheme = theme.value === 'auto' ? 'light dark' : theme.value;
+}
 </script>
 
 <template>
@@ -114,16 +128,16 @@ function onCellClick(value, rowValue, columnId, event) {
     <p class="playground-notice">There is no backend — data is randomly generated and not actually filtered.</p>
     <div class="playground-toolbar">
       <div class="playground-tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          :class="{ active: activeTab === tab.id }"
-          @click="activeTab = tab.id"
-        >
+        <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
           {{ tab.label }}
         </button>
       </div>
-      <select v-model="locale" class="qkit-input" style="margin-left: auto">
+      <select v-model="theme" @change="onThemeChange" class="qkit-input" style="margin-left: auto">
+        <option value="auto">Auto</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+      <select v-model="locale" class="qkit-input">
         <option value="en">English</option>
         <option value="fr">Français</option>
         <option value="de">Deutsch</option>
@@ -140,115 +154,113 @@ function onCellClick(value, rowValue, columnId, event) {
 
     <!-- Default -->
     <div v-if="activeTab === 'default'">
-      <p class="playground-description">All features enabled: column editor, pagination/infinite scroll, undo/redo, custom columns, sort.</p>
-      <div style="height: 80vh">
-        <QkitSearch
-          :entity="state.default.entity"
-          v-model:columns="state.default.columns"
-          v-model:sort="state.default.sort"
-          v-model:filter="state.default.filter"
-          v-model:page="state.default.page"
-          :requester="requester"
-          :custom-columns="customColumns"
-          :edit-columns="true"
-          :allowed-collection-types="['infinite', 'pagination']"
-          user-timezone="Europe/Paris"
-        />
-      </div>
+      <p class="playground-description">
+        All features enabled: column editor, pagination/infinite scroll, undo/redo, custom columns, sort.
+      </p>
+      <QkitSearch
+        :entity="state.default.entity"
+        v-model:columns="state.default.columns"
+        v-model:sort="state.default.sort"
+        v-model:filter="state.default.filter"
+        v-model:page="state.default.page"
+        :requester="requester"
+        :custom-columns="customColumns"
+        :edit-columns="true"
+        :allowed-collection-types="['infinite', 'pagination']"
+        user-timezone="Europe/Paris"
+      />
     </div>
 
     <!-- Pre-filled -->
     <div v-if="activeTab === 'prefilled'">
-      <p class="playground-description">Filter is initialized with conditions, an entity condition with count, and a scope.</p>
-      <div style="height: 80vh">
-        <QkitSearch
-          :entity="state.prefilled.entity"
-          v-model:columns="state.prefilled.columns"
-          v-model:sort="state.prefilled.sort"
-          v-model:filter="state.prefilled.filter"
-          v-model:page="state.prefilled.page"
-          :requester="requester"
-          :edit-columns="true"
-          :allowed-collection-types="['infinite', 'pagination']"
-          user-timezone="Europe/Paris"
-        />
-      </div>
+      <p class="playground-description">
+        Filter is initialized with conditions and an entity condition with count.
+      </p>
+      <QkitSearch
+        :entity="state.prefilled.entity"
+        v-model:columns="state.prefilled.columns"
+        v-model:sort="state.prefilled.sort"
+        v-model:filter="state.prefilled.filter"
+        v-model:page="state.prefilled.page"
+        :requester="requester"
+        :edit-columns="true"
+        :allowed-collection-types="['infinite', 'pagination']"
+        user-timezone="Europe/Paris"
+      />
     </div>
 
     <!-- Manual -->
     <div v-if="activeTab === 'manual'">
-      <p class="playground-description">The query is not sent automatically. Click the search button to trigger the request.</p>
-      <div style="height: 80vh">
-        <QkitSearch
-          :entity="state.manual.entity"
-          v-model:columns="state.manual.columns"
-          v-model:sort="state.manual.sort"
-          v-model:filter="state.manual.filter"
-          v-model:page="state.manual.page"
-          :requester="requester"
-          :manual="true"
-          :edit-columns="true"
-          user-timezone="Europe/Paris"
-        />
-      </div>
+      <p class="playground-description">
+        The query is not sent automatically. Click the search button to trigger the request.
+      </p>
+      <QkitSearch
+        :entity="state.manual.entity"
+        v-model:columns="state.manual.columns"
+        v-model:sort="state.manual.sort"
+        v-model:filter="state.manual.filter"
+        v-model:page="state.manual.page"
+        :requester="requester"
+        :manual="true"
+        :edit-columns="true"
+        user-timezone="Europe/Paris"
+      />
     </div>
 
     <!-- Minimal -->
     <div v-if="activeTab === 'minimal'">
-      <p class="playground-description">Stripped-down UI: no operators, no undo/redo/reset, no column editor, no result count.</p>
-      <div style="height: 80vh">
-        <QkitSearch
-          :entity="state.minimal.entity"
-          v-model:columns="state.minimal.columns"
-          v-model:sort="state.minimal.sort"
-          v-model:filter="state.minimal.filter"
-          v-model:page="state.minimal.page"
-          :requester="requester"
-          :display-operator="false"
-          :allow-reset="false"
-          :allow-undo="false"
-          :allow-redo="false"
-          :edit-columns="false"
-          :display-count="false"
-        />
-      </div>
+      <p class="playground-description">
+        Stripped-down UI: no operators, no undo/redo/reset, no column editor, no result count.
+      </p>
+      <QkitSearch
+        :entity="state.minimal.entity"
+        v-model:columns="state.minimal.columns"
+        v-model:sort="state.minimal.sort"
+        v-model:filter="state.minimal.filter"
+        v-model:page="state.minimal.page"
+        :requester="requester"
+        :display-operator="false"
+        :allow-reset="false"
+        :allow-undo="false"
+        :allow-redo="false"
+        :edit-columns="false"
+        :display-count="false"
+      />
     </div>
 
     <!-- Restricted -->
     <div v-if="activeTab === 'restricted'">
-      <p class="playground-description">Only a few properties, one scope, and two operators (= and &lt;&gt;) are allowed.</p>
-      <div style="height: 80vh">
-        <QkitSearch
-          :entity="state.restricted.entity"
-          v-model:columns="state.restricted.columns"
-          v-model:sort="state.restricted.sort"
-          v-model:filter="state.restricted.filter"
-          v-model:page="state.restricted.page"
-          :requester="requester"
-          :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
-          :allowed-scopes="{ user: ['scope'] }"
-          :allowed-operators="{ condition: { basic: ['=', '<>'] }, group: ['and'] }"
-          :edit-columns="true"
-          user-timezone="Europe/Paris"
-        />
-      </div>
+      <p class="playground-description">
+        Only a few properties, one scope, and two operators (= and &lt;&gt;) are allowed.
+      </p>
+      <QkitSearch
+        :entity="state.restricted.entity"
+        v-model:columns="state.restricted.columns"
+        v-model:sort="state.restricted.sort"
+        v-model:filter="state.restricted.filter"
+        v-model:page="state.restricted.page"
+        :requester="requester"
+        :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
+        :allowed-scopes="{ user: ['scope'] }"
+        :allowed-operators="{ condition: { basic: ['=', '<>'] }, group: ['and'] }"
+        :edit-columns="true"
+        user-timezone="Europe/Paris"
+      />
     </div>
 
     <!-- Clicks -->
     <div v-if="activeTab === 'clicks'">
       <p class="playground-description">Click a row or the company cell to see the event data below.</p>
-      <div style="height: 55vh">
-        <QkitSearch
-          :entity="state.clicks.entity"
-          v-model:columns="state.clicks.columns"
-          v-model:sort="state.clicks.sort"
-          v-model:filter="state.clicks.filter"
-          v-model:page="state.clicks.page"
-          :requester="requester"
-          :on-row-click="onRowClick"
-          :custom-columns="{ company: { onCellClick: onCellClick } }"
-        />
-      </div>
+      <QkitSearch
+        :entity="state.clicks.entity"
+        v-model:columns="state.clicks.columns"
+        v-model:sort="state.clicks.sort"
+        v-model:filter="state.clicks.filter"
+        v-model:page="state.clicks.page"
+        :requester="requester"
+        :on-row-click="onRowClick"
+        :custom-columns="{ company: { onCellClick: onCellClick } }"
+      />
       <div style="display: flex; gap: 1rem; margin-top: 0.75rem">
         <div v-if="clickedRow" class="playground-panel" style="flex: 1">
           <strong>Row clicked</strong>
@@ -263,18 +275,18 @@ function onCellClick(value, rowValue, columnId, event) {
 
     <!-- Fixed -->
     <div v-if="activeTab === 'fixed'">
-      <p class="playground-description">Filter structure is fixed: conditions cannot be added or removed, only values can be changed.</p>
-      <div style="height: 80vh">
-        <QkitSearch
-          :entity="state.fixed.entity"
-          v-model:columns="state.fixed.columns"
-          v-model:sort="state.fixed.sort"
-          v-model:filter="state.fixed.filter"
-          v-model:page="state.fixed.page"
-          :requester="requester"
-          user-timezone="Europe/Paris"
-        />
-      </div>
+      <p class="playground-description">
+        Filter structure is fixed: conditions cannot be added or removed, only values can be changed.
+      </p>
+      <QkitSearch
+        :entity="state.fixed.entity"
+        v-model:columns="state.fixed.columns"
+        v-model:sort="state.fixed.sort"
+        v-model:filter="state.fixed.filter"
+        v-model:page="state.fixed.page"
+        :requester="requester"
+        user-timezone="Europe/Paris"
+      />
     </div>
 
     <RequestDisplay :request="lastRequest" />

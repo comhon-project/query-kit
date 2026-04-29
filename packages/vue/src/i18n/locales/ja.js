@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'クエリビルダー',
   filter: 'フィルター',
   filters: 'フィルター',
   add: '追加',
@@ -61,7 +62,7 @@ export default {
   collection: 'コレクション',
 
   go_to_collection: '検索結果へ移動',
-  go_to_filter: 'フィルターへ移動',
+  go_to_query_builder: 'クエリビルダーへ移動',
   undo: '元に戻す',
   redo: 'やり直し',
   invalid_column: '無効な列：',

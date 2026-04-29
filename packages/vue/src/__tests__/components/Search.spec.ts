@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Search from '@components/Search.vue';
-import Builder from '@components/Filter/Builder.vue';
+import QueryBuilder from '@components/QueryBuilder.vue';
 import Collection from '@components/Collection/Collection.vue';
 import { registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
@@ -43,7 +43,7 @@ async function mountSearch(props: Record<string, unknown> = {}) {
 
 async function mountSearchAndTriggerComputed(props: Record<string, unknown> = {}) {
   await mountSearch(props);
-  // Advance timers to trigger Builder's debounced computed emit
+  // Advance timers to trigger QueryBuilder's debounced computed emit
   vi.advanceTimersByTime(1000);
   await flushAll();
 }
@@ -57,18 +57,18 @@ describe('Search', () => {
       expect(div.exists()).toBe(true);
     });
 
-    it('renders Builder component', async () => {
+    it('renders QueryBuilder component', async () => {
       await mountSearch();
-      expect(wrapper.findComponent(Builder).exists()).toBe(true);
+      expect(wrapper.findComponent(QueryBuilder).exists()).toBe(true);
     });
 
-    it('does NOT render Collection before Builder emits computed filter', async () => {
+    it('does NOT render Collection before QueryBuilder emits computed filter', async () => {
       await mountSearch();
-      // Before timers advance, Builder has not emitted computed yet
+      // Before timers advance, QueryBuilder has not emitted computed yet
       expect(wrapper.findComponent(Collection).exists()).toBe(false);
     });
 
-    it('renders Collection after Builder emits computed filter', async () => {
+    it('renders Collection after QueryBuilder emits computed filter', async () => {
       const { requester } = createMockRequester();
       await mountSearchAndTriggerComputed({ requester });
       expect(wrapper.findComponent(Collection).exists()).toBe(true);
@@ -77,7 +77,7 @@ describe('Search', () => {
 
   // ==================== Prop forwarding ====================
   describe('prop forwarding', () => {
-    it('forwards props to Builder', async () => {
+    it('forwards props to QueryBuilder', async () => {
       await mountSearch({
         allowReset: false,
         allowUndo: false,
@@ -90,7 +90,7 @@ describe('Search', () => {
         debounce: 2000,
         manual: false,
       });
-      const builder = wrapper.findComponent(Builder);
+      const builder = wrapper.findComponent(QueryBuilder);
       expect(builder.props('entity')).toBe('user');
       expect(builder.props('allowReset')).toBe(false);
       expect(builder.props('allowUndo')).toBe(false);
@@ -184,8 +184,8 @@ describe('Search', () => {
       const collection = wrapper.findComponent(Collection);
       const collectionId = collection.attributes('id');
 
-      // Click the search/validate button in Builder (manual must be explicitly true)
-      const builder = wrapper.findComponent(Builder);
+      // Click the search/validate button in QueryBuilder (manual must be explicitly true)
+      const builder = wrapper.findComponent(QueryBuilder);
       const searchBtn = builder.findAll('button').find((b) => b.attributes('aria-label')?.includes('search'));
       expect(searchBtn).toBeDefined();
       await searchBtn!.trigger('click');

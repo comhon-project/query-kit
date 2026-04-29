@@ -1,4 +1,5 @@
 export default {
+  query_builder: '查询构建器',
   filter: '筛选',
   filters: '筛选条件',
   add: '添加',
@@ -61,7 +62,7 @@ export default {
   collection: '数据集',
 
   go_to_collection: '转到搜索结果',
-  go_to_filter: '转到筛选',
+  go_to_query_builder: '转到查询构建器',
   undo: '撤销',
   redo: '重做',
   invalid_column: '无效列：',

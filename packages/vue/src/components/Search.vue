@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
-import Builder from '@components/Filter/Builder.vue';
+import QueryBuilder from '@components/QueryBuilder.vue';
 import { classes } from '@core/ClassManager';
 import { getUniqueId } from '@core/Utils';
 import type { AllowedOperators } from '@core/OperatorManager';
@@ -64,7 +64,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const uniqueId = getUniqueId();
-const builderId = 'qkit-filter-' + uniqueId;
+const queryBuilderId = 'qkit-query-builder-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
 const computedFilter = shallowRef<Filter>();
 
@@ -78,8 +78,8 @@ function onComputed(filter: Filter, manual: boolean): void {
 
 <template>
   <div :class="classes.search">
-    <Builder
-      :id="builderId"
+    <QueryBuilder
+      :id="queryBuilderId"
       v-model="filter"
       :entity="entity"
       :allow-reset="allowReset"
@@ -118,7 +118,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       :request-timezone="requestTimezone"
       :edit-columns="editColumns"
       :requester="requester"
-      :builder-id="builderId"
+      :query-builder-id="queryBuilderId"
     />
   </div>
 </template>

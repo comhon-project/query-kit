@@ -5,7 +5,8 @@ export type ClassName =
   | 'modal_footer'
   | 'filter_picker'
   | 'search'
-  | 'builder'
+  | 'query_builder'
+  | 'filter_builder'
   | 'condition_or_scope'
   | 'condition_or_scope_header'
   | 'invalid_filter'
@@ -59,7 +60,8 @@ const classList: ClassList = {
   modal_footer: 'qkit-modal-footer',
   filter_picker: 'qkit-filter-picker',
   search: 'qkit-search',
-  builder: 'qkit-builder',
+  query_builder: 'qkit-query-builder',
+  filter_builder: 'qkit-filter-builder',
   condition_or_scope: 'qkit-leaf-filter qkit-condition-or-scope',
   condition_or_scope_header: 'qkit-condition-or-scope-header',
   invalid_filter: 'qkit-leaf-filter qkit-invalid-filter',

@@ -12,8 +12,12 @@ describe('ClassManager', () => {
       expect(classes.search).toBe('qkit-search');
     });
 
-    it('has the builder class', () => {
-      expect(classes.builder).toBe('qkit-builder');
+    it('has the query_builder class', () => {
+      expect(classes.query_builder).toBe('qkit-query-builder');
+    });
+
+    it('has the filter_builder class', () => {
+      expect(classes.filter_builder).toBe('qkit-filter-builder');
     });
 
     it('has the btn class', () => {
@@ -51,7 +55,7 @@ describe('ClassManager', () => {
     it('does not affect unmodified classes', () => {
       registerClasses({ modal: 'custom-modal' });
       expect(classes.search).toBe('qkit-search');
-      expect(classes.builder).toBe('qkit-builder');
+      expect(classes.filter_builder).toBe('qkit-filter-builder');
     });
   });
 

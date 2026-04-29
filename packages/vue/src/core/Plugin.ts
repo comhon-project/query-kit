@@ -35,7 +35,7 @@ import { registerOperators, type AllowedOperators } from '@core/OperatorManager'
 import { registerComputedScopes, type ComputedScopes } from '@core/ComputedScopesManager';
 
 import Search from '@components/Search.vue';
-import Builder from '@components/Filter/Builder.vue';
+import QueryBuilder from '@components/QueryBuilder.vue';
 import Collection from '@components/Collection/Collection.vue';
 
 type EntitySchemaLoaderFunction = (id: string) => Promise<RawEntitySchema | null>;
@@ -193,6 +193,6 @@ export default {
 
     app.component('QkitSearch', Search);
     app.component('QkitCollection', Collection);
-    app.component('QkitBuilder', Builder);
+    app.component('QkitQueryBuilder', QueryBuilder);
   },
 };

@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'query builder',
   filter: 'filter',
   filters: 'filters',
   add: 'add',
@@ -61,7 +62,7 @@ export default {
   collection: 'collection',
 
   go_to_collection: 'go to search results',
-  go_to_filter: 'go to filter',
+  go_to_query_builder: 'go to query builder',
   undo: 'undo',
   redo: 'redo',
   invalid_column: 'invalid column:',

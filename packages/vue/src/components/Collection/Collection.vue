@@ -50,7 +50,7 @@ interface Props {
   requestTimezone?: string;
   editColumns?: boolean;
   requester?: Requester | RequesterFunction;
-  builderId?: string;
+  queryBuilderId?: string;
 }
 
 interface IndexedSortEntry {
@@ -136,9 +136,7 @@ async function initColumns(entitySchema: EntitySchema): Promise<void> {
   for (const columnId of cols) {
     try {
       const customColumn = props.customColumns?.[columnId];
-      const propertyPath = customColumn?.open
-        ? undefined
-        : await getPropertyPath(entitySchema.id, columnId);
+      const propertyPath = customColumn?.open ? undefined : await getPropertyPath(entitySchema.id, columnId);
       const property = propertyPath?.[propertyPath.length - 1];
       colsProps[columnId] = property;
 
@@ -389,7 +387,9 @@ watch(
 
 <template>
   <section :class="classes.collection" :aria-label="translate('collection')">
-    <a v-if="builderId" :href="'#' + builderId" :class="classes.skip_link">{{ translate('go_to_filter') }}</a>
+    <a v-if="queryBuilderId" :href="'#' + queryBuilderId" :class="classes.skip_link">
+      {{ translate('go_to_query_builder') }}
+    </a>
     <div>
       <div
         v-if="

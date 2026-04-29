@@ -1,4 +1,5 @@
 export default {
+  query_builder: 'конструктор запросов',
   filter: 'фильтр',
   filters: 'фильтры',
   add: 'добавить',
@@ -61,7 +62,7 @@ export default {
   collection: 'коллекция',
 
   go_to_collection: 'перейти к результатам поиска',
-  go_to_filter: 'перейти к фильтру',
+  go_to_query_builder: 'перейти к конструктору запросов',
   undo: 'отменить',
   redo: 'повторить',
   invalid_column: 'недопустимый столбец:',

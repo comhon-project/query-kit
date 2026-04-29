@@ -344,8 +344,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <section :class="classes.builder" :aria-label="translate('filter')">
-    <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
+  <section :class="classes.filter_builder" :aria-label="translate('filter')">
     <InvalidEntity v-if="!validEntity" :entity="entity" />
     <Group v-else-if="entitySchema" :model-value="internalModel" :entity-schema="entitySchema" @exit="goToCollection">
       <template #builder_actions>

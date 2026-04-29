@@ -20,7 +20,7 @@ const filter = ref(null);
 </script>
 
 <template>
-  <QkitBuilder entity="user" v-model="filter"/>
+  <QkitQueryBuilder entity="user" v-model="filter"/>
 </template>
 ```
 
@@ -31,7 +31,7 @@ Props marked with 🔗 support two-way binding via `v-model`.
 | key                   | v‑model | type               | required | default     | description                                                                                                      |
 | --------------------- | :-----: | ------------------ | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
 | entity                |         | string             | true     | -           | The entity id (user, company, post...)                                                                           |
-| modelValue            |   🔗    | object             | false    | `null`      | The query to build. Given object will be updated when user will make changes. More info on filter format [here](Query-filter-format). |
+| modelValue            |   🔗    | object             | false    | `null`      | The query to build. Given object will be updated when user will make changes. Accepts any filter type or `null`; non-group filters are auto-wrapped in a top-level group. More info on filter format [here](Query-filter-format). |
 | allowReset            |         | boolean            | false    | `true`      | Display a button to permit user to reset query to original state.                                                |
 | allowUndo             |         | boolean            | false    | `true`      | Enable undo button for filter changes.                                                                           |
 | allowRedo             |         | boolean            | false    | `true`      | Enable redo button for filter changes.                                                                           |
@@ -49,7 +49,7 @@ Props marked with 🔗 support two-way binding via `v-model`.
 ### Allowed properties
 Restrict allowed properties that may be part of query.
 ```js
-  <QkitBuilder
+  <QkitQueryBuilder
     entity="user"
     :allowed-properties="{
       user: ['last_name', 'birth_date'],
@@ -60,7 +60,7 @@ Restrict allowed properties that may be part of query.
 ### Allowed scopes
 Restrict allowed scopes that may be part of query.
 ```js
-  <QkitBuilder
+  <QkitQueryBuilder
     entity="user"
     :allowed-scopes="{
       user: ['my_user_scope'],
@@ -70,7 +70,7 @@ Restrict allowed scopes that may be part of query.
 ### Allowed operators
 Restrict allowed operators that may be part of query. This prop will override the plugin setting [operators](Plugin-initialization#allowed-operators).
 ```js
-  <QkitBuilder
+  <QkitQueryBuilder
     entity="user"
     :allowed-operators="{
       group: ['or'],
@@ -88,12 +88,12 @@ By default operators are displayed but you can define if you want to display ope
 
 You can simply disable all operators:
 ```js
-<QkitBuilder :display-operator="false" />
+<QkitQueryBuilder :display-operator="false" />
 ```
 Or you can disable operators by filter type:
 ```js
 // disable only group operators
-<QkitBuilder :display-operator="{ group: false, condition: true, entity_condition: true }" />
+<QkitQueryBuilder :display-operator="{ group: false, condition: true, entity_condition: true }" />
 ```
 
 ## Events
@@ -104,17 +104,17 @@ A `computed` event is triggered when the query filter is computed (debounced acc
 2. `manual` - boolean indicating if the event was triggered by user action (`true`) or by automatic computation (`false`)
 
 ```js
-<QkitBuilder @computed="(computedFilter, manual) => handle(computedFilter, manual)" />
+<QkitQueryBuilder @computed="(computedFilter, manual) => handle(computedFilter, manual)" />
 ```
 
-### Builder actions slot
+### QueryBuilder actions slot
 You can add custom actions in the builder header using the `#builder_actions` slot:
 ```html
-<QkitBuilder entity="user" v-model="filter">
+<QkitQueryBuilder entity="user" v-model="filter">
   <template #builder_actions>
     <button>My custom action</button>
   </template>
-</QkitBuilder>
+</QkitQueryBuilder>
 ```
 
 # Collection component
@@ -156,7 +156,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | userTimezone           |         | string             | false    | `'UTC'`          | Display time in given timezone.                                                                                                 |
 | requestTimezone        |         | string             | false    | `'UTC'`          | Timezone to use when requesting server.                                                                                         |
 | requester              |         | function or object | false    | -                | Override the requester defined in global plugin configuration.                                                                  |
-| builderId              |         | string             | false    | -                | ID of linked filter builder for skip-link navigation.                                                                           |
+| queryBuilderId         |         | string             | false    | -                | ID of linked query builder for skip-link navigation.                                                                           |
 | onRowClick             |         | function           | false    | -                | Row click handler. Signature: `(row, event) => void`.                                                                           |
 | onExport               |         | function           | false    | -                | Export handler. When provided, an export button is displayed. Signature: `(filter?) => void`.                                    |
 
@@ -236,7 +236,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | key                    | v‑model | type               | required | default          | description                                                                                                    |
 | ---------------------- | :-----: | ------------------ | -------- | ---------------- | -------------------------------------------------------------------------------------------------------------- |
 | entity                 |         | string             | true     | -                | The entity id (user, company, post...)                                                                         |
-| filter                 |   🔗    | object             | false    | `null`           | The query to build. More info on filter format [here](Query-filter-format).                                    |
+| filter                 |   🔗    | object             | false    | `null`           | The query to build. Accepts any filter type or `null`; non-group filters are auto-wrapped in a top-level group. More info on filter format [here](Query-filter-format).                                    |
 | columns                |   🔗    | array              | true     | -                | Columns to display. More information [here](Usage#columns).                                                    |
 | sort                   |   🔗    | array              | false    | -                | Sort order. Array of column ids or objects `{ column: string, order: 'asc'\|'desc' }`.                         |
 | page                   |   🔗    | number             | false    | `1`              | Current page number.                                                                                           |
