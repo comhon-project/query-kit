@@ -5,13 +5,13 @@ export function useHistory() {
   const undoStack = ref<GroupFilter[]>([]);
   const redoStack = ref<GroupFilter[]>([]);
   // Tracks the reference returned by undo/redo, so a hypothetical watcher
-  // on the consumer side that calls pushSnapshot with it does not record it.
+  // on the consumer side that calls commit with it does not record it.
   let lastEmitted: GroupFilter | null = null;
 
   const canUndo = computed(() => undoStack.value.length >= 2);
   const canRedo = computed(() => redoStack.value.length >= 1);
 
-  function pushSnapshot(state: GroupFilter): void {
+  function commit(state: GroupFilter): void {
     const raw = toRaw(state);
     if (raw === lastEmitted) {
       lastEmitted = null;
@@ -37,11 +37,11 @@ export function useHistory() {
     return lastEmitted;
   }
 
-  function clearHistory(): void {
+  function clear(): void {
     undoStack.value = [];
     redoStack.value = [];
     lastEmitted = null;
   }
 
-  return { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory };
+  return { commit, undo, redo, canUndo, canRedo, clear };
 }

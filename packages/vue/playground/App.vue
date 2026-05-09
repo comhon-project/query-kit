@@ -132,7 +132,7 @@ function onThemeChange() {
           {{ tab.label }}
         </button>
       </div>
-      <select v-model="theme" @change="onThemeChange" class="qkit-input" style="margin-left: auto">
+      <select v-model="theme" class="qkit-input" style="margin-left: auto" @change="onThemeChange">
         <option value="auto">Auto</option>
         <option value="light">Light</option>
         <option value="dark">Dark</option>
@@ -158,11 +158,11 @@ function onThemeChange() {
         All features enabled: column editor, pagination/infinite scroll, undo/redo, custom columns, sort.
       </p>
       <QkitSearch
-        :entity="state.default.entity"
         v-model:columns="state.default.columns"
         v-model:sort="state.default.sort"
         v-model:filter="state.default.filter"
         v-model:page="state.default.page"
+        :entity="state.default.entity"
         :requester="requester"
         :custom-columns="customColumns"
         :edit-columns="true"
@@ -177,11 +177,11 @@ function onThemeChange() {
         Filter is initialized with conditions and an entity condition with count.
       </p>
       <QkitSearch
-        :entity="state.prefilled.entity"
         v-model:columns="state.prefilled.columns"
         v-model:sort="state.prefilled.sort"
         v-model:filter="state.prefilled.filter"
         v-model:page="state.prefilled.page"
+        :entity="state.prefilled.entity"
         :requester="requester"
         :edit-columns="true"
         :allowed-collection-types="['infinite', 'pagination']"
@@ -195,11 +195,11 @@ function onThemeChange() {
         The query is not sent automatically. Click the search button to trigger the request.
       </p>
       <QkitSearch
-        :entity="state.manual.entity"
         v-model:columns="state.manual.columns"
         v-model:sort="state.manual.sort"
         v-model:filter="state.manual.filter"
         v-model:page="state.manual.page"
+        :entity="state.manual.entity"
         :requester="requester"
         :manual="true"
         :edit-columns="true"
@@ -213,11 +213,11 @@ function onThemeChange() {
         Stripped-down UI: no operators, no undo/redo/reset, no column editor, no result count.
       </p>
       <QkitSearch
-        :entity="state.minimal.entity"
         v-model:columns="state.minimal.columns"
         v-model:sort="state.minimal.sort"
         v-model:filter="state.minimal.filter"
         v-model:page="state.minimal.page"
+        :entity="state.minimal.entity"
         :requester="requester"
         :display-operator="false"
         :allow-reset="false"
@@ -234,11 +234,11 @@ function onThemeChange() {
         Only a few properties, one scope, and two operators (= and &lt;&gt;) are allowed.
       </p>
       <QkitSearch
-        :entity="state.restricted.entity"
         v-model:columns="state.restricted.columns"
         v-model:sort="state.restricted.sort"
         v-model:filter="state.restricted.filter"
         v-model:page="state.restricted.page"
+        :entity="state.restricted.entity"
         :requester="requester"
         :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
         :allowed-scopes="{ user: ['scope'] }"
@@ -252,11 +252,11 @@ function onThemeChange() {
     <div v-if="activeTab === 'clicks'">
       <p class="playground-description">Click a row or the company cell to see the event data below.</p>
       <QkitSearch
-        :entity="state.clicks.entity"
         v-model:columns="state.clicks.columns"
         v-model:sort="state.clicks.sort"
         v-model:filter="state.clicks.filter"
         v-model:page="state.clicks.page"
+        :entity="state.clicks.entity"
         :requester="requester"
         :on-row-click="onRowClick"
         :custom-columns="{ company: { onCellClick: onCellClick } }"
@@ -279,11 +279,11 @@ function onThemeChange() {
         Filter structure is fixed: conditions cannot be added or removed, only values can be changed.
       </p>
       <QkitSearch
-        :entity="state.fixed.entity"
         v-model:columns="state.fixed.columns"
         v-model:sort="state.fixed.sort"
         v-model:filter="state.fixed.filter"
         v-model:page="state.fixed.page"
+        :entity="state.fixed.entity"
         :requester="requester"
         user-timezone="Europe/Paris"
       />

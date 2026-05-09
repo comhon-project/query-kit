@@ -73,8 +73,8 @@ export default {
   invalid_type: 'অবৈধ ধরন:',
   entities: 'সত্তা',
   reorder: 'পুনর্বিন্যাস করুন',
-  column_grabbed: 'ধরা হয়েছে, তীর কী দিয়ে সরান, স্পেস দিয়ে ছাড়ুন',
-  column_moved: 'অবস্থানে সরানো হয়েছে',
-  column_dropped: 'ছাড়া হয়েছে',
+  item_grabbed: 'ধরা হয়েছে, তীর কী দিয়ে সরান, স্পেস দিয়ে ছাড়ুন',
+  item_moved: 'অবস্থানে সরানো হয়েছে',
+  item_dropped: 'ছাড়া হয়েছে',
   reorder_cancelled: 'পুনর্বিন্যাস বাতিল করা হয়েছে',
 };

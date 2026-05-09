@@ -73,8 +73,8 @@ export default {
   invalid_type: '无效类型：',
   entities: '实体',
   reorder: '重新排序',
-  column_grabbed: '已抓取，使用方向键移动，空格键放下',
-  column_moved: '已移动到位置',
-  column_dropped: '已放下',
+  item_grabbed: '已抓取，使用方向键移动，空格键放下',
+  item_moved: '已移动到位置',
+  item_dropped: '已放下',
   reorder_cancelled: '重新排序已取消',
 };

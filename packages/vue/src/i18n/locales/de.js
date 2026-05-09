@@ -73,8 +73,8 @@ export default {
   invalid_type: 'ungültiger Typ:',
   entities: 'Entitäten',
   reorder: 'neu anordnen',
-  column_grabbed: 'gegriffen, Pfeiltasten zum Verschieben, Leertaste zum Ablegen',
-  column_moved: 'verschoben auf Position',
-  column_dropped: 'abgelegt',
+  item_grabbed: 'gegriffen, Pfeiltasten zum Verschieben, Leertaste zum Ablegen',
+  item_moved: 'verschoben auf Position',
+  item_dropped: 'abgelegt',
   reorder_cancelled: 'Neuanordnung abgebrochen',
 };

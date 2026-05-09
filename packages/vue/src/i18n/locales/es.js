@@ -73,8 +73,8 @@ export default {
   invalid_type: 'tipo inválido:',
   entities: 'entidades',
   reorder: 'reordenar',
-  column_grabbed: 'agarrado, use las flechas para mover, Espacio para soltar',
-  column_moved: 'movido a la posición',
-  column_dropped: 'soltado',
+  item_grabbed: 'agarrado, use las flechas para mover, Espacio para soltar',
+  item_moved: 'movido a la posición',
+  item_dropped: 'soltado',
   reorder_cancelled: 'reorden cancelado',
 };

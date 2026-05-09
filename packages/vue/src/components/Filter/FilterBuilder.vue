@@ -66,7 +66,7 @@ const internalModel = ref<GroupFilter>(null!);
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
 const config = reactive<BuilderConfig>({} as BuilderConfig);
-const { pushSnapshot, undo, redo, canUndo, canRedo, clearHistory } = useHistory();
+const { commit, undo, redo, canUndo, canRedo, clear } = useHistory();
 
 provide(builderConfigKey, config);
 
@@ -102,7 +102,7 @@ function init(value: Filter | null): void {
   originalFilter.removable = false;
   prepareFilters(originalFilter);
 
-  clearHistory();
+  clear();
   isInitialEmit = true;
   lastComputedEmitted = undefined;
   internalModel.value = structuredClone(originalFilter);
@@ -274,7 +274,7 @@ function scheduleEmit(): void {
     clearTimeout(timeoutId);
   }
   timeoutId = setTimeout(async () => {
-    pushSnapshot(internalModel.value);
+    commit(internalModel.value);
     const stripped = stripKeys(internalModel.value);
     lastEmitted = stripped;
     modelValue.value = stripped;

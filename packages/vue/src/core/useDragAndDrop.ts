@@ -1,4 +1,5 @@
-import { ref, nextTick } from 'vue';
+import { ref, nextTick, watch } from 'vue';
+import { translate } from '@i18n/i18n';
 
 export type DragAndDropAction =
   | { type: 'grab'; index: number }
@@ -15,8 +16,24 @@ export function useDragAndDrop(options: UseDragAndDropOptions) {
   const dragOverIndex = ref<number | null>(null);
   const grabbedIndex = ref<number | null>(null);
   const lastAction = ref<DragAndDropAction | null>(null);
+  const liveMessage = ref('');
   const itemRefs: HTMLElement[] = [];
   let dragFromGrip = false;
+
+  watch(lastAction, async (action) => {
+    liveMessage.value = '';
+    if (!action) return;
+    await nextTick();
+    if (action.type === 'cancel') {
+      liveMessage.value = translate('reorder_cancelled')!;
+    } else if (action.type === 'grab') {
+      liveMessage.value = translate('item_grabbed')!;
+    } else if (action.type === 'drop') {
+      liveMessage.value = translate('item_dropped')!;
+    } else if (action.type === 'move') {
+      liveMessage.value = `${translate('item_moved')} ${action.index + 1} / ${action.length}`;
+    }
+  });
 
   function focusItem(index: number): void {
     itemRefs[index]?.focus();
@@ -190,6 +207,7 @@ export function useDragAndDrop(options: UseDragAndDropOptions) {
 
   return {
     lastAction,
+    liveMessage,
     onGripStart,
     setItemRef,
     getItemBindings,

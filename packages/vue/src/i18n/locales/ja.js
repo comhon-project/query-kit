@@ -73,8 +73,8 @@ export default {
   invalid_type: '無効なタイプ：',
   entities: 'エンティティ',
   reorder: '並べ替え',
-  column_grabbed: 'つかみました、矢印キーで移動、スペースキーで離します',
-  column_moved: '位置に移動しました',
-  column_dropped: '離しました',
+  item_grabbed: 'つかみました、矢印キーで移動、スペースキーで離します',
+  item_moved: '位置に移動しました',
+  item_dropped: '離しました',
   reorder_cancelled: '並べ替えがキャンセルされました',
 };

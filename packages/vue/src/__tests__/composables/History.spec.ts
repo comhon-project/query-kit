@@ -7,35 +7,35 @@ function makeGroup(filters: unknown[] = []): GroupFilter {
 }
 
 describe('useHistory', () => {
-  describe('pushSnapshot', () => {
+  describe('commit', () => {
     it('records states in undo stack', () => {
-      const { pushSnapshot, canUndo } = useHistory();
-      pushSnapshot(makeGroup());
+      const { commit, canUndo } = useHistory();
+      commit(makeGroup());
       expect(canUndo.value).toBe(false);
 
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
       expect(canUndo.value).toBe(true);
     });
 
     it('clears redo stack on new snapshot', () => {
-      const { pushSnapshot, undo, canRedo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+      const { commit, undo, canRedo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
 
       undo();
       expect(canRedo.value).toBe(true);
 
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'b', operator: '=' }]));
+      commit(makeGroup([{ type: 'condition', property: 'b', operator: '=' }]));
       expect(canRedo.value).toBe(false);
     });
 
     it('deep clones state so mutations do not affect history', () => {
-      const { pushSnapshot, undo } = useHistory();
+      const { commit, undo } = useHistory();
       const state1 = makeGroup();
-      pushSnapshot(state1);
+      commit(state1);
 
       const state2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
-      pushSnapshot(state2);
+      commit(state2);
 
       state1.operator = 'or';
       state2.filters.push({ type: 'condition', property: 'b', operator: '=' } as any);
@@ -46,24 +46,24 @@ describe('useHistory', () => {
     });
 
     it('skips a push whose reference matches the one returned by undo', () => {
-      const { pushSnapshot, undo, canUndo, canRedo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+      const { commit, undo, canUndo, canRedo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
 
       const restored = undo()!;
-      pushSnapshot(restored);
+      commit(restored);
 
       expect(canUndo.value).toBe(false);
       expect(canRedo.value).toBe(true);
     });
 
     it('only skips the exact restored reference, not unrelated pushes', () => {
-      const { pushSnapshot, undo, canUndo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+      const { commit, undo, canUndo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
 
       undo();
-      pushSnapshot(makeGroup([{ type: 'condition', property: 'x', operator: '=' }]));
+      commit(makeGroup([{ type: 'condition', property: 'x', operator: '=' }]));
       expect(canUndo.value).toBe(true);
     });
   });
@@ -75,15 +75,15 @@ describe('useHistory', () => {
     });
 
     it('is false with 1 entry', () => {
-      const { pushSnapshot, canUndo } = useHistory();
-      pushSnapshot(makeGroup());
+      const { commit, canUndo } = useHistory();
+      commit(makeGroup());
       expect(canUndo.value).toBe(false);
     });
 
     it('is true with 2+ entries', () => {
-      const { pushSnapshot, canUndo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup());
+      const { commit, canUndo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup());
       expect(canUndo.value).toBe(true);
     });
   });
@@ -95,9 +95,9 @@ describe('useHistory', () => {
     });
 
     it('is true after an undo', () => {
-      const { pushSnapshot, undo, canRedo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup());
+      const { commit, undo, canRedo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup());
       undo();
       expect(canRedo.value).toBe(true);
     });
@@ -110,31 +110,31 @@ describe('useHistory', () => {
     });
 
     it('returns null with only one snapshot', () => {
-      const { pushSnapshot, undo } = useHistory();
-      pushSnapshot(makeGroup());
+      const { commit, undo } = useHistory();
+      commit(makeGroup());
       expect(undo()).toBeNull();
     });
 
     it('returns the previous state', () => {
-      const { pushSnapshot, undo } = useHistory();
+      const { commit, undo } = useHistory();
       const first = makeGroup();
       const second = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
 
-      pushSnapshot(first);
-      pushSnapshot(second);
+      commit(first);
+      commit(second);
 
       expect(undo()).toEqual(first);
     });
 
     it('allows multiple undos', () => {
-      const { pushSnapshot, undo } = useHistory();
+      const { commit, undo } = useHistory();
       const s1 = makeGroup();
       const s2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
       const s3 = makeGroup([{ type: 'condition', property: 'b', operator: '<>' }]);
 
-      pushSnapshot(s1);
-      pushSnapshot(s2);
-      pushSnapshot(s3);
+      commit(s1);
+      commit(s2);
+      commit(s3);
 
       expect(undo()).toEqual(s2);
       expect(undo()).toEqual(s1);
@@ -148,58 +148,58 @@ describe('useHistory', () => {
     });
 
     it('restores the undone state', () => {
-      const { pushSnapshot, undo, redo } = useHistory();
+      const { commit, undo, redo } = useHistory();
       const s1 = makeGroup();
       const s2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
 
-      pushSnapshot(s1);
-      pushSnapshot(s2);
+      commit(s1);
+      commit(s2);
 
       undo();
       expect(redo()).toEqual(s2);
     });
   });
 
-  describe('clearHistory', () => {
+  describe('clear', () => {
     it('clears both stacks', () => {
-      const { pushSnapshot, undo, clearHistory, canUndo, canRedo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup());
+      const { commit, undo, clear, canUndo, canRedo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup());
+      commit(makeGroup());
       undo();
 
       expect(canUndo.value).toBe(true);
       expect(canRedo.value).toBe(true);
 
-      clearHistory();
+      clear();
       expect(canUndo.value).toBe(false);
       expect(canRedo.value).toBe(false);
     });
 
     it('resets the tracked reference so a pending restored ref is not muted', () => {
-      const { pushSnapshot, undo, clearHistory, canUndo } = useHistory();
-      pushSnapshot(makeGroup());
-      pushSnapshot(makeGroup());
+      const { commit, undo, clear, canUndo } = useHistory();
+      commit(makeGroup());
+      commit(makeGroup());
 
       const restored = undo()!;
-      clearHistory();
-      pushSnapshot(restored);
+      clear();
+      commit(restored);
       expect(canUndo.value).toBe(false);
-      pushSnapshot(makeGroup());
+      commit(makeGroup());
       expect(canUndo.value).toBe(true);
     });
   });
 
   describe('undo/redo cycle', () => {
     it('handles full undo-redo-undo cycle', () => {
-      const { pushSnapshot, undo, redo } = useHistory();
+      const { commit, undo, redo } = useHistory();
       const s1 = makeGroup();
       const s2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
       const s3 = makeGroup([{ type: 'condition', property: 'b', operator: '<>' }]);
 
-      pushSnapshot(s1);
-      pushSnapshot(s2);
-      pushSnapshot(s3);
+      commit(s1);
+      commit(s2);
+      commit(s3);
 
       expect(undo()).toEqual(s2);
       expect(undo()).toEqual(s1);

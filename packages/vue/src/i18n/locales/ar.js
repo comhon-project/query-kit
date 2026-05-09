@@ -73,8 +73,8 @@ export default {
   invalid_type: 'نوع غير صالح:',
   entities: 'كيانات',
   reorder: 'إعادة ترتيب',
-  column_grabbed: 'تم الإمساك، استخدم مفاتيح الأسهم للتحريك، مسافة للإفلات',
-  column_moved: 'تم النقل إلى الموضع',
-  column_dropped: 'تم الإفلات',
+  item_grabbed: 'تم الإمساك، استخدم مفاتيح الأسهم للتحريك، مسافة للإفلات',
+  item_moved: 'تم النقل إلى الموضع',
+  item_dropped: 'تم الإفلات',
   reorder_cancelled: 'تم إلغاء إعادة الترتيب',
 };

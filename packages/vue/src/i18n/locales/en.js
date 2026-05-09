@@ -73,8 +73,8 @@ export default {
   invalid_type: 'invalid type:',
   entities: 'entities',
   reorder: 'reorder',
-  column_grabbed: 'grabbed, use arrows to move, Space to drop',
-  column_moved: 'moved to position',
-  column_dropped: 'dropped',
+  item_grabbed: 'grabbed, use arrows to move, Space to drop',
+  item_moved: 'moved to position',
+  item_dropped: 'dropped',
   reorder_cancelled: 'reorder cancelled',
 };
