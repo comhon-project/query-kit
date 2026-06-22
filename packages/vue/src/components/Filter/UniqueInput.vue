@@ -14,7 +14,7 @@ import {
 import InvalidType from '@components/Messages/InvalidType.vue';
 import { getComputedScopeParameterTranslation, type ComputedScopeParameter } from '@core/ComputedScopesManager';
 import { type NativeHtmlComponent } from '@core/types';
-import { builderConfigKey } from '@core/InjectionKeys';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   multiple: boolean;
@@ -28,7 +28,7 @@ const modelValue = defineModel<unknown>();
 const props = withDefaults(defineProps<Props>(), {
   editable: true,
 });
-const config = inject(builderConfigKey)!;
+const config = inject(filterBuilderConfigKey)!;
 
 // undefined for computed scope parameters (no owner)
 const propertyOrScope = computed(() => 'owner' in props.target ? props.target : undefined);

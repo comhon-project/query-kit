@@ -42,6 +42,7 @@ interface Props {
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
   aliasInsensitiveLabels?: boolean;
+  actionsLocation?: 'header' | 'embedded';
 }
 
 const filter = defineModel<Filter | null>('filter', { default: null });
@@ -71,7 +72,7 @@ const computedFilter = shallowRef<Filter>();
 function onComputed(filter: Filter, manual: boolean): void {
   computedFilter.value = filter;
   if (manual) {
-    location.hash = collectionId;
+    document.getElementById(collectionId)?.scrollIntoView();
   }
 }
 </script>
@@ -95,6 +96,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       :alias-insensitive-labels="aliasInsensitiveLabels"
       :manual="manual"
       :collection-id="collectionId"
+      :actions-location="actionsLocation"
       @computed="onComputed"
     />
     <Collection

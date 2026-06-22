@@ -6,7 +6,7 @@ import { useSearchable } from '@components/Filter/Composable/Searchable';
 import FilterPicker from '@components/Filter/FilterPicker.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { type EntityConditionFilter, type Filter } from '@core/types';
-import { builderConfigKey } from '@core/InjectionKeys';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: EntityConditionFilter;
@@ -20,7 +20,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
-const config = inject(builderConfigKey)!;
+const config = inject(filterBuilderConfigKey)!;
 const showFilterPicker = ref<boolean>(false);
 const { isEditable } = useFilterWithOperator(config, props);
 const { hasSearchableItems } = useSearchable(config, props);

@@ -4,7 +4,7 @@ import { getComputedScopes, type ComputedScope } from '@core/ComputedScopesManag
 import { getFiltrableProperties, getFiltrableScopes } from '@core/RequestSchema';
 import { PropertyNotFoundError } from '@core/errors';
 import type { EntitySchema, Property, Scope } from '@core/EntitySchema';
-import type { BuilderConfig } from '@core/types';
+import type { FilterBuilderConfig } from '@core/types';
 
 export interface UseSearchableReturn {
   searchableProperties: Ref<Property[]>;
@@ -15,7 +15,7 @@ export interface UseSearchableReturn {
   hasSearchableItems: ComputedRef<boolean>;
 }
 
-const useSearchable = (config: BuilderConfig, props: { entitySchema: EntitySchema }): UseSearchableReturn => {
+const useSearchable = (config: FilterBuilderConfig, props: { entitySchema: EntitySchema }): UseSearchableReturn => {
   const searchableProperties: Ref<Property[]> = ref([]);
   const searchableScopes: Ref<Scope[]> = ref([]);
   const invalidProperties: Ref<string[]> = ref([]);

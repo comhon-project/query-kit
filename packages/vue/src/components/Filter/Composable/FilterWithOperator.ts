@@ -1,7 +1,7 @@
 import { computed, type ComputedRef } from 'vue';
 import { getOperatorTranslation, getConditionOperators, getContainerOperators } from '@core/OperatorManager';
 import type { EntitySchema } from '@core/EntitySchema';
-import type { FilterWithOperator, ConditionFilter, BuilderConfig } from '@core/types';
+import type { FilterWithOperator, ConditionFilter, FilterBuilderConfig } from '@core/types';
 
 export interface OperatorOption {
   label: string;
@@ -16,7 +16,7 @@ export interface UseFilterWithOperatorReturn {
 }
 
 const useFilterWithOperator = (
-  config: BuilderConfig,
+  config: FilterBuilderConfig,
   props: { entitySchema: EntitySchema; modelValue: FilterWithOperator },
 ): UseFilterWithOperatorReturn => {
   const isRemovable = computed(() => !(props.modelValue.removable === false));

@@ -186,20 +186,15 @@ export interface CustomInputProps {
   enumId?: string;
 }
 
-// ==================== Builder Config (Provide/Inject) ====================
+// ==================== Filter Builder Config (Provide/Inject) ====================
 
-export interface BuilderConfig {
+export interface FilterBuilderConfig {
   allowedScopes?: AllowedScopes;
   allowedProperties?: AllowedProperties;
   allowedOperators?: AllowedOperators;
   displayOperator: DisplayOperator;
   userTimezone: string;
   requestTimezone: string;
-  allowReset: boolean;
-  allowUndo: boolean;
-  allowRedo: boolean;
-  debounce: number;
-  manual: boolean;
   aliasInsensitiveLabels: boolean;
 }
 

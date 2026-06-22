@@ -173,6 +173,18 @@
   border-radius: var(--qkit-border-radius-md);
 }
 
+.qkit-query-builder-header {
+  display: flex;
+  gap: var(--qkit-padding-sm);
+  justify-content: flex-end;
+  padding: var(--qkit-padding-sm);
+  border-bottom: 1px solid var(--qkit-color-border);
+}
+
+.qkit-query-builder-header:empty {
+  display: none;
+}
+
 /* Outer group inside query-builder is transparent: the visible frame is on the wrapper.
    Nested groups (.qkit-group .qkit-group) keep their own frame. */
 .qkit-query-builder .qkit-group:not(.qkit-group .qkit-group) {

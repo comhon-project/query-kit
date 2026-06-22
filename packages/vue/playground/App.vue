@@ -11,10 +11,12 @@ const tabs = [
   { id: 'default', label: 'Default' },
   { id: 'prefilled', label: 'Pre-filled' },
   { id: 'manual', label: 'Manual' },
+  { id: 'deferred', label: 'Deferred query' },
   { id: 'minimal', label: 'Minimal' },
   { id: 'restricted', label: 'Restricted' },
   { id: 'clicks', label: 'Clicks' },
   { id: 'fixed', label: 'Fixed' },
+  { id: 'embedded', label: 'Embedded actions' },
 ];
 
 const customColumns = {
@@ -64,9 +66,11 @@ const state = {
     ],
   }),
   manual: createState('user', userColumns),
+  deferred: createState('user', userColumns),
   minimal: createState('user', ['first_name', 'last_name', 'age', 'company']),
   restricted: createState('user', ['first_name', 'last_name', 'age', 'gender', 'company']),
   clicks: createState('user', ['first_name', 'last_name', 'age', 'company']),
+  embedded: createState('user', userColumns),
   fixed: createState('organization', ['brand_name', 'address', 'description', 'country', 'contacts'], {
     type: 'group',
     operator: 'and',
@@ -207,6 +211,24 @@ function onThemeChange() {
       />
     </div>
 
+    <!-- Deferred query -->
+    <div v-if="activeTab === 'deferred'">
+      <p class="playground-description">
+        directQuery=false: the collection does not query on load; the request only fires once the filter changes.
+      </p>
+      <QkitSearch
+        v-model:columns="state.deferred.columns"
+        v-model:sort="state.deferred.sort"
+        v-model:filter="state.deferred.filter"
+        v-model:page="state.deferred.page"
+        :entity="state.deferred.entity"
+        :requester="requester"
+        :direct-query="false"
+        :edit-columns="true"
+        user-timezone="Europe/Paris"
+      />
+    </div>
+
     <!-- Minimal -->
     <div v-if="activeTab === 'minimal'">
       <p class="playground-description">
@@ -271,6 +293,24 @@ function onThemeChange() {
           <pre>{{ JSON.stringify(clickedCell.value, null, 2) }}</pre>
         </div>
       </div>
+    </div>
+
+    <!-- Embedded actions -->
+    <div v-if="activeTab === 'embedded'">
+      <p class="playground-description">
+        Actions (undo/redo/reset) are rendered inside the FilterBuilder's group action bar instead of a header.
+      </p>
+      <QkitSearch
+        v-model:columns="state.embedded.columns"
+        v-model:sort="state.embedded.sort"
+        v-model:filter="state.embedded.filter"
+        v-model:page="state.embedded.page"
+        :entity="state.embedded.entity"
+        :requester="requester"
+        :edit-columns="true"
+        actions-location="embedded"
+        user-timezone="Europe/Paris"
+      />
     </div>
 
     <!-- Fixed -->

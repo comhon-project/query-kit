@@ -7,7 +7,7 @@ import { registerLoader as registerRequestLoader, resolve as resolveRequest } fr
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { registerComputedScopes } from '@core/ComputedScopesManager';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
-import { defaultBuilderConfig } from '@tests/helpers/provideConfig';
+import { defaultFilterBuilderConfig } from '@tests/helpers/provideConfig';
 
 function makeProp(id: string, type: string = 'string'): Property {
   return { id, type, owner: 'user' } as Property;
@@ -46,7 +46,7 @@ describe('useSearchable', () => {
       const prop = makeProp('first_name');
       const schema = makeSchema([prop]);
 
-      const { searchableProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableProperties } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableProperties.value).toEqual([prop]);
@@ -57,7 +57,7 @@ describe('useSearchable', () => {
       const p2 = makeProp('last_name');
       const schema = makeSchema([p1, p2]);
 
-      const config = defaultBuilderConfig({ allowedProperties: { user: ['first_name'] } });
+      const config = defaultFilterBuilderConfig({ allowedProperties: { user: ['first_name'] } });
       const { searchableProperties } = useSearchable(config, { entitySchema: schema });
       await flushWatchEffects();
 
@@ -68,7 +68,7 @@ describe('useSearchable', () => {
       const prop = makeProp('first_name');
       const schema = makeSchema([prop]);
 
-      const config = defaultBuilderConfig({ allowedOperators: { condition: { basic: [] } } });
+      const config = defaultFilterBuilderConfig({ allowedOperators: { condition: { basic: [] } } });
       const { searchableProperties } = useSearchable(config, { entitySchema: schema });
       await flushWatchEffects();
 
@@ -79,7 +79,7 @@ describe('useSearchable', () => {
       const objProp = makeProp('metadata', 'object');
       const schema = makeSchema([objProp]);
 
-      const { searchableProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableProperties } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableProperties.value).toEqual([objProp]);
@@ -89,7 +89,7 @@ describe('useSearchable', () => {
       const objProp = makeProp('metadata', 'object');
       const schema = makeSchema([objProp]);
 
-      const config = defaultBuilderConfig({ allowedOperators: { entity_condition: [] } });
+      const config = defaultFilterBuilderConfig({ allowedOperators: { entity_condition: [] } });
       const { searchableProperties } = useSearchable(config, { entitySchema: schema });
       await flushWatchEffects();
 
@@ -99,7 +99,7 @@ describe('useSearchable', () => {
     it('excludes non-filtrable properties from inline entity schemas', async () => {
       const metadataSchema = await resolveEntity('user.metadata');
 
-      const { searchableProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: metadataSchema });
+      const { searchableProperties } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: metadataSchema });
       await flushWatchEffects();
 
       const ids = searchableProperties.value.map((p) => p.id);
@@ -112,14 +112,14 @@ describe('useSearchable', () => {
       const relProp = makeProp('company', 'relationship');
       const schema = makeSchema([relProp]);
 
-      const config = defaultBuilderConfig({ allowedOperators: { entity_condition: [] } });
+      const config = defaultFilterBuilderConfig({ allowedOperators: { entity_condition: [] } });
       const { searchableProperties } = useSearchable(config, { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableProperties.value).toEqual([]);
 
       // Now with default operators
-      const { searchableProperties: sp2 } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableProperties: sp2 } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(sp2.value).toEqual([relProp]);
@@ -128,7 +128,7 @@ describe('useSearchable', () => {
     it('ignores filtrable properties not in entity schema', async () => {
       const schema = makeSchema([]); // no properties defined
 
-      const { searchableProperties, invalidProperties } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableProperties, invalidProperties } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableProperties.value).toEqual([]);
@@ -141,7 +141,7 @@ describe('useSearchable', () => {
       const scope = makeScope('scope');
       const schema = makeSchema([], [scope]);
 
-      const { searchableScopes } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableScopes } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableScopes.value).toEqual([scope]);
@@ -152,7 +152,7 @@ describe('useSearchable', () => {
       const s2 = makeScope('string_scope');
       const schema = makeSchema([], [s1, s2]);
 
-      const config = defaultBuilderConfig({ allowedScopes: { user: ['scope'] } });
+      const config = defaultFilterBuilderConfig({ allowedScopes: { user: ['scope'] } });
       const { searchableScopes } = useSearchable(config, { entitySchema: schema });
       await flushWatchEffects();
 
@@ -162,7 +162,7 @@ describe('useSearchable', () => {
     it('ignores filtrable scopes not in entity schema', async () => {
       const schema = makeSchema([], []); // no scopes defined
 
-      const { searchableScopes, invalidScopes } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableScopes, invalidScopes } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(searchableScopes.value).toEqual([]);
@@ -176,7 +176,7 @@ describe('useSearchable', () => {
       registerComputedScopes({ user: [cs as any] });
       const schema = makeSchema();
 
-      const { searchableComputedScopes } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableComputedScopes } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
 
       expect(searchableComputedScopes.value).toEqual([cs]);
     });
@@ -184,7 +184,7 @@ describe('useSearchable', () => {
     it('returns empty array when no computed scopes', () => {
       const schema = makeSchema();
 
-      const { searchableComputedScopes } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { searchableComputedScopes } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
 
       expect(searchableComputedScopes.value).toEqual([]);
     });
@@ -195,7 +195,7 @@ describe('useSearchable', () => {
       registerComputedScopes({ user: [cs1, cs2] as any });
       const schema = makeSchema();
 
-      const config = defaultBuilderConfig({ allowedScopes: { user: ['cs_a'] } });
+      const config = defaultFilterBuilderConfig({ allowedScopes: { user: ['cs_a'] } });
       const { searchableComputedScopes } = useSearchable(config, { entitySchema: schema });
 
       expect(searchableComputedScopes.value).toEqual([cs1]);
@@ -206,7 +206,7 @@ describe('useSearchable', () => {
     it('is false when nothing is searchable', async () => {
       const schema = makeSchema();
 
-      const { hasSearchableItems } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { hasSearchableItems } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(hasSearchableItems.value).toBe(false);
@@ -216,7 +216,7 @@ describe('useSearchable', () => {
       const prop = makeProp('first_name');
       const schema = makeSchema([prop]);
 
-      const { hasSearchableItems } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { hasSearchableItems } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(hasSearchableItems.value).toBe(true);
@@ -226,7 +226,7 @@ describe('useSearchable', () => {
       const scope = makeScope('scope');
       const schema = makeSchema([], [scope]);
 
-      const { hasSearchableItems } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { hasSearchableItems } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
       await flushWatchEffects();
 
       expect(hasSearchableItems.value).toBe(true);
@@ -236,7 +236,7 @@ describe('useSearchable', () => {
       registerComputedScopes({ user: [{ id: 'cs', name: 'CS' }] as any });
       const schema = makeSchema();
 
-      const { hasSearchableItems } = useSearchable(defaultBuilderConfig(), { entitySchema: schema });
+      const { hasSearchableItems } = useSearchable(defaultFilterBuilderConfig(), { entitySchema: schema });
 
       expect(hasSearchableItems.value).toBe(true);
     });

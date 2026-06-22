@@ -41,6 +41,10 @@ Element.prototype.getAnimations =
 Element.prototype.scrollTo =
   Element.prototype.scrollTo ?? vi.fn();
 
+// Mock Element.prototype.scrollIntoView (not implemented in jsdom)
+Element.prototype.scrollIntoView =
+  Element.prototype.scrollIntoView ?? vi.fn();
+
 // Mock IntersectionObserver (not implemented in jsdom)
 // Use a class so it works with `new` and isn't affected by restoreMocks
 globalThis.IntersectionObserver =

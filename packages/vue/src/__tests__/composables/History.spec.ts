@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { useHistory } from '@components/Filter/Composable/History';
+import { useHistory } from '@components/Composable/History';
 import type { GroupFilter } from '@core/types';
 
 function makeGroup(filters: unknown[] = []): GroupFilter {

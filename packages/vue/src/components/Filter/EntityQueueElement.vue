@@ -7,7 +7,7 @@ import SelectEntities from '@components/Common/SelectEntities.vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { type EntityConditionFilter } from '@core/types';
-import { builderConfigKey } from '@core/InjectionKeys';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: EntityConditionFilter;
@@ -21,7 +21,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
-const config = inject(builderConfigKey)!;
+const config = inject(filterBuilderConfigKey)!;
 const { canEditOperator, operatorOptions } = useFilterWithOperator(config, props);
 const property = computed(() => props.entitySchema.getProperty(props.modelValue.property));
 const label = computed<string>(() => getPropertyTranslation(property.value));

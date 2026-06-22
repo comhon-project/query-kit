@@ -18,7 +18,7 @@ import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
 import { translate } from '@i18n/i18n';
 import { type ConditionFilter } from '@core/types';
-import { builderConfigKey } from '@core/InjectionKeys';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   modelValue: ConditionFilter;
@@ -32,7 +32,7 @@ interface Emits {
 defineEmits<Emits>();
 
 const props = defineProps<Props>();
-const config = inject(builderConfigKey)!;
+const config = inject(filterBuilderConfigKey)!;
 
 const validOperator = ref<boolean>(true);
 const validProperty = ref<boolean>(true);
@@ -95,6 +95,7 @@ watch(
       }
     }
   },
+  { flush: 'sync' },
 );
 </script>
 

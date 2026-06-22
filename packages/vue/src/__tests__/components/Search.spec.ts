@@ -25,12 +25,17 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-async function mountSearch(props: Record<string, unknown> = {}) {
+async function mountSearch(props: Record<string, unknown> = {}, mountOptions: Record<string, unknown> = {}) {
+  // computed fires immediately on mount in the new architecture, so Collection
+  // renders synchronously and would throw without a requester.
+  const defaultRequester = createMockRequester().requester;
   wrapper = mountWithPlugin(Search, {
+    ...mountOptions,
     props: {
       entity: 'user',
       limit: 10,
       columns: ['first_name', 'last_name'],
+      requester: defaultRequester,
       'onUpdate:columns': (v: unknown) => wrapper.setProps({ columns: v }),
       'onUpdate:filter': (v: unknown) => wrapper.setProps({ filter: v }),
       'onUpdate:sort': (v: unknown) => wrapper.setProps({ sort: v }),
@@ -41,8 +46,8 @@ async function mountSearch(props: Record<string, unknown> = {}) {
   await flushAll();
 }
 
-async function mountSearchAndTriggerComputed(props: Record<string, unknown> = {}) {
-  await mountSearch(props);
+async function mountSearchAndTriggerComputed(props: Record<string, unknown> = {}, mountOptions: Record<string, unknown> = {}) {
+  await mountSearch(props, mountOptions);
   // Advance timers to trigger QueryBuilder's debounced computed emit
   vi.advanceTimersByTime(1000);
   await flushAll();
@@ -60,12 +65,6 @@ describe('Search', () => {
     it('renders QueryBuilder component', async () => {
       await mountSearch();
       expect(wrapper.findComponent(QueryBuilder).exists()).toBe(true);
-    });
-
-    it('does NOT render Collection before QueryBuilder emits computed filter', async () => {
-      await mountSearch();
-      // Before timers advance, QueryBuilder has not emitted computed yet
-      expect(wrapper.findComponent(Collection).exists()).toBe(false);
     });
 
     it('renders Collection after QueryBuilder emits computed filter', async () => {
@@ -177,21 +176,23 @@ describe('Search', () => {
   });
 
   describe('onComputed', () => {
-    it('sets location.hash when validate is triggered', async () => {
+    it('scrolls to the collection on every manual validate (not just the first)', async () => {
       const { requester } = createMockRequester();
-      await mountSearchAndTriggerComputed({ requester, manual: true });
+      await mountSearchAndTriggerComputed({ requester, manual: true }, { attachTo: document.body });
 
       const collection = wrapper.findComponent(Collection);
-      const collectionId = collection.attributes('id');
+      const scrollIntoView = vi.spyOn(collection.element, 'scrollIntoView');
 
-      // Click the search/validate button in QueryBuilder (manual must be explicitly true)
       const builder = wrapper.findComponent(QueryBuilder);
       const searchBtn = builder.findAll('button').find((b) => b.attributes('aria-label')?.includes('search'));
       expect(searchBtn).toBeDefined();
+
+      await searchBtn!.trigger('click');
+      await flushAll();
       await searchBtn!.trigger('click');
       await flushAll();
 
-      expect(location.hash).toBe('#' + collectionId);
+      expect(scrollIntoView).toHaveBeenCalledTimes(2);
     });
   });
 });

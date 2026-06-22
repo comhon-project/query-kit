@@ -11,7 +11,7 @@ import Modal from '@components/Common/Modal.vue';
 import InvalidProperty from '@components/Messages/InvalidProperty.vue';
 import InvalidScope from '@components/Messages/InvalidScope.vue';
 import { type Filter } from '@core/types';
-import { builderConfigKey } from '@core/InjectionKeys';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
 
 interface Props {
   entitySchema: EntitySchema;
@@ -24,7 +24,7 @@ interface Emits {
 const emit = defineEmits<Emits>();
 const show = defineModel<boolean>('show', { required: true });
 const props = defineProps<Props>();
-const config = inject(builderConfigKey)!;
+const config = inject(filterBuilderConfigKey)!;
 
 let condition: Filter | null = null;
 const form = useTemplateRef<HTMLFormElement>('form');

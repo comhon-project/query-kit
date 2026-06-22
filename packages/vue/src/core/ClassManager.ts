@@ -6,6 +6,7 @@ export type ClassName =
   | 'filter_picker'
   | 'search'
   | 'query_builder'
+  | 'query_builder_header'
   | 'filter_builder'
   | 'condition_or_scope'
   | 'condition_or_scope_header'
@@ -61,6 +62,7 @@ const classList: ClassList = {
   filter_picker: 'qkit-filter-picker',
   search: 'qkit-search',
   query_builder: 'qkit-query-builder',
+  query_builder_header: 'qkit-query-builder-header',
   filter_builder: 'qkit-filter-builder',
   condition_or_scope: 'qkit-leaf-filter qkit-condition-or-scope',
   condition_or_scope_header: 'qkit-condition-or-scope-header',

@@ -222,6 +222,27 @@ describe('Condition', () => {
     expect(filter.value).toEqual(['hello']);
   });
 
+  it('converts the value synchronously with the operator change (no inconsistent intermediate)', async () => {
+    const filter: ConditionFilter = reactive({
+      type: 'condition',
+      property: 'first_name',
+      operator: '=',
+      value: 'hello',
+      key: 50,
+    });
+    mountCondition(filter);
+    await flushAll();
+
+    // No await between the operator change and the assertion: flush:'sync' converts
+    // in the same tick, so { array operator, scalar value } is never observable —
+    // which is what stops the history from committing that inconsistent state.
+    filter.operator = 'in';
+    expect(filter.value).toEqual(['hello']);
+
+    filter.operator = '=';
+    expect(filter.value).toBe('hello');
+  });
+
   it('hides operator select when displayOperator=false', async () => {
     const filter: ConditionFilter = reactive({
       type: 'condition',

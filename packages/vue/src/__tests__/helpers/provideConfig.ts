@@ -1,23 +1,18 @@
-import { builderConfigKey } from '@core/InjectionKeys';
-import type { BuilderConfig } from '@core/types';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
+import type { FilterBuilderConfig } from '@core/types';
 
-export function defaultBuilderConfig(overrides: Partial<BuilderConfig> = {}): BuilderConfig {
+export function defaultFilterBuilderConfig(overrides: Partial<FilterBuilderConfig> = {}): FilterBuilderConfig {
   return {
     displayOperator: true,
     userTimezone: 'UTC',
     requestTimezone: 'UTC',
-    allowReset: true,
-    allowUndo: true,
-    allowRedo: true,
-    debounce: 1000,
-    manual: false,
     aliasInsensitiveLabels: false,
     ...overrides,
   };
 }
 
-export function builderConfigProvide(overrides: Partial<BuilderConfig> = {}) {
+export function builderConfigProvide(overrides: Partial<FilterBuilderConfig> = {}) {
   return {
-    [builderConfigKey as symbol]: defaultBuilderConfig(overrides),
+    [filterBuilderConfigKey as symbol]: defaultFilterBuilderConfig(overrides),
   };
 }
