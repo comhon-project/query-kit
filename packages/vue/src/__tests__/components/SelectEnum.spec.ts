@@ -65,13 +65,13 @@ describe('SelectEnum', () => {
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
   });
 
-  it('returns empty array for multiple mode when modelValue is null', async () => {
+  it('returns empty array for multiple mode when modelValue is empty', async () => {
     const wrapper = mount(SelectEnum, {
       props: {
         target: { type: 'string', enum: 'gender' },
         multiple: true,
         disabled: false,
-        modelValue: null,
+        modelValue: undefined,
         'onUpdate:modelValue': () => {},
       },
     });

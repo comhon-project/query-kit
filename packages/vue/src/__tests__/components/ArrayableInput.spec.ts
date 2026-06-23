@@ -57,7 +57,7 @@ describe('ArrayableInput', () => {
   });
 
   it('renders UniqueInput with multiple when isArray is true and component supports multiple', async () => {
-    // gender is enum type → SelectEnum via MultipleCapableComponent, DOES support multiple
+    // gender is enum type → SelectEnum (InputComponent multiple), DOES support multiple
     const property = schema.getProperty('gender');
     mountArrayable(property, { isArray: true });
     await flushAll();

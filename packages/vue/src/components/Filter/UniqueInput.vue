@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, inject, type Component } from 'vue';
 import { classes } from '@core/ClassManager';
-import { getComponent, isNativeHtmlComponent } from '@core/InputManager';
+import { getComponent, getSettings, isNativeHtmlComponent } from '@core/InputManager';
+import { useWorkingValue } from '@components/Composable/WorkingValue';
 import {
   getLeafTypeContainer,
   getPropertyTranslation,
@@ -55,12 +56,25 @@ const ariaLabel = computed<string>(() => {
   return getComputedScopeParameterTranslation(props.target as ComputedScopeParameter);
 });
 
-const conditionValue = computed<unknown>({
-  get: () => modelValue.value,
-  set: (value) => {
-    const trimmed = typeof value == 'string' ? value.trim() : value;
-    modelValue.value = trimmed === '' || trimmed === null ? undefined : trimmed;
-  },
+const settings = (() => {
+  try {
+    return getSettings(getLeafTypeContainer(props.target), propertyOrScope.value);
+  } catch {
+    return {};
+  }
+})();
+
+const workingValue = useWorkingValue<unknown>(modelValue, {
+  transform:
+    settings.trim || settings.emptyToUndefined
+      ? (value) => {
+          let next = value;
+          if (settings.trim && typeof next === 'string') next = next.trim();
+          if (settings.emptyToUndefined && (next === '' || next === null)) next = undefined;
+          return next;
+        }
+      : undefined,
+  delay: settings.debounce,
 });
 </script>
 
@@ -69,7 +83,7 @@ const conditionValue = computed<unknown>({
   <component
     v-else-if="isVueComponent"
     :is="inputType"
-    v-model="conditionValue"
+    v-model="workingValue"
     :entity-schema="entitySchema"
     :target="target"
     :multiple="multiple"
@@ -80,7 +94,7 @@ const conditionValue = computed<unknown>({
   />
   <input
     v-else
-    v-model="conditionValue"
+    v-model="workingValue"
     :class="classes.input"
     :type="inputType as NativeHtmlComponent"
     :disabled="!editable"

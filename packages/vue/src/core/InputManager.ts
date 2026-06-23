@@ -1,7 +1,7 @@
 import type { Component } from 'vue';
 import type { NativeHtmlComponent } from '@core/types';
 import { getLeafTypeContainer, type TypeContainer, type ArrayableTypeContainer } from '@core/EntitySchema';
-import { MultipleCapableComponent } from '@core/MultipleCapableComponent';
+import { InputComponent, type InputSettings } from '@core/InputComponent';
 import BooleanInput from '@components/Common/BooleanInput.vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
 import DateTimeInput from '@components/Common/DateTimeInput.vue';
@@ -35,7 +35,7 @@ const nativeHtmlComponents: Record<NativeHtmlComponent, true> = {
   select: true,
 };
 
-export type ComponentEntry = NativeHtmlComponent | Component | MultipleCapableComponent;
+export type ComponentEntry = NativeHtmlComponent | Component | InputComponent;
 
 export type ComponentList = Record<string, ComponentEntry>;
 
@@ -43,15 +43,17 @@ export type PropertyInputs = Record<string, ComponentList>;
 
 type PropertyContext = { owner: string; id: string };
 
+const DEFAULT_DEBOUNCE = 300;
+
 const componentList: ComponentList = {
-  string: 'text',
-  html: 'text',
-  integer: 'number',
-  float: 'number',
-  date: 'date',
-  datetime: DateTimeInput,
-  time: 'time',
-  enum: new MultipleCapableComponent(SelectEnum),
+  string: new InputComponent('text', { trim: true, emptyToUndefined: true, debounce: DEFAULT_DEBOUNCE }),
+  html: new InputComponent('text', { trim: true, emptyToUndefined: true, debounce: DEFAULT_DEBOUNCE }),
+  integer: new InputComponent('number', { emptyToUndefined: true, debounce: DEFAULT_DEBOUNCE }),
+  float: new InputComponent('number', { emptyToUndefined: true, debounce: DEFAULT_DEBOUNCE }),
+  date: new InputComponent('date', { emptyToUndefined: true, debounce: DEFAULT_DEBOUNCE }),
+  time: new InputComponent('time', { emptyToUndefined: true, debounce: DEFAULT_DEBOUNCE }),
+  datetime: new InputComponent(DateTimeInput, { debounce: DEFAULT_DEBOUNCE }),
+  enum: new InputComponent(SelectEnum, { multiple: true }),
   boolean: BooleanInput,
 };
 
@@ -69,41 +71,42 @@ const registerPropertyInputs = (custom: PropertyInputs): void => {
   }
 };
 
-const resolveEntry = (entry: ComponentEntry): NativeHtmlComponent | Component => {
-  return entry instanceof MultipleCapableComponent ? entry.component : entry;
+const typeOf = (container: TypeContainer): string => (container.enum ? 'enum' : container.type);
+
+const resolveComponent = (entry: ComponentEntry): NativeHtmlComponent | Component => {
+  return entry instanceof InputComponent ? entry.component : entry;
+};
+
+const resolveSettings = (entry: ComponentEntry): InputSettings => {
+  return entry instanceof InputComponent ? entry.settings : {};
+};
+
+const findEntry = (type: string, property?: PropertyContext): ComponentEntry | undefined => {
+  if (property) {
+    const propEntry = propertyInputs[property.owner]?.[property.id];
+    if (propEntry !== undefined) return propEntry;
+  }
+  if (typeInputs[type] !== undefined) return typeInputs[type];
+  return componentList[type];
 };
 
 const getComponent = (container: TypeContainer, property?: PropertyContext): NativeHtmlComponent | Component => {
-  const type = container.enum ? 'enum' : container.type;
-
-  if (property) {
-    const propEntry = propertyInputs[property.owner]?.[property.id];
-    if (propEntry !== undefined) return resolveEntry(propEntry);
-  }
-
-  const typeEntry = typeInputs[type];
-  if (typeEntry !== undefined) return resolveEntry(typeEntry);
-
-  const entry = componentList[type];
+  const type = typeOf(container);
+  const entry = findEntry(type, property);
   if (!entry) {
     throw new Error('invalid type ' + type);
   }
-  return resolveEntry(entry);
+  return resolveComponent(entry);
+};
+
+const getSettings = (container: TypeContainer, property?: PropertyContext): InputSettings => {
+  const entry = findEntry(typeOf(container), property);
+  return entry ? resolveSettings(entry) : {};
 };
 
 const supportsMultiple = (container: ArrayableTypeContainer, property?: PropertyContext): boolean => {
-  const leaf = getLeafTypeContainer(container);
-  const type = leaf.enum ? 'enum' : leaf.type;
-
-  if (property) {
-    const propEntry = propertyInputs[property.owner]?.[property.id];
-    if (propEntry !== undefined) return propEntry instanceof MultipleCapableComponent;
-  }
-
-  const typeEntry = typeInputs[type];
-  if (typeEntry !== undefined) return typeEntry instanceof MultipleCapableComponent;
-
-  return componentList[type] instanceof MultipleCapableComponent;
+  const entry = findEntry(typeOf(getLeafTypeContainer(container)), property);
+  return entry instanceof InputComponent && entry.settings.multiple === true;
 };
 
 const isNativeHtmlComponent = (component: string | Component): boolean => {
@@ -123,8 +126,9 @@ export {
   registerTypeInputs,
   registerPropertyInputs,
   getComponent,
+  getSettings,
   supportsMultiple,
   isNativeHtmlComponent,
-  MultipleCapableComponent,
+  InputComponent,
   _resetForTesting,
 };

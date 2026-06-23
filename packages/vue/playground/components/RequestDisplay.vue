@@ -2,7 +2,8 @@
 import { computed } from 'vue';
 
 const props = defineProps<{
-  request: Record<string, unknown> | null;
+  request: unknown;
+  title: string;
 }>();
 
 function highlight(value: unknown, indent = 0): string {
@@ -41,14 +42,13 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-const highlighted = computed(() => (props.request ? highlight(props.request) : null));
+const highlighted = computed(() => highlight(props.request));
 </script>
 
 <template>
   <details class="request-display" open>
-    <summary>Request</summary>
-    <pre v-if="highlighted" v-html="highlighted" />
-    <p v-else>No request sent yet.</p>
+    <summary>{{ title }}</summary>
+    <pre v-html="highlighted" />
   </details>
 </template>
 

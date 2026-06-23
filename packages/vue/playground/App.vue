@@ -1,11 +1,13 @@
 <script setup>
-import { reactive, ref, shallowRef } from 'vue';
+import { computed, reactive, ref, shallowRef } from 'vue';
 import { locale } from '@query-kit/vue';
 import { generateRow } from './core/MockDataGenerator';
 import RequestDisplay from './components/RequestDisplay.vue';
 
 const activeTab = ref('default');
 const lastRequest = shallowRef(null);
+
+const currentState = computed(() => state[activeTab.value]);
 
 const tabs = [
   { id: 'default', label: 'Default' },
@@ -329,6 +331,11 @@ function onThemeChange() {
       />
     </div>
 
-    <RequestDisplay :request="lastRequest" />
+    <div class="playground-displays">
+      <RequestDisplay :request="currentState.filter" title="Filter" />
+      <RequestDisplay :request="currentState.sort" title="Sort" />
+      <RequestDisplay :request="currentState.columns" title="Properties" />
+      <RequestDisplay :request="lastRequest" title="Request" />
+    </div>
   </div>
 </template>

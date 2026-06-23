@@ -78,6 +78,17 @@ body {
   margin: 0 0 0.75rem;
 }
 
+.playground-displays {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.playground-displays > * {
+  flex: 1;
+  min-width: 0;
+}
+
 .playground-panel {
   padding: var(--qkit-padding-lg);
   border: 1px solid var(--qkit-color-border);

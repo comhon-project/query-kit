@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import '@query-kit/themes/default';
 import './assets/main.css';
 
-import { plugin, MultipleCapableComponent } from '@query-kit/vue';
+import { plugin, InputComponent } from '@query-kit/vue';
 
 import {
   entitySchemaLoader,
@@ -51,7 +51,7 @@ createApp(App)
     enumTranslationsLoader,
     requestSchemaLoader,
     typeInputs: {
-      country: new MultipleCapableComponent(CountryInput),
+      country: new InputComponent(CountryInput, { multiple: true }),
     },
     cellTypeRenderers: {
       country: CellCountry,

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   plugin,
   locale,
-  MultipleCapableComponent,
+  InputComponent,
   getEntitySchema,
   getEntityTranslation,
   getPropertyTranslation,
@@ -21,10 +21,11 @@ describe('Public API exports', () => {
     expect(locale.value).toBe('en');
   });
 
-  it('exports MultipleCapableComponent class', () => {
-    expect(MultipleCapableComponent).toBeDefined();
-    const instance = new MultipleCapableComponent('text');
+  it('exports InputComponent class', () => {
+    expect(InputComponent).toBeDefined();
+    const instance = new InputComponent('text', { multiple: true });
     expect(instance.component).toBe('text');
+    expect(instance.settings).toEqual({ multiple: true });
   });
 
   it('exports getEntitySchema', () => {

@@ -18,7 +18,7 @@ const options = computed(() => [
 // ── single ───────────────────────────────────────────────────
 const singleValue = computed(() => (Array.isArray(props.modelValue) ? props.modelValue[0] : props.modelValue));
 function onSingleChange(e) {
-  emit('update:modelValue', e.target.value || null);
+  emit('update:modelValue', e.target.value || undefined);
 }
 
 // ── multi ────────────────────────────────────────────────────
@@ -41,12 +41,12 @@ function isSelected(val) {
 
 function toggle(val) {
   const next = isSelected(val) ? selected.value.filter((v) => v !== val) : [...selected.value, val];
-  emit('update:modelValue', next.length ? next : null);
+  emit('update:modelValue', next.length ? next : undefined);
 }
 
 function remove(val) {
   const next = selected.value.filter((v) => v !== val);
-  emit('update:modelValue', next.length ? next : null);
+  emit('update:modelValue', next.length ? next : undefined);
 }
 
 function onFieldClick() {

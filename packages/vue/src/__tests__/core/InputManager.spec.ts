@@ -3,11 +3,12 @@ import { defineComponent } from 'vue';
 
 import {
   getComponent,
+  getSettings,
   supportsMultiple,
   isNativeHtmlComponent,
   registerTypeInputs,
   registerPropertyInputs,
-  MultipleCapableComponent,
+  InputComponent,
   _resetForTesting,
 } from '@core/InputManager';
 import type { TypeContainer, ArrayableTypeContainer } from '@core/EntitySchema';
@@ -70,7 +71,7 @@ describe('InputManager', () => {
   });
 
   describe('supportsMultiple', () => {
-    it('returns true for enum type (MultipleCapableComponent)', () => {
+    it('returns true for enum type (InputComponent multiple)', () => {
       expect(supportsMultiple(container('string', { enum: 'status' }) as ArrayableTypeContainer)).toBe(true);
     });
 
@@ -101,6 +102,38 @@ describe('InputManager', () => {
 
     it('unwraps array of strings and returns false', () => {
       expect(supportsMultiple(arrayContainer('string'))).toBe(false);
+    });
+  });
+
+  describe('getSettings', () => {
+    it('returns the value settings for string (trim + emptyToUndefined + debounce)', () => {
+      expect(getSettings(container('string'))).toEqual({ trim: true, emptyToUndefined: true, debounce: 300 });
+    });
+
+    it('returns emptyToUndefined + debounce (no trim) for number types', () => {
+      expect(getSettings(container('integer'))).toEqual({ emptyToUndefined: true, debounce: 300 });
+    });
+
+    it('returns emptyToUndefined + debounce for date', () => {
+      expect(getSettings(container('date'))).toEqual({ emptyToUndefined: true, debounce: 300 });
+    });
+
+    it('returns multiple for enum', () => {
+      expect(getSettings(container('string', { enum: 'status' }))).toEqual({ multiple: true });
+    });
+
+    it('returns empty settings for a raw (unwrapped) component like boolean', () => {
+      expect(getSettings(container('boolean'))).toEqual({});
+    });
+
+    it('returns empty settings for an unknown type', () => {
+      expect(getSettings(container('unknown_type'))).toEqual({});
+    });
+
+    it('reads settings from a registered InputComponent override', () => {
+      const CustomSelect = defineComponent({ template: '<select />' });
+      registerPropertyInputs({ order: { status: new InputComponent(CustomSelect, { debounce: 50, trim: true }) } });
+      expect(getSettings(container('string'), { owner: 'order', id: 'status' })).toEqual({ debounce: 50, trim: true });
     });
   });
 
@@ -168,9 +201,9 @@ describe('InputManager', () => {
       expect(getComponent(container('currency'))).toBe(CustomInput);
     });
 
-    it('allows registering a MultipleCapableComponent', () => {
+    it('allows registering an InputComponent with multiple', () => {
       const CustomSelect = defineComponent({ template: '<select />' });
-      registerTypeInputs({ custom_enum: new MultipleCapableComponent(CustomSelect) });
+      registerTypeInputs({ custom_enum: new InputComponent(CustomSelect, { multiple: true }) });
       expect(getComponent(container('custom_enum'))).toBe(CustomSelect);
       expect(supportsMultiple(container('custom_enum') as ArrayableTypeContainer)).toBe(true);
     });
@@ -214,9 +247,9 @@ describe('InputManager', () => {
       expect(getComponent(container('string'), { owner: 'user', id: 'email' })).toBe(TypeInput);
     });
 
-    it('supports MultipleCapableComponent at property level', () => {
+    it('supports InputComponent multiple at property level', () => {
       const CustomSelect = defineComponent({ template: '<select />' });
-      registerPropertyInputs({ order: { status: new MultipleCapableComponent(CustomSelect) } });
+      registerPropertyInputs({ order: { status: new InputComponent(CustomSelect, { multiple: true }) } });
       expect(getComponent(container('string'), { owner: 'order', id: 'status' })).toBe(CustomSelect);
       expect(supportsMultiple(container('string') as ArrayableTypeContainer, { owner: 'order', id: 'status' })).toBe(true);
     });
@@ -263,7 +296,7 @@ describe('InputManager', () => {
       expect(getComponent(container('datetime'))).toBe(DateTimeInput);
     });
 
-    it('restores enum to SelectEnum via MultipleCapableComponent', () => {
+    it('restores enum to SelectEnum via InputComponent', () => {
       const Custom = defineComponent({ template: '<div />' });
       registerTypeInputs({ enum: Custom });
       expect(getComponent(container('string', { enum: 'status' }))).toBe(Custom);

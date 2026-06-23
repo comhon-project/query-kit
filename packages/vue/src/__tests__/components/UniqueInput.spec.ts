@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { defineComponent, h } from 'vue';
 import UniqueInput from '@components/Filter/UniqueInput.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
@@ -17,6 +17,7 @@ let wrapper: VueWrapper;
 let schema: EntitySchema;
 
 beforeEach(async () => {
+  vi.useFakeTimers();
   registerLoader(entitySchemaLoader);
   registerTranslationsLoader(entityTranslationsLoader);
   registerRequestLoader(requestSchemaLoader);
@@ -24,6 +25,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   wrapper?.unmount();
 });
 
@@ -93,21 +95,67 @@ describe('UniqueInput', () => {
     expect(input.attributes('aria-label')).toBe('first name');
   });
 
-  it('trims empty string to undefined', async () => {
+  it('debounces the value write to the model (string input)', async () => {
+    const property = schema.getProperty('first_name');
+    mountInput(property);
+    await flushAll();
+    const input = wrapper.find('input');
+
+    await input.setValue('john');
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined(); // within the debounce window
+
+    vi.advanceTimersByTime(300);
+    await flushAll();
+    expect(wrapper.emitted('update:modelValue')?.pop()?.[0]).toBe('john');
+  });
+
+  it('empties to undefined (after debounce) on an empty string', async () => {
     const property = schema.getProperty('first_name');
     mountInput(property, { modelValue: 'hello' });
     await flushAll();
     const input = wrapper.find('input');
+
     await input.setValue('');
+    vi.advanceTimersByTime(300);
+    await flushAll();
     expect(wrapper.emitted('update:modelValue')?.pop()?.[0]).toBeUndefined();
   });
 
-  it('trims whitespace-only string to undefined', async () => {
+  it('trims surrounding whitespace (after debounce)', async () => {
+    const property = schema.getProperty('first_name');
+    mountInput(property);
+    await flushAll();
+    const input = wrapper.find('input');
+
+    await input.setValue('  john  ');
+    vi.advanceTimersByTime(300);
+    await flushAll();
+    expect(wrapper.emitted('update:modelValue')?.pop()?.[0]).toBe('john');
+  });
+
+  it('keeps the raw text in the input while emitting a trimmed value (slow typist)', async () => {
+    const property = schema.getProperty('first_name');
+    mountInput(property);
+    await flushAll();
+    const input = wrapper.find('input');
+
+    await input.setValue('john '); // trailing space (e.g. before typing the next word)
+    vi.advanceTimersByTime(300);
+    await flushAll();
+
+    expect((input.element as HTMLInputElement).value).toBe('john '); // display keeps the space
+    expect(wrapper.emitted('update:modelValue')?.pop()?.[0]).toBe('john'); // parent gets the trimmed value
+  });
+
+  it('empties a whitespace-only string to undefined (trim then empty, after debounce)', async () => {
     const property = schema.getProperty('first_name');
     mountInput(property, { modelValue: 'hello' });
     await flushAll();
     const input = wrapper.find('input');
+
     await input.setValue('   ');
+    vi.advanceTimersByTime(300);
+    await flushAll();
     expect(wrapper.emitted('update:modelValue')?.pop()?.[0]).toBeUndefined();
   });
 

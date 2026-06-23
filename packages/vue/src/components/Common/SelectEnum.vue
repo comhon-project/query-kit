@@ -10,7 +10,7 @@ interface Props {
   disabled: boolean;
 }
 
-const modelValue = defineModel<string | string[] | null>();
+const modelValue = defineModel<string | string[] | undefined>();
 
 const props = defineProps<Props>();
 
@@ -31,7 +31,7 @@ const options = computed<Record<string, string>>(() => {
 const selectValue = computed({
   get: (): string | string[] | null => (props.multiple && modelValue.value == null ? [] : (modelValue.value ?? null)),
   set: (value: string | string[] | null) => {
-    modelValue.value = value;
+    modelValue.value = value ?? undefined;
   },
 });
 </script>
