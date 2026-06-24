@@ -52,7 +52,7 @@ The `@query-kit/vue` package exports the following:
 import {
   plugin,    // Vue plugin to install via app.use()
   locale,    // Ref<string> for runtime locale switching
-  MultipleCapableComponent, // Base class for custom input components
+  InputComponent, // Wrapper to attach settings to a custom input component
   getEntitySchema,
   getEntityTranslation,
   getPropertyTranslation,

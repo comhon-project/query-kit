@@ -45,6 +45,7 @@ Props marked with 🔗 support two-way binding via `v-model`.
 | manual                |         | boolean            | false    | `false`     | If true, user must click a button to compute the query. Otherwise the query is computed automatically.            |
 | collectionId          |         | string             | false    | -           | ID of linked collection for skip-link navigation.                                                                |
 | aliasInsensitiveLabels|         | boolean            | false    | `false`     | Display case-insensitive operators with their case-sensitive label.                                               |
+| actionsLocation       |         | string             | false    | `'header'`  | Where the actions bar (undo/redo/reset/validate) is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group). |
 
 ### Allowed properties
 Restrict allowed properties that may be part of query.
@@ -107,14 +108,14 @@ A `computed` event is triggered when the query filter is computed (debounced acc
 <QkitQueryBuilder @computed="(computedFilter, manual) => handle(computedFilter, manual)" />
 ```
 
-### QueryBuilder actions slot
-You can add custom actions in the builder header using the `#builder_actions` slot:
+### Actions location
+The actions bar (undo / redo / reset / validate buttons) is rendered above the filters by default. You can embed it inside the root group instead with the `actionsLocation` prop:
 ```html
-<QkitQueryBuilder entity="user" v-model="filter">
-  <template #builder_actions>
-    <button>My custom action</button>
-  </template>
-</QkitQueryBuilder>
+<!-- default: actions bar in a header above the filter tree -->
+<QkitQueryBuilder entity="user" v-model="filter" />
+
+<!-- actions bar embedded inside the root group -->
+<QkitQueryBuilder entity="user" v-model="filter" actions-location="embedded" />
 ```
 
 # Collection component
@@ -263,3 +264,4 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | onRowClick             |         | function           | false    | -                | Row click handler: `(row, event) => void`.                                                                     |
 | onExport               |         | function           | false    | -                | Export handler (displays export button when provided): `(filter?) => void`.                                    |
 | aliasInsensitiveLabels |         | boolean            | false    | `false`          | Display case-insensitive operators with their case-sensitive label.                                             |
+| actionsLocation        |         | string             | false    | `'header'`       | Where the actions bar is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group).      |

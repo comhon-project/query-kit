@@ -338,29 +338,36 @@ You can find all classes keys [here](https://github.com/comhon-project/query-kit
 
 You may define custom input components for specific data types. Basic property filters have predefined inputs (like string, integer, date, enumerations...) but for more complex properties that have a very specific type, this is typically where you should use custom inputs. You can override existing basic inputs too.
 
-To register the component, you will have to link it to a property type:
+To register the component, you will have to link it to a property type. Each value can be:
+
+- **A native HTML input type** (string): `'text'`, `'number'`, `'date'`, `'time'`, `'select'`, `'textarea'`, `'email'`, etc.
+- **A Vue component**: a globally registered component name or an imported component.
+- **An `InputComponent` wrapper**: wrap a component or native type to attach behavior settings (see below).
 
 ```js
+import { InputComponent } from '@query-kit/vue';
+
 const config = {
   typeInputs: {
     my_very_specific_type: 'my-very-specific-component',
     integer: 'my-integer-component-override',
+    country: new InputComponent(CountryInput, { multiple: true }),
   }
 }
 ```
 
-By default when a filter is used with `in` or `not_in` operators, the filter component can be displayed several times. But you can define a custom component that directly manages these operators and it will be rendered only once. To do so, you will have to specify that your component must be displayed only once:
+### Input settings
 
-```js
-const config = {
-  typeInputs: {
-    my_other_specific_type: {
-      component: 'my-other-specific-component',
-      unique: true,
-    },
-  }
-}
-```
+The `InputComponent` wrapper accepts a settings object as its second argument:
+
+| key              | type    | required | default | description                                                                                                     |
+| ---------------- | ------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| multiple         | boolean | false    | `false` | The input renders multiple values itself (e.g. a multi-select) instead of being repeated as an array of inputs. |
+| trim             | boolean | false    | `false` | Trim string values before they reach the model.                                                                 |
+| emptyToUndefined | boolean | false    | `false` | Replace an empty string with `undefined` (applied after `trim`).                                                |
+| debounce         | number  | false    | -       | Debounce the value write to the model, in ms. A number (including `0`) defers the write; omitted = synchronous. |
+
+By default, when a filter is used with `in` or `not_in` operators, the input component is repeated once per value. With `multiple: true`, your component is rendered only once and is responsible for managing the array of values itself.
 
 ### Property inputs
 

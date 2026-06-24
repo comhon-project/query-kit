@@ -34,14 +34,14 @@ Root `package.json` also has `test:unit` and `lint` scripts that work from the r
 
 ### Public API (`packages/vue/index.ts`)
 
-Three exports: `plugin` (Vue plugin), `locale` (ref for runtime language switching), `MultipleCapableComponent` (base class for custom inputs).
+Exports: `plugin` (Vue plugin), `locale` (ref for runtime language switching), `InputComponent` (wrapper to attach settings — `multiple`/`trim`/`emptyToUndefined`/`debounce` — to a custom input component), and entity-schema/translation helpers (`getEntitySchema`, `getEntityTranslation`, `getPropertyTranslation`, `getScopeTranslation`, `getScopeParameterTranslation`).
 
 ### Plugin System (`src/core/Plugin.ts`)
 
 Installed via `app.use(plugin, options)`. The options object configures:
 - **Required**: `entitySchemaLoader` - loads entity schemas by ID
 - **Optional loaders**: `entityTranslationsLoader`, `enumSchemaLoader`, `enumTranslationsLoader`, `requestSchemaLoader`
-- **UI**: `icons`, `iconComponent`, `iconPropName`, `classes`, `inputs`
+- **UI**: `icons`, `iconComponent`, `iconPropName`, `classes`, `typeInputs`, `propertyInputs`
 - **Cell renderers**: `cellTypeRenderers`, `cellPropertyRenderers`
 - **Locale**: `defaultLocale`, `fallbackLocale`
 - **Operators/scopes**: `operators`, `computedScopes`
@@ -53,7 +53,7 @@ Loaders are called lazily on first use and results are cached.
 
 Three global components registered by the plugin:
 - **QkitSearch** (`components/Search.vue`) - Composite: QueryBuilder + Collection
-- **QkitQueryBuilder** (`components/QueryBuilder.vue`) - Public pass-through wrapper around the internal `FilterBuilder`
+- **QkitQueryBuilder** (`components/QueryBuilder.vue`) - Public wrapper around the internal `FilterBuilder`. Owns the model boundary: normalizes/strips the filter (`filterNormalize`), debounces user input, and computes the query (`computeFilter`) before emitting the `computed` event. The `actionsLocation` prop ('header' | 'embedded') controls where the undo/redo/reset/validate bar renders.
 - **QkitCollection** (`components/Collection/Collection.vue`) - Data table with pagination/infinite scroll
 
 Internal: `FilterBuilder` (`components/Filter/FilterBuilder.vue`) — the actual filter tree builder, used by `QueryBuilder` and `Search` directly. Not registered globally.
