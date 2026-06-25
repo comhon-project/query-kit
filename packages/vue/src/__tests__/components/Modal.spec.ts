@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import Modal from '@components/Common/Modal.vue';
 
@@ -92,32 +92,38 @@ describe('Modal', () => {
     expect(wrapper.emitted('closed')).toHaveLength(1);
   });
 
-  it('ignores transitionend from child element', async () => {
+  it('waits for the close animation to finish before emitting closed', async () => {
+    let resolveFinished!: () => void;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    HTMLDialogElement.prototype.getAnimations = vi.fn(() => [{ finished } as unknown as Animation]);
+
     const wrapper = mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
-    const dialog = wrapper.find('dialog').element as HTMLDialogElement;
-    // Simulate transitionend from a child element (not the dialog itself)
-    const childEvent = new Event('transitionend') as TransitionEvent;
-    Object.defineProperty(childEvent, 'target', { value: document.createElement('div') });
-    dialog.ontransitionend!(childEvent);
-    // Should not emit closed since target !== dialog
+    await wrapper.setProps({ show: false });
+    await flushPromises();
     expect(wrapper.emitted('closed')).toBeFalsy();
+
+    resolveFinished();
+    await flushPromises();
+    expect(wrapper.emitted('closed')).toHaveLength(1);
   });
 
-  it('calls close on transitionend when closing', async () => {
-    HTMLDialogElement.prototype.getAnimations = vi.fn(() => [{}] as any);
-    const wrapper = mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
-    const dialog = wrapper.find('dialog').element as HTMLDialogElement;
+  it('does not close when reopened before the close animation finishes', async () => {
+    let resolveFinished!: () => void;
+    const finished = new Promise<void>((resolve) => {
+      resolveFinished = resolve;
+    });
+    HTMLDialogElement.prototype.getAnimations = vi.fn(() => [{ finished } as unknown as Animation]);
 
-    // Trigger closing
+    const wrapper = mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
     await wrapper.setProps({ show: false });
     await nextTick();
+    await wrapper.setProps({ show: true });
 
-    // Now simulate transitionend on the dialog itself
-    const event = new Event('transitionend') as TransitionEvent;
-    Object.defineProperty(event, 'target', { value: dialog });
-    dialog.ontransitionend!(event);
-
-    expect(wrapper.emitted('closed')).toHaveLength(1);
+    resolveFinished();
+    await flushPromises();
+    expect(wrapper.emitted('closed')).toBeFalsy();
   });
 
   it('sets show to false on dialog cancel event (Escape)', async () => {

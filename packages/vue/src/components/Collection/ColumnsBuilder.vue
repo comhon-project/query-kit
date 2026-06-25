@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import ColumnEditorItem from '@components/Collection/ColumnEditorItem.vue';
 import { translate, locale } from '@i18n/i18n';
 import { classes } from '@core/ClassManager';
 import { getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 import { useDragAndDrop } from '@core/useDragAndDrop';
+import { useInternalModel } from '@components/Composable/InternalModel';
 import { getUniqueId } from '@core/Utils';
 import type { CustomColumnConfig, SelectOption } from '@core/types';
 
@@ -25,9 +26,12 @@ const props = defineProps<Props>();
 const { liveMessage, onGripStart, setItemRef, getItemBindings, getDropZoneBindings } = useDragAndDrop({ move });
 
 const selectedProperty = ref<string | null>(null);
-const keyedColumns = ref<KeyedColumn[]>(columns.value.map((id) => ({ id, key: getUniqueId() })));
+const internalModel = useInternalModel<string[], KeyedColumn[]>(columns, {
+  normalize: (ids) => ids.map((id) => ({ id, key: getUniqueId() })),
+  strip: (keyed) => keyed.map((c) => c.id),
+});
 
-const columnIds = computed<string[]>(() => keyedColumns.value.map((c) => c.id));
+const columnIds = computed<string[]>(() => internalModel.value.map((c) => c.id));
 
 const options = computed<SelectOption<string>[]>(() => {
   const opts: SelectOption<string>[] = [];
@@ -75,40 +79,20 @@ function isOneToOneRelationship(property: Property): boolean {
 }
 
 function removeColumn(index: number): void {
-  keyedColumns.value.splice(index, 1);
+  internalModel.value.splice(index, 1);
 }
 
 function addColumn(): void {
   if (selectedProperty.value) {
-    keyedColumns.value.push({ id: selectedProperty.value, key: getUniqueId() });
+    internalModel.value.push({ id: selectedProperty.value, key: getUniqueId() });
     selectedProperty.value = null;
   }
 }
 
 function move(from: number, to: number): void {
-  const item = keyedColumns.value.splice(from, 1)[0];
-  keyedColumns.value.splice(to, 0, item);
+  const item = internalModel.value.splice(from, 1)[0];
+  internalModel.value.splice(to, 0, item);
 }
-
-watch(
-  keyedColumns,
-  (next) => {
-    const ids = next.map((c) => c.id);
-    const current = columns.value;
-    if (ids.length !== current.length || ids.some((id, i) => id !== current[i])) {
-      columns.value = ids;
-    }
-  },
-  { deep: true },
-);
-
-watch(columns, (next) => {
-  const ids = keyedColumns.value.map((c) => c.id);
-  if (next.length === ids.length && next.every((id, i) => id === ids[i])) {
-    return;
-  }
-  keyedColumns.value = next.map((id) => ({ id, key: getUniqueId() }));
-});
 </script>
 
 <template>
@@ -116,14 +100,14 @@ watch(columns, (next) => {
   <ul :class="classes.column_editor_list" :aria-label="translate('columns')">
     <TransitionGroup name="qkit-collapse-horizontal-list">
       <li
-        v-for="(column, index) in keyedColumns"
+        v-for="(column, index) in internalModel"
         :ref="(el: any) => setItemRef(el, index)"
         :key="column.key"
         :class="classes.column_editor_list_item"
         v-bind="getItemBindings(index)"
       >
         <ColumnEditorItem
-          v-model="keyedColumns[index].id"
+          v-model="internalModel[index].id"
           :open="customColumns?.[column.id]?.open === true"
           :entity-schema="entitySchema"
           :label="customColumns?.[column.id]?.label"

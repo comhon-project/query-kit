@@ -20,7 +20,6 @@ const draft = ref<string[]>([...columns.value]);
 const disableConfirm = computed<boolean>(() => draft.value.length === 0);
 
 function open(): void {
-  draft.value = [...columns.value];
   showModal.value = true;
 }
 
@@ -28,11 +27,15 @@ function confirm(): void {
   columns.value = [...draft.value];
   showModal.value = false;
 }
+
+function resetDraft(): void {
+  draft.value = [...columns.value];
+}
 </script>
 
 <template>
   <IconButton icon="columns" @click="open" />
-  <Modal v-model:show="showModal" :disable-confirm="disableConfirm" @confirm="confirm">
+  <Modal v-model:show="showModal" :disable-confirm="disableConfirm" @confirm="confirm" @closed="resetDraft">
     <template #header>
       <h1>{{ translate('columns') }}</h1>
     </template>

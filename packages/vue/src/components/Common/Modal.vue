@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { nextTick, useTemplateRef, watch } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import { classes } from '@core/ClassManager';
 import { getUniqueId } from '@core/Utils';
@@ -23,7 +23,6 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const modal = useTemplateRef<HTMLDialogElement>('modal');
-const closing = ref<boolean | null>(null);
 const headerId = `modal-header-${getUniqueId()}`;
 let previouslyFocusedElement: HTMLElement | null = null;
 
@@ -35,36 +34,21 @@ function confirm(): void {
 }
 
 function close(): void {
-  closing.value = false;
   modal.value?.close();
   previouslyFocusedElement?.focus();
   previouslyFocusedElement = null;
   emit('closed');
 }
 
-onMounted(() => {
-  if (!modal.value) return;
-  modal.value.ontransitionend = (e: TransitionEvent) => {
-    if (e.target !== modal.value) {
-      return;
-    }
-    if (closing.value) {
-      close();
-    }
-  };
-});
-
 watch(show, async (visible) => {
   if (visible) {
     previouslyFocusedElement = document.activeElement as HTMLElement | null;
-    modal.value?.showModal();
-  } else {
-    closing.value = true;
-    await nextTick();
-    if (!modal.value?.getAnimations().length) {
-      close();
-    }
+    if (!modal.value?.open) modal.value?.showModal();
+    return;
   }
+  await nextTick();
+  await Promise.allSettled(modal.value?.getAnimations().map((a) => a.finished) ?? []);
+  if (!show.value) close();
 });
 </script>
 
@@ -72,7 +56,7 @@ watch(show, async (visible) => {
   <dialog
     ref="modal"
     :class="classes.modal"
-    :visible="show && !closing ? '' : undefined"
+    :visible="show ? '' : undefined"
     :aria-labelledby="headerId"
     @cancel.prevent="show = false"
   >
