@@ -520,4 +520,22 @@ describe('computeFilter', () => {
       expect((rc.filter as ConditionFilter).value).toBe('Alice');
     });
   });
+
+  describe('non-group input', () => {
+    it('treats a null filter as an empty group', async () => {
+      const result = await computeFilter(null, 'user');
+      expect(result).toEqual({ type: 'group', operator: 'and', filters: [] });
+    });
+
+    it('wraps a bare condition into a group', async () => {
+      const result = await computeFilter(
+        { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' } as ConditionFilter,
+        'user',
+      );
+      expect(result.type).toBe('group');
+      expect(result.operator).toBe('and');
+      expect(result.filters).toHaveLength(1);
+      expect(result.filters[0]).toMatchObject({ type: 'condition', property: 'first_name', value: 'Alice' });
+    });
+  });
 });

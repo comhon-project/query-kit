@@ -61,6 +61,36 @@ describe('useInternalModel', () => {
       expect(internal.value.name).toBe('changed');
       expect(internal.value.key).toBe(1);
     });
+
+    it('invokes onInbound on the initial sync and on each external reassignment', async () => {
+      const model = ref(makeExternal('root'));
+      let calls = 0;
+      useInternalModel<External, Internal>(model, {
+        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
+        strip: (v) => ({ name: v.name, children: [] }),
+        onInbound: () => calls++,
+      });
+      expect(calls).toBe(1);
+
+      model.value = makeExternal('loaded');
+      await nextTick();
+      expect(calls).toBe(2);
+    });
+
+    it('does not invoke onInbound when its own emit echoes back', async () => {
+      const model = ref(makeExternal('root'));
+      let calls = 0;
+      const internal = useInternalModel<External, Internal>(model, {
+        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
+        strip: (v) => ({ name: v.name, children: [] }),
+        onInbound: () => calls++,
+      });
+      expect(calls).toBe(1);
+
+      internal.value = { key: 9, name: 'edited', children: [] };
+      await nextTick();
+      expect(calls).toBe(1);
+    });
   });
 
   describe('outbound (internal → external)', () => {

@@ -7,6 +7,8 @@ export interface InternalModelOptions<TExternal, TInternal> {
   strip?: (value: TInternal) => TExternal;
   /** Debounce outbound emits (ms). Number (incl. 0) defers; null/undefined emits synchronously. */
   debounce?: number | null;
+  /** Called after an external (non-echo) value is synced inbound — i.e. a genuine parent reassignment. */
+  onInbound?: () => void;
 }
 
 /**
@@ -55,6 +57,7 @@ export function useInternalModel<TExternal, TInternal = TExternal>(
       }
       lastNormalized = normalize(toRaw(value) as TExternal);
       internal.value = lastNormalized;
+      options.onInbound?.();
     },
     { immediate: true },
   );

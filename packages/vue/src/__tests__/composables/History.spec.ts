@@ -309,6 +309,93 @@ describe('useHistory', () => {
     });
   });
 
+  describe('rebaseline', () => {
+    it('re-baselines a slice without recording an undoable entry', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'loaded' };
+      history.rebaseline('filter');
+      await nextTick();
+
+      expect(history.canUndo.value).toBe(false);
+    });
+
+    it('drops any existing undo/redo history (a load is a fresh start)', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'edited' };
+      await nextTick();
+      expect(history.canUndo.value).toBe(true);
+
+      filter.value = { v: 'loaded' };
+      history.rebaseline('filter');
+      await nextTick();
+
+      expect(history.canUndo.value).toBe(false);
+    });
+
+    it('re-baselines every slice to its current value, so reset returns to the full state at load time', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      sort.value = { v: 's1' };
+      await nextTick();
+
+      // parent loads only the filter; sort keeps its edited value
+      filter.value = { v: 'loaded' };
+      history.rebaseline('filter');
+      await nextTick();
+
+      history.reset();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'loaded' });
+      expect(sort.value).toEqual({ v: 's1' });
+    });
+
+    it('handles a multi-slice load (several rebaselines in a row) without recording entries', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'fL' };
+      history.rebaseline('filter');
+      sort.value = { v: 'sL' };
+      history.rebaseline('sort');
+      await nextTick();
+
+      expect(history.canUndo.value).toBe(false);
+    });
+
+    it('keeps edits after a re-baseline undoable back to the re-baselined value', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'loaded' };
+      history.rebaseline('filter');
+      await nextTick();
+
+      filter.value = { v: 'edited' };
+      await nextTick();
+      expect(history.canUndo.value).toBe(true);
+
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'loaded' });
+    });
+  });
+
   describe('register / unregister', () => {
     it('ignores re-registration of an existing slice (first ref wins)', async () => {
       const history = useHistory();
@@ -339,6 +426,47 @@ describe('useHistory', () => {
       filter.value = { v: 'f1' };
       await nextTick();
 
+      expect(history.canUndo.value).toBe(false);
+    });
+
+    it('prunes stack entries that referenced the unregistered slice', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      history.undo();
+      await nextTick();
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(true);
+
+      history.unregister('filter');
+
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(false);
+    });
+
+    it('keeps entries of other slices when one slice is unregistered', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      sort.value = { v: 's1' };
+      await nextTick();
+
+      history.unregister('filter');
+
+      // only the 'sort' edit remains undoable; the 'filter' entry is gone
+      expect(history.canUndo.value).toBe(true);
+
+      history.undo();
+      await nextTick();
+      expect(sort.value).toEqual({ v: 's0' });
       expect(history.canUndo.value).toBe(false);
     });
   });

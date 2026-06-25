@@ -168,6 +168,19 @@ describe('FilterBuilder', () => {
       expect((wrapper.findComponent(Group).props('modelValue') as GroupFilter).filters).toHaveLength(0);
     });
 
+    it('does not record an external parent load as an undoable edit', async () => {
+      const history = useHistory();
+      await mountFilterBuilder({ history }, makeGroup());
+      expect(history.canUndo.value).toBe(false);
+
+      await wrapper.setProps({
+        modelValue: makeGroup([{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }]),
+      });
+      await flushAll();
+
+      expect(history.canUndo.value).toBe(false);
+    });
+
     it('unregisters its slice on unmount', async () => {
       const history = useHistory();
       await mountFilterBuilder({ history });

@@ -27,11 +27,9 @@ export function useHistory() {
     const slice = slices.get(name);
     if (!slice) return;
     const raw = toRaw(slice.source.value);
-    if (raw === slice.lastEmitted) {
-      slice.lastEmitted = null;
-      return;
-    }
+    const isEcho = raw === slice.lastEmitted;
     slice.lastEmitted = null;
+    if (isEcho) return;
     const after = structuredClone(raw);
     undoStack.push({ [name]: { before: slice.lastCommitted, after } });
     redoStack.length = 0;
@@ -50,14 +48,25 @@ export function useHistory() {
   function register<T>(name: string, source: Ref<T>): void {
     if (slices.has(name)) return;
     const value = structuredClone(toRaw(source.value));
+    const unwatch = watch(source, () => commit(name), { deep: true });
     baseline.set(name, value);
-    slices.set(name, { source: source as Ref<unknown>, lastCommitted: value, lastEmitted: null, unwatch: watch(source, () => commit(name), { deep: true }) });
+    slices.set(name, { source: source as Ref<unknown>, lastCommitted: value, lastEmitted: null, unwatch });
+  }
+
+  function prune(name: string): void {
+    for (const stack of [undoStack, redoStack]) {
+      for (let i = stack.length - 1; i >= 0; i--) {
+        delete stack[i][name];
+        if (!Object.keys(stack[i]).length) stack.splice(i, 1);
+      }
+    }
   }
 
   function unregister(name: string): void {
     slices.get(name)?.unwatch();
     slices.delete(name);
     baseline.delete(name);
+    prune(name);
   }
 
   function undo(): void {
@@ -86,6 +95,19 @@ export function useHistory() {
     for (const name of Object.keys(entry)) write(name, entry[name].after);
   }
 
+  function rebaseline(name: string): void {
+    const slice = slices.get(name);
+    if (!slice) return;
+    undoStack.length = 0;
+    redoStack.length = 0;
+    for (const [sliceName, sliceValue] of slices) {
+      const value = structuredClone(toRaw(sliceValue.source.value));
+      baseline.set(sliceName, value);
+      sliceValue.lastCommitted = value;
+    }
+    slice.lastEmitted = toRaw(slice.source.value);
+  }
+
   function clear(): void {
     undoStack.length = 0;
     redoStack.length = 0;
@@ -97,7 +119,7 @@ export function useHistory() {
     }
   }
 
-  return { register, unregister, undo, redo, reset, clear, canUndo, canRedo };
+  return { register, unregister, rebaseline, undo, redo, reset, clear, canUndo, canRedo };
 }
 
 export type History = ReturnType<typeof useHistory>;
