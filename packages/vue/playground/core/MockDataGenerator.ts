@@ -138,13 +138,14 @@ function findProperty(
   return null;
 }
 
+let nextUid = 1;
+
 function generateEntityData(entityId: string, rootSchema?: EntitySchema): Record<string, unknown> {
   const schema = ENTITIES[entityId];
   if (schema) {
     const data: Record<string, unknown> = {};
     if (schema.unique_identifier) {
-      const prop = schema.properties.find((p) => p.id === schema.unique_identifier);
-      data[schema.unique_identifier] = prop ? generateValue(prop) : String(Math.floor(Math.random() * 10000));
+      data[schema.unique_identifier] = `${entityId}-${nextUid++}`;
     }
     if (schema.primary_identifiers) {
       for (const id of schema.primary_identifiers) {
@@ -210,7 +211,10 @@ export function generateRow(
       const data = generateEntityData(targetEntityId, rootSchema);
       setNested(row, columnId, data);
     } else {
-      const value = generateValue(property);
+      const value =
+        columnId === ENTITIES[rootEntityId]?.unique_identifier
+          ? `${rootEntityId}-${nextUid++}`
+          : generateValue(property);
       setNested(row, columnId, value);
     }
   }
