@@ -1,47 +1,103 @@
-import { ref, computed, toRaw } from 'vue';
-import type { GroupFilter } from '@core/types';
+import { shallowReactive, computed, toRaw, watch, type Ref, type WatchStopHandle } from 'vue';
+
+interface Change {
+  before: unknown;
+  after: unknown;
+}
+
+type Entry = Record<string, Change>;
+
+interface Slice {
+  source: Ref<unknown>;
+  unwatch: WatchStopHandle;
+  lastCommitted: unknown;
+  lastEmitted: unknown;
+}
 
 export function useHistory() {
-  const undoStack = ref<GroupFilter[]>([]);
-  const redoStack = ref<GroupFilter[]>([]);
-  // Tracks the reference returned by undo/redo, so a hypothetical watcher
-  // on the consumer side that calls commit with it does not record it.
-  let lastEmitted: GroupFilter | null = null;
+  const slices = new Map<string, Slice>();
+  const baseline = new Map<string, unknown>();
+  const undoStack = shallowReactive<Entry[]>([]);
+  const redoStack = shallowReactive<Entry[]>([]);
 
-  const canUndo = computed(() => undoStack.value.length >= 2);
-  const canRedo = computed(() => redoStack.value.length >= 1);
+  const canUndo = computed(() => undoStack.length >= 1);
+  const canRedo = computed(() => redoStack.length >= 1);
 
-  function commit(state: GroupFilter): void {
-    const raw = toRaw(state);
-    if (raw === lastEmitted) {
-      lastEmitted = null;
+  function commit(name: string): void {
+    const slice = slices.get(name);
+    if (!slice) return;
+    const raw = toRaw(slice.source.value);
+    if (raw === slice.lastEmitted) {
+      slice.lastEmitted = null;
       return;
     }
-    undoStack.value.push(structuredClone(raw));
-    redoStack.value = [];
+    slice.lastEmitted = null;
+    const after = structuredClone(raw);
+    undoStack.push({ [name]: { before: slice.lastCommitted, after } });
+    redoStack.length = 0;
+    slice.lastCommitted = after;
   }
 
-  function undo(): GroupFilter | null {
-    if (!canUndo.value) return null;
-    const current = undoStack.value.pop()!;
-    redoStack.value.push(current);
-    lastEmitted = structuredClone(toRaw(undoStack.value.at(-1)!));
-    return lastEmitted;
+  function write(name: string, value: unknown): void {
+    const slice = slices.get(name);
+    if (!slice) return;
+    const clone = structuredClone(value);
+    slice.lastEmitted = clone;
+    slice.source.value = clone;
+    slice.lastCommitted = value;
   }
 
-  function redo(): GroupFilter | null {
-    if (!canRedo.value) return null;
-    const state = redoStack.value.pop()!;
-    undoStack.value.push(state);
-    lastEmitted = structuredClone(toRaw(state));
-    return lastEmitted;
+  function register<T>(name: string, source: Ref<T>): void {
+    if (slices.has(name)) return;
+    const value = structuredClone(toRaw(source.value));
+    baseline.set(name, value);
+    slices.set(name, { source: source as Ref<unknown>, lastCommitted: value, lastEmitted: null, unwatch: watch(source, () => commit(name), { deep: true }) });
+  }
+
+  function unregister(name: string): void {
+    slices.get(name)?.unwatch();
+    slices.delete(name);
+    baseline.delete(name);
+  }
+
+  function undo(): void {
+    if (!canUndo.value) return;
+    const entry = undoStack.pop()!;
+    redoStack.push(entry);
+    for (const name of Object.keys(entry)) write(name, entry[name].before);
+  }
+
+  function redo(): void {
+    if (!canRedo.value) return;
+    const entry = redoStack.pop()!;
+    undoStack.push(entry);
+    for (const name of Object.keys(entry)) write(name, entry[name].after);
+  }
+
+  function reset(): void {
+    const entry: Entry = {};
+    for (const [name, slice] of slices) {
+      const base = baseline.get(name);
+      if (slice.lastCommitted !== base) entry[name] = { before: slice.lastCommitted, after: base };
+    }
+    if (!Object.keys(entry).length) return;
+    undoStack.push(entry);
+    redoStack.length = 0;
+    for (const name of Object.keys(entry)) write(name, entry[name].after);
   }
 
   function clear(): void {
-    undoStack.value = [];
-    redoStack.value = [];
-    lastEmitted = null;
+    undoStack.length = 0;
+    redoStack.length = 0;
+    for (const [name, slice] of slices) {
+      const value = structuredClone(toRaw(slice.source.value));
+      baseline.set(name, value);
+      slice.lastCommitted = value;
+      slice.lastEmitted = null;
+    }
   }
 
-  return { commit, undo, redo, canUndo, canRedo, clear };
+  return { register, unregister, undo, redo, reset, clear, canUndo, canRedo };
 }
+
+export type History = ReturnType<typeof useHistory>;

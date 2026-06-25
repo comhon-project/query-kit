@@ -1,10 +1,11 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { ref } from 'vue';
 import QueryActionsBar from '@components/Common/QueryActionsBar.vue';
 import QueryHistoryActions from '@components/Common/QueryHistoryActions.vue';
 import IconButton from '@components/Common/IconButton.vue';
+import { useHistory } from '@components/Composable/History';
 import type { VueWrapper } from '@vue/test-utils';
-import type { GroupFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 
@@ -12,23 +13,13 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-function makeGroup(filters: GroupFilter['filters'] = []): GroupFilter {
-  return { type: 'group', operator: 'and', filters };
-}
-
-function mountBar(props: Record<string, unknown> = {}, modelValue: GroupFilter = makeGroup()) {
+function mountBar(props: Record<string, unknown> = {}) {
+  const history = useHistory();
+  history.register('filter', ref<{ v: string }>({ v: 'f0' }));
   wrapper = mount(QueryActionsBar, {
-    props: {
-      modelValue,
-      'onUpdate:modelValue': (v: GroupFilter) => wrapper.setProps({ modelValue: v }),
-      allowUndo: true,
-      allowRedo: true,
-      allowReset: true,
-      manual: false,
-      ...props,
-    },
+    props: { history, allowUndo: true, allowRedo: true, allowReset: true, manual: false, ...props },
   });
-  return wrapper;
+  return { history };
 }
 
 function findButton(icon: string) {
@@ -42,30 +33,17 @@ describe('QueryActionsBar', () => {
       expect(wrapper.findComponent(QueryHistoryActions).exists()).toBe(true);
     });
 
+    it('forwards the history store to QueryHistoryActions', () => {
+      const { history } = mountBar();
+      expect(wrapper.findComponent(QueryHistoryActions).props('history')).toBe(history);
+    });
+
     it('forwards allow flags to QueryHistoryActions', () => {
       mountBar({ allowUndo: false, allowRedo: true, allowReset: false });
       const child = wrapper.findComponent(QueryHistoryActions);
       expect(child.props('allowUndo')).toBe(false);
       expect(child.props('allowRedo')).toBe(true);
       expect(child.props('allowReset')).toBe(false);
-    });
-
-    it('forwards modelValue down via v-model', () => {
-      const group = makeGroup([{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }]);
-      mountBar({}, group);
-      const child = wrapper.findComponent(QueryHistoryActions);
-      expect(child.props('modelValue')).toEqual(group);
-    });
-
-    it('propagates update:modelValue from QueryHistoryActions to its own emit', async () => {
-      mountBar();
-      const child = wrapper.findComponent(QueryHistoryActions);
-      const newVal = makeGroup();
-      child.vm.$emit('update:modelValue', newVal);
-      await wrapper.vm.$nextTick();
-      const emits = wrapper.emitted('update:modelValue');
-      expect(emits).toBeDefined();
-      expect(emits!.at(-1)![0]).toEqual(newVal);
     });
   });
 
@@ -87,11 +65,9 @@ describe('QueryActionsBar', () => {
       expect(wrapper.emitted('validate')!.length).toBe(1);
     });
 
-    it('does not emit "validate" when other history buttons are clicked', async () => {
-      mountBar({ manual: true }, makeGroup());
-      await wrapper.setProps({
-        modelValue: makeGroup([{ type: 'condition', property: 'x', operator: '=', value: 'a' }]),
-      });
+    it('does not emit "validate" when a history button is clicked', async () => {
+      const { history } = mountBar({ manual: true });
+      history.register('filter', ref({ v: 'f0' }));
       await findButton('undo')!.trigger('click');
       expect(wrapper.emitted('validate')).toBeUndefined();
     });

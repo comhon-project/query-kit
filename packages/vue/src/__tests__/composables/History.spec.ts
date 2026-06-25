@@ -1,211 +1,345 @@
 import { describe, it, expect } from 'vitest';
+import { ref, nextTick } from 'vue';
 import { useHistory } from '@components/Composable/History';
-import type { GroupFilter } from '@core/types';
-
-function makeGroup(filters: unknown[] = []): GroupFilter {
-  return { type: 'group', operator: 'and', filters: filters as GroupFilter['filters'] };
-}
 
 describe('useHistory', () => {
   describe('commit', () => {
-    it('records states in undo stack', () => {
-      const { commit, canUndo } = useHistory();
-      commit(makeGroup());
-      expect(canUndo.value).toBe(false);
-
-      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
-      expect(canUndo.value).toBe(true);
+    it('starts with undo and redo disabled', () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(false);
     });
 
-    it('clears redo stack on new snapshot', () => {
-      const { commit, undo, canRedo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
-
-      undo();
-      expect(canRedo.value).toBe(true);
-
-      commit(makeGroup([{ type: 'condition', property: 'b', operator: '=' }]));
-      expect(canRedo.value).toBe(false);
+    it('does not record anything before the first edit (register only seeds the baseline)', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+      await nextTick();
+      expect(history.canUndo.value).toBe(false);
     });
 
-    it('deep clones state so mutations do not affect history', () => {
-      const { commit, undo } = useHistory();
-      const state1 = makeGroup();
-      commit(state1);
+    it('records an edit made by reassigning the ref', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
 
-      const state2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
-      commit(state2);
+      filter.value = { v: 'f1' };
+      await nextTick();
 
-      state1.operator = 'or';
-      state2.filters.push({ type: 'condition', property: 'b', operator: '=' } as any);
-
-      const restored = undo()!;
-      expect(restored.operator).toBe('and');
-      expect(restored.filters).toHaveLength(0);
+      expect(history.canUndo.value).toBe(true);
+      expect(history.canRedo.value).toBe(false);
     });
 
-    it('skips a push whose reference matches the one returned by undo', () => {
-      const { commit, undo, canUndo, canRedo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
+    it('records an edit made by mutating the ref in place (deep)', async () => {
+      const history = useHistory();
+      const filter = ref({ type: 'group', filters: [] as unknown[] });
+      history.register('filter', filter);
 
-      const restored = undo()!;
-      commit(restored);
+      filter.value.filters.push({ id: 'a' });
+      await nextTick();
 
-      expect(canUndo.value).toBe(false);
-      expect(canRedo.value).toBe(true);
-    });
-
-    it('only skips the exact restored reference, not unrelated pushes', () => {
-      const { commit, undo, canUndo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup([{ type: 'condition', property: 'a', operator: '=' }]));
-
-      undo();
-      commit(makeGroup([{ type: 'condition', property: 'x', operator: '=' }]));
-      expect(canUndo.value).toBe(true);
-    });
-  });
-
-  describe('canUndo', () => {
-    it('is false with 0 entries', () => {
-      const { canUndo } = useHistory();
-      expect(canUndo.value).toBe(false);
-    });
-
-    it('is false with 1 entry', () => {
-      const { commit, canUndo } = useHistory();
-      commit(makeGroup());
-      expect(canUndo.value).toBe(false);
-    });
-
-    it('is true with 2+ entries', () => {
-      const { commit, canUndo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup());
-      expect(canUndo.value).toBe(true);
-    });
-  });
-
-  describe('canRedo', () => {
-    it('is false with no undone states', () => {
-      const { canRedo } = useHistory();
-      expect(canRedo.value).toBe(false);
-    });
-
-    it('is true after an undo', () => {
-      const { commit, undo, canRedo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup());
-      undo();
-      expect(canRedo.value).toBe(true);
+      expect(history.canUndo.value).toBe(true);
     });
   });
 
   describe('undo', () => {
-    it('returns null when canUndo is false', () => {
-      const { undo } = useHistory();
-      expect(undo()).toBeNull();
+    it('does nothing when there is nothing to undo', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      history.undo();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(false);
     });
 
-    it('returns null with only one snapshot', () => {
-      const { commit, undo } = useHistory();
-      commit(makeGroup());
-      expect(undo()).toBeNull();
+    it('restores the previous value and disables undo back at the baseline', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+
+      history.undo();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(true);
     });
 
-    it('returns the previous state', () => {
-      const { commit, undo } = useHistory();
-      const first = makeGroup();
-      const second = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
+    it('does not record the echo of a restore as a new entry', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
 
-      commit(first);
-      commit(second);
+      filter.value = { v: 'f1' };
+      await nextTick();
 
-      expect(undo()).toEqual(first);
+      history.undo();
+      await nextTick(); // the write echoes through the watcher here
+
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(true);
     });
 
-    it('allows multiple undos', () => {
-      const { commit, undo } = useHistory();
-      const s1 = makeGroup();
-      const s2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
-      const s3 = makeGroup([{ type: 'condition', property: 'b', operator: '<>' }]);
+    it('restores snapshots verbatim, preserving node keys', async () => {
+      const history = useHistory();
+      const filter = ref({ type: 'group', key: 'root', filters: [{ type: 'condition', key: 'k1' }] as unknown[] });
+      history.register('filter', filter);
 
-      commit(s1);
-      commit(s2);
-      commit(s3);
+      filter.value.filters.push({ type: 'condition', key: 'k2' });
+      await nextTick();
 
-      expect(undo()).toEqual(s2);
-      expect(undo()).toEqual(s1);
+      history.undo();
+      await nextTick();
+
+      expect(filter.value).toEqual({ type: 'group', key: 'root', filters: [{ type: 'condition', key: 'k1' }] });
+    });
+
+    it('walks back through several edits', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      filter.value = { v: 'f2' };
+      await nextTick();
+
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'f1' });
+
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(history.canUndo.value).toBe(false);
     });
   });
 
   describe('redo', () => {
-    it('returns null when canRedo is false', () => {
-      const { redo } = useHistory();
-      expect(redo()).toBeNull();
+    it('does nothing when there is nothing to redo', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      history.redo();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(history.canRedo.value).toBe(false);
     });
 
-    it('restores the undone state', () => {
-      const { commit, undo, redo } = useHistory();
-      const s1 = makeGroup();
-      const s2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
+    it('re-applies the undone value', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
 
-      commit(s1);
-      commit(s2);
+      filter.value = { v: 'f1' };
+      await nextTick();
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'f0' });
 
-      undo();
-      expect(redo()).toEqual(s2);
+      history.redo();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f1' });
+      expect(history.canUndo.value).toBe(true);
+      expect(history.canRedo.value).toBe(false);
+    });
+
+    it('clears the redo stack on a new edit', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      history.undo();
+      await nextTick();
+      expect(history.canRedo.value).toBe(true);
+
+      filter.value = { v: 'f2' };
+      await nextTick();
+
+      expect(history.canRedo.value).toBe(false);
+      expect(history.canUndo.value).toBe(true);
+    });
+  });
+
+  describe('multi-slice', () => {
+    it('reverts the most recent edit whatever slice produced it', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      sort.value = { v: 's1' };
+      await nextTick();
+
+      history.undo();
+      await nextTick();
+      expect(sort.value).toEqual({ v: 's0' });
+      expect(filter.value).toEqual({ v: 'f1' });
+
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(sort.value).toEqual({ v: 's0' });
+      expect(history.canUndo.value).toBe(false);
+    });
+
+    it('only records the slice that changed', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(sort.value).toEqual({ v: 's0' });
+    });
+  });
+
+  describe('reset', () => {
+    it('restores every changed slice to its baseline', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      sort.value = { v: 's1' };
+      await nextTick();
+
+      history.reset();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(sort.value).toEqual({ v: 's0' });
+    });
+
+    it('records the reset as a single undoable step', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const sort = ref({ v: 's0' });
+      history.register('filter', filter);
+      history.register('sort', sort);
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+      sort.value = { v: 's1' };
+      await nextTick();
+
+      history.reset();
+      await nextTick();
+
+      history.undo();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f1' });
+      expect(sort.value).toEqual({ v: 's1' });
+    });
+
+    it('is a no-op when already at the baseline', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+
+      history.reset();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f0' });
+      expect(history.canUndo.value).toBe(false);
     });
   });
 
   describe('clear', () => {
-    it('clears both stacks', () => {
-      const { commit, undo, clear, canUndo, canRedo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup());
-      commit(makeGroup());
-      undo();
+    it('drops the history', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
 
-      expect(canUndo.value).toBe(true);
-      expect(canRedo.value).toBe(true);
+      filter.value = { v: 'f1' };
+      await nextTick();
+      history.undo();
+      await nextTick();
+      expect(history.canRedo.value).toBe(true);
 
-      clear();
-      expect(canUndo.value).toBe(false);
-      expect(canRedo.value).toBe(false);
+      history.clear();
+
+      expect(history.canUndo.value).toBe(false);
+      expect(history.canRedo.value).toBe(false);
     });
 
-    it('resets the tracked reference so a pending restored ref is not muted', () => {
-      const { commit, undo, clear, canUndo } = useHistory();
-      commit(makeGroup());
-      commit(makeGroup());
+    it('rebaselines: reset targets the value at the time of clear', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
 
-      const restored = undo()!;
-      clear();
-      commit(restored);
-      expect(canUndo.value).toBe(false);
-      commit(makeGroup());
-      expect(canUndo.value).toBe(true);
+      filter.value = { v: 'f1' };
+      await nextTick();
+
+      history.clear();
+
+      filter.value = { v: 'f2' };
+      await nextTick();
+      history.reset();
+      await nextTick();
+
+      expect(filter.value).toEqual({ v: 'f1' });
     });
   });
 
-  describe('undo/redo cycle', () => {
-    it('handles full undo-redo-undo cycle', () => {
-      const { commit, undo, redo } = useHistory();
-      const s1 = makeGroup();
-      const s2 = makeGroup([{ type: 'condition', property: 'a', operator: '=' }]);
-      const s3 = makeGroup([{ type: 'condition', property: 'b', operator: '<>' }]);
+  describe('register / unregister', () => {
+    it('ignores re-registration of an existing slice (first ref wins)', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      const other = ref({ v: 'x' });
+      history.register('filter', filter);
+      history.register('filter', other);
 
-      commit(s1);
-      commit(s2);
-      commit(s3);
+      other.value = { v: 'y' };
+      await nextTick();
+      expect(history.canUndo.value).toBe(false);
 
-      expect(undo()).toEqual(s2);
-      expect(undo()).toEqual(s1);
-      expect(redo()).toEqual(s2);
-      expect(redo()).toEqual(s3);
-      expect(undo()).toEqual(s2);
+      filter.value = { v: 'f1' };
+      await nextTick();
+      expect(history.canUndo.value).toBe(true);
+
+      history.undo();
+      await nextTick();
+      expect(filter.value).toEqual({ v: 'f0' });
+    });
+
+    it('stops tracking a slice after unregister', async () => {
+      const history = useHistory();
+      const filter = ref({ v: 'f0' });
+      history.register('filter', filter);
+      history.unregister('filter');
+
+      filter.value = { v: 'f1' };
+      await nextTick();
+
+      expect(history.canUndo.value).toBe(false);
     });
   });
 });

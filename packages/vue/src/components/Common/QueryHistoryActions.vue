@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, watch, toRaw } from 'vue';
-import { useHistory } from '@components/Composable/History';
+import { computed } from 'vue';
 import { config as globalConfig } from '@config/config';
 import IconButton from '@components/Common/IconButton.vue';
-import type { GroupFilter } from '@core/types';
+import type { History } from '@components/Composable/History';
 
 interface Props {
+  history: History;
   allowUndo?: boolean;
   allowRedo?: boolean;
   allowReset?: boolean;
@@ -17,41 +17,17 @@ const props = withDefaults(defineProps<Props>(), {
   allowRedo: undefined,
   allowReset: undefined,
 });
-const modelValue = defineModel<GroupFilter>({ required: true });
 
 const allowUndo = computed(() => props.allowUndo ?? globalConfig.allowUndo);
 const allowRedo = computed(() => props.allowRedo ?? globalConfig.allowRedo);
 const allowReset = computed(() => props.allowReset ?? globalConfig.allowReset);
 
-const { commit, undo, redo, canUndo, canRedo } = useHistory();
-let anchor: GroupFilter | null = null;
-
-watch(
-  modelValue,
-  (val) => {
-    if (anchor === null) anchor = structuredClone(toRaw(val));
-    commit(val);
-  },
-  { immediate: true, deep: true },
-);
-
-function onUndo(): void {
-  const state = undo();
-  if (state) modelValue.value = state;
-}
-
-function onRedo(): void {
-  const state = redo();
-  if (state) modelValue.value = state;
-}
-
-function onReset(): void {
-  if (anchor) modelValue.value = structuredClone(anchor);
-}
+const canUndo = computed(() => props.history.canUndo.value);
+const canRedo = computed(() => props.history.canRedo.value);
 </script>
 
 <template>
-  <IconButton v-if="allowUndo" icon="undo" :disabled="!canUndo" @click="onUndo" />
-  <IconButton v-if="allowRedo" icon="redo" :disabled="!canRedo" @click="onRedo" />
-  <IconButton v-if="allowReset" icon="reset" @click="onReset" />
+  <IconButton v-if="allowUndo" icon="undo" :disabled="!canUndo" @click="history.undo()" />
+  <IconButton v-if="allowRedo" icon="redo" :disabled="!canRedo" @click="history.redo()" />
+  <IconButton v-if="allowReset" icon="reset" @click="history.reset()" />
 </template>

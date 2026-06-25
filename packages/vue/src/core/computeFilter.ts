@@ -52,9 +52,12 @@ function mustKeepFilter(filter: Filter, entitySchema: EntitySchema): boolean {
   return true;
 }
 
-export async function computeFilter(filter: GroupFilter, entity: string): Promise<GroupFilter> {
+export async function computeFilter(filter: Filter | null, entity: string): Promise<GroupFilter> {
   const entitySchema = await resolve(entity);
-  const computed = structuredClone(toRaw(filter));
+  const raw = filter ? (toRaw(filter) as Filter) : null;
+  const group: GroupFilter =
+    raw && raw.type === 'group' ? raw : { type: 'group', operator: 'and', filters: raw ? [raw] : [] };
+  const computed = structuredClone(group);
   const stack: Array<[Filter, EntitySchema]> = [[computed, entitySchema]];
   while (stack.length) {
     const [currentFilter, currentSchema] = stack.pop()!;

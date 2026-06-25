@@ -8,8 +8,9 @@ import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/Sche
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
 import { flushAll } from '@tests/helpers/flushAsync';
+import { useHistory } from '@components/Composable/History';
 import type { VueWrapper } from '@vue/test-utils';
-import type { GroupFilter } from '@core/types';
+import type { Filter, GroupFilter } from '@core/types';
 
 let wrapper: VueWrapper;
 
@@ -29,13 +30,13 @@ function makeGroup(filters: GroupFilter['filters'] = []): GroupFilter {
   return { type: 'group', operator: 'and', filters: filters.map((f, i) => ({ ...f, key: 'key-' + i })), key: 'root' };
 }
 
-async function mountFilterBuilder(props: Record<string, unknown> = {}, modelValue: GroupFilter = makeGroup()) {
+async function mountFilterBuilder(props: Record<string, unknown> = {}, modelValue: Filter | null = makeGroup()) {
   const entitySchema = await resolve('user');
   wrapper = mountWithPlugin(FilterBuilder, {
     props: {
       entitySchema,
       modelValue,
-      'onUpdate:modelValue': (v: GroupFilter) => wrapper.setProps({ modelValue: v }),
+      'onUpdate:modelValue': (v: Filter | null) => wrapper.setProps({ modelValue: v }),
       ...props,
     },
   });
@@ -79,22 +80,48 @@ describe('FilterBuilder', () => {
       expect(internal.operator).toBe('or');
     });
 
-    it('does NOT re-emit update:modelValue on initial mount (parent already supplied the canonical form)', async () => {
+    it('normalizes a null model into an empty group', async () => {
+      await mountFilterBuilder({}, null);
+      const internal = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+      expect(internal.type).toBe('group');
+      expect(internal.filters).toHaveLength(0);
+    });
+
+    it('wraps a non-group filter into a group', async () => {
+      await mountFilterBuilder({}, { type: 'condition', property: 'first_name', operator: '=', value: 'Alice' });
+      const internal = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+      expect(internal.type).toBe('group');
+      expect(internal.filters).toHaveLength(1);
+      expect(internal.filters[0]).toEqual(expect.objectContaining({ property: 'first_name', value: 'Alice' }));
+    });
+
+    it('re-syncs the working copy when the parent replaces modelValue', async () => {
+      await mountFilterBuilder({}, makeGroup([{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }]));
+      await wrapper.setProps({
+        modelValue: makeGroup([{ type: 'condition', property: 'last_name', operator: '=', value: 'Smith' }]),
+      });
+      await flushAll();
+      const internal = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+      expect(internal.filters).toHaveLength(1);
+      expect(internal.filters[0]).toEqual(expect.objectContaining({ property: 'last_name', value: 'Smith' }));
+    });
+
+    it('does NOT emit update:modelValue on mount (the working copy is internal until a real edit)', async () => {
       await mountFilterBuilder();
       expect(wrapper.emitted('update:modelValue')).toBeUndefined();
     });
   });
 
   describe('user mutations', () => {
-    it('applies mutations in place on the supplied model without emitting update:modelValue', async () => {
+    it('edits a normalized working copy (not the parent object) and emits a key-stripped update', async () => {
       const model = makeGroup();
       await mountFilterBuilder({}, model);
 
-      // Group receives the very object the parent supplied (no internal copy).
-      const rendered = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
-      expect(toRaw(rendered)).toBe(model);
+      // FilterBuilder owns the boundary now: Group renders an internal working copy, not the parent object.
+      const working = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+      expect(toRaw(working)).not.toBe(model);
 
-      rendered.filters.push({
+      working.filters.push({
         type: 'condition',
         property: 'first_name',
         operator: '=',
@@ -103,10 +130,54 @@ describe('FilterBuilder', () => {
       });
       await flushAll();
 
-      // FilterBuilder mutates in place; the boundary (normalize/strip, emit) lives in QueryBuilder.
-      expect(wrapper.emitted('update:modelValue')).toBeUndefined();
-      expect(model.filters).toHaveLength(1);
-      expect(model.filters[0]).toEqual(expect.objectContaining({ property: 'first_name', value: 'Alice', key: 'new-1' }));
+      const emitted = wrapper.emitted('update:modelValue');
+      expect(emitted).toBeTruthy();
+      const last = emitted!.at(-1)![0] as GroupFilter;
+      expect(last.filters).toHaveLength(1);
+      expect(last.filters[0]).toEqual(expect.objectContaining({ property: 'first_name', value: 'Alice' }));
+      expect(last.key).toBeUndefined();
+      expect(last.filters[0]).not.toHaveProperty('key');
+    });
+  });
+
+  describe('history integration', () => {
+    it('registers its working copy so an edit becomes undoable', async () => {
+      const history = useHistory();
+      await mountFilterBuilder({ history });
+
+      const working = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+      expect(history.canUndo.value).toBe(false);
+
+      working.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 'k' });
+      await flushAll();
+
+      expect(history.canUndo.value).toBe(true);
+    });
+
+    it('reflects a history undo back into the rendered working copy', async () => {
+      const history = useHistory();
+      await mountFilterBuilder({ history });
+
+      const working = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+      working.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 'k' });
+      await flushAll();
+
+      history.undo();
+      await flushAll();
+
+      expect((wrapper.findComponent(Group).props('modelValue') as GroupFilter).filters).toHaveLength(0);
+    });
+
+    it('unregisters its slice on unmount', async () => {
+      const history = useHistory();
+      await mountFilterBuilder({ history });
+      const working = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+
+      wrapper.unmount();
+      working.filters.push({ type: 'condition', property: 'x', operator: '=', value: 'y', key: 'k' });
+      await flushAll();
+
+      expect(history.canUndo.value).toBe(false);
     });
   });
 

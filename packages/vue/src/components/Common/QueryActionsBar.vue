@@ -3,9 +3,10 @@ import { computed } from 'vue';
 import { config as globalConfig } from '@config/config';
 import QueryHistoryActions from '@components/Common/QueryHistoryActions.vue';
 import IconButton from '@components/Common/IconButton.vue';
-import type { GroupFilter } from '@core/types';
+import type { History } from '@components/Composable/History';
 
 interface Props {
+  history: History;
   allowUndo?: boolean;
   allowRedo?: boolean;
   allowReset?: boolean;
@@ -19,7 +20,6 @@ const props = withDefaults(defineProps<Props>(), {
   allowReset: undefined,
   manual: undefined,
 });
-const modelValue = defineModel<GroupFilter>({ required: true });
 
 defineEmits<{ validate: [] }>();
 
@@ -28,7 +28,7 @@ const manual = computed(() => props.manual ?? globalConfig.manual);
 
 <template>
   <QueryHistoryActions
-    v-model="modelValue"
+    :history="history"
     :allow-undo="allowUndo"
     :allow-redo="allowRedo"
     :allow-reset="allowReset"

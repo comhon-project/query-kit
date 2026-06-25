@@ -191,7 +191,7 @@ describe('QueryBuilder', () => {
     });
   });
 
-  describe('boundary (in-place mutation)', () => {
+  describe('edit propagation', () => {
     it('emits update:modelValue to the parent immediately and key-stripped on an in-place edit', async () => {
       await mountQueryBuilder();
       const before = wrapper.emitted('update:modelValue')?.length ?? 0;
@@ -377,6 +377,29 @@ describe('QueryBuilder', () => {
         const emitted = wrapper.emitted('computed')!;
         expect(emitted.at(-1)![1]).toBe(true);
       });
+
+      it('clears the history when the entity changes', async () => {
+        const group: GroupFilter = {
+          type: 'group',
+          operator: 'and',
+          filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
+        };
+        await mountQueryBuilder({}, group);
+
+        const internalGroup = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
+        internalGroup.filters.push({ type: 'condition', property: 'last_name', operator: '=', value: 'Smith', key: 'k' });
+        await flushAll();
+        vi.advanceTimersByTime(1000);
+        await flushAll();
+        expect(findActionButton('undo')!.props('disabled')).toBe(false);
+
+        await wrapper.setProps({ entity: 'organization' });
+        await flushAll();
+        vi.advanceTimersByTime(1000);
+        await flushAll();
+
+        expect(findActionButton('undo')!.props('disabled')).toBe(true);
+      });
     });
   });
 
@@ -511,7 +534,8 @@ describe('QueryBuilder', () => {
       const schema = wrapper.findComponent(FilterBuilder).props('entitySchema') as EntitySchema;
       expect(schema.id).toBe('organization');
       expect(wrapper.emitted('computed')!.length).toBeGreaterThan(before);
-      expect(computeFilterSpy).toHaveBeenLastCalledWith(expect.anything(), 'organization');
+      // compute now runs straight off modelValue (null here); only the entity argument matters
+      expect(computeFilterSpy).toHaveBeenLastCalledWith(null, 'organization');
     });
   });
 });

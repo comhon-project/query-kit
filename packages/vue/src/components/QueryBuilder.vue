@@ -3,13 +3,12 @@ import { ref, watch, onUnmounted } from 'vue';
 import FilterBuilder from '@components/Filter/FilterBuilder.vue';
 import QueryActionsBar from '@components/Common/QueryActionsBar.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
-import { useInternalModel } from '@components/Composable/InternalModel';
+import { useHistory } from '@components/Composable/History';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { deepEqual } from '@core/Utils';
 import { computeFilter } from '@core/computeFilter';
-import { normalizeFilter, stripKeys } from '@core/filterNormalize';
 import { config as globalConfig } from '@config/config';
 import type { AllowedOperators } from '@core/OperatorManager';
 import type {
@@ -56,10 +55,7 @@ const props = withDefaults(defineProps<Props>(), {
   actionsLocation: 'header',
 });
 
-const internalValue = useInternalModel<Filter | null, GroupFilter>(modelValue, {
-  normalize: (val) => normalizeFilter(val, props.allowedOperators),
-  strip: stripKeys,
-});
+const history = useHistory();
 
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
@@ -73,7 +69,7 @@ async function runCompute(): Promise<void> {
   const seq = ++computeSeq;
   let computed: GroupFilter;
   try {
-    computed = await computeFilter(internalValue.value, props.entity);
+    computed = await computeFilter(modelValue.value, props.entity);
   } catch (error) {
     console.warn('[query-kit] computeFilter failed, keeping last result', error);
     firstEmitDone = false;
@@ -96,7 +92,7 @@ function scheduleCompute(immediate: boolean): void {
 }
 
 watch(
-  [() => props.entity, internalValue],
+  [() => props.entity, modelValue],
   async (newVals, oldVals) => {
     const entity = newVals[0] as string;
     const entityChanged = !oldVals || entity !== oldVals[0];
@@ -109,6 +105,7 @@ watch(
         validEntity.value = false;
         return;
       }
+      if (oldVals) history.clear();
       firstEmitDone = false;
       lastComputedEmitted = null;
     }
@@ -129,7 +126,7 @@ async function onValidate(): Promise<void> {
   const seq = ++computeSeq;
   let computed: GroupFilter;
   try {
-    computed = await computeFilter(internalValue.value, props.entity);
+    computed = await computeFilter(modelValue.value, props.entity);
   } catch (error) {
     console.warn('[query-kit] computeFilter failed on validate, keeping last result', error);
     return;
@@ -148,8 +145,7 @@ async function onValidate(): Promise<void> {
     <template v-else-if="entitySchema">
       <header v-if="actionsLocation === 'header'" :class="classes.query_builder_header">
         <QueryActionsBar
-          :key="entity"
-          v-model="internalValue"
+          :history="history"
           :allow-undo="allowUndo"
           :allow-redo="allowRedo"
           :allow-reset="allowReset"
@@ -158,7 +154,8 @@ async function onValidate(): Promise<void> {
         />
       </header>
       <FilterBuilder
-        v-model="internalValue"
+        v-model="modelValue"
+        :history="history"
         :entity-schema="entitySchema"
         :allowed-scopes="allowedScopes"
         :allowed-properties="allowedProperties"
@@ -171,8 +168,7 @@ async function onValidate(): Promise<void> {
       >
         <template v-if="actionsLocation === 'embedded'" #actions>
           <QueryActionsBar
-            :key="entity"
-            v-model="internalValue"
+            :history="history"
             :allow-undo="allowUndo"
             :allow-redo="allowRedo"
             :allow-reset="allowReset"
