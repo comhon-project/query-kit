@@ -40,7 +40,7 @@ interface Props {
   filter?: Filter;
   directQuery?: boolean;
   limit?: number;
-  onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
+  onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   quickSort?: boolean;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
   allowedCollectionTypes?: CollectionType[];
@@ -110,13 +110,13 @@ const showInfiniteScrollObserver = computed(() => {
 const pageCount = computed(() => (limit.value ? Math.max(1, Math.ceil(count.value / limit.value)) : 0));
 
 const rowEvents = (row: Record<string, unknown>) =>
-  props.onRowClick
+  props.onItemClick
     ? {
-        click: (e: MouseEvent) => props.onRowClick!(row, e),
+        click: (e: MouseEvent) => props.onItemClick!(row, e),
         keydown: (e: KeyboardEvent) => {
           if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
-            props.onRowClick!(row, e);
+            props.onItemClick!(row, e);
           }
         },
       }
@@ -456,8 +456,8 @@ watch(
           <tr
             v-for="(object, rowIndex) in collection"
             :key="(object[rowKeyProperty!] as string | number) ?? rowIndex"
-            :class="onRowClick ? classes.collection_clickable_row : ''"
-            :tabindex="onRowClick ? 0 : undefined"
+            :class="onItemClick ? classes.collection_clickable_row : ''"
+            :tabindex="onItemClick ? 0 : undefined"
             v-on="rowEvents(object)"
           >
             <template v-for="fieldId in displayedFields" :key="fieldId">

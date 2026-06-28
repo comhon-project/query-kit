@@ -159,7 +159,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | requestTimezone        |         | string             | false    | `'UTC'`          | Timezone to use when requesting server.                                                                                         |
 | requester              |         | function or object | false    | -                | Override the requester defined in global plugin configuration.                                                                  |
 | queryBuilderId         |         | string             | false    | -                | ID of linked query builder for skip-link navigation.                                                                           |
-| onRowClick             |         | function           | false    | -                | Row click handler. Signature: `(row, event) => void`.                                                                           |
+| onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked). Signature: `(item, event) => void`.                                        |
 | onExport               |         | function           | false    | -                | Export handler. When provided, an export button is displayed. Signature: `(filter?) => void`.                                    |
 
 ### Fields
@@ -263,7 +263,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                     |
 | naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only). No-op without `natural_sort`. |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
-| onRowClick             |         | function           | false    | -                | Row click handler: `(row, event) => void`.                                                                     |
+| onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked): `(item, event) => void`.                                  |
 | onExport               |         | function           | false    | -                | Export handler (displays export button when provided): `(filter?) => void`.                                    |
 | aliasInsensitiveLabels |         | boolean            | false    | `false`          | Display case-insensitive operators with their case-sensitive label.                                             |
 | actionsLocation        |         | string             | false    | `'header'`       | Where the actions bar is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group).      |

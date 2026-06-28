@@ -114,8 +114,8 @@ const requester = {
 const clickedRow = shallowRef(null);
 const clickedCell = shallowRef(null);
 
-function onRowClick(row) {
-  clickedRow.value = row;
+function onItemClick(item) {
+  clickedRow.value = item;
 }
 
 function onFieldClick(value, item, fieldId, event) {
@@ -282,7 +282,7 @@ function onThemeChange() {
         v-model:page="state.clicks.page"
         :entity="state.clicks.entity"
         :requester="requester"
-        :on-row-click="onRowClick"
+        :on-item-click="onItemClick"
         :custom-fields="{ company: { onFieldClick: onFieldClick } }"
       />
       <div style="display: flex; gap: 1rem; margin-top: 0.75rem">

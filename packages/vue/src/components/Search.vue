@@ -40,7 +40,7 @@ interface Props {
   displayCount?: boolean;
   editFields?: boolean;
   naturalSortWhenEmpty?: boolean;
-  onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
+  onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
   aliasInsensitiveLabels?: boolean;
   actionsLocation?: 'header' | 'embedded';
@@ -112,7 +112,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       :filter="computedFilter"
       :direct-query="directQuery"
       :limit="limit"
-      :on-row-click="onRowClick"
+      :on-item-click="onItemClick"
       :quick-sort="quickSort"
       :post-request="postRequest"
       :allowed-collection-types="allowedCollectionTypes"

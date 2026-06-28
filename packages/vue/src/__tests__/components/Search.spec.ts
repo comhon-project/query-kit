@@ -104,7 +104,7 @@ describe('Search', () => {
     });
 
     it('forwards props to Collection', async () => {
-      const onRowClick = vi.fn();
+      const onItemClick = vi.fn();
       const onExport = vi.fn();
       const postRequest = vi.fn();
       const { requester } = createMockRequester();
@@ -117,7 +117,7 @@ describe('Search', () => {
         allowedCollectionTypes: ['pagination'],
         userTimezone: 'Europe/Paris',
         requestTimezone: 'America/New_York',
-        onRowClick,
+        onItemClick,
         onExport,
         postRequest,
         requester,
@@ -133,7 +133,7 @@ describe('Search', () => {
       expect(collection.props('allowedCollectionTypes')).toEqual(['pagination']);
       expect(collection.props('userTimezone')).toBe('Europe/Paris');
       expect(collection.props('requestTimezone')).toBe('America/New_York');
-      expect(collection.props('onRowClick')).toBe(onRowClick);
+      expect(collection.props('onItemClick')).toBe(onItemClick);
       expect(collection.props('onExport')).toBe(onExport);
       expect(collection.props('postRequest')).toBe(postRequest);
       expect(collection.props('requester')).toStrictEqual(requester);

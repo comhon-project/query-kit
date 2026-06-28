@@ -188,17 +188,17 @@ describe('Collection', () => {
     expect(wrapper.text()).toContain('2');
   });
 
-  it('makes rows clickable when onRowClick is set', async () => {
-    const onRowClick = vi.fn();
-    mountCollection({ onRowClick });
+  it('makes rows clickable when onItemClick is set', async () => {
+    const onItemClick = vi.fn();
+    mountCollection({ onItemClick });
     await flushAll();
     const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
     expect(dataRow).toBeTruthy();
     await dataRow!.trigger('click');
-    expect(onRowClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
+    expect(onItemClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
   });
 
-  it('does not make rows clickable without onRowClick', async () => {
+  it('does not make rows clickable without onItemClick', async () => {
     mountCollection();
     await flushAll();
     const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
@@ -578,35 +578,35 @@ describe('Collection', () => {
 
   describe('keyboard navigation on clickable rows', () => {
     it('handles Enter key on clickable row', async () => {
-      const onRowClick = vi.fn();
-      mountCollection({ onRowClick });
+      const onItemClick = vi.fn();
+      mountCollection({ onItemClick });
       await flushAll();
 
       const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
       expect(dataRow).toBeTruthy();
       await dataRow!.trigger('keydown', { key: 'Enter' });
-      expect(onRowClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
+      expect(onItemClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
     });
 
     it('handles Space key on clickable row', async () => {
-      const onRowClick = vi.fn();
-      mountCollection({ onRowClick });
+      const onItemClick = vi.fn();
+      mountCollection({ onItemClick });
       await flushAll();
 
       const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
       expect(dataRow).toBeTruthy();
       await dataRow!.trigger('keydown', { key: ' ' });
-      expect(onRowClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
+      expect(onItemClick).toHaveBeenCalledWith(sampleRows[0], expect.any(Event));
     });
 
     it('ignores other keys on clickable row', async () => {
-      const onRowClick = vi.fn();
-      mountCollection({ onRowClick });
+      const onItemClick = vi.fn();
+      mountCollection({ onItemClick });
       await flushAll();
 
       const dataRow = wrapper.findAll('tbody tr').find((r) => r.attributes('tabindex') === '0');
       await dataRow!.trigger('keydown', { key: 'Tab' });
-      expect(onRowClick).not.toHaveBeenCalled();
+      expect(onItemClick).not.toHaveBeenCalled();
     });
   });
 
