@@ -407,7 +407,7 @@ const config = {
 }
 ```
 
-The callback receives four parameters: `value`, `item`, `propertyPath`, and `locale`.
+The callback receives five parameters: `value`, `item`, `propertyPath`, `locale`, and `index` (the element position when rendering an array item, otherwise `undefined`).
 
 ### Property renderers
 

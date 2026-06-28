@@ -302,6 +302,24 @@ describe('Renderers', () => {
       expect(wrapper.text()).toBe('[a], [b], [c]');
     });
 
+    it('calls a function renderer with value, item, fieldId, locale and element index', () => {
+      const renderFn: RenderFunction = vi.fn((value: unknown) => `[${value}]`);
+      registerTypeRenderers({ string: renderFn });
+      const item = { tags: ['a', 'b'] };
+
+      mount(ArrayRenderer, {
+        props: baseProps({
+          value: ['a', 'b'],
+          item,
+          fieldId: 'tags',
+          type: { type: 'array', items: { type: 'string' } },
+        }),
+      });
+
+      expect(renderFn).toHaveBeenNthCalledWith(1, 'a', item, 'tags', locale.value, 0);
+      expect(renderFn).toHaveBeenNthCalledWith(2, 'b', item, 'tags', locale.value, 1);
+    });
+
     it('renders empty array as empty', () => {
       const wrapper = mount(ArrayRenderer, {
         props: baseProps({

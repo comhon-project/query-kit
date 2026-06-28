@@ -18,7 +18,7 @@ const subValues = computed<unknown[]>(() => {
   const valueArray = props.value as unknown[] | null;
   return valueArray
     ? typeof renderer.value == 'function'
-      ? valueArray.map((subValue) => (renderer.value as RenderFunction)(subValue, {}, '', locale.value))
+      ? valueArray.map((subValue, index) => (renderer.value as RenderFunction)(subValue, props.item, props.fieldId, locale.value, index))
       : valueArray
     : [];
 });
@@ -35,6 +35,7 @@ const subValues = computed<unknown[]>(() => {
       :type="type.items"
       :value="subValue"
       :item="item"
+      :index="index"
       :request-timezone="requestTimezone"
       :user-timezone="userTimezone"
     />

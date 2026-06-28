@@ -16,6 +16,7 @@ export type RenderFunction = (
   item: Record<string, unknown>,
   fieldId: string,
   locale: string,
+  index?: number,
 ) => unknown;
 
 // Native HTML form elements
@@ -79,6 +80,7 @@ export interface FieldRendererProps {
   type: ArrayableTypeContainer;
   value: unknown;
   item: Record<string, unknown>;
+  index?: number;
   requestTimezone: string;
   userTimezone: string;
 }
