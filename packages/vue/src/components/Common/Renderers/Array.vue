@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
-import { getTypeRenderer } from '@core/CellRendererManager';
+import { getTypeRenderer } from '@core/FieldRendererManager';
 import { locale } from '@i18n/i18n';
-import type { CellRendererProps, RenderFunction } from '@core/types';
+import type { FieldRendererProps, RenderFunction } from '@core/types';
 
-const props = defineProps<CellRendererProps>();
+const props = defineProps<FieldRendererProps>();
 
 const elementComponent = computed<Component | null>(() => {
   return typeof renderer.value == 'function' ? null : (renderer.value as Component);
@@ -30,11 +30,11 @@ const subValues = computed<unknown[]>(() => {
     <template v-if="elementComponent == null">{{ subValue }}</template>
     <component
       :is="elementComponent"
-      :column-id="columnId"
+      :field-id="fieldId"
       :property="property"
       :type="type.items"
       :value="subValue"
-      :row-value="rowValue"
+      :item="item"
       :request-timezone="requestTimezone"
       :user-timezone="userTimezone"
     />

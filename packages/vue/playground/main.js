@@ -24,7 +24,7 @@ import {
   enumTranslationsLoader,
   requestSchemaLoader,
 } from './core/SchemaLoader';
-import CellCountry from './components/CellCountry.vue';
+import CountryRenderer from './components/CountryRenderer.vue';
 import CountryInput from './components/CountryInput.vue';
 
 library.add([faPlus, faXmark, faRotateLeft, faBackward, faForward, faChevronDown, faCheck]);
@@ -53,13 +53,13 @@ createApp(App)
     typeInputs: {
       country: new InputComponent(CountryInput, { multiple: true }),
     },
-    cellTypeRenderers: {
-      country: CellCountry,
+    fieldTypeRenderers: {
+      country: CountryRenderer,
     },
-    cellPropertyRenderers: {
+    fieldPropertyRenderers: {
       user: {
         weight: (value) => value + ' kg',
-        age: (value, rowValue, columnId, locale) => value + (locale === 'fr' ? ' ans' : ' years'),
+        age: (value, item, propertyPath, locale) => value + (locale === 'fr' ? ' ans' : ' years'),
       },
     },
     icons: 'default',
@@ -77,6 +77,7 @@ createApp(App)
           'iends_with', 'idoesnt_end_with',
           'null', 'not_null',
         ],
+        country: ['=', '<>', 'in', 'not_in', 'null', 'not_null'],
       },
     },
     computedScopes: {

@@ -7,7 +7,7 @@ import {
   registerTypeRenderers,
   registerPropertyRenderers,
   _resetForTesting,
-} from '@core/CellRendererManager';
+} from '@core/FieldRendererManager';
 import type { Property, TypeContainer } from '@core/EntitySchema';
 import {
   Array as ArrayRenderer,
@@ -28,7 +28,7 @@ function mockProperty(overrides: Partial<Property> = {}): Property {
   return { id: 'test', type: 'string', owner: 'test_entity', ...overrides } as Property;
 }
 
-describe('CellRendererManager', () => {
+describe('FieldRendererManager', () => {
   describe('getTypeRenderer', () => {
     it('returns null for string type', () => {
       expect(getTypeRenderer(container('string'))).toBeNull();

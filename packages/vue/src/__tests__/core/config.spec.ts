@@ -16,7 +16,7 @@ describe('config', () => {
     expect(config.displayOperator).toBe(true);
     expect(config.quickSort).toBe(true);
     expect(config.displayCount).toBe(true);
-    expect(config.editColumns).toBe(false);
+    expect(config.editFields).toBe(false);
     expect(config.allowedCollectionTypes).toEqual(['pagination']);
   });
 

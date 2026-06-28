@@ -46,7 +46,7 @@ describe('PropertyPathLabel', () => {
     expect(wrapper.text()).toBe('Custom');
   });
 
-  it('displays InvalidColumn for an invalid property path', async () => {
+  it('displays InvalidField for an invalid property path', async () => {
     wrapper = mountWithPlugin(PropertyPathLabel, {
       props: { entitySchema: userSchema, propertyPath: 'nonexistent' },
     });

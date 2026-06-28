@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { config } from '@config/config';
-import type { CellRendererProps } from '@core/types';
+import type { FieldRendererProps } from '@core/types';
 
-defineProps<CellRendererProps>();
+defineProps<FieldRendererProps>();
 </script>
 
 <template>

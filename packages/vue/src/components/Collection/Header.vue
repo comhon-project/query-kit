@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { classes } from '@core/ClassManager';
 import { isPropertySortable } from '@core/EntitySchema';
-import ColumnName from '@components/Collection/ColumnName.vue';
+import FieldName from '@components/Collection/FieldName.vue';
 import Icon from '@components/Common/Icon.vue';
 import { translate } from '@i18n/i18n';
 import { computed, ref, watchEffect } from 'vue';
@@ -9,7 +9,7 @@ import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  columnId: string;
+  fieldId: string;
   open?: boolean;
   label?: string | ((locale: string) => string);
   order?: 'asc' | 'desc';
@@ -17,18 +17,18 @@ interface Props {
 }
 
 interface Emits {
-  click: [columnId: string, ctrlKey: boolean];
+  click: [fieldId: string, ctrlKey: boolean];
 }
 
 const emit = defineEmits<Emits>();
 const props = defineProps<Props>();
 
 const sortable = ref(false);
-const propertyPath = computed<string | undefined>(() => (props.open ? undefined : props.columnId));
-const isColumnSortable = computed<boolean>(() => sortable.value || !!props.hasCustomSort);
+const propertyPath = computed<string | undefined>(() => (props.open ? undefined : props.fieldId));
+const isFieldSortable = computed<boolean>(() => sortable.value || !!props.hasCustomSort);
 const orderLabel = computed<string>(() => `(${translate(props.order ?? 'unsorted')})`);
 const ariaSort = computed(() =>
-  isColumnSortable.value
+  isFieldSortable.value
     ? props.order === 'asc'
       ? 'ascending'
       : props.order === 'desc'
@@ -45,20 +45,20 @@ watchEffect(async () => {
 <template>
   <th scope="col" :aria-sort="ariaSort">
     <button
-      v-if="isColumnSortable"
+      v-if="isFieldSortable"
       type="button"
       :class="classes.btn"
       :active="props.order ? '' : undefined"
       :desc="props.order == 'desc' ? '' : undefined"
       :asc="props.order == 'asc' ? '' : undefined"
-      @click="(e) => emit('click', columnId, e.ctrlKey)"
+      @click="(e) => emit('click', fieldId, e.ctrlKey)"
     >
-      <ColumnName :entity-schema="entitySchema" :column-id="columnId" :open="open" :label="label" />
+      <FieldName :entity-schema="entitySchema" :field-id="fieldId" :open="open" :label="label" />
       <Icon icon="sort" :label="orderLabel" />
       <span :class="classes.sr_only">{{ orderLabel }}</span>
     </button>
     <div v-else>
-      <ColumnName :entity-schema="entitySchema" :column-id="columnId" :open="open" :label="label" />
+      <FieldName :entity-schema="entitySchema" :field-id="fieldId" :open="open" :label="label" />
     </div>
   </th>
 </template>

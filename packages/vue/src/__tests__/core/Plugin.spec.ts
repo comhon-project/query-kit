@@ -8,7 +8,7 @@ import { icons, defaultIcons } from '@core/IconManager';
 import { classes } from '@core/ClassManager';
 import { getComponent } from '@core/InputManager';
 import { config } from '@config/config';
-import { getTypeRenderer, getPropertyRenderer } from '@core/CellRendererManager';
+import { getTypeRenderer, getPropertyRenderer } from '@core/FieldRendererManager';
 import { locale, fallback } from '@i18n/i18n';
 import {
   entitySchemaLoader,
@@ -344,21 +344,21 @@ describe('Plugin', () => {
     ).not.toThrow();
   });
 
-  it('registers cellTypeRenderers from options', () => {
+  it('registers fieldTypeRenderers from options', () => {
     const CustomRenderer = defineComponent({ render() { return null; } });
     plugin.install(app, {
       entitySchemaLoader: () => Promise.resolve(null),
-      cellTypeRenderers: { string: CustomRenderer },
+      fieldTypeRenderers: { string: CustomRenderer },
     });
     // Verify the custom renderer was registered for the 'string' type
     expect(getTypeRenderer({ type: 'string' })).toBe(CustomRenderer);
   });
 
-  it('registers cellPropertyRenderers from options', () => {
+  it('registers fieldPropertyRenderers from options', () => {
     const CustomRenderer = defineComponent({ render() { return null; } });
     plugin.install(app, {
       entitySchemaLoader: () => Promise.resolve(null),
-      cellPropertyRenderers: {
+      fieldPropertyRenderers: {
         user: { first_name: CustomRenderer },
       },
     });

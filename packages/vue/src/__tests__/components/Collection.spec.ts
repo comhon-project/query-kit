@@ -37,20 +37,20 @@ function mountCollection(overrides: Record<string, any> = {}, requesterOverrides
     ...requesterOverrides,
   });
 
-  const columns = ref(overrides.columns ?? ['first_name', 'last_name']);
+  const fields = ref(overrides.fields ?? ['first_name', 'last_name']);
 
   wrapper = mountWithPlugin(Collection, {
     props: {
       entity: 'user',
       limit: 10,
-      columns: columns.value,
-      'onUpdate:columns': (v: string[]) => { columns.value = v; },
+      fields: fields.value,
+      'onUpdate:fields': (v: string[]) => { fields.value = v; },
       requester,
       ...overrides,
     },
   });
 
-  return { requester, calls, columns };
+  return { requester, calls, fields };
 }
 
 describe('Collection', () => {
@@ -96,8 +96,8 @@ describe('Collection', () => {
       props: {
         entity: 'user',
         limit: 10,
-        columns: ['first_name'],
-        'onUpdate:columns': () => {},
+        fields: ['first_name'],
+        'onUpdate:fields': () => {},
         requester,
         page: page.value,
         'onUpdate:page': (v: number) => { page.value = v; },
@@ -120,8 +120,8 @@ describe('Collection', () => {
       props: {
         entity: 'user',
         limit: 10,
-        columns: ['first_name', 'last_name'],
-        'onUpdate:columns': () => {},
+        fields: ['first_name', 'last_name'],
+        'onUpdate:fields': () => {},
         requester,
         sort: sort.value,
         'onUpdate:sort': (v: any[]) => { sort.value = v; },
@@ -134,7 +134,7 @@ describe('Collection', () => {
     await sortButton.trigger('click');
     await flushAll();
 
-    expect(sort.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+    expect(sort.value).toEqual([{ field: 'first_name', order: 'asc' }]);
   });
 
   it('cycles sort order: undefined → asc → desc → undefined', async () => {
@@ -144,8 +144,8 @@ describe('Collection', () => {
       props: {
         entity: 'user',
         limit: 10,
-        columns: ['first_name'],
-        'onUpdate:columns': () => {},
+        fields: ['first_name'],
+        'onUpdate:fields': () => {},
         requester,
         sort: sort.value,
         'onUpdate:sort': (v: any[]) => {
@@ -161,12 +161,12 @@ describe('Collection', () => {
     // First click → asc
     await sortButton.trigger('click');
     await flushAll();
-    expect(sort.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+    expect(sort.value).toEqual([{ field: 'first_name', order: 'asc' }]);
 
     // Second click → desc
     await sortButton.trigger('click');
     await flushAll();
-    expect(sort.value).toEqual([{ column: 'first_name', order: 'desc' }]);
+    expect(sort.value).toEqual([{ field: 'first_name', order: 'desc' }]);
 
     // Third click → removed
     await sortButton.trigger('click');
@@ -222,21 +222,21 @@ describe('Collection', () => {
     expect(exportButton).toBeUndefined();
   });
 
-  it('shows InvalidColumn for invalid columns', async () => {
-    mountCollection({ columns: ['first_name', 'nonexistent_col'] });
+  it('shows InvalidField for invalid fields', async () => {
+    mountCollection({ fields: ['first_name', 'nonexistent_col'] });
     await flushAll();
     expect(wrapper.text()).toContain('invalid column');
     expect(wrapper.text()).toContain('nonexistent_col');
   });
 
-  it('shows ColumnEditor when editColumns is true', async () => {
-    mountCollection({ editColumns: true });
+  it('shows FieldsEditor when editFields is true', async () => {
+    mountCollection({ editFields: true });
     await flushAll();
     const columnsButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('columns'));
     expect(columnsButton).toBeTruthy();
   });
 
-  it('does not show ColumnEditor when editColumns is not set', async () => {
+  it('does not show FieldsEditor when editFields is not set', async () => {
     mountCollection();
     await flushAll();
     const columnsButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('columns'));
@@ -259,8 +259,8 @@ describe('Collection', () => {
     expect(postRequest).toHaveBeenCalledWith(sampleRows);
   });
 
-  it('includes column names as-is in request properties', async () => {
-    const { calls } = mountCollection({ columns: ['first_name', 'age', 'company', 'metadata.label', 'unknown_prop'] });
+  it('includes field names as-is in request properties', async () => {
+    const { calls } = mountCollection({ fields: ['first_name', 'age', 'company', 'metadata.label', 'unknown_prop'] });
     await flushAll();
     expect(calls[0].properties).toEqual(['first_name', 'age', 'company', 'metadata.label']);
   });
@@ -283,7 +283,7 @@ describe('Collection', () => {
     await loadRawTranslations('user', 'fr');
     loadedTranslations['fr'] = fr;
 
-    mountCollection({ columns: ['first_name'] });
+    mountCollection({ fields: ['first_name'] });
     await flushAll();
     expect(wrapper.text()).toContain('first name');
 
@@ -296,7 +296,7 @@ describe('Collection', () => {
     await loadRawTranslations('user', 'fr');
     loadedTranslations['fr'] = fr;
 
-    mountCollection({ columns: ['gender'] }, { collection: [{ id: 1, gender: 'male' }], count: 1 });
+    mountCollection({ fields: ['gender'] }, { collection: [{ id: 1, gender: 'male' }], count: 1 });
     await flushAll();
     expect(wrapper.text()).toContain('Mr.');
 
@@ -305,26 +305,26 @@ describe('Collection', () => {
     expect(wrapper.text()).toContain('M.');
   });
 
-  describe('customColumns', () => {
-    it('renders custom column with open=true and label string', async () => {
+  describe('customFields', () => {
+    it('renders custom field with open=true and label string', async () => {
       mountCollection({
-        columns: ['custom_col'],
-        customColumns: { custom_col: { label: 'My Custom', open: true } },
+        fields: ['custom_col'],
+        customFields: { custom_col: { label: 'My Custom', open: true } },
       });
       await flushAll();
       expect(wrapper.text()).toContain('My Custom');
     });
 
-    it('renders custom column with label function', async () => {
+    it('renders custom field with label function', async () => {
       mountCollection({
-        columns: ['custom_col'],
-        customColumns: { custom_col: { label: (loc: string) => `Label-${loc}`, open: true } },
+        fields: ['custom_col'],
+        customFields: { custom_col: { label: (loc: string) => `Label-${loc}`, open: true } },
       });
       await flushAll();
       expect(wrapper.text()).toContain('Label-en');
     });
 
-    it('renders custom column with renderer component', async () => {
+    it('renders custom field with renderer component', async () => {
       const CustomRenderer = markRaw(defineComponent({
         props: ['value'],
         render() {
@@ -332,34 +332,34 @@ describe('Collection', () => {
         },
       }));
       mountCollection({
-        columns: ['first_name'],
-        customColumns: { first_name: { label: 'First', renderer: CustomRenderer } },
+        fields: ['first_name'],
+        customFields: { first_name: { label: 'First', renderer: CustomRenderer } },
       });
       await flushAll();
       expect(wrapper.find('em').text()).toBe('custom:John');
     });
 
-    it('renders custom column with render function', async () => {
+    it('renders custom field with render function', async () => {
       const renderFn = (value: unknown) => `[${value}]`;
       mountCollection({
-        columns: ['first_name'],
-        customColumns: { first_name: { label: 'First', renderer: renderFn } },
+        fields: ['first_name'],
+        customFields: { first_name: { label: 'First', renderer: renderFn } },
       });
       await flushAll();
       expect(wrapper.text()).toContain('[John]');
     });
 
-    it('triggers onCellClick on custom column cell click', async () => {
-      const onCellClick = vi.fn();
+    it('triggers onFieldClick on custom field click', async () => {
+      const onFieldClick = vi.fn();
       mountCollection({
-        columns: ['first_name'],
-        customColumns: { first_name: { label: 'First', onCellClick } },
+        fields: ['first_name'],
+        customFields: { first_name: { label: 'First', onFieldClick } },
       });
       await flushAll();
       const clickableTd = wrapper.findAll('td').find((td) => td.attributes('role') === 'button');
       expect(clickableTd).toBeTruthy();
       await clickableTd!.trigger('click');
-      expect(onCellClick).toHaveBeenCalled();
+      expect(onFieldClick).toHaveBeenCalled();
     });
 
     it('uses custom order properties in sort request', async () => {
@@ -370,15 +370,15 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['custom_col'],
-          'onUpdate:columns': () => {},
+          fields: ['custom_col'],
+          'onUpdate:fields': () => {},
           requester,
           sort: sort.value,
           'onUpdate:sort': (v: any[]) => {
             sort.value = v;
             wrapper.setProps({ sort: v });
           },
-          customColumns: { custom_col: { label: 'Custom', open: true, sort: ['sort_field_a', 'sort_field_b'] } },
+          customFields: { custom_col: { label: 'Custom', open: true, sort: ['sort_field_a', 'sort_field_b'] } },
         },
       });
       await flushAll();
@@ -390,7 +390,7 @@ describe('Collection', () => {
       vi.advanceTimersByTime(500);
       await flushAll();
 
-      expect(sort.value).toEqual([{ column: 'custom_col', order: 'asc' }]);
+      expect(sort.value).toEqual([{ field: 'custom_col', order: 'asc' }]);
       const lastCall = calls[calls.length - 1];
       expect(lastCall.sort).toEqual([
         { property: 'sort_field_a', order: 'asc' },
@@ -399,20 +399,20 @@ describe('Collection', () => {
       vi.useRealTimers();
     });
 
-    it('skips property resolution for open custom column', async () => {
+    it('skips property resolution for open custom field', async () => {
       const { calls } = mountCollection({
-        columns: ['virtual_col'],
-        customColumns: { virtual_col: { label: 'Virtual', open: true } },
+        fields: ['virtual_col'],
+        customFields: { virtual_col: { label: 'Virtual', open: true } },
       });
       await flushAll();
-      // open column should not be included in properties (no schema property)
+      // open field should not be included in properties (no schema property)
       expect(calls[0].properties).not.toContain('virtual_col');
     });
 
-    it('declares additional properties for open column', async () => {
+    it('declares additional properties for open field', async () => {
       const { calls } = mountCollection({
-        columns: ['full_name'],
-        customColumns: {
+        fields: ['full_name'],
+        customFields: {
           full_name: { label: 'Full Name', open: true, properties: ['first_name', 'last_name'] },
         },
       });
@@ -420,10 +420,10 @@ describe('Collection', () => {
       expect(calls[0].properties).toEqual(['first_name', 'last_name']);
     });
 
-    it('adds properties to property-bound column', async () => {
+    it('adds properties to property-bound field', async () => {
       const { calls } = mountCollection({
-        columns: ['first_name'],
-        customColumns: {
+        fields: ['first_name'],
+        customFields: {
           first_name: { label: 'Name', properties: ['gender'] },
         },
       });
@@ -433,8 +433,8 @@ describe('Collection', () => {
 
     it('deduplicates properties', async () => {
       const { calls } = mountCollection({
-        columns: ['first_name', 'age'],
-        customColumns: {
+        fields: ['first_name', 'age'],
+        customFields: {
           age: { label: 'Age', properties: ['first_name'] },
         },
       });
@@ -444,8 +444,8 @@ describe('Collection', () => {
 
     it('supports nested paths in properties', async () => {
       const { calls } = mountCollection({
-        columns: ['full_info'],
-        customColumns: {
+        fields: ['full_info'],
+        customFields: {
           full_info: { label: 'Full Info', open: true, properties: ['company.brand_name', 'metadata.label'] },
         },
       });
@@ -521,7 +521,7 @@ describe('Collection', () => {
       expect(vm.config.requestTimezone).toBe('UTC');
       expect(vm.config.quickSort).toBe(true);
       expect(vm.config.displayCount).toBe(true);
-      expect(vm.config.editColumns).toBe(false);
+      expect(vm.config.editFields).toBe(false);
       expect(vm.config.allowedCollectionTypes).toEqual(['pagination']);
     });
 
@@ -531,7 +531,7 @@ describe('Collection', () => {
         requestTimezone: 'America/New_York',
         quickSort: false,
         displayCount: false,
-        editColumns: true,
+        editFields: true,
         allowedCollectionTypes: ['infinite'],
       });
       await flushAll();
@@ -540,7 +540,7 @@ describe('Collection', () => {
       expect(vm.config.requestTimezone).toBe('America/New_York');
       expect(vm.config.quickSort).toBe(false);
       expect(vm.config.displayCount).toBe(false);
-      expect(vm.config.editColumns).toBe(true);
+      expect(vm.config.editFields).toBe(true);
       expect(vm.config.allowedCollectionTypes).toEqual(['infinite']);
     });
   });
@@ -617,8 +617,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester,
           allowedCollectionTypes: ['infinite'],
         },
@@ -647,8 +647,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester,
           allowedCollectionTypes: ['infinite'],
           page: page.value,
@@ -681,8 +681,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester,
           page: 1,
           'onUpdate:page': () => {},
@@ -744,8 +744,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester: fn,
         },
       });
@@ -763,8 +763,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester,
           page: page.value,
           'onUpdate:page': (v: number) => {
@@ -793,14 +793,14 @@ describe('Collection', () => {
 
   describe('sort with relationship', () => {
     it('resolves object sort using natural_sort', async () => {
-      const sort = ref<any[]>([{ column: 'metadata', order: 'asc' }]);
+      const sort = ref<any[]>([{ field: 'metadata', order: 'asc' }]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['metadata'],
-          'onUpdate:columns': () => {},
+          fields: ['metadata'],
+          'onUpdate:fields': () => {},
           requester,
           sort: sort.value,
           'onUpdate:sort': (v: any[]) => { sort.value = v; },
@@ -817,14 +817,14 @@ describe('Collection', () => {
     });
 
     it('resolves relationship sort using unique_identifier fallback', async () => {
-      const sort = ref<any[]>([{ column: 'company', order: 'asc' }]);
+      const sort = ref<any[]>([{ field: 'company', order: 'asc' }]);
       const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
       wrapper = mountWithPlugin(Collection, {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['company'],
-          'onUpdate:columns': () => {},
+          fields: ['company'],
+          'onUpdate:fields': () => {},
           requester,
           sort: sort.value,
           'onUpdate:sort': (v: any[]) => { sort.value = v; },
@@ -847,8 +847,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester: createMockRequester({ collection: sampleRows, count: 2 }).requester,
           allowedCollectionTypes: ['pagination', 'infinite'],
         },
@@ -876,8 +876,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
           requester: createMockRequester({ collection: sampleRows, count: 2 }).requester,
           allowedCollectionTypes: ['pagination', 'infinite'],
         },
@@ -908,8 +908,8 @@ describe('Collection', () => {
         props: {
           entity: 'user',
           limit: 10,
-          columns: ['first_name', 'last_name'],
-          'onUpdate:columns': () => {},
+          fields: ['first_name', 'last_name'],
+          'onUpdate:fields': () => {},
           requester,
           sort: sort.value,
           'onUpdate:sort': (v: any[]) => {
@@ -926,7 +926,7 @@ describe('Collection', () => {
       // Click first header
       await sortButtons[0].trigger('click');
       await flushAll();
-      expect(sort.value).toEqual([{ column: 'first_name', order: 'asc' }]);
+      expect(sort.value).toEqual([{ field: 'first_name', order: 'asc' }]);
 
       // Ctrl-click second header (Header passes e.ctrlKey as multi flag)
       await sortButtons[1].trigger('click', { ctrlKey: true });
@@ -934,8 +934,8 @@ describe('Collection', () => {
       expect(sort.value).toHaveLength(2);
       expect(sort.value).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ column: 'first_name' }),
-          expect.objectContaining({ column: 'last_name' }),
+          expect.objectContaining({ field: 'first_name' }),
+          expect.objectContaining({ field: 'last_name' }),
         ]),
       );
     });

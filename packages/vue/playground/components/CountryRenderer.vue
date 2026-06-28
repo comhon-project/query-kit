@@ -3,11 +3,11 @@ import { locale } from '@query-kit/vue';
 import { computed } from 'vue';
 
 const props = defineProps({
-  columnId: { type: String, required: true },
+  fieldId: { type: String, required: true },
   property: { type: Object, required: true },
   type: { type: Object, required: true },
   value: { type: null, required: true },
-  rowValue: { type: Object, required: true },
+  item: { type: Object, required: true },
   requestTimezone: { type: String, required: true },
   userTimezone: { type: String, required: true },
 });

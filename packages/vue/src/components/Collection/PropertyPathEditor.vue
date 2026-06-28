@@ -2,12 +2,12 @@
 import { computed, ref, shallowRef, watch, watchEffect } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
-import ColumnName from '@components/Collection/ColumnName.vue';
+import FieldName from '@components/Collection/FieldName.vue';
 import { getPropertyPath, resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  columns: string[];
+  fields: string[];
   label?: string | ((locale: string) => string);
 }
 
@@ -38,7 +38,7 @@ const options = computed<Property[] | null>(() => {
       if (isOneToOneRelationship(property)) {
         opts.push(property);
       }
-    } else if (!props.columns.includes(propertyPath.value + '.' + property.id)) {
+    } else if (!props.fields.includes(propertyPath.value + '.' + property.id)) {
       opts.push(property);
     }
   }
@@ -87,7 +87,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <ColumnName :entity-schema="entitySchema" :column-id="propertyPath" :label="label" />
+  <FieldName :entity-schema="entitySchema" :field-id="propertyPath" :label="label" />
   <template v-if="expandable && lastRelatedSchema">
     <select v-if="editing" v-model="selectedProperty" :class="classes.input">
       <option value="" disabled hidden />

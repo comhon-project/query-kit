@@ -24,9 +24,9 @@ afterEach(() => {
 });
 
 describe('PropertyPathEditor', () => {
-  it('displays ColumnName for the current path', async () => {
+  it('displays FieldName for the current path', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: ['first_name'], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: ['first_name'], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     expect(wrapper.text()).toContain('first name');
@@ -34,7 +34,7 @@ describe('PropertyPathEditor', () => {
 
   it('shows expand button for a belongs_to relationship', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: ['company'], modelValue: 'company', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: ['company'], modelValue: 'company', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     // company is belongs_to → expandable → should show add button
@@ -44,7 +44,7 @@ describe('PropertyPathEditor', () => {
 
   it('does not show expand button for a non-relationship property', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: ['first_name'], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: ['first_name'], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     const addButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('add'));
@@ -53,7 +53,7 @@ describe('PropertyPathEditor', () => {
 
   it('shows select with related properties on expand click', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: ['company'], modelValue: 'company', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: ['company'], modelValue: 'company', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     const addButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('add'));
@@ -71,7 +71,7 @@ describe('PropertyPathEditor', () => {
   it('updates propertyPath when selecting a property from the dropdown', async () => {
     const modelValue = ref('company');
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: [], modelValue: modelValue.value, 'onUpdate:modelValue': (v: string) => { modelValue.value = v; } },
+      props: { entitySchema: userSchema, fields: [], modelValue: modelValue.value, 'onUpdate:modelValue': (v: string) => { modelValue.value = v; } },
     });
     await flushAll();
 
@@ -90,7 +90,7 @@ describe('PropertyPathEditor', () => {
 
   it('shows reduce button when path has more than 1 segment', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: [], modelValue: 'company.brand_name', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: [], modelValue: 'company.brand_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     const removeButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('remove'));
@@ -100,7 +100,7 @@ describe('PropertyPathEditor', () => {
   it('truncates path on reduce click', async () => {
     const modelValue = ref('company.brand_name');
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: [], modelValue: modelValue.value, 'onUpdate:modelValue': (v: string) => { modelValue.value = v; } },
+      props: { entitySchema: userSchema, fields: [], modelValue: modelValue.value, 'onUpdate:modelValue': (v: string) => { modelValue.value = v; } },
     });
     await flushAll();
 
@@ -111,9 +111,9 @@ describe('PropertyPathEditor', () => {
     expect(modelValue.value).toBe('company');
   });
 
-  it('excludes already-used columns from the select options', async () => {
+  it('excludes already-used fields from the select options', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: ['company.brand_name'], modelValue: 'company', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: ['company.brand_name'], modelValue: 'company', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
 
@@ -131,7 +131,7 @@ describe('PropertyPathEditor', () => {
     await resolve('organization');
     const orgSchema = await resolve('organization');
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: orgSchema, columns: ['contacts'], modelValue: 'contacts', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: orgSchema, fields: ['contacts'], modelValue: 'contacts', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     const addButton = wrapper.findAll('button').find((b) => b.attributes('aria-label')?.includes('add'));
@@ -144,7 +144,7 @@ describe('PropertyPathEditor', () => {
     loadedTranslations['fr'] = fr;
 
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: [], modelValue: 'company', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: [], modelValue: 'company', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
 
@@ -166,7 +166,7 @@ describe('PropertyPathEditor', () => {
 
   it('handles invalid property path gracefully', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: [], modelValue: 'nonexistent_prop', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: [], modelValue: 'nonexistent_prop', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
     // Should not throw, and should not show expand button
@@ -176,7 +176,7 @@ describe('PropertyPathEditor', () => {
 
   it('collapses editing mode when reduce clicked while editing', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
-      props: { entitySchema: userSchema, columns: [], modelValue: 'company', 'onUpdate:modelValue': () => {} },
+      props: { entitySchema: userSchema, fields: [], modelValue: 'company', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
 

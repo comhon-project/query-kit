@@ -28,7 +28,7 @@ app.mount('#app');
 ```
 
 ```html
-<QkitSearch entity="user" v-model:filter="filter" v-model:columns="columns" />
+<QkitSearch entity="user" v-model:filter="filter" v-model:fields="fields" />
 ```
 
 ## Preview

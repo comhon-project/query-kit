@@ -21,30 +21,30 @@ const tabs = [
   { id: 'embedded', label: 'Embedded actions' },
 ];
 
-const customColumns = {
+const customFields = {
   age_weight: {
     label: (locale) => (locale === 'fr' ? 'âge / poids' : 'age / weight'),
     open: true,
     sort: ['age', 'weight'],
     properties: ['age', 'weight'],
-    renderer: (cellValue, rowValue, columnId, locale) => {
+    renderer: (value, item, fieldId, locale) => {
       const ageLabel = locale === 'fr' ? ' ans' : ' years';
-      return `${rowValue['age']}${ageLabel}, ${rowValue['weight']} kg`;
+      return `${item['age']}${ageLabel}, ${item['weight']} kg`;
     },
   },
 };
 
-function createState(entity, columns, filter = null) {
+function createState(entity, fields, filter = null) {
   return reactive({
     entity,
-    columns: [...columns],
+    fields: [...fields],
     sort: [],
     filter,
     page: 1,
   });
 }
 
-const userColumns = [
+const userFields = [
   'first_name',
   'last_name',
   'gender',
@@ -56,30 +56,30 @@ const userColumns = [
 ];
 
 const state = {
-  default: createState('user', [...userColumns, 'age_weight']),
-  prefilled: createState('user', userColumns, {
+  default: createState('user', [...userFields, 'age_weight']),
+  prefilled: createState('user', userFields, {
     type: 'group',
     operator: 'and',
     filters: [
       { type: 'condition', property: 'last_name', operator: 'ilike' },
       { type: 'condition', property: 'age', operator: '>=', value: 18 },
-      { type: 'condition', property: 'country', operator: '=' },
+      { type: 'condition', property: 'country', operator: 'in' },
       { type: 'entity_condition', operator: 'has', property: 'company', count_operator: '>=', count: 1 },
     ],
   }),
-  manual: createState('user', userColumns),
-  deferred: createState('user', userColumns),
+  manual: createState('user', userFields),
+  deferred: createState('user', userFields),
   minimal: createState('user', ['first_name', 'last_name', 'age', 'company']),
   restricted: createState('user', ['first_name', 'last_name', 'age', 'gender', 'company']),
   clicks: createState('user', ['first_name', 'last_name', 'age', 'company']),
-  embedded: createState('user', userColumns),
+  embedded: createState('user', userFields),
   fixed: createState('organization', ['brand_name', 'address', 'description', 'country', 'contacts'], {
     type: 'group',
     operator: 'and',
     editable: false,
     filters: [
       { type: 'condition', property: 'brand_name', operator: 'ilike', removable: false },
-      { type: 'condition', property: 'country', operator: 'ilike', removable: false },
+      { type: 'condition', property: 'country', operator: 'in', removable: false },
       {
         type: 'entity_condition',
         operator: 'has',
@@ -118,9 +118,9 @@ function onRowClick(row) {
   clickedRow.value = row;
 }
 
-function onCellClick(value, rowValue, columnId, event) {
+function onFieldClick(value, item, fieldId, event) {
   event.stopPropagation();
-  clickedCell.value = { columnId, value };
+  clickedCell.value = { fieldId, value };
 }
 
 const theme = ref('auto');
@@ -161,17 +161,17 @@ function onThemeChange() {
     <!-- Default -->
     <div v-if="activeTab === 'default'">
       <p class="playground-description">
-        All features enabled: column editor, pagination/infinite scroll, undo/redo, custom columns, sort.
+        All features enabled: field editor, pagination/infinite scroll, undo/redo, custom fields, sort.
       </p>
       <QkitSearch
-        v-model:columns="state.default.columns"
+        v-model:fields="state.default.fields"
         v-model:sort="state.default.sort"
         v-model:filter="state.default.filter"
         v-model:page="state.default.page"
         :entity="state.default.entity"
         :requester="requester"
-        :custom-columns="customColumns"
-        :edit-columns="true"
+        :custom-fields="customFields"
+        :edit-fields="true"
         :allowed-collection-types="['infinite', 'pagination']"
         user-timezone="Europe/Paris"
       />
@@ -183,13 +183,13 @@ function onThemeChange() {
         Filter is initialized with conditions and an entity condition with count.
       </p>
       <QkitSearch
-        v-model:columns="state.prefilled.columns"
+        v-model:fields="state.prefilled.fields"
         v-model:sort="state.prefilled.sort"
         v-model:filter="state.prefilled.filter"
         v-model:page="state.prefilled.page"
         :entity="state.prefilled.entity"
         :requester="requester"
-        :edit-columns="true"
+        :edit-fields="true"
         :allowed-collection-types="['infinite', 'pagination']"
         user-timezone="Europe/Paris"
       />
@@ -201,14 +201,14 @@ function onThemeChange() {
         The query is not sent automatically. Click the search button to trigger the request.
       </p>
       <QkitSearch
-        v-model:columns="state.manual.columns"
+        v-model:fields="state.manual.fields"
         v-model:sort="state.manual.sort"
         v-model:filter="state.manual.filter"
         v-model:page="state.manual.page"
         :entity="state.manual.entity"
         :requester="requester"
         :manual="true"
-        :edit-columns="true"
+        :edit-fields="true"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -219,14 +219,14 @@ function onThemeChange() {
         directQuery=false: the collection does not query on load; the request only fires once the filter changes.
       </p>
       <QkitSearch
-        v-model:columns="state.deferred.columns"
+        v-model:fields="state.deferred.fields"
         v-model:sort="state.deferred.sort"
         v-model:filter="state.deferred.filter"
         v-model:page="state.deferred.page"
         :entity="state.deferred.entity"
         :requester="requester"
         :direct-query="false"
-        :edit-columns="true"
+        :edit-fields="true"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -237,7 +237,7 @@ function onThemeChange() {
         Stripped-down UI: no operators, no undo/redo/reset, no column editor, no result count.
       </p>
       <QkitSearch
-        v-model:columns="state.minimal.columns"
+        v-model:fields="state.minimal.fields"
         v-model:sort="state.minimal.sort"
         v-model:filter="state.minimal.filter"
         v-model:page="state.minimal.page"
@@ -247,7 +247,7 @@ function onThemeChange() {
         :allow-reset="false"
         :allow-undo="false"
         :allow-redo="false"
-        :edit-columns="false"
+        :edit-fields="false"
         :display-count="false"
       />
     </div>
@@ -258,7 +258,7 @@ function onThemeChange() {
         Only a few properties, one scope, and two operators (= and &lt;&gt;) are allowed.
       </p>
       <QkitSearch
-        v-model:columns="state.restricted.columns"
+        v-model:fields="state.restricted.fields"
         v-model:sort="state.restricted.sort"
         v-model:filter="state.restricted.filter"
         v-model:page="state.restricted.page"
@@ -267,7 +267,7 @@ function onThemeChange() {
         :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
         :allowed-scopes="{ user: ['scope'] }"
         :allowed-operators="{ condition: { basic: ['=', '<>'] }, group: ['and'] }"
-        :edit-columns="true"
+        :edit-fields="true"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -276,14 +276,14 @@ function onThemeChange() {
     <div v-if="activeTab === 'clicks'">
       <p class="playground-description">Click a row or the company cell to see the event data below.</p>
       <QkitSearch
-        v-model:columns="state.clicks.columns"
+        v-model:fields="state.clicks.fields"
         v-model:sort="state.clicks.sort"
         v-model:filter="state.clicks.filter"
         v-model:page="state.clicks.page"
         :entity="state.clicks.entity"
         :requester="requester"
         :on-row-click="onRowClick"
-        :custom-columns="{ company: { onCellClick: onCellClick } }"
+        :custom-fields="{ company: { onFieldClick: onFieldClick } }"
       />
       <div style="display: flex; gap: 1rem; margin-top: 0.75rem">
         <div v-if="clickedRow" class="playground-panel" style="flex: 1">
@@ -291,7 +291,7 @@ function onThemeChange() {
           <pre>{{ JSON.stringify(clickedRow, null, 2) }}</pre>
         </div>
         <div v-if="clickedCell" class="playground-panel" style="flex: 1">
-          <strong>Cell clicked: {{ clickedCell.columnId }}</strong>
+          <strong>Cell clicked: {{ clickedCell.fieldId }}</strong>
           <pre>{{ JSON.stringify(clickedCell.value, null, 2) }}</pre>
         </div>
       </div>
@@ -303,13 +303,13 @@ function onThemeChange() {
         Actions (undo/redo/reset) are rendered inside the FilterBuilder's group action bar instead of a header.
       </p>
       <QkitSearch
-        v-model:columns="state.embedded.columns"
+        v-model:fields="state.embedded.fields"
         v-model:sort="state.embedded.sort"
         v-model:filter="state.embedded.filter"
         v-model:page="state.embedded.page"
         :entity="state.embedded.entity"
         :requester="requester"
-        :edit-columns="true"
+        :edit-fields="true"
         actions-location="embedded"
         user-timezone="Europe/Paris"
       />
@@ -321,7 +321,7 @@ function onThemeChange() {
         Filter structure is fixed: conditions cannot be added or removed, only values can be changed.
       </p>
       <QkitSearch
-        v-model:columns="state.fixed.columns"
+        v-model:fields="state.fixed.fields"
         v-model:sort="state.fixed.sort"
         v-model:filter="state.fixed.filter"
         v-model:page="state.fixed.page"
@@ -334,7 +334,7 @@ function onThemeChange() {
     <div class="playground-displays">
       <RequestDisplay :request="currentState.filter" title="Filter" />
       <RequestDisplay :request="currentState.sort" title="Sort" />
-      <RequestDisplay :request="currentState.columns" title="Properties" />
+      <RequestDisplay :request="currentState.fields" title="Fields" />
       <RequestDisplay :request="lastRequest" title="Request" />
     </div>
   </div>

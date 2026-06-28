@@ -43,9 +43,9 @@ export type ClassName =
   | 'collection_cell'
   | 'collection_clickable_cell'
   | 'collection_actions'
-  | 'column_editor_list'
-  | 'column_editor_list_item'
-  | 'column_picker'
+  | 'field_editor_list'
+  | 'field_editor_list_item'
+  | 'field_picker'
   | 'loading'
   | 'pagination'
   | 'pagination_item'
@@ -99,9 +99,9 @@ const classList: ClassList = {
   collection_cell: 'qkit-cell',
   collection_clickable_cell: 'qkit-cell qkit-btn',
   collection_actions: 'qkit-collection-actions',
-  column_editor_list: 'qkit-column-editor-list',
-  column_editor_list_item: 'qkit-column-editor-list-item',
-  column_picker: 'qkit-column-picker',
+  field_editor_list: 'qkit-field-editor-list',
+  field_editor_list_item: 'qkit-field-editor-list-item',
+  field_picker: 'qkit-field-picker',
   loading: 'qkit-loading',
   pagination: 'qkit-pagination',
   pagination_item: 'qkit-pagination-item',

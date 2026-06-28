@@ -10,7 +10,7 @@ import type {
   DisplayOperator,
   AllowedScopes,
   AllowedProperties,
-  CustomColumnConfig,
+  CustomFieldConfig,
   SortItem,
   CollectionType,
   Requester,
@@ -19,7 +19,7 @@ import type {
 
 interface Props {
   entity: string;
-  customColumns?: Record<string, CustomColumnConfig>;
+  customFields?: Record<string, CustomFieldConfig>;
   allowReset?: boolean;
   allowUndo?: boolean;
   allowRedo?: boolean;
@@ -38,7 +38,7 @@ interface Props {
   quickSort?: boolean;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
-  editColumns?: boolean;
+  editFields?: boolean;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
   aliasInsensitiveLabels?: boolean;
@@ -46,7 +46,7 @@ interface Props {
 }
 
 const filter = defineModel<Filter | null>('filter', { default: null });
-const columns = defineModel<string[]>('columns', { required: true });
+const fields = defineModel<string[]>('fields', { required: true });
 const sort = defineModel<(string | SortItem)[]>('sort');
 const page = defineModel<number>('page', { default: 1 });
 
@@ -60,7 +60,7 @@ const props = withDefaults(defineProps<Props>(), {
   directQuery: undefined,
   quickSort: undefined,
   displayCount: undefined,
-  editColumns: undefined,
+  editFields: undefined,
   aliasInsensitiveLabels: undefined,
 });
 
@@ -102,11 +102,11 @@ function onComputed(filter: Filter, manual: boolean): void {
     <Collection
       v-if="computedFilter"
       :id="collectionId"
-      v-model:columns="columns"
+      v-model:fields="fields"
       v-model:sort="sort"
       v-model:page="page"
       :entity="entity"
-      :custom-columns="customColumns"
+      :custom-fields="customFields"
       :filter="computedFilter"
       :direct-query="directQuery"
       :limit="limit"
@@ -118,7 +118,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       :on-export="onExport"
       :user-timezone="userTimezone"
       :request-timezone="requestTimezone"
-      :edit-columns="editColumns"
+      :edit-fields="editFields"
       :requester="requester"
       :query-builder-id="queryBuilderId"
     />

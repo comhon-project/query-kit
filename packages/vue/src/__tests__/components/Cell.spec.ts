@@ -3,7 +3,7 @@ import { defineComponent, h } from 'vue';
 import Cell from '@components/Collection/Cell.vue';
 import { resolve, registerLoader, registerTranslationsLoader, loadRawTranslations } from '@core/EntitySchema';
 import { registerLoader as registerEnumLoader, registerTranslationsLoader as registerEnumTranslationsLoader } from '@core/EnumSchema';
-import { registerTypeRenderers, registerPropertyRenderers } from '@core/CellRendererManager';
+import { registerTypeRenderers, registerPropertyRenderers } from '@core/FieldRendererManager';
 import { registerClasses } from '@core/ClassManager';
 import { locale } from '@i18n/i18n';
 import { entitySchemaLoader, entityTranslationsLoader, enumSchemaLoader, enumTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -16,7 +16,7 @@ let userSchema: EntitySchema;
 let wrapper: VueWrapper;
 
 const baseProps = {
-  columnId: 'first_name',
+  fieldId: 'first_name',
   rowValue: { first_name: 'John', last_name: 'Doe', age: 30 },
   requestTimezone: 'UTC',
   userTimezone: 'UTC',
@@ -48,7 +48,7 @@ describe('Cell', () => {
     wrapper = mountWithPlugin(Cell, {
       props: {
         ...baseProps,
-        columnId: 'company.brand_name',
+        fieldId: 'company.brand_name',
         rowValue: { company: { brand_name: 'Acme' } },
         property,
       },
@@ -143,7 +143,7 @@ describe('Cell', () => {
     wrapper = mountWithPlugin(Cell, {
       props: {
         ...baseProps,
-        columnId: 'gender',
+        fieldId: 'gender',
         rowValue: { gender: 'male' },
         property,
       },
@@ -158,7 +158,7 @@ describe('Cell', () => {
     wrapper = mountWithPlugin(Cell, {
       props: {
         ...baseProps,
-        columnId: 'gender',
+        fieldId: 'gender',
         rowValue: { gender: 'male' },
         property,
       },

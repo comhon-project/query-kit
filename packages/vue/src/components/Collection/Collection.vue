@@ -22,10 +22,10 @@ import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
-import ColumnEditor from '@components/Collection/ColumnEditor.vue';
-import InvalidColumn from '@components/Messages/InvalidColumn.vue';
+import FieldsEditor from '@components/Collection/FieldsEditor.vue';
+import InvalidField from '@components/Messages/InvalidField.vue';
 import type {
-  CustomColumnConfig,
+  CustomFieldConfig,
   SortItem,
   CollectionType,
   CollectionConfig,
@@ -36,7 +36,7 @@ import type {
 
 interface Props {
   entity: string;
-  customColumns?: Record<string, CustomColumnConfig>;
+  customFields?: Record<string, CustomFieldConfig>;
   filter?: Filter;
   directQuery?: boolean;
   limit?: number;
@@ -48,7 +48,7 @@ interface Props {
   onExport?: (filter?: Filter) => void;
   userTimezone?: string;
   requestTimezone?: string;
-  editColumns?: boolean;
+  editFields?: boolean;
   requester?: Requester | RequesterFunction;
   queryBuilderId?: string;
 }
@@ -57,7 +57,7 @@ interface IndexedSortEntry {
   order: 'asc' | 'desc';
   properties: string[];
 }
-const columns = defineModel<string[]>('columns', { required: true });
+const fields = defineModel<string[]>('fields', { required: true });
 const sort = defineModel<(string | SortItem)[]>('sort');
 const page = defineModel<number>('page', { default: 1 });
 
@@ -66,14 +66,14 @@ const props = withDefaults(defineProps<Props>(), {
   directQuery: true,
   quickSort: undefined,
   displayCount: undefined,
-  editColumns: undefined,
+  editFields: undefined,
 });
 
 let hasExecFirstQuery = false;
 let requestId = 0;
 let properties: string[] = [];
 const requesting = ref<boolean>(false);
-const columnsProperties = shallowRef<Record<string, Property | undefined>>({});
+const fieldsProperties = shallowRef<Record<string, Property | undefined>>({});
 const collection = shallowReactive<Record<string, unknown>[]>([]);
 const count = ref<number>(0);
 const limit = ref<number | undefined>();
@@ -82,7 +82,7 @@ const collectionContent = useTemplateRef<HTMLDivElement>('collectionContent');
 const entitySchema = ref<EntitySchema>();
 const rowKeyProperty = ref<string>();
 const indexedSort = shallowRef<Record<string, IndexedSortEntry>>({});
-const invalidColumns = ref<string[]>([]);
+const invalidFields = ref<string[]>([]);
 const config = reactive<CollectionConfig>({} as CollectionConfig);
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
 const infiniteScroll = ref<boolean>(
@@ -99,7 +99,7 @@ const activeRequester = computed<Requester | RequesterFunction>(() => {
   return requester;
 });
 
-const computedColumns = computed<string[]>(() => Object.keys(columnsProperties.value));
+const displayedFields = computed<string[]>(() => Object.keys(fieldsProperties.value));
 
 const showInfiniteScrollObserver = computed(() => {
   return infiniteScroll.value && !end.value && !requesting.value && hasExecFirstQuery;
@@ -122,48 +122,48 @@ const rowEvents = (row: Record<string, unknown>) =>
 
 async function init(): Promise<void> {
   entitySchema.value = await resolve(props.entity);
-  await initColumns(entitySchema.value);
-  await initSort(sort.value, computedColumns.value, entitySchema.value!.id, props.customColumns);
+  await initFields(entitySchema.value);
+  await initSort(sort.value, displayedFields.value, entitySchema.value!.id, props.customFields);
 }
 
-async function initColumns(entitySchema: EntitySchema): Promise<void> {
-  const cols = columns.value;
+async function initFields(entitySchema: EntitySchema): Promise<void> {
+  const cols = fields.value;
   rowKeyProperty.value = entitySchema.unique_identifier;
   const colsProps: Record<string, Property | undefined> = {};
   properties = [];
 
   const invalid: string[] = [];
-  for (const columnId of cols) {
+  for (const fieldId of cols) {
     try {
-      const customColumn = props.customColumns?.[columnId];
-      const propertyPath = customColumn?.open ? undefined : await getPropertyPath(entitySchema.id, columnId);
+      const customField = props.customFields?.[fieldId];
+      const propertyPath = customField?.open ? undefined : await getPropertyPath(entitySchema.id, fieldId);
       const property = propertyPath?.[propertyPath.length - 1];
-      colsProps[columnId] = property;
+      colsProps[fieldId] = property;
 
       if (property) {
-        properties.push(columnId);
+        properties.push(fieldId);
       }
-      if (customColumn?.properties?.length) {
-        properties.push(...customColumn.properties);
+      if (customField?.properties?.length) {
+        properties.push(...customField.properties);
       }
     } catch (e) {
       if (e instanceof PropertyNotFoundError) {
-        invalid.push(columnId);
+        invalid.push(fieldId);
       } else {
         throw e;
       }
     }
   }
   properties = [...new Set(properties)];
-  invalidColumns.value = invalid;
-  columnsProperties.value = colsProps;
+  invalidFields.value = invalid;
+  fieldsProperties.value = colsProps;
 }
 
 async function initSort(
   sort: (string | SortItem)[] | undefined,
-  columns: string[],
+  fields: string[],
   entity: string,
-  customColumns?: Record<string, CustomColumnConfig>,
+  customFields?: Record<string, CustomFieldConfig>,
 ): Promise<void> {
   if (!sort) {
     indexedSort.value = {};
@@ -172,30 +172,30 @@ async function initSort(
   const indexed: Record<string, IndexedSortEntry> = {};
   for (const value of sort) {
     try {
-      const column = typeof value == 'string' ? value : value.column;
-      if (!columns.includes(column)) continue;
+      const field = typeof value == 'string' ? value : value.field;
+      if (!fields.includes(field)) continue;
       const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
 
       let reqProps: string[];
-      if (customColumns?.[column]?.sort) {
-        reqProps = customColumns[column].sort!;
+      if (customFields?.[field]?.sort) {
+        reqProps = customFields[field].sort!;
       } else {
-        const propertyPath = await getPropertyPath(entity, column);
+        const propertyPath = await getPropertyPath(entity, field);
         const property = propertyPath[propertyPath.length - 1];
 
         if (property.type === 'object' || property.type === 'relationship') {
           const schema = await resolve(property.entity!);
           if (schema.natural_sort?.length) {
-            reqProps = schema.natural_sort.map((prop) => column + '.' + prop);
+            reqProps = schema.natural_sort.map((prop) => field + '.' + prop);
           } else {
             const idProperty = schema.unique_identifier;
-            reqProps = [column + '.' + idProperty];
+            reqProps = [field + '.' + idProperty];
           }
         } else {
-          reqProps = [column];
+          reqProps = [field];
         }
       }
-      indexed[column] = { order, properties: reqProps };
+      indexed[field] = { order, properties: reqProps };
     } catch (e) {
       if (!(e instanceof PropertyNotFoundError)) throw e;
     }
@@ -209,31 +209,31 @@ function nextOrder(current: 'asc' | 'desc' | undefined): 'asc' | 'desc' | undefi
   return undefined;
 }
 
-function updateSort(columnId: string | undefined, multi: boolean): void {
-  if (!columnId) {
+function updateSort(fieldId: string | undefined, multi: boolean): void {
+  if (!fieldId) {
     return;
   }
-  const currentOrder = indexedSort.value[columnId]?.order;
+  const currentOrder = indexedSort.value[fieldId]?.order;
   const newOrder = nextOrder(currentOrder);
   if (multi) {
     const updated: SortItem[] = Object.entries(indexedSort.value).map(([col, entry]) => ({
-      column: col,
+      field: col,
       order: entry.order,
     }));
-    const existingIndex = updated.findIndex((v) => v.column == columnId);
+    const existingIndex = updated.findIndex((v) => v.field == fieldId);
     if (newOrder) {
-      const newColumnSort: SortItem = { column: columnId, order: newOrder };
+      const newFieldSort: SortItem = { field: fieldId, order: newOrder };
       if (existingIndex != -1) {
-        updated[existingIndex] = newColumnSort;
+        updated[existingIndex] = newFieldSort;
       } else {
-        updated.push(newColumnSort);
+        updated.push(newFieldSort);
       }
     } else if (existingIndex != -1) {
       updated.splice(existingIndex, 1);
     }
     sort.value = updated;
   } else {
-    sort.value = newOrder ? [{ column: columnId, order: newOrder }] : [];
+    sort.value = newOrder ? [{ field: fieldId, order: newOrder }] : [];
   }
 }
 
@@ -357,13 +357,13 @@ watchEffect(() => {
   config.requestTimezone = props.requestTimezone ?? globalConfig.requestTimezone;
   config.quickSort = props.quickSort ?? globalConfig.quickSort;
   config.displayCount = props.displayCount ?? globalConfig.displayCount;
-  config.editColumns = props.editColumns ?? globalConfig.editColumns;
+  config.editFields = props.editFields ?? globalConfig.editFields;
   config.allowedCollectionTypes = props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes;
 });
 watchEffect(() => {
   limit.value = props.limit ?? globalConfig.limit;
 });
-watch([() => props.entity, columns, sort], async (newVals, oldVals) => {
+watch([() => props.entity, fields, sort], async (newVals, oldVals) => {
   await init();
   if (requestTimeoutId) clearTimeout(requestTimeoutId);
   requestTimeoutId = undefined;
@@ -397,7 +397,7 @@ watch(
           !infiniteScroll ||
           onExport ||
           config.allowedCollectionTypes.length > 1 ||
-          config.editColumns
+          config.editFields
         "
         :class="classes.collection_header"
       >
@@ -412,17 +412,17 @@ watch(
             :icon="infiniteScroll ? 'paginated_list' : 'infinite_list'"
             @click="() => (infiniteScroll = !infiniteScroll)"
           />
-          <ColumnEditor
-            v-if="config.editColumns && entitySchema"
-            v-model="columns"
-            :custom-columns="customColumns"
+          <FieldsEditor
+            v-if="config.editFields && entitySchema"
+            v-model="fields"
+            :custom-fields="customFields"
             :entity-schema="entitySchema"
           />
         </div>
       </div>
     </div>
-    <div v-if="invalidColumns.length" :class="classes.error_message_bag">
-      <InvalidColumn v-for="columnId in invalidColumns" :key="columnId" :column="columnId" />
+    <div v-if="invalidFields.length" :class="classes.error_message_bag">
+      <InvalidField v-for="fieldId in invalidFields" :key="fieldId" :field="fieldId" />
     </div>
     <Transition name="qkit-collection-loading">
       <div v-if="requesting" :class="classes.loading" :position="infiniteScroll && page > 1 ? 'bottom' : 'top'">
@@ -435,14 +435,14 @@ watch(
         <thead>
           <tr>
             <Header
-              v-for="columnId in computedColumns"
-              :key="columnId"
+              v-for="fieldId in displayedFields"
+              :key="fieldId"
               :entity-schema="entitySchema!"
-              :column-id="columnId"
-              :open="customColumns?.[columnId]?.open === true"
-              :label="customColumns?.[columnId]?.label"
-              :order="indexedSort[columnId]?.order"
-              :has-custom-sort="customColumns?.[columnId]?.sort != null"
+              :field-id="fieldId"
+              :open="customFields?.[fieldId]?.open === true"
+              :label="customFields?.[fieldId]?.label"
+              :order="indexedSort[fieldId]?.order"
+              :has-custom-sort="customFields?.[fieldId]?.sort != null"
               @click="updateSort"
             />
           </tr>
@@ -455,20 +455,20 @@ watch(
             :tabindex="onRowClick ? 0 : undefined"
             v-on="rowEvents(object)"
           >
-            <template v-for="columnId in computedColumns" :key="columnId">
+            <template v-for="fieldId in displayedFields" :key="fieldId">
               <Cell
-                :column-id="columnId"
-                :property="columnsProperties[columnId]"
+                :field-id="fieldId"
+                :property="fieldsProperties[fieldId]"
                 :row-value="object"
-                :renderer="customColumns?.[columnId]?.renderer"
+                :renderer="customFields?.[fieldId]?.renderer"
                 :user-timezone="config.userTimezone"
                 :request-timezone="config.requestTimezone"
-                @click="customColumns?.[columnId]?.onCellClick"
+                @click="customFields?.[fieldId]?.onFieldClick"
               />
             </template>
           </tr>
           <tr v-show="showInfiniteScrollObserver" ref="observered" style="opacity: 0">
-            <td :colspan="computedColumns.length">plooooooop</td>
+            <td :colspan="displayedFields.length"></td>
           </tr>
         </tbody>
       </table>

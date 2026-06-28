@@ -101,9 +101,9 @@ function generateValue(property: RawProperty): unknown {
 
 function findProperty(
   rootEntityId: string,
-  columnId: string,
+  fieldId: string,
 ): { property: RawProperty; rootSchema: EntitySchema } | null {
-  const segments = columnId.split('.');
+  const segments = fieldId.split('.');
   let currentSchema = ENTITIES[rootEntityId];
   if (!currentSchema) return null;
 
@@ -188,12 +188,12 @@ function setNested(row: Record<string, unknown>, path: string, value: unknown): 
 
 export function generateRow(
   rootEntityId: string,
-  columnIds: string[],
+  fieldIds: string[],
 ): Record<string, unknown> {
   const row: Record<string, unknown> = {};
 
-  for (const columnId of columnIds) {
-    const resolved = findProperty(rootEntityId, columnId);
+  for (const fieldId of fieldIds) {
+    const resolved = findProperty(rootEntityId, fieldId);
     if (!resolved) continue;
 
     const { property, rootSchema } = resolved;
@@ -203,19 +203,19 @@ export function generateRow(
       if (property.relationship_type === 'morph_to') {
         const candidates = property.entities?.length ? property.entities : Object.keys(ENTITIES);
         targetEntityId = candidates[Math.floor(Math.random() * candidates.length)];
-        setNested(row, columnId + '_type', targetEntityId);
+        setNested(row, fieldId + '_type', targetEntityId);
       } else {
         targetEntityId = property.entity;
       }
       if (!targetEntityId) continue;
       const data = generateEntityData(targetEntityId, rootSchema);
-      setNested(row, columnId, data);
+      setNested(row, fieldId, data);
     } else {
       const value =
-        columnId === ENTITIES[rootEntityId]?.unique_identifier
+        fieldId === ENTITIES[rootEntityId]?.unique_identifier
           ? `${rootEntityId}-${nextUid++}`
           : generateValue(property);
-      setNested(row, columnId, value);
+      setNested(row, fieldId, value);
     }
   }
 

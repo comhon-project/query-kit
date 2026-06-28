@@ -8,7 +8,7 @@ import {
   registerTypeRenderers,
   type TypeRenderers,
   type PropertyRenderers,
-} from '@core/CellRendererManager';
+} from '@core/FieldRendererManager';
 import {
   registerLoader as registerEntitySchemaLoader,
   registerTranslationsLoader as registerEntityTranslationsLoader,
@@ -57,8 +57,8 @@ export interface PluginOptions {
   classes?: Partial<ClassList>;
   typeInputs?: ComponentList;
   propertyInputs?: PropertyInputs;
-  cellTypeRenderers?: TypeRenderers;
-  cellPropertyRenderers?: PropertyRenderers;
+  fieldTypeRenderers?: TypeRenderers;
+  fieldPropertyRenderers?: PropertyRenderers;
   defaultLocale?: string;
   fallbackLocale?: string;
   operators?: AllowedOperators;
@@ -76,7 +76,7 @@ export interface PluginOptions {
   displayOperator?: Config['displayOperator'];
   quickSort?: Config['quickSort'];
   displayCount?: Config['displayCount'];
-  editColumns?: Config['editColumns'];
+  editFields?: Config['editFields'];
   allowedCollectionTypes?: Config['allowedCollectionTypes'];
   aliasInsensitiveLabels?: Config['aliasInsensitiveLabels'];
 }
@@ -100,11 +100,11 @@ export default {
     if (options.propertyInputs) {
       registerPropertyInputs(options.propertyInputs);
     }
-    if (options.cellTypeRenderers) {
-      registerTypeRenderers(options.cellTypeRenderers);
+    if (options.fieldTypeRenderers) {
+      registerTypeRenderers(options.fieldTypeRenderers);
     }
-    if (options.cellPropertyRenderers) {
-      registerPropertyRenderers(options.cellPropertyRenderers);
+    if (options.fieldPropertyRenderers) {
+      registerPropertyRenderers(options.fieldPropertyRenderers);
     }
     if (options.defaultLocale) {
       locale.value = options.defaultLocale;

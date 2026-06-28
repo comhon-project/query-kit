@@ -126,11 +126,11 @@ The collection component will display data fetched.
 <script setup>
 import { ref } from "vue";
 
-const columns = ref(['first_name', 'last_name']);
+const fields = ref(['first_name', 'last_name']);
 </script>
 
 <template>
-  <QkitCollection entity="user" v-model:columns="columns"/>
+  <QkitCollection entity="user" v-model:fields="fields"/>
 </template>
 ```
 
@@ -142,10 +142,10 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | key                    | v‑model | type               | required | default          | description                                                                                                                     |
 | ---------------------- | :-----: | ------------------ | -------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | entity                 |         | string             | true     | -                | The entity id (user, company, post...)                                                                                          |
-| columns                |   🔗    | array              | true     | -                | Columns to display in collection table. More information [here](Usage#columns).                                                 |
-| sort                   |   🔗    | array              | false    | -                | Sort order. Array of column ids (strings) or objects `{ column: string, order: 'asc'\|'desc' }`.                                |
+| fields                 |   🔗    | array              | true     | -                | Fields to display in the collection. More information [here](Usage#fields).                                                     |
+| sort                   |   🔗    | array              | false    | -                | Sort order. Array of field ids (strings) or objects `{ field: string, order: 'asc'\|'desc' }`.                                  |
 | page                   |   🔗    | number             | false    | `1`              | Current page number.                                                                                                            |
-| customColumns          |         | object             | false    | -                | Permit to customize collection headers and cells rendering. More information [here](Usage#custom-columns).                      |
+| customFields           |         | object             | false    | -                | Permit to customize collection headers and cells rendering. More information [here](Usage#custom-fields).                       |
 | filter                 |         | object             | false    | -                | The filter to apply when requesting server.                                                                                     |
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                                   |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                                      |
@@ -153,7 +153,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | postRequest            |         | function           | false    | -                | Function called just after querying server (permit to modify fetched items). Signature: `(collection) => void \| Promise<void>`. |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types. Allowed values: `'pagination'` and `'infinite'`.                                                                 |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count that match query.                                                                                     |
-| editColumns            |         | boolean            | false    | `false`          | Allows users to add/remove/reorder columns.                                                                                     |
+| editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                                      |
 | userTimezone           |         | string             | false    | `'UTC'`          | Display time in given timezone.                                                                                                 |
 | requestTimezone        |         | string             | false    | `'UTC'`          | Timezone to use when requesting server.                                                                                         |
 | requester              |         | function or object | false    | -                | Override the requester defined in global plugin configuration.                                                                  |
@@ -161,44 +161,44 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | onRowClick             |         | function           | false    | -                | Row click handler. Signature: `(row, event) => void`.                                                                           |
 | onExport               |         | function           | false    | -                | Export handler. When provided, an export button is displayed. Signature: `(filter?) => void`.                                    |
 
-### Columns
-Columns to display in collection table. Each value must be a unique identifier for the current collection. Each value may be a property (a property of the requested entity or a property of nested objects) and/or a custom column identifier. If the column is a property, column header label and cell renderer are determined automatically, but you may override them as you want with custom columns.
+### Fields
+Fields to display in the collection. Each value must be a unique identifier for the current collection. Each value may be a property (a property of the requested entity or a property of nested objects) and/or a custom field identifier. If the field is a property, its label and renderer are determined automatically, but you may override them as you want with custom fields.
 
 Example:
 ```js
-const columns = ref([
+const fields = ref([
   'first_name',
   'age',
   'company',
   'company.address',
   'friend',
-  'my_custom_column', // MUST be defined in custom columns
+  'my_custom_field', // MUST be defined in custom fields
 ]);
 ```
-#### Columns and relationships
-When a column contains a property that is a relationship (`has_one` or `belongs_to`), the column value will contain `primary_identifiers` of the corresponding entity. For example in the previous example, the `company` column would contain the brand name of the company and the `friend` column would contain first name and last name of the person (if there are no `primary_identifiers` defined, the `unique_identifier` will be displayed). When using relationship columns, the related entity data is fetched from the server too, so it is very convenient to route user on a specific resource.
+#### Fields and relationships
+When a field contains a property that is a relationship (`has_one` or `belongs_to`), the field value will contain `primary_identifiers` of the corresponding entity. For example in the previous example, the `company` field would contain the brand name of the company and the `friend` field would contain first name and last name of the person (if there are no `primary_identifiers` defined, the `unique_identifier` will be displayed). When using relationship fields, the related entity data is fetched from the server too, so it is very convenient to route user on a specific resource.
 
-### Custom columns
-Custom columns permit to customize columns header and cells. Each key must be a column id and each value an object that describe what you want to customize for the column. A custom column may be associated to an entity property or not. If custom column is associated to an entity property, column header label and cell renderer are determined automatically, but you may override them as you want.
+### Custom fields
+Custom fields permit to customize field label and rendering. Each key must be a field id and each value an object that describe what you want to customize for the field. A custom field may be associated to an entity property or not. If custom field is associated to an entity property, its label and renderer are determined automatically, but you may override them as you want.
 
 | key         | type                      | required | description                                                                            |
 | ----------- | ------------------------- | -------- | -------------------------------------------------------------------------------------- |
-| open        | boolean                   | false    | If the column is NOT associated to a property, you must set this attribute to `true`.  |
-| label       | string or function        | false    | The column header label. Use a function for i18n: `(locale) => string`.                |
-| renderer    | string, object or function| false    | The renderer that will display cell value. It might be a component or a callback.      |
-| sort        | array of strings          | false    | Properties to use for sorting this column (overrides default sorting behavior).         |
-| properties  | array of strings          | false    | Additional entity properties to declare in the request for this column (useful for `open` columns whose renderer reads multiple entity properties). |
-| onCellClick | function                  | false    | Function called on cell click: `(value, rowValue, columnId, event) => void`.           |
+| open        | boolean                   | false    | If the field is NOT associated to a property, you must set this attribute to `true`.   |
+| label       | string or function        | false    | The field label. Use a function for i18n: `(locale) => string`.                        |
+| renderer    | string, object or function| false    | The renderer that will display the field value. It might be a component or a callback. |
+| sort        | array of strings          | false    | Properties to use for sorting this field (overrides default sorting behavior).          |
+| properties  | array of strings          | false    | Additional entity properties to declare in the request for this field (useful for `open` fields whose renderer reads multiple entity properties). |
+| onFieldClick| function                  | false    | Function called on field click: `(value, item, fieldId, event) => void`.               |
 
 Example:
 ```js
-const customColumns = {
+const customFields = {
   first_name: {
     label: (locale) => locale == 'fr' ? 'nom genial' : 'awesome name',
-    renderer: FirstNameComponent,
+    renderer: FirstNameRenderer,
   },
   company: {
-    onCellClick: (value, row, columnId, event) => {
+    onFieldClick: (value, item, fieldId, event) => {
       event.stopPropagation();
       router.push(`/companies/${value.id}/overview`);
     },
@@ -207,7 +207,7 @@ const customColumns = {
     open: true, // not bound to an entity property
     label: (locale) => locale == 'fr' ? 'nom complet' : 'full name',
     properties: ['first_name', 'last_name'], // declared in the request so the server knows the renderer needs them
-    renderer: (cellValue, rowValue) => `${rowValue.first_name} ${rowValue.last_name}`,
+    renderer: (value, item) => `${item.first_name} ${item.last_name}`,
   },
 };
 ```
@@ -221,11 +221,11 @@ The search component combines the two previous components, making it the simples
 import { ref } from "vue";
 
 const filter = ref(null);
-const columns = ref(['first_name', 'last_name']);
+const fields = ref(['first_name', 'last_name']);
 </script>
 
 <template>
-  <QkitSearch entity="user" v-model:filter="filter" v-model:columns="columns"/>
+  <QkitSearch entity="user" v-model:filter="filter" v-model:fields="fields"/>
 </template>
 ```
 
@@ -238,10 +238,10 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | ---------------------- | :-----: | ------------------ | -------- | ---------------- | -------------------------------------------------------------------------------------------------------------- |
 | entity                 |         | string             | true     | -                | The entity id (user, company, post...)                                                                         |
 | filter                 |   🔗    | object             | false    | `null`           | The query to build. Accepts any filter type or `null`; non-group filters are auto-wrapped in a top-level group. More info on filter format [here](Query-filter-format).                                    |
-| columns                |   🔗    | array              | true     | -                | Columns to display. More information [here](Usage#columns).                                                    |
-| sort                   |   🔗    | array              | false    | -                | Sort order. Array of column ids or objects `{ column: string, order: 'asc'\|'desc' }`.                         |
+| fields                 |   🔗    | array              | true     | -                | Fields to display. More information [here](Usage#fields).                                                      |
+| sort                   |   🔗    | array              | false    | -                | Sort order. Array of field ids or objects `{ field: string, order: 'asc'\|'desc' }`.                           |
 | page                   |   🔗    | number             | false    | `1`              | Current page number.                                                                                           |
-| customColumns          |         | object             | false    | -                | Customize collection headers and cells rendering. More information [here](Usage#custom-columns).               |
+| customFields           |         | object             | false    | -                | Customize collection headers and cells rendering. More information [here](Usage#custom-fields).                |
 | allowReset             |         | boolean            | false    | `true`           | Display a button to permit user to reset query.                                                                |
 | allowUndo              |         | boolean            | false    | `true`           | Enable undo button.                                                                                            |
 | allowRedo              |         | boolean            | false    | `true`           | Enable redo button.                                                                                            |
@@ -259,7 +259,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | postRequest            |         | function           | false    | -                | Function called just after querying server.                                                                    |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types: `'pagination'` and/or `'infinite'`.                                                             |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count.                                                                                     |
-| editColumns            |         | boolean            | false    | `false`          | Allows users to add/remove/reorder columns.                                                                    |
+| editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                     |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
 | onRowClick             |         | function           | false    | -                | Row click handler: `(row, event) => void`.                                                                     |
 | onExport               |         | function           | false    | -                | Export handler (displays export button when provided): `(filter?) => void`.                                    |

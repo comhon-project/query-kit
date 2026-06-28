@@ -42,7 +42,7 @@ Installed via `app.use(plugin, options)`. The options object configures:
 - **Required**: `entitySchemaLoader` - loads entity schemas by ID
 - **Optional loaders**: `entityTranslationsLoader`, `enumSchemaLoader`, `enumTranslationsLoader`, `requestSchemaLoader`
 - **UI**: `icons`, `iconComponent`, `iconPropName`, `classes`, `typeInputs`, `propertyInputs`
-- **Cell renderers**: `cellTypeRenderers`, `cellPropertyRenderers`
+- **Field renderers**: `fieldTypeRenderers`, `fieldPropertyRenderers`
 - **Locale**: `defaultLocale`, `fallbackLocale`
 - **Operators/scopes**: `operators`, `computedScopes`
 - **Query execution**: `requester` (function or `{ request }` object)
@@ -63,7 +63,7 @@ Internal: `FilterBuilder` (`components/Filter/FilterBuilder.vue`) — the actual
 
 Input components: `UniqueInput`, `ArrayableInput`, `CollectionInput`
 
-**Collection sub-components**: `Header`, `Cell`, `ColumnEditor`, `Pagination`
+**Collection sub-components**: `Header`, `Cell`, `Pagination` (table-rendering layer), and the field-editor family `FieldsEditor` → `FieldsBuilder` → `FieldsBuilderItem`, plus `FieldName`
 
 ### Composables (`components/Filter/Composable/`)
 
@@ -79,7 +79,7 @@ Singleton managers with `_resetForTesting()` methods for test isolation:
 - `Requester.ts` - Query execution (configurable per-instance or globally)
 - `OperatorManager.ts` - Allowed operators per condition/group
 - `InputManager.ts` - Custom input component registration
-- `CellRendererManager.ts` - Cell renderer by type or property
+- `FieldRendererManager.ts` - Field renderer by type or property
 - `IconManager.ts` - Icon component/class config
 - `ClassManager.ts` - CSS class customization
 

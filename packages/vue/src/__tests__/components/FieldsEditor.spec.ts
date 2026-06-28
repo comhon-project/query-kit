@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ref } from 'vue';
-import ColumnEditor from '@components/Collection/ColumnEditor.vue';
+import FieldsEditor from '@components/Collection/FieldsEditor.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { locale, loadedTranslations } from '@i18n/i18n';
 import fr from '@i18n/locales/fr';
@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 async function mount(modelValue: string[], onUpdate: (v: string[]) => void = () => {}): Promise<void> {
-  wrapper = mountWithPlugin(ColumnEditor, {
+  wrapper = mountWithPlugin(FieldsEditor, {
     props: { entitySchema: userSchema, modelValue, 'onUpdate:modelValue': onUpdate },
   });
   await flushAll();
@@ -43,7 +43,7 @@ function findModalButton(label: string): DOMWrapper<HTMLButtonElement> | undefin
   return findButton(wrapper.find('dialog'), label);
 }
 
-describe('ColumnEditor', () => {
+describe('FieldsEditor', () => {
   it('opens the modal on columns button click', async () => {
     await mount(['first_name']);
     expect(wrapper.find('dialog').attributes('visible')).toBeUndefined();
@@ -52,7 +52,7 @@ describe('ColumnEditor', () => {
     expect(wrapper.find('dialog').attributes('visible')).toBe('');
   });
 
-  it('hosts the ColumnsBuilder inside the modal body', async () => {
+  it('hosts the FieldsBuilder inside the modal body', async () => {
     await mount(['first_name', 'last_name']);
     await openModal();
 

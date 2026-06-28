@@ -2,7 +2,7 @@
 import { ref, watchEffect } from 'vue';
 import { getPropertyPath, getPropertyTranslation } from '@core/EntitySchema';
 import { locale } from '@i18n/i18n';
-import InvalidColumn from '@components/Messages/InvalidColumn.vue';
+import InvalidField from '@components/Messages/InvalidField.vue';
 import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
@@ -28,7 +28,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <InvalidColumn v-if="label === false" :column="propertyPath" />
+  <InvalidField v-if="label === false" :field="propertyPath" />
   <span v-else-if="customLabel">{{ customLabel }}</span>
   <span v-else-if="label">{{ label }}</span>
 </template>

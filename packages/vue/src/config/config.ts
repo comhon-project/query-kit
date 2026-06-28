@@ -13,7 +13,7 @@ export interface Config {
   displayOperator: DisplayOperator;
   quickSort: boolean;
   displayCount: boolean;
-  editColumns: boolean;
+  editFields: boolean;
   allowedCollectionTypes: CollectionType[];
   aliasInsensitiveLabels: boolean;
 }
@@ -31,7 +31,7 @@ const defaults: Config = {
   displayOperator: true,
   quickSort: true,
   displayCount: true,
-  editColumns: false,
+  editFields: false,
   allowedCollectionTypes: ['pagination'],
   aliasInsensitiveLabels: false,
 };

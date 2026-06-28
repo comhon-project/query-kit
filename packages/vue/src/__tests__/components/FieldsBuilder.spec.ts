@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ref } from 'vue';
-import ColumnsBuilder from '@components/Collection/ColumnsBuilder.vue';
+import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
 import { resolve, registerLoader, registerTranslationsLoader, loadRawTranslations } from '@core/EntitySchema';
 import { locale, loadedTranslations } from '@i18n/i18n';
 import fr from '@i18n/locales/fr';
@@ -31,21 +31,21 @@ function getSelectOptions(w: VueWrapper) {
   return getSelect(w).findAll('option').filter((o) => !o.attributes('disabled'));
 }
 
-function getColumnItems(w: VueWrapper) {
+function getFieldItems(w: VueWrapper) {
   return w.findAll('li');
 }
 
-describe('ColumnsBuilder', () => {
-  it('renders current columns as items', async () => {
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+describe('FieldsBuilder', () => {
+  it('renders current fields as items', async () => {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
-    expect(getColumnItems(wrapper).length).toBe(2);
+    expect(getFieldItems(wrapper).length).toBe(2);
   });
 
   it('shows available properties in the select (excludes already added)', async () => {
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: { entitySchema: userSchema, modelValue: ['first_name'], 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -55,9 +55,9 @@ describe('ColumnsBuilder', () => {
     expect(values).toContain('friend');
   });
 
-  it('updates v-model live when adding a column', async () => {
+  it('updates v-model live when adding a field', async () => {
     const modelValue = ref(['first_name']);
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: modelValue.value,
@@ -77,9 +77,9 @@ describe('ColumnsBuilder', () => {
     expect(modelValue.value).toEqual(['first_name', 'age']);
   });
 
-  it('updates v-model live when removing a column', async () => {
+  it('updates v-model live when removing a field', async () => {
     const modelValue = ref(['first_name', 'last_name']);
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: modelValue.value,
@@ -97,9 +97,9 @@ describe('ColumnsBuilder', () => {
     expect(modelValue.value).toEqual(['last_name']);
   });
 
-  it('does not add a column when no property is selected', async () => {
+  it('does not add a field when no property is selected', async () => {
     const modelValue = ref(['first_name']);
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: modelValue.value,
@@ -115,15 +115,15 @@ describe('ColumnsBuilder', () => {
     await flushAll();
 
     expect(modelValue.value).toEqual(['first_name']);
-    expect(getColumnItems(wrapper).length).toBe(1);
+    expect(getFieldItems(wrapper).length).toBe(1);
   });
 
-  it('shows custom open columns in options', async () => {
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+  it('shows custom open fields in options', async () => {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: ['first_name'],
-        customColumns: { actions: { open: true, label: 'Actions' } },
+        customFields: { actions: { open: true, label: 'Actions' } },
         'onUpdate:modelValue': () => {},
       },
     });
@@ -134,12 +134,12 @@ describe('ColumnsBuilder', () => {
     expect(actionsOption!.text()).toBe('Actions');
   });
 
-  it('shows custom open column with label function in options', async () => {
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+  it('shows custom open field with label function in options', async () => {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: ['first_name'],
-        customColumns: { actions: { open: true, label: (loc: string) => `Actions-${loc}` } },
+        customFields: { actions: { open: true, label: (loc: string) => `Actions-${loc}` } },
         'onUpdate:modelValue': () => {},
       },
     });
@@ -149,12 +149,12 @@ describe('ColumnsBuilder', () => {
     expect(actionsOption!.text()).toBe('Actions-en');
   });
 
-  it('excludes custom open columns already added from options', async () => {
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+  it('excludes custom open fields already added from options', async () => {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: ['actions'],
-        customColumns: { actions: { open: true, label: 'Actions' } },
+        customFields: { actions: { open: true, label: 'Actions' } },
         'onUpdate:modelValue': () => {},
       },
     });
@@ -164,11 +164,11 @@ describe('ColumnsBuilder', () => {
   });
 
   it('uses custom label function for property options', async () => {
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: [],
-        customColumns: { first_name: { label: (loc: string) => `Custom-${loc}` } },
+        customFields: { first_name: { label: (loc: string) => `Custom-${loc}` } },
         'onUpdate:modelValue': () => {},
       },
     });
@@ -181,7 +181,7 @@ describe('ColumnsBuilder', () => {
     await loadRawTranslations('user', 'fr');
     loadedTranslations['fr'] = fr;
 
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: { entitySchema: userSchema, modelValue: [], 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -198,7 +198,7 @@ describe('ColumnsBuilder', () => {
 
   it('reflects external v-model changes', async () => {
     const modelValue = ref(['first_name']);
-    wrapper = mountWithPlugin(ColumnsBuilder, {
+    wrapper = mountWithPlugin(FieldsBuilder, {
       props: {
         entitySchema: userSchema,
         modelValue: modelValue.value,
@@ -208,16 +208,16 @@ describe('ColumnsBuilder', () => {
       },
     });
     await flushAll();
-    expect(getColumnItems(wrapper).length).toBe(1);
+    expect(getFieldItems(wrapper).length).toBe(1);
 
     await wrapper.setProps({ modelValue: ['first_name', 'last_name', 'age'] });
     await flushAll();
-    expect(getColumnItems(wrapper).length).toBe(3);
+    expect(getFieldItems(wrapper).length).toBe(3);
   });
 
   describe('keyboard reorder feedback', () => {
     it('announces grab action via live message', async () => {
-      wrapper = mountWithPlugin(ColumnsBuilder, {
+      wrapper = mountWithPlugin(FieldsBuilder, {
         props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
       });
       await flushAll();
@@ -230,7 +230,7 @@ describe('ColumnsBuilder', () => {
     });
 
     it('announces cancel action via live message', async () => {
-      wrapper = mountWithPlugin(ColumnsBuilder, {
+      wrapper = mountWithPlugin(FieldsBuilder, {
         props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
       });
       await flushAll();
@@ -245,7 +245,7 @@ describe('ColumnsBuilder', () => {
     });
 
     it('announces move action via live message', async () => {
-      wrapper = mountWithPlugin(ColumnsBuilder, {
+      wrapper = mountWithPlugin(FieldsBuilder, {
         props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
       });
       await flushAll();
@@ -260,7 +260,7 @@ describe('ColumnsBuilder', () => {
     });
 
     it('announces drop action via live message', async () => {
-      wrapper = mountWithPlugin(ColumnsBuilder, {
+      wrapper = mountWithPlugin(FieldsBuilder, {
         props: { entitySchema: userSchema, modelValue: ['first_name', 'last_name'], 'onUpdate:modelValue': () => {} },
       });
       await flushAll();

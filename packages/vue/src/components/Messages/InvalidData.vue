@@ -3,7 +3,7 @@ import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 
 export type InvalidMessageKey =
-  | 'invalid_column'
+  | 'invalid_field'
   | 'invalid_property'
   | 'invalid_scope'
   | 'invalid_operator'

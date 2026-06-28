@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import ColumnName from '@components/Collection/ColumnName.vue';
+import FieldName from '@components/Collection/FieldName.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { locale } from '@i18n/i18n';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -21,43 +21,43 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-describe('ColumnName', () => {
+describe('FieldName', () => {
   it('delegates to PropertyPathLabel when not open', async () => {
-    wrapper = mountWithPlugin(ColumnName, {
-      props: { entitySchema: userSchema, columnId: 'first_name' },
+    wrapper = mountWithPlugin(FieldName, {
+      props: { entitySchema: userSchema, fieldId: 'first_name' },
     });
     await flushAll();
     expect(wrapper.text()).toBe('first name');
   });
 
   it('displays label string when open', async () => {
-    wrapper = mountWithPlugin(ColumnName, {
-      props: { entitySchema: userSchema, columnId: 'custom', open: true, label: 'My Column' },
+    wrapper = mountWithPlugin(FieldName, {
+      props: { entitySchema: userSchema, fieldId: 'custom', open: true, label: 'My Field' },
     });
     await flushAll();
-    expect(wrapper.text()).toBe('My Column');
+    expect(wrapper.text()).toBe('My Field');
   });
 
   it('calls label function with locale when open', async () => {
     const labelFn = (loc: string) => (loc === 'en' ? 'English Label' : 'French Label');
-    wrapper = mountWithPlugin(ColumnName, {
-      props: { entitySchema: userSchema, columnId: 'custom', open: true, label: labelFn },
+    wrapper = mountWithPlugin(FieldName, {
+      props: { entitySchema: userSchema, fieldId: 'custom', open: true, label: labelFn },
     });
     await flushAll();
     expect(wrapper.text()).toBe('English Label');
   });
 
   it('renders nothing when open without a label', async () => {
-    wrapper = mountWithPlugin(ColumnName, {
-      props: { entitySchema: userSchema, columnId: 'custom', open: true },
+    wrapper = mountWithPlugin(FieldName, {
+      props: { entitySchema: userSchema, fieldId: 'custom', open: true },
     });
     await flushAll();
     expect(wrapper.text()).toBe('');
   });
 
   it('passes customLabel to PropertyPathLabel when not open', async () => {
-    wrapper = mountWithPlugin(ColumnName, {
-      props: { entitySchema: userSchema, columnId: 'first_name', label: 'Custom' },
+    wrapper = mountWithPlugin(FieldName, {
+      props: { entitySchema: userSchema, fieldId: 'first_name', label: 'Custom' },
     });
     await flushAll();
     expect(wrapper.text()).toBe('Custom');
@@ -65,8 +65,8 @@ describe('ColumnName', () => {
 
   it('re-calls label function when locale changes', async () => {
     const labelFn = (loc: string) => (loc === 'en' ? 'English Label' : 'French Label');
-    wrapper = mountWithPlugin(ColumnName, {
-      props: { entitySchema: userSchema, columnId: 'custom', open: true, label: labelFn },
+    wrapper = mountWithPlugin(FieldName, {
+      props: { entitySchema: userSchema, fieldId: 'custom', open: true, label: labelFn },
     });
     await flushAll();
     expect(wrapper.text()).toBe('English Label');

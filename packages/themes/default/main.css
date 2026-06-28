@@ -728,7 +728,7 @@
   border-bottom-right-radius: var(--qkit-border-radius-sm);
 }
 
-.qkit-column-editor-list {
+.qkit-field-editor-list {
   list-style: none;
   margin: 0;
   padding: var(--qkit-padding-lg);
@@ -737,38 +737,38 @@
   gap: var(--qkit-gap-spacer);
 }
 
-.qkit-column-editor-list-item {
+.qkit-field-editor-list-item {
   position: relative;
   display: flex;
 }
-.qkit-column-editor-list-item > *:not(.qkit-input) {
+.qkit-field-editor-list-item > *:not(.qkit-input) {
   color: var(--qkit-btn-text-color);
   background: var(--qkit-color-primary);
   padding: var(--qkit-padding-md);
   border-radius: 0;
 }
-.qkit-column-editor-list-item > *:first-child {
+.qkit-field-editor-list-item > *:first-child {
   border-top-left-radius: var(--qkit-border-radius-sm);
   border-bottom-left-radius: var(--qkit-border-radius-sm);
   cursor: grab;
 }
-.qkit-column-editor-list-item > *:last-child {
+.qkit-field-editor-list-item > *:last-child {
   border-top-right-radius: var(--qkit-border-radius-sm);
   border-bottom-right-radius: var(--qkit-border-radius-sm);
 }
-.qkit-column-editor-list-item:has(> .qkit-error-message) > * {
+.qkit-field-editor-list-item:has(> .qkit-error-message) > * {
   background: var(--qkit-color-warning);
 }
-.qkit-column-editor-list-item:has(> .qkit-error-message) > .qkit-btn:hover {
+.qkit-field-editor-list-item:has(> .qkit-error-message) > .qkit-btn:hover {
   background: var(--qkit-color-warning-emphasis);
 }
-.qkit-column-editor-list-item > *:first-child:active {
+.qkit-field-editor-list-item > *:first-child:active {
   cursor: grabbing;
 }
-.qkit-column-editor-list [data-dragging] {
+.qkit-field-editor-list [data-dragging] {
   opacity: 0.4;
 }
-.qkit-column-editor-list-item::before {
+.qkit-field-editor-list-item::before {
   content: '';
   position: absolute;
   top: 0;
@@ -776,28 +776,28 @@
   left: calc(-1 * var(--qkit-gap-spacer));
   width: var(--qkit-gap-spacer);
 }
-.qkit-column-editor-list-item,
-.qkit-column-picker {
+.qkit-field-editor-list-item,
+.qkit-field-picker {
   transition: padding-left 0.15s ease;
 }
-.qkit-column-editor-list [data-drag-over] {
+.qkit-field-editor-list [data-drag-over] {
   padding-left: 2.5rem;
 }
-.qkit-column-editor-list [data-grabbed] {
+.qkit-field-editor-list [data-grabbed] {
   border-radius: var(--qkit-border-radius-sm);
 }
 
-.qkit-column-picker {
+.qkit-field-picker {
   display: flex;
 }
-.qkit-column-picker > *:first-child:not(:last-child) {
+.qkit-field-picker > *:first-child:not(:last-child) {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
 }
-.qkit-column-picker > *:last-child:not(:first-child) {
+.qkit-field-picker > *:last-child:not(:first-child) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
@@ -899,23 +899,23 @@
       margin-top var(--qkit-transition-duration) var(--qkit-transition-duration) ease;
   }
 
-  /* Column editor: max-width hack instead of grid (no single wrapper child) */
-  .qkit-column-editor-list .qkit-collapse-horizontal-list-enter-active,
-  .qkit-column-editor-list .qkit-collapse-horizontal-list-leave-active {
+  /* Field editor: max-width hack instead of grid (no single wrapper child) */
+  .qkit-field-editor-list .qkit-collapse-horizontal-list-enter-active,
+  .qkit-field-editor-list .qkit-collapse-horizontal-list-leave-active {
     display: flex;
     max-width: 500px;
   }
-  .qkit-column-editor-list .qkit-collapse-horizontal-list-enter-from,
-  .qkit-column-editor-list .qkit-collapse-horizontal-list-leave-to {
+  .qkit-field-editor-list .qkit-collapse-horizontal-list-enter-from,
+  .qkit-field-editor-list .qkit-collapse-horizontal-list-leave-to {
     max-width: 0;
   }
-  .qkit-column-editor-list .qkit-collapse-horizontal-list-enter-active {
+  .qkit-field-editor-list .qkit-collapse-horizontal-list-enter-active {
     transition:
       opacity var(--qkit-transition-duration) var(--qkit-transition-duration) ease,
       max-width var(--qkit-transition-duration) ease,
       margin-right var(--qkit-transition-duration) ease;
   }
-  .qkit-column-editor-list .qkit-collapse-horizontal-list-leave-active {
+  .qkit-field-editor-list .qkit-collapse-horizontal-list-leave-active {
     transition:
       opacity var(--qkit-transition-duration) ease,
       max-width var(--qkit-transition-duration) var(--qkit-transition-duration) ease,

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { locale } from '@i18n/i18n';
-import type { CellRendererProps } from '@core/types';
+import type { FieldRendererProps } from '@core/types';
 
-const props = defineProps<CellRendererProps>();
+const props = defineProps<FieldRendererProps>();
 
 const computedValue = computed<string | null>(() => {
   if (!props.value) {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import type { CellRendererProps, RenderFunction } from '@core/types';
+import type { FieldRendererProps, RenderFunction } from '@core/types';
 import * as RendererExports from '@components/Common/Renderers/index';
 
 import BooleanRenderer from '@components/Common/Renderers/Boolean.vue';
@@ -14,18 +14,18 @@ import HtmlRenderer from '@components/Common/Renderers/Html.vue';
 import ArrayRenderer from '@components/Common/Renderers/Array.vue';
 import { registerLoader as registerEnumLoader } from '@core/EnumSchema';
 import { registerLoader as registerEntityLoader } from '@core/EntitySchema';
-import { registerTypeRenderers } from '@core/CellRendererManager';
+import { registerTypeRenderers } from '@core/FieldRendererManager';
 import { config } from '@config/config';
 import { locale, loadedTranslations } from '@i18n/i18n';
 import { entitySchemaLoader, enumSchemaLoader } from '@tests/assets/SchemaLoader';
 
-function baseProps(overrides: Partial<CellRendererProps> = {}): CellRendererProps {
+function baseProps(overrides: Partial<FieldRendererProps> = {}): FieldRendererProps {
   return {
-    columnId: 'col',
+    fieldId: 'col',
     property: { id: 'test', type: 'string', owner: 'user' },
     type: { type: 'string' },
     value: null,
-    rowValue: {},
+    item: {},
     requestTimezone: 'UTC',
     userTimezone: 'UTC',
     ...overrides,
@@ -254,9 +254,9 @@ describe('Renderers', () => {
     it('renders nothing when value is null', async () => {
       const wrapper = mount(EntityRenderer, {
         props: baseProps({
-          columnId: 'company',
+          fieldId: 'company',
           value: null,
-          rowValue: { company: { brand_name: 'Acme Corp', id: 1 } },
+          item: { company: { brand_name: 'Acme Corp', id: 1 } },
           property: { id: 'company', type: 'relationship', owner: 'user', entity: 'organization' },
         }),
       });

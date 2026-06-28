@@ -34,9 +34,9 @@ async function mountSearch(props: Record<string, unknown> = {}, mountOptions: Re
     props: {
       entity: 'user',
       limit: 10,
-      columns: ['first_name', 'last_name'],
+      fields: ['first_name', 'last_name'],
       requester: defaultRequester,
-      'onUpdate:columns': (v: unknown) => wrapper.setProps({ columns: v }),
+      'onUpdate:fields': (v: unknown) => wrapper.setProps({ fields: v }),
       'onUpdate:filter': (v: unknown) => wrapper.setProps({ filter: v }),
       'onUpdate:sort': (v: unknown) => wrapper.setProps({ sort: v }),
       'onUpdate:page': (v: unknown) => wrapper.setProps({ page: v }),
@@ -109,11 +109,11 @@ describe('Search', () => {
       const postRequest = vi.fn();
       const { requester } = createMockRequester();
       await mountSearchAndTriggerComputed({
-        customColumns: { full_name: { label: 'Full Name' } },
+        customFields: { full_name: { label: 'Full Name' } },
         directQuery: true,
         quickSort: true,
         displayCount: true,
-        editColumns: true,
+        editFields: true,
         allowedCollectionTypes: ['pagination'],
         userTimezone: 'Europe/Paris',
         requestTimezone: 'America/New_York',
@@ -125,11 +125,11 @@ describe('Search', () => {
       const collection = wrapper.findComponent(Collection);
       expect(collection.props('entity')).toBe('user');
       expect(collection.props('limit')).toBe(10);
-      expect(collection.props('customColumns')).toEqual({ full_name: { label: 'Full Name' } });
+      expect(collection.props('customFields')).toEqual({ full_name: { label: 'Full Name' } });
       expect(collection.props('directQuery')).toBe(true);
       expect(collection.props('quickSort')).toBe(true);
       expect(collection.props('displayCount')).toBe(true);
-      expect(collection.props('editColumns')).toBe(true);
+      expect(collection.props('editFields')).toBe(true);
       expect(collection.props('allowedCollectionTypes')).toEqual(['pagination']);
       expect(collection.props('userTimezone')).toBe('Europe/Paris');
       expect(collection.props('requestTimezone')).toBe('America/New_York');
@@ -141,15 +141,15 @@ describe('Search', () => {
   });
 
   describe('v-model forwarding', () => {
-    it('propagates columns update from Collection', async () => {
+    it('propagates fields update from Collection', async () => {
       const { requester } = createMockRequester();
       await mountSearchAndTriggerComputed({ requester });
 
       const collection = wrapper.findComponent(Collection);
-      collection.vm.$emit('update:columns', ['age']);
+      collection.vm.$emit('update:fields', ['age']);
       await flushAll();
 
-      expect(wrapper.emitted('update:columns')?.pop()?.[0]).toEqual(['age']);
+      expect(wrapper.emitted('update:fields')?.pop()?.[0]).toEqual(['age']);
     });
 
     it('propagates sort update from Collection', async () => {
@@ -157,10 +157,10 @@ describe('Search', () => {
       await mountSearchAndTriggerComputed({ requester });
 
       const collection = wrapper.findComponent(Collection);
-      collection.vm.$emit('update:sort', [{ column: 'age', direction: 'desc' }]);
+      collection.vm.$emit('update:sort', [{ field: 'age', direction: 'desc' }]);
       await flushAll();
 
-      expect(wrapper.emitted('update:sort')?.pop()?.[0]).toEqual([{ column: 'age', direction: 'desc' }]);
+      expect(wrapper.emitted('update:sort')?.pop()?.[0]).toEqual([{ field: 'age', direction: 'desc' }]);
     });
 
     it('propagates page update from Collection', async () => {

@@ -7,7 +7,7 @@ import type { EntitySchema } from '@core/EntitySchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  columns: string[];
+  fields: string[];
   open?: boolean;
   label?: string | ((locale: string) => string);
 }
@@ -18,11 +18,11 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
-const columnId = defineModel<string>({ required: true });
+const fieldId = defineModel<string>({ required: true });
 const props = defineProps<Props>();
 
 const openLabel = computed<string>(() => {
-  if (!props.label) return columnId.value;
+  if (!props.label) return fieldId.value;
   return typeof props.label === 'function' ? props.label(locale.value) : props.label;
 });
 </script>
@@ -37,9 +37,9 @@ const openLabel = computed<string>(() => {
   <span v-if="open">{{ openLabel }}</span>
   <PropertyPathEditor
     v-else
-    v-model="columnId"
+    v-model="fieldId"
     :entity-schema="entitySchema"
-    :columns="columns"
+    :fields="fields"
     :label="label"
   />
   <IconButton icon="delete" @click="emit('remove')" />

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { classes } from '@core/ClassManager';
-import { getPropertyRenderer } from '@core/CellRendererManager';
+import { getPropertyRenderer } from '@core/FieldRendererManager';
 import { getNestedValue } from '@core/Utils';
 import { locale } from '@i18n/i18n';
 import type { Property } from '@core/EntitySchema';
 import type { RenderFunction } from '@core/types';
 
 interface Props {
-  columnId: string;
+  fieldId: string;
   rowValue: Record<string, unknown>;
   requestTimezone: string;
   userTimezone: string;
   property?: Property;
   renderer?: Component | RenderFunction | string;
-  onClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
+  onClick?: (value: unknown, item: Record<string, unknown>, fieldId: string, event: MouseEvent) => void;
 }
 
 const props = defineProps<Props>();
@@ -29,11 +29,11 @@ const cellComponent = computed<Component | string | null>(() => {
 
 const value = computed<unknown>(() => {
   let cellValue: unknown = props.property
-    ? getNestedValue(props.rowValue, props.columnId)
+    ? getNestedValue(props.rowValue, props.fieldId)
     : undefined;
 
   if (typeof renderer.value == 'function') {
-    cellValue = (renderer.value as RenderFunction)(cellValue, props.rowValue, props.columnId, locale.value);
+    cellValue = (renderer.value as RenderFunction)(cellValue, props.rowValue, props.fieldId, locale.value);
   }
   return cellValue;
 });
@@ -41,11 +41,11 @@ const value = computed<unknown>(() => {
 const cellEvents = computed(() =>
   props.onClick
     ? {
-        click: (e: MouseEvent) => props.onClick!(value.value, props.rowValue, props.columnId, e),
+        click: (e: MouseEvent) => props.onClick!(value.value, props.rowValue, props.fieldId, e),
         keydown: (e: KeyboardEvent) => {
           if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
-            props.onClick!(value.value, props.rowValue, props.columnId, e as unknown as MouseEvent);
+            props.onClick!(value.value, props.rowValue, props.fieldId, e as unknown as MouseEvent);
           }
         },
       }
@@ -63,11 +63,11 @@ const cellEvents = computed(() =>
     <template v-if="cellComponent == null">{{ value }}</template>
     <component
       :is="cellComponent"
-      :column-id="columnId"
+      :field-id="fieldId"
       :property="property"
       :type="property"
       :value="value"
-      :row-value="rowValue"
+      :item="rowValue"
       :request-timezone="requestTimezone"
       :user-timezone="userTimezone"
     />

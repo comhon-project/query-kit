@@ -10,11 +10,11 @@ import type { AllowedOperators } from '@core/OperatorManager';
 export type FilterType = 'condition' | 'scope' | 'group' | 'entity_condition';
 export type ContainerFilterType = 'group' | 'entity_condition';
 
-// Render function signature for custom cell renderers
+// Render function signature for custom field renderers
 export type RenderFunction = (
   value: unknown,
-  rowValue: Record<string, unknown>,
-  columnId: string,
+  item: Record<string, unknown>,
+  fieldId: string,
   locale: string,
 ) => unknown;
 
@@ -71,14 +71,14 @@ export interface Requester {
 
 export type RequesterFunction = (params: RequestParams) => Promise<RequestResponse>;
 
-// ==================== Cell Renderer Props ====================
+// ==================== Field Renderer Props ====================
 
-export interface CellRendererProps {
-  columnId: string;
+export interface FieldRendererProps {
+  fieldId: string;
   property: Property;
   type: ArrayableTypeContainer;
   value: unknown;
-  rowValue: Record<string, unknown>;
+  item: Record<string, unknown>;
   requestTimezone: string;
   userTimezone: string;
 }
@@ -130,16 +130,16 @@ export type FilterWithOperator = ConditionFilter | GroupFilter | EntityCondition
 // ==================== Collection Types ====================
 
 export interface SortItem {
-  column: string;
+  field: string;
   order: 'asc' | 'desc';
 }
 
-export interface CustomColumnConfig {
+export interface CustomFieldConfig {
   label: string | ((locale: string) => string);
   sort?: string[];
   properties?: string[];
   renderer?: Component | RenderFunction | string;
-  onCellClick?: (value: unknown, rowValue: Record<string, unknown>, columnId: string, event: MouseEvent) => void;
+  onFieldClick?: (value: unknown, item: Record<string, unknown>, fieldId: string, event: MouseEvent) => void;
   open?: boolean;
 }
 
@@ -205,6 +205,6 @@ export interface CollectionConfig {
   requestTimezone: string;
   quickSort: boolean;
   displayCount: boolean;
-  editColumns: boolean;
+  editFields: boolean;
   allowedCollectionTypes: CollectionType[];
 }

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue';
 import { getTranslation, resolve, type EnumCase } from '@core/EnumSchema';
-import type { CellRendererProps } from '@core/types';
+import type { FieldRendererProps } from '@core/types';
 
-const props = defineProps<CellRendererProps>();
+const props = defineProps<FieldRendererProps>();
 
 const cases = ref<Record<string, EnumCase>>({});
 

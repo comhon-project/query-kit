@@ -8,7 +8,7 @@ import { _resetForTesting as resetEntitySchema } from '@core/EntitySchema';
 import { _resetForTesting as resetRequestSchema } from '@core/RequestSchema';
 import { _resetForTesting as resetOperatorManager } from '@core/OperatorManager';
 import { _resetForTesting as resetComputedScopes } from '@core/ComputedScopesManager';
-import { _resetForTesting as resetCellRenderers } from '@core/CellRendererManager';
+import { _resetForTesting as resetCellRenderers } from '@core/FieldRendererManager';
 import { _resetForTesting as resetInputManager } from '@core/InputManager';
 import { _resetForTesting as resetRequester } from '@core/Requester';
 

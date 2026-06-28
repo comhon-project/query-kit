@@ -44,16 +44,16 @@ An entity schema describes the structure of an entity with its properties, relat
 
 ### Schema fields
 
-| field               | type   | required | description                                                                 |
-| ------------------- | ------ | -------- | --------------------------------------------------------------------------- |
-| id                  | string | true     | Unique identifier for the entity.                                           |
-| name                | string | false    | Display name (used as label if no translation is defined).                  |
-| properties          | array  | true     | Array of property definitions.                                              |
-| unique_identifier   | string | false    | Property id used as unique key (e.g. `'id'`).                               |
-| primary_identifiers | array  | false    | Property ids displayed when entity appears as a relationship cell value.    |
-| natural_sort        | array  | false    | Property ids used as default sort order when sorting a relationship column. |
-| scopes              | array  | false    | Array of scope definitions.                                                 |
-| entities            | object | false    | Inline nested entity definitions (key is the nested entity name).           |
+| field               | type   | required | description                                                                                                    |
+| ------------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------- |
+| id                  | string | true     | Unique identifier for the entity.                                                                              |
+| name                | string | false    | Display name (used as label if no translation is defined).                                                     |
+| properties          | array  | true     | Array of property definitions.                                                                                 |
+| unique_identifier   | string | false    | Property id used as unique key (e.g. `'id'`).                                                                  |
+| primary_identifiers | array  | false    | Property ids displayed when entity appears as a relationship cell value.                                       |
+| natural_sort        | array  | false    | Property ids defining the entity's "human-natural" sort order (e.g. `['last_name', 'first_name']` for a user). |
+| scopes              | array  | false    | Array of scope definitions.                                                                                    |
+| entities            | object | false    | Inline nested entity definitions (key is the nested entity name).                                              |
 
 ### Property types
 

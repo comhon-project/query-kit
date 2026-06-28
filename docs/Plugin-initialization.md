@@ -392,37 +392,37 @@ const config = {
 
 ### Type renderers
 
-| key               | type   | required |
-| ----------------- | ------ | -------- |
-| cellTypeRenderers | object | false    |
+| key                | type   | required |
+| ------------------ | ------ | -------- |
+| fieldTypeRenderers | object | false    |
 
 You may define some callbacks or components to render values in the collection. Each callback or component must be associated to a type.
 
 ```js
 const config = {
-  cellTypeRenderers: {
-    integer: CellIntegerComponent,
-    string: (cellValue, rowValue, columnId, locale) => cellValue + ' suffix',
+  fieldTypeRenderers: {
+    integer: IntegerRenderer,
+    string: (value, item, propertyPath, locale) => value + ' suffix',
   }
 }
 ```
 
-The callback receives four parameters: `cellValue`, `rowValue`, `columnId`, and `locale`.
+The callback receives four parameters: `value`, `item`, `propertyPath`, and `locale`.
 
 ### Property renderers
 
-| key                   | type   | required |
-| --------------------- | ------ | -------- |
-| cellPropertyRenderers | object | false    |
+| key                    | type   | required |
+| ---------------------- | ------ | -------- |
+| fieldPropertyRenderers | object | false    |
 
 You may define some callbacks or components to render values in the collection. Each callback or component must be associated to an entity property.
 
 ```js
 const config = {
-  cellPropertyRenderers: {
+  fieldPropertyRenderers: {
     user: {
-      weight: (cellValue, rowValue, columnId, locale) => cellValue + " kg",
-      country: CellCountryComponent,
+      weight: (value, item, propertyPath, locale) => value + " kg",
+      country: CountryRenderer,
     },
   }
 }
@@ -527,7 +527,7 @@ These options can be overridden per-component via props. See [Usage](Usage) for 
 | allowUndo              | boolean           | false    | `true`           | Enable undo button for filter changes.                                                                                                                                  |
 | allowRedo              | boolean           | false    | `true`           | Enable redo button for filter changes.                                                                                                                                  |
 | quickSort              | boolean           | false    | `true`           | Enable single-click column sorting in collections.                                                                                                                      |
-| editColumns            | boolean           | false    | `false`          | Enable column editor UI in collections (allows users to add/remove/reorder columns).                                                                                    |
+| editFields             | boolean           | false    | `false`          | Enable the field editor UI in collections (allows users to add/remove/reorder fields).                                                                                  |
 | allowedCollectionTypes | array             | false    | `['pagination']` | Determine which collection display types are available. Allowed values are `'pagination'` and `'infinite'`. If both are given, user will be able to switch between them. |
 | aliasInsensitiveLabels | boolean           | false    | `false`          | When `true`, case-insensitive operators (e.g. `ilike`) are displayed with the label of their case-sensitive counterpart (e.g. `like`).                                  |
 | displayOperator        | boolean or object | false    | `true`           | Show/hide operator selectors in the filter builder. [[1]](#note-display-operator)                                                                                       |

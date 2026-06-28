@@ -28,7 +28,7 @@ afterEach(() => {
 describe('Header', () => {
   it('renders a button for a sortable column', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name' },
+      props: { entitySchema: userSchema, fieldId: 'first_name' },
     });
     await flushAll();
     expect(wrapper.find('button').exists()).toBe(true);
@@ -36,7 +36,7 @@ describe('Header', () => {
 
   it('renders a div without button for a non-sortable column', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'gender' },
+      props: { entitySchema: userSchema, fieldId: 'gender' },
     });
     await flushAll();
     expect(wrapper.find('button').exists()).toBe(false);
@@ -45,7 +45,7 @@ describe('Header', () => {
 
   it('is sortable when hasCustomSort is true even if property is not sortable', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'gender', hasCustomSort: true },
+      props: { entitySchema: userSchema, fieldId: 'gender', hasCustomSort: true },
     });
     await flushAll();
     expect(wrapper.find('button').exists()).toBe(true);
@@ -53,7 +53,7 @@ describe('Header', () => {
 
   it('is not sortable when open is true', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name', open: true },
+      props: { entitySchema: userSchema, fieldId: 'first_name', open: true },
     });
     await flushAll();
     expect(wrapper.find('button').exists()).toBe(false);
@@ -61,7 +61,7 @@ describe('Header', () => {
 
   it('sets aria-sort="ascending" when order is asc', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name', order: 'asc' },
+      props: { entitySchema: userSchema, fieldId: 'first_name', order: 'asc' },
     });
     await flushAll();
     expect(wrapper.find('th').attributes('aria-sort')).toBe('ascending');
@@ -70,7 +70,7 @@ describe('Header', () => {
 
   it('sets aria-sort="descending" when order is desc', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name', order: 'desc' },
+      props: { entitySchema: userSchema, fieldId: 'first_name', order: 'desc' },
     });
     await flushAll();
     expect(wrapper.find('th').attributes('aria-sort')).toBe('descending');
@@ -79,7 +79,7 @@ describe('Header', () => {
 
   it('sets aria-sort="none" when no order on a sortable column', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name' },
+      props: { entitySchema: userSchema, fieldId: 'first_name' },
     });
     await flushAll();
     expect(wrapper.find('th').attributes('aria-sort')).toBe('none');
@@ -87,15 +87,15 @@ describe('Header', () => {
 
   it('has no aria-sort when column is not sortable', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'gender' },
+      props: { entitySchema: userSchema, fieldId: 'gender' },
     });
     await flushAll();
     expect(wrapper.find('th').attributes('aria-sort')).toBeUndefined();
   });
 
-  it('emits click with columnId and ctrlKey=false on click', async () => {
+  it('emits click with fieldId and ctrlKey=false on click', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name' },
+      props: { entitySchema: userSchema, fieldId: 'first_name' },
     });
     await flushAll();
     await wrapper.find('button').trigger('click');
@@ -105,16 +105,16 @@ describe('Header', () => {
 
   it('emits click with ctrlKey=true on Ctrl+click', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name' },
+      props: { entitySchema: userSchema, fieldId: 'first_name' },
     });
     await flushAll();
     await wrapper.find('button').trigger('click', { ctrlKey: true });
     expect(wrapper.emitted('click')![0]).toEqual(['first_name', true]);
   });
 
-  it('renders ColumnName with correct props', async () => {
+  it('renders FieldName with correct props', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name' },
+      props: { entitySchema: userSchema, fieldId: 'first_name' },
     });
     await flushAll();
     expect(wrapper.text()).toContain('first name');
@@ -125,7 +125,7 @@ describe('Header', () => {
     loadedTranslations['fr'] = fr;
 
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, columnId: 'first_name', order: 'asc' },
+      props: { entitySchema: userSchema, fieldId: 'first_name', order: 'asc' },
     });
     await flushAll();
     expect(wrapper.text()).toContain('(asc.)');
