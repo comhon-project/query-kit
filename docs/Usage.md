@@ -154,6 +154,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types. Allowed values: `'pagination'` and `'infinite'`.                                                                 |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count that match query.                                                                                     |
 | editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                                      |
+| naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only; the `sort` model stays empty). No-op if the schema declares no `natural_sort`. |
 | userTimezone           |         | string             | false    | `'UTC'`          | Display time in given timezone.                                                                                                 |
 | requestTimezone        |         | string             | false    | `'UTC'`          | Timezone to use when requesting server.                                                                                         |
 | requester              |         | function or object | false    | -                | Override the requester defined in global plugin configuration.                                                                  |
@@ -260,6 +261,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types: `'pagination'` and/or `'infinite'`.                                                             |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count.                                                                                     |
 | editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                     |
+| naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only). No-op without `natural_sort`. |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
 | onRowClick             |         | function           | false    | -                | Row click handler: `(row, event) => void`.                                                                     |
 | onExport               |         | function           | false    | -                | Export handler (displays export button when provided): `(filter?) => void`.                                    |

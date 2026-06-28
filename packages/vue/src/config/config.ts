@@ -14,6 +14,7 @@ export interface Config {
   quickSort: boolean;
   displayCount: boolean;
   editFields: boolean;
+  naturalSortWhenEmpty: boolean;
   allowedCollectionTypes: CollectionType[];
   aliasInsensitiveLabels: boolean;
 }
@@ -32,6 +33,7 @@ const defaults: Config = {
   quickSort: true,
   displayCount: true,
   editFields: false,
+  naturalSortWhenEmpty: false,
   allowedCollectionTypes: ['pagination'],
   aliasInsensitiveLabels: false,
 };

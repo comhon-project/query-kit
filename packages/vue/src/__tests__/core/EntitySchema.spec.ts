@@ -137,8 +137,13 @@ describe('compute() via resolve()', () => {
   });
 
   it('preserves undefined natural_sort when not provided', async () => {
-    const schema = await resolve('user');
+    const schema = await resolve('organization');
     expect(schema.natural_sort).toBeUndefined();
+  });
+
+  it('preserves natural_sort when provided', async () => {
+    const schema = await resolve('user');
+    expect(schema.natural_sort).toEqual(['last_name', 'first_name']);
   });
 
   it('maps all properties correctly with their attributes', async () => {

@@ -39,6 +39,7 @@ interface Props {
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
   editFields?: boolean;
+  naturalSortWhenEmpty?: boolean;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
   aliasInsensitiveLabels?: boolean;
@@ -61,6 +62,7 @@ const props = withDefaults(defineProps<Props>(), {
   quickSort: undefined,
   displayCount: undefined,
   editFields: undefined,
+  naturalSortWhenEmpty: undefined,
   aliasInsensitiveLabels: undefined,
 });
 
@@ -119,6 +121,7 @@ function onComputed(filter: Filter, manual: boolean): void {
       :user-timezone="userTimezone"
       :request-timezone="requestTimezone"
       :edit-fields="editFields"
+      :natural-sort-when-empty="naturalSortWhenEmpty"
       :requester="requester"
       :query-builder-id="queryBuilderId"
     />

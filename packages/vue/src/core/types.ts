@@ -208,5 +208,6 @@ export interface CollectionConfig {
   quickSort: boolean;
   displayCount: boolean;
   editFields: boolean;
+  naturalSortWhenEmpty: boolean;
   allowedCollectionTypes: CollectionType[];
 }

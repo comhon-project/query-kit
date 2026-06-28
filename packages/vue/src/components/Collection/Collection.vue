@@ -49,6 +49,7 @@ interface Props {
   userTimezone?: string;
   requestTimezone?: string;
   editFields?: boolean;
+  naturalSortWhenEmpty?: boolean;
   requester?: Requester | RequesterFunction;
   queryBuilderId?: string;
 }
@@ -67,6 +68,7 @@ const props = withDefaults(defineProps<Props>(), {
   quickSort: undefined,
   displayCount: undefined,
   editFields: undefined,
+  naturalSortWhenEmpty: undefined,
 });
 
 let hasExecFirstQuery = false;
@@ -266,7 +268,9 @@ async function requestServer(): Promise<void> {
       ? Object.values(indexedSort.value).flatMap((entry) =>
           entry.properties.map((prop) => ({ property: prop, order: entry.order })),
         )
-      : undefined;
+      : config.naturalSortWhenEmpty && entitySchema.value?.natural_sort?.length
+        ? entitySchema.value.natural_sort.map((property) => ({ property, order: 'asc' }))
+        : undefined;
 
     const response = await fetch({
       entity: props.entity,
@@ -358,6 +362,7 @@ watchEffect(() => {
   config.quickSort = props.quickSort ?? globalConfig.quickSort;
   config.displayCount = props.displayCount ?? globalConfig.displayCount;
   config.editFields = props.editFields ?? globalConfig.editFields;
+  config.naturalSortWhenEmpty = props.naturalSortWhenEmpty ?? globalConfig.naturalSortWhenEmpty;
   config.allowedCollectionTypes = props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes;
 });
 watchEffect(() => {

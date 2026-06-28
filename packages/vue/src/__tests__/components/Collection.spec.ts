@@ -841,6 +841,67 @@ describe('Collection', () => {
     });
   });
 
+  describe('naturalSortWhenEmpty', () => {
+    it('sends the entity natural_sort when sort is empty and the prop is true', async () => {
+      const { calls } = mountCollection({ fields: ['first_name'], naturalSortWhenEmpty: true });
+      await flushAll();
+      expect(calls[0].sort).toEqual([
+        { property: 'last_name', order: 'asc' },
+        { property: 'first_name', order: 'asc' },
+      ]);
+    });
+
+    it('sends no sort when sort is empty and the prop is false', async () => {
+      const { calls } = mountCollection({ fields: ['first_name'] });
+      await flushAll();
+      expect(calls[0].sort).toBeUndefined();
+    });
+
+    it('does not write natural_sort back into the sort model (request-only)', async () => {
+      const sort = ref<any[]>([]);
+      const onUpdateSort = vi.fn((v: any[]) => { sort.value = v; });
+      const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
+          requester,
+          naturalSortWhenEmpty: true,
+          sort: sort.value,
+          'onUpdate:sort': onUpdateSort,
+        },
+      });
+      await flushAll();
+      expect(calls[0].sort).toEqual([
+        { property: 'last_name', order: 'asc' },
+        { property: 'first_name', order: 'asc' },
+      ]);
+      expect(onUpdateSort).not.toHaveBeenCalled();
+      expect(sort.value).toEqual([]);
+    });
+
+    it('uses the explicit sort over natural_sort when sort is not empty', async () => {
+      const sort = ref<any[]>([{ field: 'age', order: 'desc' }]);
+      const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          fields: ['age'],
+          'onUpdate:fields': () => {},
+          requester,
+          naturalSortWhenEmpty: true,
+          sort: sort.value,
+          'onUpdate:sort': (v: any[]) => { sort.value = v; },
+        },
+      });
+      await flushAll();
+      expect(calls[0].sort).toEqual([{ property: 'age', order: 'desc' }]);
+    });
+  });
+
   describe('allowedCollectionTypes watcher', () => {
     it('preserves preferred mode when still allowed after change', async () => {
       wrapper = mountWithPlugin(Collection, {
