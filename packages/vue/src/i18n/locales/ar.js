@@ -72,6 +72,7 @@ export default {
   invalid_operator: 'عامل غير صالح:',
   invalid_entity: 'كيان غير صالح:',
   invalid_type: 'نوع غير صالح:',
+  invalid_filter: 'عامل تصفية غير صالح، لا يمكن عرض النتائج',
   entities: 'كيانات',
   reorder: 'إعادة ترتيب',
   item_grabbed: 'تم الإمساك، استخدم مفاتيح الأسهم للتحريك، مسافة للإفلات',

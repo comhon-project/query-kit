@@ -99,7 +99,6 @@ describe('Search', () => {
       expect(builder.props('displayOperator')).toBe(false);
       expect(builder.props('userTimezone')).toBe('Europe/Paris');
       expect(builder.props('requestTimezone')).toBe('America/New_York');
-      expect(builder.props('debounce')).toBe(2000);
       expect(builder.props('manual')).toBe(false);
     });
 
@@ -175,7 +174,16 @@ describe('Search', () => {
     });
   });
 
-  describe('onComputed', () => {
+  describe('validate', () => {
+    it('triggers a collection request when QueryBuilder emits validate (manual mode)', async () => {
+      const { requester, calls } = createMockRequester();
+      await mountSearchAndTriggerComputed({ requester, manual: true });
+      const before = calls.length;
+      wrapper.findComponent(QueryBuilder).vm.$emit('validate');
+      await flushAll();
+      expect(calls.length).toBe(before + 1);
+    });
+
     it('scrolls to the collection on every manual validate (not just the first)', async () => {
       const { requester } = createMockRequester();
       await mountSearchAndTriggerComputed({ requester, manual: true }, { attachTo: document.body });

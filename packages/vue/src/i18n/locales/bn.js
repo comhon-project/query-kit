@@ -72,6 +72,7 @@ export default {
   invalid_operator: 'অবৈধ অপারেটর:',
   invalid_entity: 'অবৈধ সত্তা:',
   invalid_type: 'অবৈধ ধরন:',
+  invalid_filter: 'অবৈধ ফিল্টার, ফলাফল প্রদর্শন করা যাবে না',
   entities: 'সত্তা',
   reorder: 'পুনর্বিন্যাস করুন',
   item_grabbed: 'ধরা হয়েছে, তীর কী দিয়ে সরান, স্পেস দিয়ে ছাড়ুন',

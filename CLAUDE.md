@@ -34,7 +34,7 @@ Root `package.json` also has `test:unit` and `lint` scripts that work from the r
 
 ### Public API (`packages/vue/index.ts`)
 
-Exports: `plugin` (Vue plugin), `locale` (ref for runtime language switching), `InputComponent` (wrapper to attach settings — `multiple`/`trim`/`emptyToUndefined`/`debounce` — to a custom input component), and entity-schema/translation helpers (`getEntitySchema`, `getEntityTranslation`, `getPropertyTranslation`, `getScopeTranslation`, `getScopeParameterTranslation`).
+Exports: `plugin` (Vue plugin), `locale` (ref for runtime language switching), `InputComponent` (wrapper to attach settings — `multiple`/`trim`/`emptyToUndefined`/`debounce` — to a custom input component), entity-schema/translation helpers (`getEntitySchema`, `getEntityTranslation`, `getPropertyTranslation`, `getScopeTranslation`, `getScopeParameterTranslation`), and the `computeFilter` util (build a server-ready filter from a raw filter, for standalone `QkitQueryBuilder` use).
 
 ### Plugin System (`src/core/Plugin.ts`)
 
@@ -53,8 +53,8 @@ Loaders are called lazily on first use and results are cached.
 
 Three global components registered by the plugin:
 - **QkitSearch** (`components/Search.vue`) - Composite: QueryBuilder + Collection
-- **QkitQueryBuilder** (`components/QueryBuilder.vue`) - Public wrapper around the internal `FilterBuilder`. Owns the model boundary: normalizes/strips the filter (`filterNormalize`), debounces user input, and computes the query (`computeFilter`) before emitting the `computed` event. The `actionsLocation` prop ('header' | 'embedded') controls where the undo/redo/reset/validate bar renders.
-- **QkitCollection** (`components/Collection/Collection.vue`) - Data table with pagination/infinite scroll
+- **QkitQueryBuilder** (`components/QueryBuilder.vue`) - Public wrapper around the internal `FilterBuilder`. Pure editor: owns the keyed working copy (normalize/strip, immediate key-stripped v-model emit) and resolves the entity schema, but does NOT compute/debounce/request. In `manual` mode it emits a bare `validate` event. The `actionsLocation` prop ('header' | 'embedded') controls where the undo/redo/reset/validate bar renders.
+- **QkitCollection** (`components/Collection/Collection.vue`) - Data table with pagination/infinite scroll. Owns the request pipeline: receives the **raw** filter, runs `computeFilter`, and watches `filter`/`fields`/`sort` prop changes (debounced + gated by `manual`). Page changes and direct UI interactions (header-click sort, fields editor) request immediately regardless of `manual`. Exposes `submit()` (used by Search on `validate`), which waits for pending inits before requesting.
 
 Internal: `FilterBuilder` (`components/Filter/FilterBuilder.vue`) — the actual filter tree builder, used by `QueryBuilder` and `Search` directly. Not registered globally.
 
@@ -63,7 +63,7 @@ Internal: `FilterBuilder` (`components/Filter/FilterBuilder.vue`) — the actual
 
 Input components: `UniqueInput`, `ArrayableInput`, `CollectionInput`
 
-**Collection sub-components**: `Header`, `Cell`, `Pagination` (table-rendering layer), and the field-editor family `FieldsEditor` → `FieldsBuilder` → `FieldsBuilderItem`, plus `FieldName`
+**Collection sub-components**: `CollectionTable` (presentational table wrapping `Header`, `Cell`, the sort emission and the infinite-scroll sentinel), `Pagination`, and the field-editor family `FieldsEditor` → `FieldsBuilder` → `FieldsBuilderItem`, plus `FieldName`
 
 ### Composables (`components/Filter/Composable/`)
 

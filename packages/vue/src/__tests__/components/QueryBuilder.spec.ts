@@ -14,13 +14,6 @@ import { flushAll } from '@tests/helpers/flushAsync';
 import type { VueWrapper } from '@vue/test-utils';
 import type { Filter, GroupFilter } from '@core/types';
 
-const { computeFilterSpy } = vi.hoisted(() => ({ computeFilterSpy: vi.fn() }));
-vi.mock('@core/computeFilter', async (importOriginal) => {
-  const orig = await importOriginal<typeof import('@core/computeFilter')>();
-  computeFilterSpy.mockImplementation(orig.computeFilter);
-  return { ...orig, computeFilter: (...args: Parameters<typeof orig.computeFilter>) => computeFilterSpy(...args) };
-});
-
 let wrapper: VueWrapper;
 
 beforeEach(() => {
@@ -207,23 +200,6 @@ describe('QueryBuilder', () => {
       expect(last.key).toBeUndefined();
       expect(last.filters[0]).not.toHaveProperty('key');
     });
-
-    it('debounces the computed event on edits (no compute until the window elapses)', async () => {
-      await mountQueryBuilder({ debounce: 2000 });
-      const before = wrapper.emitted('computed')!.length;
-
-      const internalGroup = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
-      internalGroup.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 1 });
-      await flushAll();
-
-      vi.advanceTimersByTime(1000);
-      await flushAll();
-      expect(wrapper.emitted('computed')!.length).toBe(before);
-
-      vi.advanceTimersByTime(1000);
-      await flushAll();
-      expect(wrapper.emitted('computed')!.length).toBe(before + 1);
-    });
   });
 
   describe('actions', () => {
@@ -322,10 +298,9 @@ describe('QueryBuilder', () => {
         await flushAll();
 
         await findActionButton('reset')!.trigger('click');
-        vi.advanceTimersByTime(1000);
         await flushAll();
 
-        const emitted = wrapper.emitted('computed')!;
+        const emitted = wrapper.emitted('update:modelValue')!;
         const lastFilter = emitted.at(-1)![0] as GroupFilter;
         expect(lastFilter.filters).toHaveLength(1);
       });
@@ -363,7 +338,7 @@ describe('QueryBuilder', () => {
         expect(findActionButton('undo')!.props('disabled')).toBe(false);
       });
 
-      it('validate emits computed with manual=true in manual mode', async () => {
+      it('emits "validate" when the search button is clicked in manual mode', async () => {
         const group: GroupFilter = {
           type: 'group',
           operator: 'and',
@@ -374,8 +349,7 @@ describe('QueryBuilder', () => {
         await findActionButton('search')!.trigger('click');
         await flushAll();
 
-        const emitted = wrapper.emitted('computed')!;
-        expect(emitted.at(-1)![1]).toBe(true);
+        expect(wrapper.emitted('validate')).toHaveLength(1);
       });
 
       it('clears the history when the entity changes', async () => {
@@ -403,139 +377,13 @@ describe('QueryBuilder', () => {
     });
   });
 
-  describe('computed event', () => {
-    it('emits "computed" with manual=false on initial settle (non-manual mode)', async () => {
+  describe('runtime entity change', () => {
+    it('re-resolves the schema when the entity changes at runtime', async () => {
       await mountQueryBuilder();
-      const emits = wrapper.emitted('computed');
-      expect(emits).toBeTruthy();
-      const last = emits!.at(-1)!;
-      expect((last[0] as GroupFilter).type).toBe('group');
-      expect(last[1]).toBe(false);
-    });
-
-    it('still emits the first "computed" in manual mode (so a parent like Search can render Collection)', async () => {
-      await mountQueryBuilder({ manual: true });
-      const emits = wrapper.emitted('computed');
-      expect(emits).toBeTruthy();
-      expect(emits!.length).toBeGreaterThanOrEqual(1);
-      expect(emits!.at(-1)![1]).toBe(false);
-    });
-
-    it('does not auto-emit further "computed" events in manual mode after the initial one', async () => {
-      const group: GroupFilter = {
-        type: 'group',
-        operator: 'and',
-        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
-      };
-      await mountQueryBuilder({ manual: true }, group);
-      const initialCount = wrapper.emitted('computed')!.length;
-
-      const internalGroup = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
-      internalGroup.filters.push({
-        type: 'condition',
-        property: 'last_name',
-        operator: '=',
-        value: 'Smith',
-        key: 99,
-      });
-      vi.advanceTimersByTime(1000);
-      await flushAll();
-
-      expect(wrapper.emitted('computed')!.length).toBe(initialCount);
-    });
-
-    it('warns and emits nothing when computeFilter throws', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      computeFilterSpy.mockRejectedValueOnce(new Error('boom'));
-
-      await mountQueryBuilder();
-
-      expect(wrapper.emitted('computed')).toBeUndefined();
-      expect(warn).toHaveBeenCalled();
-      warn.mockRestore();
-    });
-
-    it('drops a stale in-flight compute that resolves after a newer one', async () => {
-      const resultA: GroupFilter = { type: 'group', operator: 'and', filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'A' }] };
-      const resultB: GroupFilter = { type: 'group', operator: 'and', filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'B' }] };
-      let resolveA!: (v: GroupFilter) => void;
-      let resolveB!: (v: GroupFilter) => void;
-      computeFilterSpy
-        .mockImplementationOnce(() => new Promise((r) => (resolveA = r)))
-        .mockImplementationOnce(() => new Promise((r) => (resolveB = r)));
-
-      wrapper = mountWithPlugin(QueryBuilder, {
-        props: { entity: 'user', modelValue: null, 'onUpdate:modelValue': (v: unknown) => wrapper.setProps({ modelValue: v }) },
-      });
-      await flushAll(); // compute A is in flight
-
-      // a filter edit schedules a second (debounced) compute B
-      const group = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
-      group.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'x', key: 1 });
-      await flushAll();
-      vi.advanceTimersByTime(1000);
-      await flushAll(); // compute B is in flight
-
-      // the newer compute (B) resolves before the older one (A)
-      resolveB(resultB);
-      await flushAll();
-      resolveA(resultA);
-      await flushAll();
-
-      const emits = wrapper.emitted('computed')!;
-      expect(emits).toHaveLength(1);
-      expect(emits.at(-1)![0]).toEqual(resultB);
-    });
-
-    it('does not re-emit "computed" when an edit leaves the computed result unchanged (dedup)', async () => {
-      await mountQueryBuilder();
-      const before = wrapper.emitted('computed')!.length;
-
-      // An empty condition is stripped by computeFilter → identical result → no emit.
-      const group = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
-      group.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: undefined, key: 1 });
-      await flushAll();
-      vi.advanceTimersByTime(1000);
-      await flushAll();
-      expect(wrapper.emitted('computed')!.length).toBe(before);
-
-      // A filled condition changes the result → exactly one new emit.
-      group.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 2 });
-      await flushAll();
-      vi.advanceTimersByTime(1000);
-      await flushAll();
-      expect(wrapper.emitted('computed')!.length).toBe(before + 1);
-    });
-
-    it('warns and emits nothing when computeFilter throws on a manual validate', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      await mountQueryBuilder({ manual: true });
-      const before = wrapper.emitted('computed')!.length;
-
-      computeFilterSpy.mockRejectedValueOnce(new Error('boom'));
-      const searchBtn = wrapper.findAllComponents(IconButton).find((btn) => btn.props('icon') === 'search');
-      await searchBtn!.trigger('click');
-      await flushAll();
-
-      expect(wrapper.emitted('computed')!.length).toBe(before);
-      expect(warn).toHaveBeenCalled();
-      warn.mockRestore();
-    });
-
-    it('re-resolves the schema and re-emits "computed" when the entity changes at runtime', async () => {
-      await mountQueryBuilder();
-      const before = wrapper.emitted('computed')!.length;
-
       await wrapper.setProps({ entity: 'organization' });
       await flushAll();
-      vi.advanceTimersByTime(1000);
-      await flushAll();
-
       const schema = wrapper.findComponent(FilterBuilder).props('entitySchema') as EntitySchema;
       expect(schema.id).toBe('organization');
-      expect(wrapper.emitted('computed')!.length).toBeGreaterThan(before);
-      // compute now runs straight off modelValue (null here); only the entity argument matters
-      expect(computeFilterSpy).toHaveBeenLastCalledWith(null, 'organization');
     });
   });
 });

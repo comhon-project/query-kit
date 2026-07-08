@@ -177,6 +177,45 @@ describe('useInternalModel', () => {
       expect(internal.value.name).toBe('fromParent');
       expect(internal.value.key).toBe(1);
     });
+
+    it('applies a reassignment that reuses a previously emitted reference', async () => {
+      const model = ref(makeExternal('root'));
+      const internal = useInternalModel<External, Internal>(model, {
+        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
+        strip: (v) => ({ name: v.name, children: [] }),
+      });
+
+      internal.value.name = 'edited';
+      await nextTick();
+      const emitted = model.value; // the reference we emitted
+
+      model.value = makeExternal('away'); // genuine change to another reference
+      await nextTick();
+      expect(internal.value.name).toBe('away');
+
+      model.value = emitted; // restore the exact emitted reference (undo / saved view)
+      await nextTick();
+      expect(internal.value.name).toBe('edited');
+    });
+
+    it('emits when internal is reassigned to a previously normalized reference', async () => {
+      const model = ref(makeExternal('root'));
+      const internal = useInternalModel<External, Internal>(model, {
+        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
+        strip: (v) => ({ name: v.name, children: [] }),
+      });
+
+      model.value = makeExternal('fromParent'); // inbound normalizes into internal
+      await nextTick();
+      const normalized = internal.value; // the reference our inbound produced
+
+      internal.value = { key: 9, name: 'away', children: [] }; // move away
+      await nextTick();
+
+      internal.value = normalized; // reassign the exact normalized reference back
+      await nextTick();
+      expect(model.value.name).toBe('fromParent');
+    });
   });
 
   describe('debounce', () => {

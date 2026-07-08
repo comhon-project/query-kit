@@ -25,7 +25,7 @@ const filter = ref(null);
 ```
 
 ## Props
-The default values below are the library defaults — they can be overridden globally via the [plugin configuration](Plugin-initialization#basic-options).  
+The default values below are the library defaults; they can be overridden globally via the [plugin configuration](Plugin-initialization#basic-options).  
 Props marked with 🔗 support two-way binding via `v-model`.
 
 | key                   | v‑model | type               | required | default     | description                                                                                                      |
@@ -41,8 +41,7 @@ Props marked with 🔗 support two-way binding via `v-model`.
 | displayOperator       |         | boolean or object  | false    | `true`      | Display operators. More information [here](Usage#display-operator).                                              |
 | userTimezone          |         | string             | false    | `'UTC'`     | Display time in given timezone and time inputs are considered in given timezone.                                  |
 | requestTimezone       |         | string             | false    | `'UTC'`     | Timezone to use when requesting server.                                                                          |
-| debounce              |         | number             | false    | `1000`      | Time in ms to wait after a user input to compute the query.                                                      |
-| manual                |         | boolean            | false    | `false`     | If true, user must click a button to compute the query. Otherwise the query is computed automatically.            |
+| manual                |         | boolean            | false    | `false`     | If true, show a validate button and emit `validate` on click instead of letting the collection auto-query.        |
 | collectionId          |         | string             | false    | -           | ID of linked collection for skip-link navigation.                                                                |
 | aliasInsensitiveLabels|         | boolean            | false    | `false`     | Display case-insensitive operators with their case-sensitive label.                                               |
 | actionsLocation       |         | string             | false    | `'header'`  | Where the actions bar (undo/redo/reset/validate) is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group). |
@@ -98,15 +97,14 @@ Or you can disable operators by filter type:
 ```
 
 ## Events
-### Computed
-A `computed` event is triggered when the query filter is computed (debounced according to the `debounce` prop). The computed filter format may be different than the original filter (e.g. computed scopes are resolved, empty conditions are stripped). The event receives two parameters:
-
-1. `computedFilter` - the filter ready to be sent to the server
-2. `manual` - boolean indicating if the event was triggered by user action (`true`) or by automatic computation (`false`)
+### Validate
+The query builder is a pure editor: it only mutates its `v-model` filter. It does **not** compute the filter or query the server; that is the collection's job (it watches the filter, debounces, runs `computeFilter`, and requests). In `manual` mode, the query builder shows a validate button; clicking it emits a `validate` event so the parent can trigger the query (e.g. `QkitSearch` calls the collection's exposed `submit()`):
 
 ```js
-<QkitQueryBuilder @computed="(computedFilter, manual) => handle(computedFilter, manual)" />
+<QkitQueryBuilder @validate="() => runTheQuery()" />
 ```
+
+If you use `QkitQueryBuilder` on its own (without a collection), compute the server-ready filter yourself from the `v-model` with the exported `computeFilter` util.
 
 ### Actions location
 The actions bar (undo / redo / reset / validate buttons) is rendered above the filters by default. You can embed it inside the root group instead with the `actionsLocation` prop:
@@ -136,7 +134,7 @@ const fields = ref(['first_name', 'last_name']);
 
 ## Props
 
-The default values below are the library defaults — they can be overridden globally via the [plugin configuration](Plugin-initialization#basic-options).  
+The default values below are the library defaults; they can be overridden globally via the [plugin configuration](Plugin-initialization#basic-options).  
 Props marked with 🔗 support two-way binding via `v-model:<key>`.
 
 | key                    | v‑model | type               | required | default          | description                                                                                                                     |
@@ -146,11 +144,14 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | sort                   |   🔗    | array              | false    | -                | Sort order. Array of field ids (strings) or objects `{ field: string, order: 'asc'\|'desc' }`.                                  |
 | page                   |   🔗    | number             | false    | `1`              | Current page number.                                                                                                            |
 | customFields           |         | object             | false    | -                | Permit to customize collection headers and cells rendering. More information [here](Usage#custom-fields).                       |
-| filter                 |         | object             | false    | -                | The filter to apply when requesting server.                                                                                     |
+| filter                 |         | object             | false    | -                | The raw filter. The collection runs `computeFilter` on it before requesting the server.                                          |
+| manual                 |         | boolean            | false    | `false`          | If true, prop changes to `filter`/`fields` do not auto-request; call the exposed `submit()` method to trigger the request. Direct interactions in the collection UI (header sort, fields editor, pagination) always request immediately. |
+| debounce               |         | number             | false    | `1000`           | Time in ms to wait after a `filter`/`fields` change before requesting the server. `0` requests immediately.                      |
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                                   |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                                      |
 | quickSort              |         | boolean            | false    | `true`           | Permit to sort results when clicking on collection column headers.                                                              |
 | postRequest            |         | function           | false    | -                | Function called just after querying server (permit to modify fetched items). Signature: `(collection) => void \| Promise<void>`. |
+| onRequestError         |         | function           | false    | -                | Called when a server request fails (requester rejection, `postRequest` rejection, or an invalid response). Overrides the plugin `onRequestError`. The error is otherwise swallowed. Signature: `(error) => void`. |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types. Allowed values: `'pagination'` and `'infinite'`.                                                                 |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count that match query.                                                                                     |
 | editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                                      |
@@ -160,7 +161,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | requester              |         | function or object | false    | -                | Override the requester defined in global plugin configuration.                                                                  |
 | queryBuilderId         |         | string             | false    | -                | ID of linked query builder for skip-link navigation.                                                                           |
 | onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked). Signature: `(item, event) => void`.                                        |
-| onExport               |         | function           | false    | -                | Export handler. When provided, an export button is displayed. Signature: `(filter?) => void`.                                    |
+| onExport               |         | function           | false    | -                | Export handler. When provided, an export button is displayed (disabled while the filter is initializing or invalid). Receives the computed filter: the current one, or in `manual` mode the one committed by the last validate/mount/entity change. Signature: `(filter?) => void`. |
 
 ### Fields
 Fields to display in the collection. Each value must be a unique identifier for the current collection. Each value may be a property (a property of the requested entity or a property of nested objects) and/or a custom field identifier. If the field is a property, its label and renderer are determined automatically, but you may override them as you want with custom fields.
@@ -232,7 +233,7 @@ const fields = ref(['first_name', 'last_name']);
 
 ## Props
 
-The default values below are the library defaults — they can be overridden globally via the [plugin configuration](Plugin-initialization#basic-options).  
+The default values below are the library defaults; they can be overridden globally via the [plugin configuration](Plugin-initialization#basic-options).  
 Props marked with 🔗 support two-way binding via `v-model:<key>`.
 
 | key                    | v‑model | type               | required | default          | description                                                                                                    |
@@ -252,18 +253,19 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | displayOperator        |         | boolean or object  | false    | `true`           | Display operators. More information [here](Usage#display-operator).                                            |
 | userTimezone           |         | string             | false    | `'UTC'`          | Display time in given timezone.                                                                                |
 | requestTimezone        |         | string             | false    | `'UTC'`          | Timezone to use when requesting server.                                                                        |
-| manual                 |         | boolean            | false    | `false`          | If true, user must click a button to request server.                                                           |
+| manual                 |         | boolean            | false    | `false`          | If true, filter changes request the server only when the user clicks the validate button. Direct interactions in the collection UI (header sort, fields editor, pagination) always request immediately. |
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                  |
-| debounce               |         | number             | false    | `1000`           | Time in ms to wait after a user input to compute the query.                                                    |
+| debounce               |         | number             | false    | `1000`           | Time in ms to wait after a `filter`/`fields` change before requesting the server. `0` requests immediately.    |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                     |
 | quickSort              |         | boolean            | false    | `true`           | Permit to sort results when clicking on column headers.                                                        |
 | postRequest            |         | function           | false    | -                | Function called just after querying server.                                                                    |
+| onRequestError         |         | function           | false    | -                | Called when a server request fails. Overrides the plugin `onRequestError`. Signature: `(error) => void`.       |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types: `'pagination'` and/or `'infinite'`.                                                             |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count.                                                                                     |
 | editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                     |
 | naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only). No-op without `natural_sort`. |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
 | onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked): `(item, event) => void`.                                  |
-| onExport               |         | function           | false    | -                | Export handler (displays export button when provided): `(filter?) => void`.                                    |
+| onExport               |         | function           | false    | -                | Export handler (displays export button when provided). Receives the computed filter: the current one, or the last validated one in `manual` mode. Signature: `(filter?) => void`. |
 | aliasInsensitiveLabels |         | boolean            | false    | `false`          | Display case-insensitive operators with their case-sensitive label.                                             |
 | actionsLocation        |         | string             | false    | `'header'`       | Where the actions bar is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group).      |

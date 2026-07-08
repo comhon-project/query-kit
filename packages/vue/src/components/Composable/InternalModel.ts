@@ -7,7 +7,7 @@ export interface InternalModelOptions<TExternal, TInternal> {
   strip?: (value: TInternal) => TExternal;
   /** Debounce outbound emits (ms). Number (incl. 0) defers; null/undefined emits synchronously. */
   debounce?: number | null;
-  /** Called after an external (non-echo) value is synced inbound — i.e. a genuine parent reassignment. */
+  /** Called after an external (non-echo) value is synced inbound, i.e. a genuine parent reassignment. */
   onInbound?: () => void;
 }
 
@@ -16,14 +16,8 @@ export interface InternalModelOptions<TExternal, TInternal> {
  * `normalize` inbound and `strip` outbound. Mutating or reassigning the internal
  * ref propagates; our own emit is suppressed on the way back in.
  *
- * Echo suppression works by reference identity, which implies two contracts on
- * the external `model`:
- * 1. External changes must arrive as a NEW reference (a reassignment). The
- *    inbound watch is not deep, so an in-place mutation of the existing model
- *    object is not detected and will not sync into `internal`.
- * 2. Never reinject a reference that was previously emitted from here (e.g. an
- *    undo/redo that restores a snapshot without cloning). It is indistinguishable
- *    from our own echo and will be silently ignored. Clone such snapshots first.
+ * The inbound watch is not deep: an in-place mutation of the external model is
+ * not detected. Parent changes must be reassignments (the idiomatic Vue pattern).
  */
 export function useInternalModel<TExternal, TInternal = TExternal>(
   model: Ref<TExternal>,
@@ -50,7 +44,9 @@ export function useInternalModel<TExternal, TInternal = TExternal>(
   watch(
     model,
     (value) => {
-      if (toRaw(value) === lastEmitted) return; // our own emit bouncing back
+      const isEcho = toRaw(value) === lastEmitted;
+      lastEmitted = EMPTY;
+      if (isEcho) return;
       if (timer) {
         clearTimeout(timer);
         timer = null;
@@ -68,7 +64,9 @@ export function useInternalModel<TExternal, TInternal = TExternal>(
       const raw = toRaw(newVal);
       // Skip the reassignment driven by our inbound watch; guarded on identity
       // change so in-place mutations of that same value still emit.
-      if (raw !== toRaw(oldVal) && raw === lastNormalized) return;
+      const isInboundEcho = raw !== toRaw(oldVal) && raw === lastNormalized;
+      lastNormalized = EMPTY;
+      if (isInboundEcho) return;
       if (shouldDebounce) {
         if (timer) clearTimeout(timer);
         timer = setTimeout(emit, debounceMs);
@@ -80,6 +78,7 @@ export function useInternalModel<TExternal, TInternal = TExternal>(
   );
 
   if (getCurrentScope()) {
+    // Pending debounced emit is dropped, not flushed: leaving before it commits cancels it.
     onScopeDispose(() => timer && clearTimeout(timer));
   }
 

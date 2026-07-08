@@ -72,6 +72,7 @@ export default {
   invalid_operator: '無効な演算子：',
   invalid_entity: '無効なエンティティ：',
   invalid_type: '無効なタイプ：',
+  invalid_filter: '無効なフィルタのため、結果を表示できません',
   entities: 'エンティティ',
   reorder: '並べ替え',
   item_grabbed: 'つかみました、矢印キーで移動、スペースキーで離します',

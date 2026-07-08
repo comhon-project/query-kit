@@ -30,7 +30,7 @@ import {
   type RequestSchema,
 } from '@core/RequestSchema';
 import { applyOptions, type Config } from '@config/config';
-import { registerRequester, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
+import { registerRequester, registerRequestErrorHandler, type Requester, type RequestParams, type RequestResponse } from '@core/Requester';
 import { registerOperators, type AllowedOperators } from '@core/OperatorManager';
 import { registerComputedScopes, type ComputedScopes } from '@core/ComputedScopesManager';
 
@@ -64,6 +64,7 @@ export interface PluginOptions {
   operators?: AllowedOperators;
   computedScopes?: ComputedScopes;
   requester?: Requester | RequesterFunction;
+  onRequestError?: (error: unknown) => void;
   renderHtml?: boolean;
   userTimezone?: Config['userTimezone'];
   requestTimezone?: Config['requestTimezone'];
@@ -128,6 +129,9 @@ export default {
         );
       }
       registerRequester(requester);
+    }
+    if (options.onRequestError) {
+      registerRequestErrorHandler(options.onRequestError);
     }
     if (options.entitySchemaLoader) {
       const loader =

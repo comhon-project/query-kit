@@ -147,6 +147,11 @@ export interface CustomFieldConfig {
 
 export type CollectionType = 'infinite' | 'pagination';
 
+export interface CollectionContent {
+  collection: Record<string, unknown>[];
+  replaced: boolean;
+}
+
 // ==================== Option Types ====================
 
 export interface SelectOption<T = string | number> {

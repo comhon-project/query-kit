@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch } from 'vue';
 import FilterBuilder from '@components/Filter/FilterBuilder.vue';
 import QueryActionsBar from '@components/Common/QueryActionsBar.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
@@ -7,13 +7,9 @@ import { useHistory } from '@components/Composable/History';
 import { resolve, type EntitySchema } from '@core/EntitySchema';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-import { deepEqual } from '@core/Utils';
-import { computeFilter } from '@core/computeFilter';
-import { config as globalConfig } from '@config/config';
 import type { AllowedOperators } from '@core/OperatorManager';
 import type {
   Filter,
-  GroupFilter,
   DisplayOperator,
   AllowedScopes,
   AllowedProperties,
@@ -30,7 +26,6 @@ interface Props {
   displayOperator?: DisplayOperator;
   userTimezone?: string;
   requestTimezone?: string;
-  debounce?: number;
   collectionId?: string;
   manual?: boolean;
   aliasInsensitiveLabels?: boolean;
@@ -38,7 +33,7 @@ interface Props {
 }
 
 interface Emits {
-  computed: [filter: GroupFilter, manual: boolean];
+  validate: [];
 }
 
 const modelValue = defineModel<Filter | null>({ default: null });
@@ -56,85 +51,27 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const history = useHistory();
-
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
-let firstEmitDone = false;
-let lastComputedEmitted: GroupFilter | null = null;
-let computeTimer: ReturnType<typeof setTimeout> | undefined;
-let computeSeq = 0;
-
-async function runCompute(): Promise<void> {
-  firstEmitDone = true;
-  const seq = ++computeSeq;
-  let computed: GroupFilter;
-  try {
-    computed = await computeFilter(modelValue.value, props.entity);
-  } catch (error) {
-    console.warn('[query-kit] computeFilter failed, keeping last result', error);
-    firstEmitDone = false;
-    return;
-  }
-  if (seq === computeSeq && !deepEqual(computed, lastComputedEmitted)) {
-    lastComputedEmitted = computed;
-    emit('computed', computed, false);
-  }
-}
-
-function scheduleCompute(immediate: boolean): void {
-  if (computeTimer) clearTimeout(computeTimer);
-  const debounce = props.debounce ?? globalConfig.debounce;
-  if (immediate || !debounce) {
-    runCompute();
-  } else {
-    computeTimer = setTimeout(runCompute, debounce);
-  }
-}
 
 watch(
-  [() => props.entity, modelValue],
-  async (newVals, oldVals) => {
-    const entity = newVals[0] as string;
-    const entityChanged = !oldVals || entity !== oldVals[0];
-    if (entityChanged) {
-      try {
-        entitySchema.value = await resolve(entity);
-        validEntity.value = true;
-      } catch {
-        entitySchema.value = null;
-        validEntity.value = false;
-        return;
-      }
-      if (oldVals) history.clear();
-      firstEmitDone = false;
-      lastComputedEmitted = null;
+  () => props.entity,
+  async (entity, oldEntity) => {
+    try {
+      entitySchema.value = await resolve(entity);
+      validEntity.value = true;
+    } catch {
+      entitySchema.value = null;
+      validEntity.value = false;
+      return;
     }
-    const manual = props.manual ?? globalConfig.manual;
-    if ((!manual || !firstEmitDone) && entitySchema.value) {
-      scheduleCompute(!firstEmitDone || entityChanged);
-    }
+    if (oldEntity !== undefined && oldEntity !== entity) history.clear();
   },
-  { immediate: true, deep: true },
+  { immediate: true },
 );
 
-onUnmounted(() => {
-  if (computeTimer) clearTimeout(computeTimer);
-});
-
-async function onValidate(): Promise<void> {
-  if (computeTimer) clearTimeout(computeTimer);
-  const seq = ++computeSeq;
-  let computed: GroupFilter;
-  try {
-    computed = await computeFilter(modelValue.value, props.entity);
-  } catch (error) {
-    console.warn('[query-kit] computeFilter failed on validate, keeping last result', error);
-    return;
-  }
-  if (seq === computeSeq) {
-    lastComputedEmitted = computed;
-    emit('computed', computed, true);
-  }
+function onValidate(): void {
+  emit('validate');
 }
 </script>
 

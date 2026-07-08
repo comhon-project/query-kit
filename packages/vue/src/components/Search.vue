@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { useTemplateRef } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
 import QueryBuilder from '@components/QueryBuilder.vue';
 import { classes } from '@core/ClassManager';
@@ -31,6 +31,7 @@ interface Props {
   requestTimezone?: string;
   requester?: Requester | RequesterFunction;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
+  onRequestError?: (error: unknown) => void;
   manual?: boolean;
   directQuery?: boolean;
   debounce?: number;
@@ -69,13 +70,11 @@ const props = withDefaults(defineProps<Props>(), {
 const uniqueId = getUniqueId();
 const queryBuilderId = 'qkit-query-builder-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
-const computedFilter = shallowRef<Filter>();
+const collectionRef = useTemplateRef<{ submit: () => void }>('collection');
 
-function onComputed(filter: Filter, manual: boolean): void {
-  computedFilter.value = filter;
-  if (manual) {
-    document.getElementById(collectionId)?.scrollIntoView();
-  }
+function onValidate(): void {
+  collectionRef.value?.submit();
+  document.getElementById(collectionId)?.scrollIntoView();
 }
 </script>
 
@@ -94,27 +93,29 @@ function onComputed(filter: Filter, manual: boolean): void {
       :display-operator="displayOperator"
       :user-timezone="userTimezone"
       :request-timezone="requestTimezone"
-      :debounce="debounce"
       :alias-insensitive-labels="aliasInsensitiveLabels"
       :manual="manual"
       :collection-id="collectionId"
       :actions-location="actionsLocation"
-      @computed="onComputed"
+      @validate="onValidate"
     />
     <Collection
-      v-if="computedFilter"
+      ref="collection"
       :id="collectionId"
       v-model:fields="fields"
       v-model:sort="sort"
       v-model:page="page"
       :entity="entity"
       :custom-fields="customFields"
-      :filter="computedFilter"
+      :filter="filter"
+      :manual="manual"
+      :debounce="debounce"
       :direct-query="directQuery"
       :limit="limit"
       :on-item-click="onItemClick"
       :quick-sort="quickSort"
       :post-request="postRequest"
+      :on-request-error="onRequestError"
       :allowed-collection-types="allowedCollectionTypes"
       :display-count="displayCount"
       :on-export="onExport"

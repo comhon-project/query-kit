@@ -72,6 +72,7 @@ export default {
   invalid_operator: 'ungültiger Operator:',
   invalid_entity: 'ungültige Entität:',
   invalid_type: 'ungültiger Typ:',
+  invalid_filter: 'ungültiger Filter, Ergebnisse können nicht angezeigt werden',
   entities: 'Entitäten',
   reorder: 'neu anordnen',
   item_grabbed: 'gegriffen, Pfeiltasten zum Verschieben, Leertaste zum Ablegen',

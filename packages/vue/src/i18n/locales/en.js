@@ -72,6 +72,7 @@ export default {
   invalid_operator: 'invalid operator:',
   invalid_entity: 'invalid entity:',
   invalid_type: 'invalid type:',
+  invalid_filter: 'invalid filter, results cannot be displayed',
   entities: 'entities',
   reorder: 'reorder',
   item_grabbed: 'grabbed, use arrows to move, Space to drop',

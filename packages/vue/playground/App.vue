@@ -9,6 +9,12 @@ const lastRequest = shallowRef(null);
 
 const currentState = computed(() => state[activeTab.value]);
 
+function switchTab(id) {
+  // The tabs are v-if'ed: the remounted collection starts a fresh page
+  state[id].page = 1;
+  activeTab.value = id;
+}
+
 const tabs = [
   { id: 'default', label: 'Default' },
   { id: 'prefilled', label: 'Pre-filled' },
@@ -113,6 +119,11 @@ const requester = {
 
 const clickedRow = shallowRef(null);
 const clickedCell = shallowRef(null);
+const exportedFilter = shallowRef(null);
+
+function onExport(filter) {
+  exportedFilter.value = filter;
+}
 
 function onItemClick(item) {
   clickedRow.value = item;
@@ -134,7 +145,7 @@ function onThemeChange() {
     <p class="playground-notice">There is no backend — data is randomly generated and not actually filtered.</p>
     <div class="playground-toolbar">
       <div class="playground-tabs">
-        <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }" @click="activeTab = tab.id">
+        <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }" @click="switchTab(tab.id)">
           {{ tab.label }}
         </button>
       </div>
@@ -191,6 +202,7 @@ function onThemeChange() {
         :requester="requester"
         :edit-fields="true"
         :allowed-collection-types="['infinite', 'pagination']"
+        :on-export="onExport"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -336,6 +348,7 @@ function onThemeChange() {
       <RequestDisplay :request="currentState.sort" title="Sort" />
       <RequestDisplay :request="currentState.fields" title="Fields" />
       <RequestDisplay :request="lastRequest" title="Request" />
+      <RequestDisplay v-if="activeTab === 'prefilled' && exportedFilter" :request="exportedFilter" title="Exported filter" />
     </div>
   </div>
 </template>

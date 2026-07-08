@@ -72,6 +72,7 @@ export default {
   invalid_operator: 'अमान्य ऑपरेटर:',
   invalid_entity: 'अमान्य इकाई:',
   invalid_type: 'अमान्य प्रकार:',
+  invalid_filter: 'अमान्य फ़िल्टर, परिणाम प्रदर्शित नहीं किए जा सकते',
   entities: 'इकाइयाँ',
   reorder: 'पुनर्क्रमित करें',
   item_grabbed: 'पकड़ा गया, तीर कुंजियों से हिलाएं, स्पेस से छोड़ें',

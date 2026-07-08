@@ -5,6 +5,7 @@
 - [Schema loaders](#schema-loaders)
 - [Computed scopes](#computed-scopes)
 - [Requester](#requester)
+- [Request error handler](#request-error-handler)
 - [Icons](#icons)
 - [Classes](#classes)
 - [Inputs](#inputs)
@@ -228,6 +229,22 @@ Your requester may return items with nested objects:
       address: '5 street nowhere'
     }
   }
+}
+```
+
+## Request error handler
+
+| key            | type     | required | default   |
+| -------------- | -------- | -------- | --------- |
+| onRequestError | function | false    | undefined |
+
+Called when a server request fails: a rejection from the requester, a rejection from a collection's `postRequest`, or an invalid response shape. Registered globally, it is used by all `QkitCollection` components; each component can override it with its own `onRequestError` prop. The error is otherwise swallowed (no unhandled rejection).
+
+```js
+const config = {
+  onRequestError: (error) => {
+    reportToSentry(error);
+  },
 }
 ```
 
