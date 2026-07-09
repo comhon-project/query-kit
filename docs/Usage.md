@@ -9,7 +9,7 @@
 ---
 
 # Query builder component
-The query builder component will permit to user to build its request by defining some filters.
+The query builder is a visual editor for building a server query. Through `v-model` it edits two independent parts: the **filter** (nested `and`/`or` groups of conditions, scopes and relationship filters) and, when `editFields` is enabled, the **fields** to display and their order. Both share a single undo/redo/reset history. It is a pure editor: it only mutates its models and never queries the server itself (see [Validate](#validate)).
 
 ## Usage
 ```js
@@ -20,7 +20,7 @@ const filter = ref(null);
 </script>
 
 <template>
-  <QkitQueryBuilder entity="user" v-model="filter"/>
+  <QkitQueryBuilder entity="user" v-model:filter="filter"/>
 </template>
 ```
 
@@ -31,7 +31,10 @@ Props marked with 🔗 support two-way binding via `v-model`.
 | key                   | v‑model | type               | required | default     | description                                                                                                      |
 | --------------------- | :-----: | ------------------ | -------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
 | entity                |         | string             | true     | -           | The entity id (user, company, post...)                                                                           |
-| modelValue            |   🔗    | object             | false    | `null`      | The query to build. Given object will be updated when user will make changes. Accepts any filter type or `null`; non-group filters are auto-wrapped in a top-level group. More info on filter format [here](Query-filter-format). |
+| filter                |   🔗    | object             | false    | `null`      | The query to build. Given object will be updated when user will make changes. Accepts any filter type or `null`; non-group filters are auto-wrapped in a top-level group. More info on filter format [here](Query-filter-format). |
+| fields                |   🔗    | array              | false    | `[]`        | Fields edited by the inline fields builder (only rendered when `editFields` is enabled). More information [here](Usage#fields). |
+| customFields          |         | object             | false    | -           | Customize the labels shown in the fields builder. More information [here](Usage#custom-fields).                  |
+| editFields            |         | boolean            | false    | `false`     | Display an inline fields builder to add/remove/reorder the fields.                                               |
 | allowReset            |         | boolean            | false    | `true`      | Display a button to permit user to reset query to original state.                                                |
 | allowUndo             |         | boolean            | false    | `true`      | Enable undo button for filter changes.                                                                           |
 | allowRedo             |         | boolean            | false    | `true`      | Enable redo button for filter changes.                                                                           |
@@ -44,7 +47,6 @@ Props marked with 🔗 support two-way binding via `v-model`.
 | manual                |         | boolean            | false    | `false`     | If true, show a validate button and emit `validate` on click instead of letting the collection auto-query.        |
 | collectionId          |         | string             | false    | -           | ID of linked collection for skip-link navigation.                                                                |
 | aliasInsensitiveLabels|         | boolean            | false    | `false`     | Display case-insensitive operators with their case-sensitive label.                                               |
-| actionsLocation       |         | string             | false    | `'header'`  | Where the actions bar (undo/redo/reset/validate) is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group). |
 
 ### Allowed properties
 Restrict allowed properties that may be part of query.
@@ -104,20 +106,10 @@ The query builder is a pure editor: it only mutates its `v-model` filter. It doe
 <QkitQueryBuilder @validate="() => runTheQuery()" />
 ```
 
-If you use `QkitQueryBuilder` on its own (without a collection), compute the server-ready filter yourself from the `v-model` with the exported `computeFilter` util.
-
-### Actions location
-The actions bar (undo / redo / reset / validate buttons) is rendered above the filters by default. You can embed it inside the root group instead with the `actionsLocation` prop:
-```html
-<!-- default: actions bar in a header above the filter tree -->
-<QkitQueryBuilder entity="user" v-model="filter" />
-
-<!-- actions bar embedded inside the root group -->
-<QkitQueryBuilder entity="user" v-model="filter" actions-location="embedded" />
-```
+If you use `QkitQueryBuilder` on its own (without a collection), compute the server-ready filter yourself from the `v-model:filter` with the exported `computeFilter` util.
 
 # Collection component
-The collection component will display data fetched.
+The collection is the data table that queries the server and renders the results. It takes a raw filter, computes the server-ready query from it, requests the server, and displays the returned records as fully customizable columns, with sorting and pagination or infinite scroll.
 
 ## Usage
 ```js
@@ -215,7 +207,7 @@ const customFields = {
 ```
 
 # Search component
-The search component combines the two previous components, making it the simplest way to set up a full search interface with a single component.
+The search component wires the query builder and the collection together into a ready-to-use search interface: what the user builds in the query builder drives what the collection queries and displays, with no glue code on your side.
 
 ## Usage
 ```js
@@ -262,10 +254,9 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | onRequestError         |         | function           | false    | -                | Called when a server request fails. Overrides the plugin `onRequestError`. Signature: `(error) => void`.       |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types: `'pagination'` and/or `'infinite'`.                                                             |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count.                                                                                     |
-| editFields             |         | boolean            | false    | `false`          | Allows users to add/remove/reorder fields.                                                                     |
+| editFields             |         | string             | false    | `'none'`         | Where users can add/remove/reorder fields: `'query-builder'` (inline in the query builder), `'collection'` (columns button in the collection header), or `'none'`. |
 | naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only). No-op without `natural_sort`. |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
 | onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked): `(item, event) => void`.                                  |
 | onExport               |         | function           | false    | -                | Export handler (displays export button when provided). Receives the computed filter: the current one, or the last validated one in `manual` mode. Signature: `(filter?) => void`. |
 | aliasInsensitiveLabels |         | boolean            | false    | `false`          | Display case-insensitive operators with their case-sensitive label.                                             |
-| actionsLocation        |         | string             | false    | `'header'`       | Where the actions bar is rendered: `'header'` (above the filters) or `'embedded'` (inside the root group).      |

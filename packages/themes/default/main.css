@@ -156,6 +156,7 @@
 }
 .qkit-modal-header h1 {
   margin-block: 0;
+  text-transform: capitalize;
 }
 .qkit-modal-body {
   padding: var(--qkit-padding-lg);
@@ -175,14 +176,43 @@
 
 .qkit-query-builder-header {
   display: flex;
-  gap: var(--qkit-padding-sm);
+  gap: var(--qkit-gap-spacer);
   justify-content: flex-end;
-  padding: var(--qkit-padding-sm);
+  padding: var(--qkit-padding-md) var(--qkit-padding-lg);
   border-bottom: 1px solid var(--qkit-color-border);
 }
 
 .qkit-query-builder-header:empty {
   display: none;
+}
+
+.qkit-fields-builder {
+  padding: var(--qkit-padding-lg);
+}
+
+.qkit-fields-builder-header {
+  display: flex;
+  align-items: center;
+  gap: var(--qkit-gap-spacer);
+  margin-bottom: var(--qkit-padding-md);
+}
+
+.qkit-fields-builder-actions {
+  display: flex;
+  gap: var(--qkit-gap-spacer);
+  margin-left: auto;
+}
+
+.qkit-builder-label {
+  align-self: center;
+  font-size: small;
+  font-weight: 600;
+  opacity: 0.6;
+  text-transform: capitalize;
+}
+
+.qkit-query-builder > section + section {
+  border-top: 1px solid var(--qkit-color-border);
 }
 
 /* Outer group inside query-builder is transparent: the visible frame is on the wrapper.
@@ -270,12 +300,14 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  margin-top: var(--qkit-gap-spacer);
   transition:
     height var(--qkit-transition-duration) ease,
     margin-top var(--qkit-transition-duration) ease,
     overflow 0s var(--qkit-transition-duration);
   transition-behavior: allow-discrete;
+}
+.qkit-group-list:has(> *) {
+  margin-top: var(--qkit-gap-spacer);
 }
 .qkit-group-list[collapsed] {
   margin-top: 0;
@@ -731,7 +763,7 @@
 .qkit-field-editor-list {
   list-style: none;
   margin: 0;
-  padding: var(--qkit-padding-lg);
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
   gap: var(--qkit-gap-spacer);

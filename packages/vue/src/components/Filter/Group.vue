@@ -47,6 +47,9 @@ onMounted(() => {
         :entity-schema="entitySchema"
         v-model:collapsed="collapsed"
       >
+        <template #builder_label>
+          <slot name="builder_label" />
+        </template>
         <template #builder_actions>
           <slot name="builder_actions" />
         </template>

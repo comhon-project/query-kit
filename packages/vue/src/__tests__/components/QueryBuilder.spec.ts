@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import QueryBuilder from '@components/QueryBuilder.vue';
 import FilterBuilder from '@components/Filter/FilterBuilder.vue';
+import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
+import FieldsListItem from '@components/Collection/FieldsListItem.vue';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
@@ -28,12 +30,12 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-async function mountQueryBuilder(props: Record<string, unknown> = {}, modelValue: Filter | null = null) {
+async function mountQueryBuilder(props: Record<string, unknown> = {}, filter: Filter | null = null) {
   wrapper = mountWithPlugin(QueryBuilder, {
     props: {
       entity: 'user',
-      modelValue,
-      'onUpdate:modelValue': (v: unknown) => wrapper.setProps({ modelValue: v }),
+      filter,
+      'onUpdate:filter': (v: unknown) => wrapper.setProps({ filter: v }),
       ...props,
     },
   });
@@ -58,7 +60,9 @@ describe('QueryBuilder', () => {
       expect(wrapperSection.exists()).toBe(true);
       const inner = wrapperSection.find('section.qkit-filter-builder');
       expect(inner.exists()).toBe(true);
-      expect(inner.attributes('aria-label')).toBe('filter');
+      const label = inner.find('.qkit-builder-label');
+      expect(label.text()).toBe('filter');
+      expect(inner.attributes('aria-labelledby')).toBe(label.attributes('id'));
     });
 
     it('renders a FilterBuilder child', async () => {
@@ -151,7 +155,7 @@ describe('QueryBuilder', () => {
   });
 
   describe('v-model forwarding', () => {
-    it('forwards modelValue down to FilterBuilder', async () => {
+    it('forwards filter down to FilterBuilder', async () => {
       const group: GroupFilter = {
         type: 'group',
         operator: 'or',
@@ -169,7 +173,7 @@ describe('QueryBuilder', () => {
       );
     });
 
-    it('propagates update:modelValue from FilterBuilder up to the parent', async () => {
+    it('propagates a FilterBuilder update up to the parent as update:filter', async () => {
       await mountQueryBuilder();
       const newGroup: GroupFilter = {
         type: 'group',
@@ -178,22 +182,22 @@ describe('QueryBuilder', () => {
       };
       wrapper.findComponent(FilterBuilder).vm.$emit('update:modelValue', newGroup);
       await flushAll();
-      const emitted = wrapper.emitted('update:modelValue');
+      const emitted = wrapper.emitted('update:filter');
       expect(emitted).toBeTruthy();
       expect(emitted!.at(-1)![0]).toEqual(newGroup);
     });
   });
 
   describe('edit propagation', () => {
-    it('emits update:modelValue to the parent immediately and key-stripped on an in-place edit', async () => {
+    it('emits update:filter to the parent immediately and key-stripped on an in-place edit', async () => {
       await mountQueryBuilder();
-      const before = wrapper.emitted('update:modelValue')?.length ?? 0;
+      const before = wrapper.emitted('update:filter')?.length ?? 0;
 
       const internalGroup = wrapper.findComponent(Group).props('modelValue') as GroupFilter;
       internalGroup.filters.push({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice', key: 123 });
       await flushAll(); // no timer advance: the parent emit is immediate, not debounced
 
-      const emitted = wrapper.emitted('update:modelValue');
+      const emitted = wrapper.emitted('update:filter');
       expect(emitted?.length ?? 0).toBeGreaterThan(before);
       const last = emitted!.at(-1)![0] as GroupFilter;
       expect(last.filters).toHaveLength(1);
@@ -215,9 +219,33 @@ describe('QueryBuilder', () => {
         .map((btn) => btn.props('icon') as string);
     }
 
-    describe('header mode (default)', () => {
-      it('renders the actions header with undo/redo/reset buttons by default', async () => {
+    describe('embedded (single builder, default)', () => {
+      it('does not render the header when the filter builder is the only builder', async () => {
         await mountQueryBuilder();
+        expect(wrapper.find('header.qkit-query-builder-header').exists()).toBe(false);
+      });
+
+      it('renders undo/redo/reset buttons inside the FilterBuilder', async () => {
+        await mountQueryBuilder();
+        const icons = iconsInScope('section.qkit-filter-builder');
+        expect(icons).toContain('undo');
+        expect(icons).toContain('redo');
+        expect(icons).toContain('reset');
+      });
+
+      it('shows the search button inside the FilterBuilder only in manual mode', async () => {
+        await mountQueryBuilder();
+        expect(findActionButton('search')).toBeUndefined();
+        wrapper.unmount();
+
+        await mountQueryBuilder({ manual: true });
+        expect(iconsInScope('section.qkit-filter-builder')).toContain('search');
+      });
+    });
+
+    describe('header (fields builder present)', () => {
+      it('renders the actions header with undo/redo/reset buttons when editFields is enabled', async () => {
+        await mountQueryBuilder({ editFields: true });
         const header = wrapper.find('header.qkit-query-builder-header');
         expect(header.exists()).toBe(true);
         const icons = iconsInScope('header.qkit-query-builder-header');
@@ -227,9 +255,8 @@ describe('QueryBuilder', () => {
       });
 
       it('places the header before the FilterBuilder section', async () => {
-        await mountQueryBuilder();
-        const wrapperSection = wrapper.find('section.qkit-query-builder');
-        const children = Array.from(wrapperSection.element.children);
+        await mountQueryBuilder({ editFields: true });
+        const children = Array.from(wrapper.find('section.qkit-query-builder').element.children);
         const headerIndex = children.findIndex((el) => el.tagName === 'HEADER');
         const filterIndex = children.findIndex(
           (el) => el.tagName === 'SECTION' && el.classList.contains('qkit-filter-builder'),
@@ -239,40 +266,17 @@ describe('QueryBuilder', () => {
         expect(headerIndex).toBeLessThan(filterIndex);
       });
 
-      it('shows search button only in manual mode', async () => {
-        await mountQueryBuilder();
-        expect(findActionButton('search')).toBeUndefined();
-        wrapper.unmount();
-
-        await mountQueryBuilder({ manual: true });
-        expect(findActionButton('search')).toBeDefined();
-      });
-
-      it('does not render the header inside the FilterBuilder', async () => {
-        await mountQueryBuilder();
-        const filterSection = wrapper.find('section.qkit-filter-builder');
-        expect(filterSection.find('header.qkit-query-builder-header').exists()).toBe(false);
-      });
-    });
-
-    describe('embedded mode', () => {
-      it('does not render the header when actionsLocation="embedded"', async () => {
-        await mountQueryBuilder({ actionsLocation: 'embedded' });
-        expect(wrapper.find('header.qkit-query-builder-header').exists()).toBe(false);
-      });
-
-      it('renders action buttons inside FilterBuilder when actionsLocation="embedded"', async () => {
-        await mountQueryBuilder({ actionsLocation: 'embedded' });
+      it('does not embed undo/redo/reset inside the FilterBuilder', async () => {
+        await mountQueryBuilder({ editFields: true });
         const icons = iconsInScope('section.qkit-filter-builder');
-        expect(icons).toContain('undo');
-        expect(icons).toContain('redo');
-        expect(icons).toContain('reset');
+        expect(icons).not.toContain('undo');
+        expect(icons).not.toContain('redo');
+        expect(icons).not.toContain('reset');
       });
 
-      it('shows search button in embedded mode when manual=true', async () => {
-        await mountQueryBuilder({ actionsLocation: 'embedded', manual: true });
-        const icons = iconsInScope('section.qkit-filter-builder');
-        expect(icons).toContain('search');
+      it('shows the search button in the header in manual mode', async () => {
+        await mountQueryBuilder({ editFields: true, manual: true });
+        expect(iconsInScope('header.qkit-query-builder-header')).toContain('search');
       });
     });
 
@@ -300,7 +304,7 @@ describe('QueryBuilder', () => {
         await findActionButton('reset')!.trigger('click');
         await flushAll();
 
-        const emitted = wrapper.emitted('update:modelValue')!;
+        const emitted = wrapper.emitted('update:filter')!;
         const lastFilter = emitted.at(-1)![0] as GroupFilter;
         expect(lastFilter.filters).toHaveLength(1);
       });
@@ -374,6 +378,98 @@ describe('QueryBuilder', () => {
 
         expect(findActionButton('undo')!.props('disabled')).toBe(true);
       });
+    });
+  });
+
+  describe('fields editing', () => {
+    it('does not render the fields builder by default', async () => {
+      await mountQueryBuilder();
+      expect(wrapper.findComponent(FieldsBuilder).exists()).toBe(false);
+      expect(wrapper.find('.qkit-fields-builder').exists()).toBe(false);
+    });
+
+    it('does not render the fields builder when editFields is false', async () => {
+      await mountQueryBuilder({ editFields: false, fields: ['first_name'] });
+      expect(wrapper.findComponent(FieldsBuilder).exists()).toBe(false);
+    });
+
+    it('renders the fields builder inline when editFields is true', async () => {
+      await mountQueryBuilder({ editFields: true, fields: ['first_name'] });
+      const section = wrapper.find('section.qkit-query-builder');
+      expect(section.find('.qkit-fields-builder').exists()).toBe(true);
+      expect(wrapper.findComponent(FieldsBuilder).exists()).toBe(true);
+    });
+
+    it('renders the fields builder after the filter builder', async () => {
+      await mountQueryBuilder({ editFields: true, fields: ['first_name'] });
+      const children = Array.from(wrapper.find('section.qkit-query-builder').element.children);
+      const filterIndex = children.findIndex(
+        (el) => el.tagName === 'SECTION' && el.classList.contains('qkit-filter-builder'),
+      );
+      const fieldsIndex = children.findIndex((el) => el.classList.contains('qkit-fields-builder'));
+      expect(filterIndex).toBeGreaterThanOrEqual(0);
+      expect(fieldsIndex).toBeGreaterThanOrEqual(0);
+      expect(filterIndex).toBeLessThan(fieldsIndex);
+    });
+
+    it('forwards fields and customFields down to the fields builder', async () => {
+      const customFields = { first_name: { label: 'First' } };
+      await mountQueryBuilder({ editFields: true, fields: ['first_name', 'last_name'], customFields });
+      const builder = wrapper.findComponent(FieldsBuilder);
+      expect(builder.props('modelValue')).toEqual(['first_name', 'last_name']);
+      expect(builder.props('customFields')).toEqual(customFields);
+    });
+
+    it('propagates fields update from the fields builder to the parent', async () => {
+      await mountQueryBuilder({ editFields: true, fields: ['first_name'] });
+      wrapper.findComponent(FieldsBuilder).vm.$emit('update:modelValue', ['first_name', 'age']);
+      await flushAll();
+      const emitted = wrapper.emitted('update:fields');
+      expect(emitted).toBeTruthy();
+      expect(emitted!.at(-1)![0]).toEqual(['first_name', 'age']);
+    });
+
+    const actionButton = (icon: string) =>
+      wrapper.findAllComponents(IconButton).find((b) => b.props('icon') === icon)!;
+
+    // Remove the last field through the builder UI: a real internal edit, unlike an
+    // update:modelValue emit which is an external reassignment (rebaselines, no commit).
+    const removeLastField = () => wrapper.findAllComponents(FieldsListItem).at(-1)!.vm.$emit('remove');
+
+    it('records a fields edit in the history and undoes it', async () => {
+      await mountQueryBuilder({ editFields: true, fields: ['first_name', 'last_name'] });
+      removeLastField();
+      await flushAll();
+      expect(wrapper.emitted('update:fields')!.at(-1)![0]).toEqual(['first_name']);
+      expect(actionButton('undo').props('disabled')).toBe(false);
+
+      await actionButton('undo').trigger('click');
+      await flushAll();
+      expect(wrapper.emitted('update:fields')!.at(-1)![0]).toEqual(['first_name', 'last_name']);
+    });
+
+    it('redoes an undone fields edit', async () => {
+      await mountQueryBuilder({ editFields: true, fields: ['first_name', 'last_name'] });
+      removeLastField();
+      await flushAll();
+
+      await actionButton('undo').trigger('click');
+      await flushAll();
+      expect(wrapper.emitted('update:fields')!.at(-1)![0]).toEqual(['first_name', 'last_name']);
+
+      await actionButton('redo').trigger('click');
+      await flushAll();
+      expect(wrapper.emitted('update:fields')!.at(-1)![0]).toEqual(['first_name']);
+    });
+
+    it('resets fields to their initial value', async () => {
+      await mountQueryBuilder({ editFields: true, fields: ['first_name', 'last_name'] });
+      removeLastField();
+      await flushAll();
+
+      await actionButton('reset').trigger('click');
+      await flushAll();
+      expect(wrapper.emitted('update:fields')!.at(-1)![0]).toEqual(['first_name', 'last_name']);
     });
   });
 

@@ -6,12 +6,11 @@ import { useInternalModel } from '@components/Composable/InternalModel';
 import { useReachedEnd } from '@components/Composable/ReachedEnd';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
-import type { Property, EntitySchema } from '@core/EntitySchema';
+import type { EntitySchema } from '@core/EntitySchema';
 import type { CollectionContent, CustomFieldConfig, SortItem } from '@core/types';
 
 interface Props {
   content: CollectionContent;
-  fieldsProperties: Record<string, Property | undefined>;
   customFields?: Record<string, CustomFieldConfig>;
   entitySchema: EntitySchema;
   userTimezone: string;
@@ -25,7 +24,8 @@ const props = defineProps<Props>();
 
 const internalSort = useInternalModel(sort, { debounce: 300 });
 
-const displayedFields = computed<string[]>(() => Object.keys(props.fieldsProperties));
+const fieldsProperties = computed(() => props.content.fieldsProperties);
+const displayedFields = computed<string[]>(() => Object.keys(fieldsProperties.value));
 
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
 
@@ -45,8 +45,8 @@ const orderByField = computed<Record<string, 'asc' | 'desc'>>(() => {
     // Mirror initSort's rules (Collection.vue): entries the request drops must not
     // show a sort arrow — fields not displayed, and open custom fields without a
     // custom sort config (no schema property → dropped from the server payload).
-    if (!(field in props.fieldsProperties)) continue;
-    if (!props.fieldsProperties[field] && !props.customFields?.[field]?.sort) continue;
+    if (!(field in fieldsProperties.value)) continue;
+    if (!fieldsProperties.value[field] && !props.customFields?.[field]?.sort) continue;
     map[field] = typeof value === 'string' ? 'asc' : value.order || 'asc';
   }
   return map;

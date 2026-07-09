@@ -77,7 +77,6 @@ export interface PluginOptions {
   displayOperator?: Config['displayOperator'];
   quickSort?: Config['quickSort'];
   displayCount?: Config['displayCount'];
-  editFields?: Config['editFields'];
   naturalSortWhenEmpty?: Config['naturalSortWhenEmpty'];
   allowedCollectionTypes?: Config['allowedCollectionTypes'];
   aliasInsensitiveLabels?: Config['aliasInsensitiveLabels'];

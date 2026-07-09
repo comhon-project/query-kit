@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import Modal from '@components/Common/Modal.vue';
-import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
+import FieldsList from '@components/Collection/FieldsList.vue';
 import { translate } from '@i18n/i18n';
 import type { EntitySchema } from '@core/EntitySchema';
 import type { CustomFieldConfig } from '@core/types';
@@ -40,7 +40,7 @@ function resetDraft(): void {
       <h1>{{ translate('columns') }}</h1>
     </template>
     <template #body>
-      <FieldsBuilder v-model="draft" :entity-schema="entitySchema" :custom-fields="customFields" />
+      <FieldsList v-model="draft" :entity-schema="entitySchema" :custom-fields="customFields" />
     </template>
   </Modal>
 </template>

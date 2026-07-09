@@ -86,6 +86,7 @@ watchEffect(() => {
   </div>
   <div v-else :class="classes.group" data-group>
     <div :class="classes.group_header">
+      <slot name="builder_label" />
       <slot name="entity-queue" />
       <div :class="classes.group_summary" :collapsed="collapsed ? '' : undefined" aria-live="polite" aria-atomic="true">
         {{ visibleFilters.length }}

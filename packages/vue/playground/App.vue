@@ -24,7 +24,7 @@ const tabs = [
   { id: 'restricted', label: 'Restricted' },
   { id: 'clicks', label: 'Clicks' },
   { id: 'fixed', label: 'Fixed' },
-  { id: 'embedded', label: 'Embedded actions' },
+  { id: 'builderFields', label: 'Fields in builder' },
 ];
 
 const customFields = {
@@ -78,7 +78,7 @@ const state = {
   minimal: createState('user', ['first_name', 'last_name', 'age', 'company']),
   restricted: createState('user', ['first_name', 'last_name', 'age', 'gender', 'company']),
   clicks: createState('user', ['first_name', 'last_name', 'age', 'company']),
-  embedded: createState('user', userFields),
+  builderFields: createState('user', userFields),
   fixed: createState('organization', ['brand_name', 'address', 'description', 'country', 'contacts'], {
     type: 'group',
     operator: 'and',
@@ -182,7 +182,7 @@ function onThemeChange() {
         :entity="state.default.entity"
         :requester="requester"
         :custom-fields="customFields"
-        :edit-fields="true"
+        edit-fields="collection"
         :allowed-collection-types="['infinite', 'pagination']"
         user-timezone="Europe/Paris"
       />
@@ -200,7 +200,7 @@ function onThemeChange() {
         v-model:page="state.prefilled.page"
         :entity="state.prefilled.entity"
         :requester="requester"
-        :edit-fields="true"
+        edit-fields="collection"
         :allowed-collection-types="['infinite', 'pagination']"
         :on-export="onExport"
         user-timezone="Europe/Paris"
@@ -220,7 +220,7 @@ function onThemeChange() {
         :entity="state.manual.entity"
         :requester="requester"
         :manual="true"
-        :edit-fields="true"
+        edit-fields="collection"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -238,7 +238,7 @@ function onThemeChange() {
         :entity="state.deferred.entity"
         :requester="requester"
         :direct-query="false"
-        :edit-fields="true"
+        edit-fields="collection"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -259,7 +259,7 @@ function onThemeChange() {
         :allow-reset="false"
         :allow-undo="false"
         :allow-redo="false"
-        :edit-fields="false"
+        edit-fields="none"
         :display-count="false"
       />
     </div>
@@ -279,7 +279,7 @@ function onThemeChange() {
         :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
         :allowed-scopes="{ user: ['scope'] }"
         :allowed-operators="{ condition: { basic: ['=', '<>'] }, group: ['and'] }"
-        :edit-fields="true"
+        edit-fields="collection"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -309,20 +309,20 @@ function onThemeChange() {
       </div>
     </div>
 
-    <!-- Embedded actions -->
-    <div v-if="activeTab === 'embedded'">
+    <!-- Fields in builder -->
+    <div v-if="activeTab === 'builderFields'">
       <p class="playground-description">
-        Actions (undo/redo/reset) are rendered inside the FilterBuilder's group action bar instead of a header.
+        The fields editor lives inside the query builder.
       </p>
       <QkitSearch
-        v-model:fields="state.embedded.fields"
-        v-model:sort="state.embedded.sort"
-        v-model:filter="state.embedded.filter"
-        v-model:page="state.embedded.page"
-        :entity="state.embedded.entity"
+        v-model:fields="state.builderFields.fields"
+        v-model:sort="state.builderFields.sort"
+        v-model:filter="state.builderFields.filter"
+        v-model:page="state.builderFields.page"
+        :entity="state.builderFields.entity"
         :requester="requester"
-        :edit-fields="true"
-        actions-location="embedded"
+        :custom-fields="customFields"
+        edit-fields="query-builder"
         user-timezone="Europe/Paris"
       />
     </div>

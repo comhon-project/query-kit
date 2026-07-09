@@ -7,6 +7,7 @@ import { config as globalConfig } from '@config/config';
 import { translate } from '@i18n/i18n';
 import { useInternalModel } from '@components/Composable/InternalModel';
 import { normalizeFilter, stripKeys } from '@core/filterNormalize';
+import { getUniqueId } from '@core/Utils';
 import type { History } from '@components/Composable/History';
 import type { AllowedOperators } from '@core/OperatorManager';
 import {
@@ -50,6 +51,8 @@ const internalValue = useInternalModel<Filter | null, GroupFilter>(modelValue, {
 props.history?.register('filter', internalValue);
 onUnmounted(() => props.history?.unregister('filter'));
 
+const labelId = 'qkit-filter-builder-label-' + getUniqueId();
+
 const config = reactive<FilterBuilderConfig>({} as FilterBuilderConfig);
 
 provide(filterBuilderConfigKey, config);
@@ -70,8 +73,11 @@ watchEffect(() => {
 </script>
 
 <template>
-  <section :class="classes.filter_builder" :aria-label="translate('filter')">
+  <section :class="classes.filter_builder" :aria-labelledby="labelId">
     <Group :model-value="internalValue" :entity-schema="entitySchema" @exit="goToCollection">
+      <template #builder_label>
+        <span :id="labelId" :class="classes.builder_label">{{ translate('filter') }}</span>
+      </template>
       <template #builder_actions>
         <slot name="actions" />
       </template>

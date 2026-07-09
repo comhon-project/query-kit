@@ -25,20 +25,27 @@ const fieldsProperties: Record<string, Property | undefined> = {
   last_name: { id: 'last_name', type: 'string', owner: 'user' } as Property,
 };
 
-function content(collection: Record<string, unknown>[], replaced = false) {
-  return { collection, replaced };
+function content(
+  collection: Record<string, unknown>[],
+  replaced = false,
+  fields: Record<string, Property | undefined> = fieldsProperties,
+) {
+  return { collection, fieldsProperties: fields, replaced };
 }
 
 function mountTable(overrides: Record<string, unknown> = {}) {
+  const { fieldsProperties: fieldsOverride, content: contentOverride, ...rest } = overrides as {
+    fieldsProperties?: Record<string, Property | undefined>;
+    content?: ReturnType<typeof content>;
+  } & Record<string, unknown>;
   wrapper = mountWithPlugin(CollectionTable, {
     props: {
-      content: content(rows),
-      fieldsProperties,
+      content: contentOverride ?? content(rows, false, fieldsOverride ?? fieldsProperties),
       sort: [],
       entitySchema: userSchema,
       userTimezone: 'UTC',
       requestTimezone: 'UTC',
-      ...overrides,
+      ...rest,
     },
   });
   return wrapper;

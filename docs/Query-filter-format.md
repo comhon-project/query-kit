@@ -200,7 +200,7 @@ const filter = ref({
 </script>
 
 <template>
-  <QkitQueryBuilder entity="user" v-model="filter"/>
+  <QkitQueryBuilder entity="user" v-model:filter="filter"/>
 </template>
 ```
 The builder will appear with an empty condition on last_name, a filled condition on birth_date, and a relationship condition on company.

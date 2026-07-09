@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Search from '@components/Search.vue';
 import QueryBuilder from '@components/QueryBuilder.vue';
 import Collection from '@components/Collection/Collection.vue';
+import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
 import { registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -88,6 +89,8 @@ describe('Search', () => {
         requestTimezone: 'America/New_York',
         debounce: 2000,
         manual: false,
+        editFields: 'query-builder',
+        customFields: { full_name: { label: 'Full Name' } },
       });
       const builder = wrapper.findComponent(QueryBuilder);
       expect(builder.props('entity')).toBe('user');
@@ -100,6 +103,19 @@ describe('Search', () => {
       expect(builder.props('userTimezone')).toBe('Europe/Paris');
       expect(builder.props('requestTimezone')).toBe('America/New_York');
       expect(builder.props('manual')).toBe(false);
+      expect(builder.props('editFields')).toBe(true);
+      expect(builder.props('customFields')).toEqual({ full_name: { label: 'Full Name' } });
+      expect(builder.props('fields')).toEqual(['first_name', 'last_name']);
+    });
+
+    it('propagates fields update from QueryBuilder', async () => {
+      const { requester } = createMockRequester();
+      await mountSearchAndTriggerComputed({ requester });
+
+      wrapper.findComponent(QueryBuilder).vm.$emit('update:fields', ['age']);
+      await flushAll();
+
+      expect(wrapper.emitted('update:fields')?.pop()?.[0]).toEqual(['age']);
     });
 
     it('forwards props to Collection', async () => {
@@ -112,7 +128,7 @@ describe('Search', () => {
         directQuery: true,
         quickSort: true,
         displayCount: true,
-        editFields: true,
+        editFields: 'collection',
         allowedCollectionTypes: ['pagination'],
         userTimezone: 'Europe/Paris',
         requestTimezone: 'America/New_York',
@@ -136,6 +152,51 @@ describe('Search', () => {
       expect(collection.props('onExport')).toBe(onExport);
       expect(collection.props('postRequest')).toBe(postRequest);
       expect(collection.props('requester')).toStrictEqual(requester);
+    });
+  });
+
+  describe('editFields location', () => {
+    it('routes field editing to the query builder only', async () => {
+      await mountSearch({ editFields: 'query-builder' });
+      expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(true);
+      expect(wrapper.findComponent(Collection).props('editFields')).toBe(false);
+    });
+
+    it('routes field editing to the collection only', async () => {
+      await mountSearch({ editFields: 'collection' });
+      expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(false);
+      expect(wrapper.findComponent(Collection).props('editFields')).toBe(true);
+    });
+
+    it('disables field editing in both when set to none', async () => {
+      await mountSearch({ editFields: 'none' });
+      expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(false);
+      expect(wrapper.findComponent(Collection).props('editFields')).toBe(false);
+    });
+
+    it('disables field editing in both when omitted', async () => {
+      await mountSearch();
+      expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(false);
+      expect(wrapper.findComponent(Collection).props('editFields')).toBe(false);
+    });
+  });
+
+  describe('fields editing', () => {
+    it('debounces the request when fields are edited via the query builder', async () => {
+      const { requester, calls } = createMockRequester();
+      await mountSearchAndTriggerComputed({ requester, editFields: 'query-builder', debounce: 1000 });
+      const before = calls.length;
+
+      // Emit from the FieldsBuilder actually rendered inside the QueryBuilder.
+      const fieldsBuilder = wrapper.findComponent(QueryBuilder).findComponent(FieldsBuilder);
+      expect(fieldsBuilder.exists()).toBe(true);
+      fieldsBuilder.vm.$emit('update:modelValue', ['first_name']);
+      await flushAll();
+      expect(calls.length).toBe(before);
+
+      vi.advanceTimersByTime(1000);
+      await flushAll();
+      expect(calls.length).toBe(before + 1);
     });
   });
 

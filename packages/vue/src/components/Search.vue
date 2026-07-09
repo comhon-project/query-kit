@@ -13,6 +13,7 @@ import type {
   CustomFieldConfig,
   SortItem,
   CollectionType,
+  EditFieldsLocation,
   Requester,
   RequesterFunction,
 } from '@core/types';
@@ -39,12 +40,11 @@ interface Props {
   quickSort?: boolean;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
-  editFields?: boolean;
+  editFields?: EditFieldsLocation;
   naturalSortWhenEmpty?: boolean;
   onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
   aliasInsensitiveLabels?: boolean;
-  actionsLocation?: 'header' | 'embedded';
 }
 
 const filter = defineModel<Filter | null>('filter', { default: null });
@@ -62,7 +62,6 @@ const props = withDefaults(defineProps<Props>(), {
   directQuery: undefined,
   quickSort: undefined,
   displayCount: undefined,
-  editFields: undefined,
   naturalSortWhenEmpty: undefined,
   aliasInsensitiveLabels: undefined,
 });
@@ -82,8 +81,11 @@ function onValidate(): void {
   <div :class="classes.search">
     <QueryBuilder
       :id="queryBuilderId"
-      v-model="filter"
+      v-model:filter="filter"
+      v-model:fields="fields"
       :entity="entity"
+      :custom-fields="customFields"
+      :edit-fields="editFields === 'query-builder'"
       :allow-reset="allowReset"
       :allow-undo="allowUndo"
       :allow-redo="allowRedo"
@@ -96,7 +98,6 @@ function onValidate(): void {
       :alias-insensitive-labels="aliasInsensitiveLabels"
       :manual="manual"
       :collection-id="collectionId"
-      :actions-location="actionsLocation"
       @validate="onValidate"
     />
     <Collection
@@ -121,7 +122,7 @@ function onValidate(): void {
       :on-export="onExport"
       :user-timezone="userTimezone"
       :request-timezone="requestTimezone"
-      :edit-fields="editFields"
+      :edit-fields="editFields === 'collection'"
       :natural-sort-when-empty="naturalSortWhenEmpty"
       :requester="requester"
       :query-builder-id="queryBuilderId"

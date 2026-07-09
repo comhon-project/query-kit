@@ -147,8 +147,13 @@ export interface CustomFieldConfig {
 
 export type CollectionType = 'infinite' | 'pagination';
 
+// Where the fields editor is exposed in Search: inside the query builder, inside
+// the collection, or nowhere.
+export type EditFieldsLocation = 'query-builder' | 'collection' | 'none';
+
 export interface CollectionContent {
   collection: Record<string, unknown>[];
+  fieldsProperties: Record<string, Property | undefined>;
   replaced: boolean;
 }
 

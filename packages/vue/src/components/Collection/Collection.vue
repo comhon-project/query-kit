@@ -108,7 +108,7 @@ const lastValidatedFilter = shallowRef<Filter | undefined>();
 const pendingTasks = ref<number>(0);
 const requesting = ref<boolean>(false);
 const fieldsProperties = shallowRef<Record<string, Property | undefined>>({});
-const collectionContent = shallowRef<CollectionContent>({ collection: [], replaced: false });
+const collectionContent = shallowRef<CollectionContent>({ collection: [], fieldsProperties: {}, replaced: false });
 const count = ref<number>(0);
 const limit = ref<number | undefined>();
 const end = ref<boolean>(false);
@@ -312,6 +312,9 @@ function queueRequest(): void {
       if (currentRequestId !== requestId) return;
       if (filterError.value || !validEntity.value) return;
 
+      // Pinned in the request's synchronous setup so the collection commits the same properties that were requested.
+      const requestFieldsProperties = fieldsProperties.value;
+
       const requesterValue = activeRequester.value;
       const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
 
@@ -355,6 +358,7 @@ function queueRequest(): void {
         collection: replaced
           ? [...response.collection]
           : [...collectionContent.value.collection, ...response.collection],
+        fieldsProperties: requestFieldsProperties,
         replaced,
       };
 
@@ -425,6 +429,7 @@ function onReachedEnd(): void {
 onMounted(async () => {
   const query = snapshotQuery();
   await registerToQueue(() => doInit({ entity: true }, query));
+  collectionContent.value = { collection: [], fieldsProperties: fieldsProperties.value, replaced: false };
   if (props.directQuery) {
     queueRequest();
   }
@@ -440,7 +445,7 @@ watchEffect(() => {
   config.requestTimezone = props.requestTimezone ?? globalConfig.requestTimezone;
   config.quickSort = props.quickSort ?? globalConfig.quickSort;
   config.displayCount = props.displayCount ?? globalConfig.displayCount;
-  config.editFields = props.editFields ?? globalConfig.editFields;
+  config.editFields = props.editFields ?? false;
   config.naturalSortWhenEmpty = props.naturalSortWhenEmpty ?? globalConfig.naturalSortWhenEmpty;
   config.allowedCollectionTypes = props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes;
 });
@@ -526,7 +531,6 @@ watch(
         <CollectionTable
           v-else-if="entitySchema"
           :content="collectionContent"
-          :fields-properties="fieldsProperties"
           :custom-fields="customFields"
           :sort="sort"
           :entity-schema="entitySchema"

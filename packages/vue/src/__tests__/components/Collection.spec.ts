@@ -886,12 +886,14 @@ describe('Collection', () => {
       await flushAll();
       const table = wrapper.findComponent(CollectionTable);
       const firstLoad = table.props('content');
-      expect(firstLoad).toEqual({ collection: sampleRows, replaced: true });
+      expect(firstLoad).toEqual(expect.objectContaining({ collection: sampleRows, replaced: true }));
       await wrapper.setProps({ page: 2 });
       await flushAll();
       const appended = table.props('content');
       expect(appended).not.toBe(firstLoad); // every update is a new wrapper
-      expect(appended).toEqual({ collection: [...sampleRows, ...sampleRows], replaced: false });
+      expect(appended).toEqual(
+        expect.objectContaining({ collection: [...sampleRows, ...sampleRows], replaced: false }),
+      );
     });
 
     it('marks a filter-driven reload as replaced', async () => {
@@ -933,7 +935,7 @@ describe('Collection', () => {
       await flushAll();
       const paged = table.props('content');
       expect(paged).not.toBe(firstLoad);
-      expect(paged).toEqual({ collection: sampleRows, replaced: true });
+      expect(paged).toEqual(expect.objectContaining({ collection: sampleRows, replaced: true }));
     });
 
     it('keeps content untouched for a stale discarded response', async () => {
@@ -963,7 +965,104 @@ describe('Collection', () => {
 
       resolvers[1]({ collection: [{ id: 1, first_name: 'Current' }], count: 1, limit: 10 });
       await flushAll();
-      expect(table.props('content')).toEqual({ collection: [{ id: 1, first_name: 'Current' }], replaced: true });
+      expect(table.props('content')).toEqual(
+        expect.objectContaining({ collection: [{ id: 1, first_name: 'Current' }], replaced: true }),
+      );
+    });
+  });
+
+  describe('field snapshot (columns commit with the rows)', () => {
+    it('holds the displayed columns until the reload delivers matching data', async () => {
+      const resolvers: Array<(v: unknown) => void> = [];
+      const requester = { request: vi.fn(() => new Promise((r) => { resolvers.push(r); })) };
+      const fields = ref(['first_name']);
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          fields: fields.value,
+          'onUpdate:fields': (v: string[]) => { fields.value = v; },
+          requester,
+          debounce: 0,
+          page: 1,
+          'onUpdate:page': () => {},
+        },
+      });
+      await flushAll();
+      resolvers[resolvers.length - 1]({ collection: [{ id: 1, first_name: 'John' }], count: 1, limit: 10 });
+      await flushAll();
+      expect(wrapper.findAll('th')).toHaveLength(1);
+      expect(wrapper.text()).toContain('first name');
+
+      // Add a column: the reload fires (debounce 0) but its response is still pending.
+      await wrapper.setProps({ fields: ['first_name', 'last_name'] });
+      await flushAll();
+      expect(wrapper.findAll('th')).toHaveLength(1); // columns unchanged while the row data is stale
+      expect(wrapper.text()).not.toContain('last name');
+
+      // The response lands: columns and rows flip together, no empty-column flash.
+      resolvers[resolvers.length - 1]({
+        collection: [{ id: 1, first_name: 'John', last_name: 'Doe' }],
+        count: 1,
+        limit: 10,
+      });
+      await flushAll();
+      expect(wrapper.findAll('th')).toHaveLength(2);
+      expect(wrapper.text()).toContain('last name');
+      expect(wrapper.text()).toContain('Doe');
+    });
+
+    it('seeds the columns so headers render before the first response', async () => {
+      const requester = { request: vi.fn(() => new Promise(() => {})) }; // never resolves
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          fields: ['first_name', 'last_name'],
+          'onUpdate:fields': () => {},
+          requester,
+          directQuery: false,
+        },
+      });
+      await flushAll();
+      expect(requester.request).not.toHaveBeenCalled();
+      expect(wrapper.findAll('th')).toHaveLength(2);
+      expect(wrapper.text()).toContain('first name');
+      expect(wrapper.text()).toContain('last name');
+    });
+
+    it('commits an in-flight response with its own columns, not a later fields edit', async () => {
+      const resolvers: Array<(v: unknown) => void> = [];
+      const requester = { request: vi.fn(() => new Promise((r) => { resolvers.push(r); })) };
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
+          requester,
+          manual: true,
+          page: 1,
+          'onUpdate:page': () => {},
+        },
+      });
+      await flushAll();
+      // The request for ['first_name'] is in flight (not resolved).
+      expect(requester.request).toHaveBeenCalledTimes(1);
+
+      // Edit fields while it is still pending. Manual mode: no new request fires, so
+      // requestId does not advance and the in-flight response is not discarded.
+      await wrapper.setProps({ fields: ['first_name', 'last_name'] });
+      await flushAll();
+      expect(requester.request).toHaveBeenCalledTimes(1);
+
+      // The in-flight response (rows for first_name only) lands: it must commit its own
+      // single column, not the two columns of the pending edit.
+      resolvers[resolvers.length - 1]({ collection: [{ id: 1, first_name: 'John' }], count: 1, limit: 10 });
+      await flushAll();
+      expect(wrapper.findAll('th')).toHaveLength(1);
+      expect(wrapper.text()).toContain('first name');
+      expect(wrapper.text()).not.toContain('last name');
     });
   });
 

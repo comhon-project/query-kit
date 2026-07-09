@@ -45,11 +45,13 @@ async function mountFilterBuilder(props: Record<string, unknown> = {}, modelValu
 
 describe('FilterBuilder', () => {
   describe('rendering', () => {
-    it('renders section with aria-label "filter"', async () => {
+    it('labels the section via a visible builder label referenced by aria-labelledby', async () => {
       await mountFilterBuilder();
       const section = wrapper.find('section');
       expect(section.exists()).toBe(true);
-      expect(section.attributes('aria-label')).toBe('filter');
+      const label = section.find('.qkit-builder-label');
+      expect(label.text()).toBe('filter');
+      expect(section.attributes('aria-labelledby')).toBe(label.attributes('id'));
     });
 
     it('renders Group with the provided entity schema', async () => {

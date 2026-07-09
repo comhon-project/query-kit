@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { nextTick } from 'vue';
-import FieldsBuilderItem from '@components/Collection/FieldsBuilderItem.vue';
+import FieldsListItem from '@components/Collection/FieldsListItem.vue';
 import PropertyPathEditor from '@components/Collection/PropertyPathEditor.vue';
 import { resolve, registerLoader, registerTranslationsLoader } from '@core/EntitySchema';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
@@ -22,9 +22,9 @@ afterEach(() => {
   wrapper?.unmount();
 });
 
-describe('FieldsBuilderItem', () => {
+describe('FieldsListItem', () => {
   it('renders grip and delete buttons', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -33,7 +33,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('emits remove on delete button click', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -43,7 +43,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('emits grip-start on grip mousedown', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -53,7 +53,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('shows PropertyPathEditor when not open', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -62,7 +62,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('shows label string when open', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'custom', open: true, label: 'My Field', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -71,7 +71,7 @@ describe('FieldsBuilderItem', () => {
 
   it('calls label function with locale when open', async () => {
     const labelFn = (loc: string) => `Label-${loc}`;
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'custom', open: true, label: labelFn, 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -79,7 +79,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('shows fieldId when open without label', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'custom_col', open: true, 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -87,7 +87,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('emits grip-start on grip keydown', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
@@ -98,7 +98,7 @@ describe('FieldsBuilderItem', () => {
 
   it('propagates modelValue changes from PropertyPathEditor when not open', async () => {
     let currentValue = 'first_name';
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: {
         entitySchema: userSchema,
         fields: [],
@@ -123,7 +123,7 @@ describe('FieldsBuilderItem', () => {
   });
 
   it('does not render PropertyPathEditor when open is true', async () => {
-    wrapper = mountWithPlugin(FieldsBuilderItem, {
+    wrapper = mountWithPlugin(FieldsListItem, {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', open: true, label: 'Test', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import FilterBuilder from '@components/Filter/FilterBuilder.vue';
+import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
 import QueryActionsBar from '@components/Common/QueryActionsBar.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import { useHistory } from '@components/Composable/History';
@@ -13,6 +14,7 @@ import type {
   DisplayOperator,
   AllowedScopes,
   AllowedProperties,
+  CustomFieldConfig,
 } from '@core/types';
 
 interface Props {
@@ -29,14 +31,16 @@ interface Props {
   collectionId?: string;
   manual?: boolean;
   aliasInsensitiveLabels?: boolean;
-  actionsLocation?: 'header' | 'embedded';
+  customFields?: Record<string, CustomFieldConfig>;
+  editFields?: boolean;
 }
 
 interface Emits {
   validate: [];
 }
 
-const modelValue = defineModel<Filter | null>({ default: null });
+const filter = defineModel<Filter | null>('filter', { default: null });
+const fields = defineModel<string[]>('fields', { default: () => [] });
 const emit = defineEmits<Emits>();
 
 // undefined: prevent Vue from casting absent boolean props to false
@@ -47,12 +51,25 @@ const props = withDefaults(defineProps<Props>(), {
   displayOperator: undefined,
   manual: undefined,
   aliasInsensitiveLabels: undefined,
-  actionsLocation: 'header',
+  editFields: undefined,
 });
 
 const history = useHistory();
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
+const canEditFields = computed<boolean>(() => props.editFields ?? false);
+
+const showFilter = computed<boolean>(() => true);
+const showFields = computed<boolean>(() => canEditFields.value);
+const actionsInHeader = computed<boolean>(() => Number(showFilter.value) + Number(showFields.value) > 1);
+
+const actionsBarProps = computed(() => ({
+  history,
+  allowUndo: props.allowUndo,
+  allowRedo: props.allowRedo,
+  allowReset: props.allowReset,
+  manual: props.manual,
+}));
 
 watch(
   () => props.entity,
@@ -80,18 +97,12 @@ function onValidate(): void {
     <a v-if="collectionId" :href="'#' + collectionId" :class="classes.skip_link">{{ translate('go_to_collection') }}</a>
     <InvalidEntity v-if="!validEntity" :entity="entity" />
     <template v-else-if="entitySchema">
-      <header v-if="actionsLocation === 'header'" :class="classes.query_builder_header">
-        <QueryActionsBar
-          :history="history"
-          :allow-undo="allowUndo"
-          :allow-redo="allowRedo"
-          :allow-reset="allowReset"
-          :manual="manual"
-          @validate="onValidate"
-        />
+      <header v-if="actionsInHeader" :class="classes.query_builder_header">
+        <QueryActionsBar v-bind="actionsBarProps" @validate="onValidate" />
       </header>
       <FilterBuilder
-        v-model="modelValue"
+        v-if="showFilter"
+        v-model="filter"
         :history="history"
         :entity-schema="entitySchema"
         :allowed-scopes="allowedScopes"
@@ -103,17 +114,21 @@ function onValidate(): void {
         :collection-id="collectionId"
         :alias-insensitive-labels="aliasInsensitiveLabels"
       >
-        <template v-if="actionsLocation === 'embedded'" #actions>
-          <QueryActionsBar
-            :history="history"
-            :allow-undo="allowUndo"
-            :allow-redo="allowRedo"
-            :allow-reset="allowReset"
-            :manual="manual"
-            @validate="onValidate"
-          />
+        <template v-if="!actionsInHeader" #actions>
+          <QueryActionsBar v-bind="actionsBarProps" @validate="onValidate" />
         </template>
       </FilterBuilder>
+      <FieldsBuilder
+        v-if="showFields"
+        v-model="fields"
+        :history="history"
+        :entity-schema="entitySchema"
+        :custom-fields="customFields"
+      >
+        <template v-if="!actionsInHeader" #actions>
+          <QueryActionsBar v-bind="actionsBarProps" @validate="onValidate" />
+        </template>
+      </FieldsBuilder>
     </template>
   </section>
 </template>

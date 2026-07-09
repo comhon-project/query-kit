@@ -7,7 +7,11 @@ export type ClassName =
   | 'search'
   | 'query_builder'
   | 'query_builder_header'
+  | 'fields_builder'
+  | 'fields_builder_header'
+  | 'fields_builder_actions'
   | 'filter_builder'
+  | 'builder_label'
   | 'condition_or_scope'
   | 'condition_or_scope_header'
   | 'invalid_filter'
@@ -63,7 +67,11 @@ const classList: ClassList = {
   search: 'qkit-search',
   query_builder: 'qkit-query-builder',
   query_builder_header: 'qkit-query-builder-header',
+  fields_builder: 'qkit-fields-builder',
+  fields_builder_header: 'qkit-fields-builder-header',
+  fields_builder_actions: 'qkit-fields-builder-actions',
   filter_builder: 'qkit-filter-builder',
+  builder_label: 'qkit-builder-label',
   condition_or_scope: 'qkit-leaf-filter qkit-condition-or-scope',
   condition_or_scope_header: 'qkit-condition-or-scope-header',
   invalid_filter: 'qkit-leaf-filter qkit-invalid-filter',
