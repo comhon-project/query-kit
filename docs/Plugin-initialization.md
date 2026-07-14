@@ -549,6 +549,7 @@ These options can be overridden per-component via props. See [Usage](Usage) for 
 | aliasInsensitiveLabels | boolean           | false    | `false`          | When `true`, case-insensitive operators (e.g. `ilike`) are displayed with the label of their case-sensitive counterpart (e.g. `like`).                                  |
 | displayOperator        | boolean or object | false    | `true`           | Show/hide operator selectors in the filter builder. [[1]](#note-display-operator)                                                                                       |
 | displayCount           | boolean           | false    | `true`           | Show/hide total results count in collection header.                                                                                                                     |
+| reflow                 | boolean           | false    | `false`          | When a collection's own width is narrow (≤576px), reflow its table into stacked cards instead of a horizontally-scrolling table. Container-based: it responds to the collection's container width, not the viewport.                     |
 
 <span id="note-display-operator">[1]</span> `displayOperator` can be a simple boolean to toggle all operators, or an object to control visibility per filter type:
 

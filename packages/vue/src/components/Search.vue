@@ -42,6 +42,7 @@ interface Props {
   displayCount?: boolean;
   editFields?: EditFieldsLocation;
   naturalSortWhenEmpty?: boolean;
+  reflow?: boolean;
   onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
   onExport?: (filter?: Filter) => void;
   aliasInsensitiveLabels?: boolean;
@@ -63,6 +64,7 @@ const props = withDefaults(defineProps<Props>(), {
   quickSort: undefined,
   displayCount: undefined,
   naturalSortWhenEmpty: undefined,
+  reflow: undefined,
   aliasInsensitiveLabels: undefined,
 });
 
@@ -124,6 +126,7 @@ function onValidate(): void {
       :request-timezone="requestTimezone"
       :edit-fields="editFields === 'collection'"
       :natural-sort-when-empty="naturalSortWhenEmpty"
+      :reflow="reflow"
       :requester="requester"
       :query-builder-id="queryBuilderId"
     />

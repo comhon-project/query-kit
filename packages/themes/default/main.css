@@ -44,6 +44,10 @@
     hsl(0, 0%, 13%),
     hsl(220, 10%, 92%)
   );
+  --qkit-text-muted: light-dark(
+    oklch(from var(--qkit-text-color) calc(l + 0.24) c h),
+    oklch(from var(--qkit-text-color) calc(l - 0.22) c h)
+  );
   --qkit-input-border-color: light-dark(
     var(--qkit-color-border),
     hsl(220, 12%, 42%)
@@ -207,7 +211,7 @@
   align-self: center;
   font-size: small;
   font-weight: 600;
-  opacity: 0.6;
+  color: var(--qkit-text-muted);
   text-transform: capitalize;
 }
 
@@ -533,6 +537,7 @@
   position: relative;
   border: 1px solid var(--qkit-color-border);
   overflow: hidden;
+  container: qkit-collection / inline-size;
 }
 
 .qkit-collection-header {
@@ -568,6 +573,7 @@
   padding-inline: var(--qkit-padding-lg);
   overflow: auto;
   height: 75vh;
+  anchor-name: --qkit-collection-content;
 }
 
 .qkit-collection-table {
@@ -673,13 +679,26 @@
   padding: var(--qkit-padding-lg);
 }
 
-.qkit-cell.qkit-btn {
-  border-radius: 0;
-  font-size: inherit;
-  transition: transform 0.1s ease-in-out;
+.qkit-cell-label {
+  display: none;
+}
+.qkit-cell-value {
+  display: contents;
 }
 
-.qkit-cell.qkit-btn:hover {
+.qkit-cell:has(> .qkit-cell-button) {
+  padding: 0;
+}
+.qkit-cell-button {
+  display: block;
+  position: relative;
+  width: 100%;
+  padding: var(--qkit-padding-lg);
+  background: inherit;
+  border-radius: inherit;
+  transition: transform 0.1s ease-in-out;
+}
+.qkit-cell-button:hover {
   z-index: 1;
   box-shadow: 0px 0px 5px var(--qkit-shadow-color);
   transform: scale(1.03);
@@ -973,6 +992,89 @@
 @media (max-width: 576px) {
   .qkit-group-summary span {
     display: none;
+  }
+}
+
+/* Reflow is container-based: cards kick in when the collection's own width is narrow
+   (a table in a sidebar reflows even on a wide screen), not the viewport. */
+@container qkit-collection (max-width: 576px) {
+  /* Reflow mode only: the header row is kept in the accessibility tree (off-screen,
+     not display:none) so the restored ARIA roles keep the header-cell association. */
+  [data-qkit-reflow] .qkit-collection-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  /* The header (spinner's wide-screen anchor) is hidden and no longer sticky here,
+     so anchor the top spinner to the stable results container instead. */
+  [data-qkit-reflow] .qkit-loading {
+    position-anchor: --qkit-collection-content;
+    top: anchor(top);
+  }
+  /* On wide screens the sticky header (same z-index, later in the DOM) occludes the
+     spinner so it slides out from behind it. That header is hidden here, so promote
+     the collection header bar above the spinner to keep the same "from behind" reveal. */
+  [data-qkit-reflow] .qkit-collection-header {
+    z-index: 11;
+  }
+  [data-qkit-reflow] .qkit-collection-table,
+  [data-qkit-reflow] .qkit-collection-table tbody,
+  [data-qkit-reflow] .qkit-collection-table tbody tr,
+  [data-qkit-reflow] .qkit-collection-table tbody td {
+    display: block;
+  }
+  [data-qkit-reflow] .qkit-collection-table tbody tr:not(:last-child) {
+    margin-bottom: var(--qkit-padding-md);
+    border: 1px solid var(--qkit-color-border);
+    border-radius: var(--qkit-border-radius-md);
+    overflow: hidden;
+  }
+  [data-qkit-reflow] .qkit-collection-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--qkit-padding-lg);
+    text-align: right;
+  }
+  /* The wide-screen row frame is carried by the cells (border-collapse:separate
+     ignores borders on the tr). In the card layout the frame is the tr instead,
+     so the per-cell frame is neutralized entirely; :first-child/:last-child are
+     listed so this wins over the same-specificity wide-screen rules. */
+  [data-qkit-reflow] .qkit-collection-table tbody td,
+  [data-qkit-reflow] .qkit-collection-table tbody td:first-child,
+  [data-qkit-reflow] .qkit-collection-table tbody td:last-child {
+    border: none;
+    border-radius: 0;
+  }
+  [data-qkit-reflow] .qkit-collection-table tbody td:not(:last-child) {
+    border-bottom: 1px solid var(--qkit-color-border);
+  }
+  [data-qkit-reflow] .qkit-cell-label {
+    display: block;
+    text-align: left;
+    font-weight: 600;
+    color: var(--qkit-text-muted);
+  }
+  [data-qkit-reflow] .qkit-cell-value {
+    display: block;
+    text-align: right;
+  }
+  /* Reflow clickable: the td padding goes to 0 so the button and the label each carry the
+     row inset themselves (a single padding, and the button stays a real padded click target). */
+  [data-qkit-reflow] .qkit-cell:has(> .qkit-cell-button) {
+    padding: 0;
+  }
+  [data-qkit-reflow] .qkit-cell:has(> .qkit-cell-button) .qkit-cell-label {
+    padding: var(--qkit-padding-lg);
+  }
+  [data-qkit-reflow] .qkit-cell-button {
+    width: auto;
   }
 }
 

@@ -80,6 +80,7 @@ export interface PluginOptions {
   naturalSortWhenEmpty?: Config['naturalSortWhenEmpty'];
   allowedCollectionTypes?: Config['allowedCollectionTypes'];
   aliasInsensitiveLabels?: Config['aliasInsensitiveLabels'];
+  reflow?: Config['reflow'];
 }
 
 export default {

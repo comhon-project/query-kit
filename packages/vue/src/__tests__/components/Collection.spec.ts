@@ -73,6 +73,20 @@ describe('Collection', () => {
     expect(calls).toHaveLength(0);
   });
 
+  it('does not reflow by default: no data-qkit-reflow attribute', async () => {
+    mountCollection();
+    await flushAll();
+    expect(wrapper.find('section').attributes('data-qkit-reflow')).toBeUndefined();
+    expect(wrapper.findComponent(CollectionTable).props('reflow')).toBe(false);
+  });
+
+  it('reflow=true: sets data-qkit-reflow and passes reflow to the table', async () => {
+    mountCollection({ reflow: true });
+    await flushAll();
+    expect(wrapper.find('section').attributes('data-qkit-reflow')).toBeDefined();
+    expect(wrapper.findComponent(CollectionTable).props('reflow')).toBe(true);
+  });
+
   it('renders headers for each column', async () => {
     mountCollection();
     await flushAll();
@@ -483,9 +497,9 @@ describe('Collection', () => {
         customFields: { first_name: { label: 'First', onFieldClick } },
       });
       await flushAll();
-      const clickableTd = wrapper.findAll('td').find((td) => td.attributes('role') === 'button');
-      expect(clickableTd).toBeTruthy();
-      await clickableTd!.trigger('click');
+      const button = wrapper.find('tbody td button');
+      expect(button.exists()).toBe(true);
+      await button.trigger('click');
       expect(onFieldClick).toHaveBeenCalled();
     });
 

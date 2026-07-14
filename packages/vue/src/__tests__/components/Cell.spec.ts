@@ -15,12 +15,14 @@ import type { VueWrapper } from '@vue/test-utils';
 let userSchema: EntitySchema;
 let wrapper: VueWrapper;
 
-const baseProps = {
-  fieldId: 'first_name',
-  rowValue: { first_name: 'John', last_name: 'Doe', age: 30 },
-  requestTimezone: 'UTC',
-  userTimezone: 'UTC',
-};
+function baseProps() {
+  return {
+    fieldId: 'first_name',
+    rowValue: { first_name: 'John', last_name: 'Doe', age: 30 },
+    requestTimezone: 'UTC',
+    userTimezone: 'UTC',
+  };
+}
 
 beforeEach(async () => {
   registerLoader(entitySchemaLoader);
@@ -38,22 +40,22 @@ describe('Cell', () => {
   it('renders a text value via getNestedValue', () => {
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property },
+      props: { ...baseProps(), property },
     });
-    expect(wrapper.find('td').text()).toBe('John');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('John');
   });
 
   it('renders a nested value via getNestedValue', () => {
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
       props: {
-        ...baseProps,
+        ...baseProps(),
         fieldId: 'company.brand_name',
         rowValue: { company: { brand_name: 'Acme' } },
         property,
       },
     });
-    expect(wrapper.find('td').text()).toBe('Acme');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('Acme');
   });
 
   it('renders with a custom renderer component', () => {
@@ -65,7 +67,7 @@ describe('Cell', () => {
     });
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property, renderer: CustomRenderer },
+      props: { ...baseProps(), property, renderer: CustomRenderer },
     });
     expect(wrapper.find('strong').text()).toBe('John');
   });
@@ -74,82 +76,91 @@ describe('Cell', () => {
     const renderFn = (value: unknown) => `[${value}]`;
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property, renderer: renderFn },
+      props: { ...baseProps(), property, renderer: renderFn },
     });
-    expect(wrapper.find('td').text()).toBe('[John]');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('[John]');
   });
 
   it('passes locale to RenderFunction and re-calls on locale change', async () => {
     const renderFn = (_value: unknown, _row: unknown, _col: string, loc: string) => `locale:${loc}`;
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property, renderer: renderFn },
+      props: { ...baseProps(), property, renderer: renderFn },
     });
-    expect(wrapper.find('td').text()).toBe('locale:en');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('locale:en');
 
     locale.value = 'fr';
     await flushAll();
-    expect(wrapper.find('td').text()).toBe('locale:fr');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('locale:fr');
   });
 
   it('renders undefined when no property and no renderer', () => {
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps },
+      props: { ...baseProps() },
     });
-    expect(wrapper.find('td').text()).toBe('');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('');
   });
 
-  it('adds role="button" and tabindex when onClick is set', () => {
+  it('renders a real <button> when onClick is set, leaving the td a plain cell', () => {
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property, onClick: () => null },
+      props: { ...baseProps(), property, onClick: () => null },
     });
-    const td = wrapper.find('td');
-    expect(td.attributes('role')).toBe('button');
-    expect(td.attributes('tabindex')).toBe('0');
+    const button = wrapper.find('button');
+    expect(button.exists()).toBe(true);
+    expect(button.attributes('type')).toBe('button');
+    expect(wrapper.find('td').attributes('role')).toBeUndefined();
   });
 
-  it('triggers onClick on click and keyboard events', async () => {
+  it('triggers onClick when the button is clicked', async () => {
     const onClick = vi.fn();
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property, onClick },
+      props: { ...baseProps(), property, onClick },
     });
-    const td = wrapper.find('td');
 
-    await td.trigger('click');
+    await wrapper.find('button').trigger('click');
     expect(onClick).toHaveBeenCalledTimes(1);
-    expect(onClick).toHaveBeenCalledWith('John', baseProps.rowValue, 'first_name', expect.any(Event));
-
-    await td.trigger('keydown', { key: 'Enter' });
-    expect(onClick).toHaveBeenCalledTimes(2);
-
-    await td.trigger('keydown', { key: ' ' });
-    expect(onClick).toHaveBeenCalledTimes(3);
+    expect(onClick).toHaveBeenCalledWith(
+      'John',
+      { first_name: 'John', last_name: 'Doe', age: 30 },
+      'first_name',
+      expect.any(Event),
+    );
   });
 
-  it('does not add role or tabindex without onClick', () => {
+  it('renders no button and no td role without onClick', () => {
     const property = userSchema.getProperty('first_name');
     wrapper = mountWithPlugin(Cell, {
-      props: { ...baseProps, property },
+      props: { ...baseProps(), property },
     });
+    expect(wrapper.find('button').exists()).toBe(false);
     const td = wrapper.find('td');
     expect(td.attributes('role')).toBeUndefined();
     expect(td.attributes('tabindex')).toBeUndefined();
+  });
+
+  it('keeps role="cell" on a clickable cell in reflow mode (button stays separate)', () => {
+    const property = userSchema.getProperty('first_name');
+    wrapper = mountWithPlugin(Cell, {
+      props: { ...baseProps(), property, onClick: () => null, reflow: true },
+    });
+    expect(wrapper.find('td').attributes('role')).toBe('cell');
+    expect(wrapper.find('button').exists()).toBe(true);
   });
 
   it('renders enum property with translated value', async () => {
     const property = userSchema.getProperty('gender');
     wrapper = mountWithPlugin(Cell, {
       props: {
-        ...baseProps,
+        ...baseProps(),
         fieldId: 'gender',
         rowValue: { gender: 'male' },
         property,
       },
     });
     await flushAll();
-    expect(wrapper.find('td').text()).toBe('Mr.');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('Mr.');
   });
 
   it('updates enum translation when locale changes', async () => {
@@ -157,18 +168,50 @@ describe('Cell', () => {
     const property = userSchema.getProperty('gender');
     wrapper = mountWithPlugin(Cell, {
       props: {
-        ...baseProps,
+        ...baseProps(),
         fieldId: 'gender',
         rowValue: { gender: 'male' },
         property,
       },
     });
     await flushAll();
-    expect(wrapper.find('td').text()).toBe('Mr.');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('Mr.');
 
     locale.value = 'fr';
     await flushAll();
-    expect(wrapper.find('td').text()).toBe('M.');
+    expect(wrapper.find('.qkit-cell-value').text()).toBe('M.');
+  });
+
+  describe('column label (small-screen card layout)', () => {
+    it('renders the provided column label alongside the value in reflow mode', () => {
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps(), property, columnLabel: 'first name', reflow: true },
+      });
+      const label = wrapper.find('.qkit-cell-label');
+      expect(label.exists()).toBe(true);
+      expect(label.text()).toBe('first name');
+      expect(label.attributes('aria-hidden')).toBe('true');
+      expect(wrapper.find('.qkit-cell-value').text()).toBe('John');
+    });
+
+    it('does not render the column label when not in reflow mode', () => {
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, {
+        props: { ...baseProps(), property, columnLabel: 'first name' },
+      });
+      expect(wrapper.find('.qkit-cell-label').exists()).toBe(false);
+    });
+
+    it('sets role="cell" in reflow mode and no role otherwise', () => {
+      const property = userSchema.getProperty('first_name');
+      wrapper = mountWithPlugin(Cell, { props: { ...baseProps(), property, reflow: true } });
+      expect(wrapper.find('td').attributes('role')).toBe('cell');
+
+      wrapper.unmount();
+      wrapper = mountWithPlugin(Cell, { props: { ...baseProps(), property } });
+      expect(wrapper.find('td').attributes('role')).toBeUndefined();
+    });
   });
 
   describe('plugin integration', () => {
@@ -183,7 +226,7 @@ describe('Cell', () => {
 
       const property = userSchema.getProperty('first_name');
       wrapper = mountWithPlugin(Cell, {
-        props: { ...baseProps, property },
+        props: { ...baseProps(), property },
       });
       expect(wrapper.find('em').text()).toBe('custom:John');
     });
@@ -193,9 +236,9 @@ describe('Cell', () => {
 
       const property = userSchema.getProperty('first_name');
       wrapper = mountWithPlugin(Cell, {
-        props: { ...baseProps, property },
+        props: { ...baseProps(), property },
       });
-      expect(wrapper.find('td').text()).toBe('rendered:John');
+      expect(wrapper.find('.qkit-cell-value').text()).toBe('rendered:John');
     });
 
     it('uses a custom property renderer registered via registerPropertyRenderers', () => {
@@ -209,7 +252,7 @@ describe('Cell', () => {
 
       const property = userSchema.getProperty('first_name');
       wrapper = mountWithPlugin(Cell, {
-        props: { ...baseProps, property },
+        props: { ...baseProps(), property },
       });
       expect(wrapper.find('mark').text()).toBe('John');
     });
@@ -232,7 +275,7 @@ describe('Cell', () => {
 
       const property = userSchema.getProperty('first_name');
       wrapper = mountWithPlugin(Cell, {
-        props: { ...baseProps, property },
+        props: { ...baseProps(), property },
       });
       expect(wrapper.find('strong').text()).toBe('property');
       expect(wrapper.find('em').exists()).toBe(false);
@@ -243,7 +286,7 @@ describe('Cell', () => {
 
       const property = userSchema.getProperty('first_name');
       wrapper = mountWithPlugin(Cell, {
-        props: { ...baseProps, property },
+        props: { ...baseProps(), property },
       });
       expect(wrapper.find('td').classes()).toContain('my-custom-cell');
     });

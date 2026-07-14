@@ -220,4 +220,5 @@ export interface CollectionConfig {
   editFields: boolean;
   naturalSortWhenEmpty: boolean;
   allowedCollectionTypes: CollectionType[];
+  reflow: boolean;
 }

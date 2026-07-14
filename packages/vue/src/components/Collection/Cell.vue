@@ -9,11 +9,13 @@ import type { RenderFunction } from '@core/types';
 
 interface Props {
   fieldId: string;
+  columnLabel?: string;
   rowValue: Record<string, unknown>;
   requestTimezone: string;
   userTimezone: string;
   property?: Property;
   renderer?: Component | RenderFunction | string;
+  reflow?: boolean;
   onClick?: (value: unknown, item: Record<string, unknown>, fieldId: string, event: MouseEvent) => void;
 }
 
@@ -40,36 +42,31 @@ const value = computed<unknown>(() => {
 
 const cellEvents = computed(() =>
   props.onClick
-    ? {
-        click: (e: MouseEvent) => props.onClick!(value.value, props.rowValue, props.fieldId, e),
-        keydown: (e: KeyboardEvent) => {
-          if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            props.onClick!(value.value, props.rowValue, props.fieldId, e as unknown as MouseEvent);
-          }
-        },
-      }
+    ? { click: (e: MouseEvent) => props.onClick!(value.value, props.rowValue, props.fieldId, e) }
     : {},
 );
 </script>
 
 <template>
-  <td
-    :class="onClick ? classes.collection_clickable_cell : classes.collection_cell"
-    :tabindex="onClick ? 0 : undefined"
-    :role="onClick ? 'button' : undefined"
-    v-on="cellEvents"
-  >
-    <template v-if="cellComponent == null">{{ value }}</template>
+  <td :class="classes.collection_cell" :role="reflow ? 'cell' : undefined">
+    <span v-if="reflow" :class="classes.collection_cell_label" aria-hidden="true">{{ columnLabel }}</span>
     <component
-      :is="cellComponent"
-      :field-id="fieldId"
-      :property="property"
-      :type="property"
-      :value="value"
-      :item="rowValue"
-      :request-timezone="requestTimezone"
-      :user-timezone="userTimezone"
-    />
+      :is="onClick ? 'button' : 'div'"
+      :type="onClick ? 'button' : undefined"
+      :class="onClick ? classes.collection_clickable_cell : classes.collection_cell_value"
+      v-on="cellEvents"
+    >
+      <template v-if="cellComponent == null">{{ value }}</template>
+      <component
+        :is="cellComponent"
+        :field-id="fieldId"
+        :property="property"
+        :type="property"
+        :value="value"
+        :item="rowValue"
+        :request-timezone="requestTimezone"
+        :user-timezone="userTimezone"
+      />
+    </component>
   </td>
 </template>

@@ -112,9 +112,9 @@ describe('Header', () => {
     expect(wrapper.emitted('click')![0]).toEqual(['first_name', true]);
   });
 
-  it('renders FieldName with correct props', async () => {
+  it('renders the resolved column label it receives', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, fieldId: 'first_name' },
+      props: { entitySchema: userSchema, fieldId: 'first_name', label: 'first name' },
     });
     await flushAll();
     expect(wrapper.text()).toContain('first name');

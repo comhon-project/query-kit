@@ -16,6 +16,7 @@ export interface Config {
   naturalSortWhenEmpty: boolean;
   allowedCollectionTypes: CollectionType[];
   aliasInsensitiveLabels: boolean;
+  reflow: boolean;
 }
 
 const defaults: Config = {
@@ -34,6 +35,7 @@ const defaults: Config = {
   naturalSortWhenEmpty: false,
   allowedCollectionTypes: ['pagination'],
   aliasInsensitiveLabels: false,
+  reflow: false,
 };
 
 const config: Config = { ...defaults };

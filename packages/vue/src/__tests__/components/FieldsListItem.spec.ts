@@ -57,7 +57,7 @@ describe('FieldsListItem', () => {
       props: { entitySchema: userSchema, fields: [], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
     await flushAll();
-    // PropertyPathLabel inside PropertyPathEditor shows the translated name
+    // FieldLabel inside PropertyPathEditor shows the translated name
     expect(wrapper.text()).toContain('first name');
   });
 

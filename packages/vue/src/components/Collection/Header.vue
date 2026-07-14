@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { classes } from '@core/ClassManager';
 import { isPropertySortable } from '@core/EntitySchema';
-import FieldName from '@components/Collection/FieldName.vue';
 import Icon from '@components/Common/Icon.vue';
 import { translate } from '@i18n/i18n';
 import { computed, ref, watchEffect } from 'vue';
@@ -10,10 +9,11 @@ import type { EntitySchema } from '@core/EntitySchema';
 interface Props {
   entitySchema: EntitySchema;
   fieldId: string;
+  label?: string;
   open?: boolean;
-  label?: string | ((locale: string) => string);
   order?: 'asc' | 'desc';
   hasCustomSort?: boolean;
+  reflow?: boolean;
 }
 
 interface Emits {
@@ -43,7 +43,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <th scope="col" :aria-sort="ariaSort">
+  <th scope="col" :role="reflow ? 'columnheader' : undefined" :aria-sort="ariaSort">
     <button
       v-if="isFieldSortable"
       type="button"
@@ -53,12 +53,10 @@ watchEffect(async () => {
       :asc="props.order == 'asc' ? '' : undefined"
       @click="(e) => emit('click', fieldId, e.ctrlKey)"
     >
-      <FieldName :entity-schema="entitySchema" :field-id="fieldId" :open="open" :label="label" />
+      <span>{{ label }}</span>
       <Icon icon="sort" :label="orderLabel" />
       <span :class="classes.sr_only">{{ orderLabel }}</span>
     </button>
-    <div v-else>
-      <FieldName :entity-schema="entitySchema" :field-id="fieldId" :open="open" :label="label" />
-    </div>
+    <div v-else>{{ label }}</div>
   </th>
 </template>

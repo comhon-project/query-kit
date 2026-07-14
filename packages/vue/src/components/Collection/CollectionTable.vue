@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue';
+import { computed, toRef, useTemplateRef } from 'vue';
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { useInternalModel } from '@components/Composable/InternalModel';
 import { useReachedEnd } from '@components/Composable/ReachedEnd';
+import { useColumnLabels } from '@components/Composable/ColumnLabels';
 import Cell from '@components/Collection/Cell.vue';
 import Header from '@components/Collection/Header.vue';
 import type { EntitySchema } from '@core/EntitySchema';
@@ -15,6 +16,7 @@ interface Props {
   entitySchema: EntitySchema;
   userTimezone: string;
   requestTimezone: string;
+  reflow?: boolean;
   onRowClick?: (row: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
 }
 
@@ -26,6 +28,7 @@ const internalSort = useInternalModel(sort, { debounce: 300 });
 
 const fieldsProperties = computed(() => props.content.fieldsProperties);
 const displayedFields = computed<string[]>(() => Object.keys(fieldsProperties.value));
+const columnLabels = useColumnLabels(toRef(props, 'entitySchema'), displayedFields, toRef(props, 'customFields'));
 
 const observered = useTemplateRef<HTMLTableRowElement>('observered');
 
@@ -103,27 +106,29 @@ const rowEvents = (row: Record<string, unknown>) =>
 </script>
 
 <template>
-  <table :class="classes.collection_table">
+  <table :class="classes.collection_table" :role="reflow ? 'table' : undefined">
     <caption :class="classes.sr_only">{{ translate('results') }}</caption>
-    <thead>
-      <tr>
+    <thead :role="reflow ? 'rowgroup' : undefined">
+      <tr :role="reflow ? 'row' : undefined">
         <Header
           v-for="fieldId in displayedFields"
           :key="fieldId"
           :entity-schema="entitySchema"
           :field-id="fieldId"
           :open="customFields?.[fieldId]?.open === true"
-          :label="customFields?.[fieldId]?.label"
+          :label="columnLabels[fieldId]"
           :order="orderByField[fieldId]"
           :has-custom-sort="customFields?.[fieldId]?.sort != null"
+          :reflow="reflow"
           @click="updateSort"
         />
       </tr>
     </thead>
-    <tbody>
+    <tbody :role="reflow ? 'rowgroup' : undefined">
       <tr
         v-for="(object, rowIndex) in content.collection"
         :key="rowKey(object, rowIndex)"
+        :role="reflow ? 'row' : undefined"
         :class="onRowClick ? classes.collection_clickable_row : ''"
         :tabindex="onRowClick ? 0 : undefined"
         v-on="rowEvents(object)"
@@ -131,16 +136,18 @@ const rowEvents = (row: Record<string, unknown>) =>
         <template v-for="fieldId in displayedFields" :key="fieldId">
           <Cell
             :field-id="fieldId"
+            :column-label="columnLabels[fieldId]"
             :property="fieldsProperties[fieldId]"
             :row-value="object"
             :renderer="customFields?.[fieldId]?.renderer"
             :user-timezone="userTimezone"
             :request-timezone="requestTimezone"
+            :reflow="reflow"
             @click="customFields?.[fieldId]?.onFieldClick"
           />
         </template>
       </tr>
-      <tr ref="observered" style="opacity: 0">
+      <tr ref="observered" aria-hidden="true" style="opacity: 0">
         <td :colspan="displayedFields.length" style="height: 1px; padding: 0; border: none"></td>
       </tr>
     </tbody>

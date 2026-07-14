@@ -54,6 +54,7 @@ interface Props {
   requestTimezone?: string;
   editFields?: boolean;
   naturalSortWhenEmpty?: boolean;
+  reflow?: boolean;
   manual?: boolean;
   debounce?: number;
   requester?: Requester | RequesterFunction;
@@ -92,6 +93,7 @@ const props = withDefaults(defineProps<Props>(), {
   displayCount: undefined,
   editFields: undefined,
   naturalSortWhenEmpty: undefined,
+  reflow: undefined,
   manual: undefined,
 });
 
@@ -448,6 +450,7 @@ watchEffect(() => {
   config.editFields = props.editFields ?? false;
   config.naturalSortWhenEmpty = props.naturalSortWhenEmpty ?? globalConfig.naturalSortWhenEmpty;
   config.allowedCollectionTypes = props.allowedCollectionTypes ?? globalConfig.allowedCollectionTypes;
+  config.reflow = props.reflow ?? globalConfig.reflow;
 });
 watchEffect(() => {
   limit.value = props.limit ?? globalConfig.limit;
@@ -480,7 +483,7 @@ watch(
 </script>
 
 <template>
-  <section :class="classes.collection" :aria-label="translate('collection')">
+  <section :class="classes.collection" :aria-label="translate('collection')" :data-qkit-reflow="config.reflow || undefined">
     <a v-if="queryBuilderId" :href="'#' + queryBuilderId" :class="classes.skip_link">
       {{ translate('go_to_query_builder') }}
     </a>
@@ -536,6 +539,7 @@ watch(
           :entity-schema="entitySchema"
           :user-timezone="config.userTimezone"
           :request-timezone="config.requestTimezone"
+          :reflow="config.reflow"
           :on-row-click="onItemClick"
           @reached-end="onReachedEnd"
           @update:sort="onChildSort"

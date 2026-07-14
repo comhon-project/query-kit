@@ -25,6 +25,7 @@ const tabs = [
   { id: 'clicks', label: 'Clicks' },
   { id: 'fixed', label: 'Fixed' },
   { id: 'builderFields', label: 'Fields in builder' },
+  { id: 'reflow', label: 'Reflow' },
 ];
 
 const customFields = {
@@ -78,6 +79,7 @@ const state = {
   minimal: createState('user', ['first_name', 'last_name', 'age', 'company']),
   restricted: createState('user', ['first_name', 'last_name', 'age', 'gender', 'company']),
   clicks: createState('user', ['first_name', 'last_name', 'age', 'company']),
+  reflow: createState('user', ['first_name', 'last_name', 'age', 'company']),
   builderFields: createState('user', userFields),
   fixed: createState('organization', ['brand_name', 'address', 'description', 'country', 'contacts'], {
     type: 'group',
@@ -341,6 +343,27 @@ function onThemeChange() {
         :requester="requester"
         user-timezone="Europe/Paris"
       />
+    </div>
+
+    <!-- Reflow (container-based) -->
+    <div v-if="activeTab === 'reflow'">
+      <p class="playground-description">
+        Drag the box's bottom-right corner to change its width. Below ~576px the collection reflows
+        to cards (container query, not the viewport); wider than that it's a normal table. Starts narrow.
+      </p>
+      <div
+        style="resize: horizontal; overflow: auto; width: 360px; min-width: 240px; max-width: 100%; border: 1px dashed var(--qkit-color-border)"
+      >
+        <QkitCollection
+          v-model:fields="state.reflow.fields"
+          v-model:sort="state.reflow.sort"
+          v-model:page="state.reflow.page"
+          :entity="state.reflow.entity"
+          :requester="requester"
+          :reflow="true"
+          :custom-fields="{ first_name: { onFieldClick: () => {} } }"
+        />
+      </div>
     </div>
 
     <div class="playground-displays">

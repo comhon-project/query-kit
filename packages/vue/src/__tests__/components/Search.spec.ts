@@ -132,6 +132,7 @@ describe('Search', () => {
         allowedCollectionTypes: ['pagination'],
         userTimezone: 'Europe/Paris',
         requestTimezone: 'America/New_York',
+        reflow: true,
         onItemClick,
         onExport,
         postRequest,
@@ -146,6 +147,7 @@ describe('Search', () => {
       expect(collection.props('displayCount')).toBe(true);
       expect(collection.props('editFields')).toBe(true);
       expect(collection.props('allowedCollectionTypes')).toEqual(['pagination']);
+      expect(collection.props('reflow')).toBe(true);
       expect(collection.props('userTimezone')).toBe('Europe/Paris');
       expect(collection.props('requestTimezone')).toBe('America/New_York');
       expect(collection.props('onItemClick')).toBe(onItemClick);

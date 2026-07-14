@@ -137,6 +137,34 @@ describe('CollectionTable', () => {
     expect(sorted[0].text()).toContain('Total');
   });
 
+  it('resolves each column label and passes it to every body cell when reflowing', async () => {
+    mountTable({ reflow: true });
+    await flushAll();
+    const cellLabels = wrapper.findAll('tbody td .qkit-cell-label').map((label) => label.text());
+    // 2 rows × [first_name, last_name], each cell carrying its resolved column label
+    expect(cellLabels).toEqual(['first name', 'last name', 'first name', 'last name']);
+  });
+
+  it('adds ARIA table roles when reflowing', async () => {
+    mountTable({ reflow: true });
+    await flushAll();
+    expect(wrapper.find('table').attributes('role')).toBe('table');
+    expect(wrapper.find('thead').attributes('role')).toBe('rowgroup');
+    expect(wrapper.find('tbody').attributes('role')).toBe('rowgroup');
+    expect(wrapper.find('thead tr').attributes('role')).toBe('row');
+    expect(wrapper.find('th').attributes('role')).toBe('columnheader');
+    expect(wrapper.find('tbody td').attributes('role')).toBe('cell');
+  });
+
+  it('adds no ARIA table roles when not reflowing', async () => {
+    mountTable({ reflow: false });
+    await flushAll();
+    expect(wrapper.find('table').attributes('role')).toBeUndefined();
+    expect(wrapper.find('thead').attributes('role')).toBeUndefined();
+    expect(wrapper.find('th').attributes('role')).toBeUndefined();
+    expect(wrapper.find('tbody td').attributes('role')).toBeUndefined();
+  });
+
   it('emits reachedEnd when the sentinel intersects', async () => {
     mountTable();
     await flushAll();

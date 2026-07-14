@@ -2,7 +2,7 @@
 import { computed, ref, shallowRef, watch, watchEffect } from 'vue';
 import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
-import FieldName from '@components/Collection/FieldName.vue';
+import FieldLabel from '@components/Collection/FieldLabel.vue';
 import { getPropertyPath, resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
 
 interface Props {
@@ -87,7 +87,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <FieldName :entity-schema="entitySchema" :field-id="propertyPath" :label="label" />
+  <FieldLabel :entity-schema="entitySchema" :field-id="propertyPath" :label="label" />
   <template v-if="expandable && lastRelatedSchema">
     <select v-if="editing" v-model="selectedProperty" :class="classes.input">
       <option value="" disabled hidden />

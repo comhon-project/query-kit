@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 describe('PropertyPathEditor', () => {
-  it('displays FieldName for the current path', async () => {
+  it('displays FieldLabel for the current path', async () => {
     wrapper = mountWithPlugin(PropertyPathEditor, {
       props: { entitySchema: userSchema, fields: ['first_name'], modelValue: 'first_name', 'onUpdate:modelValue': () => {} },
     });
