@@ -28,6 +28,44 @@ describe('Modal', () => {
     expect(wrapper.find('footer').text()).toContain('Custom');
   });
 
+  it('does not render slot content until the first open, then keeps it mounted', async () => {
+    const wrapper = mount(Modal, {
+      props: { show: false, 'onUpdate:show': () => {} },
+      slots: { body: '<p>Content</p>' },
+    });
+    // Closed and never opened: the <dialog> exists but the body slot is not rendered.
+    expect(wrapper.find('dialog').exists()).toBe(true);
+    expect(wrapper.find('.qkit-modal-body').exists()).toBe(false);
+
+    // First open renders the content.
+    await wrapper.setProps({ show: true });
+    expect(wrapper.find('.qkit-modal-body').text()).toContain('Content');
+
+    // Closing keeps it mounted (lazy-then-kept), so the close animation still has content.
+    HTMLDialogElement.prototype.getAnimations = vi.fn(() => []);
+    await wrapper.setProps({ show: false });
+    await nextTick();
+    expect(wrapper.find('.qkit-modal-body').exists()).toBe(true);
+  });
+
+  it('renders slot content immediately when mounted already open', () => {
+    const wrapper = mount(Modal, {
+      props: { show: true, 'onUpdate:show': () => {} },
+      slots: { body: '<p>Content</p>' },
+    });
+    expect(wrapper.find('.qkit-modal-body').text()).toContain('Content');
+  });
+
+  it('opens the native dialog on mount when show starts true', () => {
+    mount(Modal, { props: { show: true, 'onUpdate:show': () => {} } });
+    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not open the native dialog on mount when show starts false', () => {
+    mount(Modal, { props: { show: false, 'onUpdate:show': () => {} } });
+    expect(HTMLDialogElement.prototype.showModal).not.toHaveBeenCalled();
+  });
+
   it('calls showModal when show becomes true', async () => {
     const wrapper = mount(Modal, { props: { show: false, 'onUpdate:show': () => {} } });
     await wrapper.setProps({ show: true });
