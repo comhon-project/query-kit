@@ -27,6 +27,7 @@ const sortable = ref(false);
 const propertyPath = computed<string | undefined>(() => (props.open ? undefined : props.fieldId));
 const isFieldSortable = computed<boolean>(() => sortable.value || !!props.hasCustomSort);
 const orderLabel = computed<string>(() => `(${translate(props.order ?? 'unsorted')})`);
+const sortLabel = computed<string>(() => [props.label, orderLabel.value].filter(Boolean).join(' '));
 const ariaSort = computed(() =>
   isFieldSortable.value
     ? props.order === 'asc'
@@ -44,19 +45,20 @@ watchEffect(async () => {
 
 <template>
   <th scope="col" :role="reflow ? 'columnheader' : undefined" :aria-sort="ariaSort">
-    <button
-      v-if="isFieldSortable"
-      type="button"
-      :class="classes.btn"
-      :active="props.order ? '' : undefined"
-      :desc="props.order == 'desc' ? '' : undefined"
-      :asc="props.order == 'asc' ? '' : undefined"
-      @click="(e) => emit('click', fieldId, e.ctrlKey)"
-    >
+    <div :class="classes.collection_column_header">
       <span>{{ label }}</span>
-      <Icon icon="sort" :label="orderLabel" />
-      <span :class="classes.sr_only">{{ orderLabel }}</span>
-    </button>
-    <div v-else>{{ label }}</div>
+      <button
+        v-if="isFieldSortable"
+        type="button"
+        :class="classes.btn"
+        :active="props.order ? '' : undefined"
+        :desc="props.order == 'desc' ? '' : undefined"
+        :asc="props.order == 'asc' ? '' : undefined"
+        :aria-label="sortLabel"
+        @click="(e) => emit('click', fieldId, e.ctrlKey)"
+      >
+        <Icon icon="sort" :label="orderLabel" />
+      </button>
+    </div>
   </th>
 </template>

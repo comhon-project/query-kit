@@ -610,28 +610,27 @@
   box-shadow: 1px 1px 1px var(--qkit-shadow-color);
 }
 
-.qkit-collection-table thead .qkit-btn {
-  text-transform: none;
-  position: relative;
-  padding: 0;
-  font-size: inherit;
-  font-weight: inherit;
-  width: 100%;
+.qkit-column-header {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: var(--qkit-gap-spacer);
+  justify-content: center;
 }
-.qkit-collection-table thead button[active] > *:not(:first-child) {
+.qkit-column-header .qkit-btn {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  padding: var(--qkit-padding-sm);
+}
+.qkit-column-header button[active] > * {
   color: var(--qkit-color-primary);
 }
-.qkit-collection-table thead button > *:not(:first-child) {
+.qkit-column-header button > * {
   transition: transform var(--qkit-transition-duration) ease-in-out;
 }
-.qkit-collection-table thead button[asc] > *:not(:first-child) {
+.qkit-column-header button[asc] > * {
   transform: rotate(-90deg);
 }
-.qkit-collection-table thead button[desc] > *:not(:first-child) {
+.qkit-column-header button[desc] > * {
   transform: rotate(90deg);
 }
 

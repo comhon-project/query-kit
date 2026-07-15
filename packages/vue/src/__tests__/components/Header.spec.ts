@@ -34,13 +34,27 @@ describe('Header', () => {
     expect(wrapper.find('button').exists()).toBe(true);
   });
 
-  it('renders a div without button for a non-sortable column', async () => {
+  it('renders the label without a button for a non-sortable column', async () => {
     wrapper = mountWithPlugin(Header, {
-      props: { entitySchema: userSchema, fieldId: 'gender' },
+      props: { entitySchema: userSchema, fieldId: 'gender', label: 'gender' },
     });
     await flushAll();
     expect(wrapper.find('button').exists()).toBe(false);
-    expect(wrapper.find('div').exists()).toBe(true);
+    expect(wrapper.find('span').text()).toBe('gender');
+  });
+
+  it('keeps the column label outside the sort button (only the arrow is the button)', async () => {
+    wrapper = mountWithPlugin(Header, {
+      props: { entitySchema: userSchema, fieldId: 'first_name', label: 'first name' },
+    });
+    await flushAll();
+    const button = wrapper.find('button');
+    expect(button.exists()).toBe(true);
+    // The visible label is a sibling of the button, not inside it.
+    expect(button.text()).not.toContain('first name');
+    expect(wrapper.find('span').text()).toBe('first name');
+    // The button still carries the column in its accessible name.
+    expect(button.attributes('aria-label')).toContain('first name');
   });
 
   it('is sortable when hasCustomSort is true even if property is not sortable', async () => {
@@ -128,10 +142,10 @@ describe('Header', () => {
       props: { entitySchema: userSchema, fieldId: 'first_name', order: 'asc' },
     });
     await flushAll();
-    expect(wrapper.text()).toContain('(asc.)');
+    expect(wrapper.find('button').attributes('aria-label')).toContain('(asc.)');
 
     locale.value = 'fr';
     await flushAll();
-    expect(wrapper.text()).toContain('(crois.)');
+    expect(wrapper.find('button').attributes('aria-label')).toContain('(crois.)');
   });
 });

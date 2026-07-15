@@ -48,6 +48,7 @@ export type ClassName =
   | 'collection_clickable_cell'
   | 'collection_cell_label'
   | 'collection_cell_value'
+  | 'collection_column_header'
   | 'collection_actions'
   | 'field_editor_list'
   | 'field_editor_list_item'
@@ -110,6 +111,7 @@ const classList: ClassList = {
   collection_clickable_cell: 'qkit-btn qkit-cell-button',
   collection_cell_label: 'qkit-cell-label',
   collection_cell_value: 'qkit-cell-value',
+  collection_column_header: 'qkit-column-header',
   collection_actions: 'qkit-collection-actions',
   field_editor_list: 'qkit-field-editor-list',
   field_editor_list_item: 'qkit-field-editor-list-item',
