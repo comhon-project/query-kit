@@ -29,8 +29,8 @@ const { liveMessage, onGripStart, setItemRef, getItemBindings, getDropZoneBindin
 
 const selectedProperty = ref<string | null>(null);
 const internalModel = useInternalModel<string[], KeyedField[]>(fields, {
-  normalize: (ids) => ids.map((id) => ({ id, key: getUniqueId() })),
-  strip: (keyed) => keyed.map((c) => c.id),
+  toInternal: (ids) => ids.map((id) => ({ id, key: getUniqueId() })),
+  toExternal: (keyed) => keyed.map((c) => c.id),
   onInbound: () => props.history?.rebaseline('fields'),
 });
 

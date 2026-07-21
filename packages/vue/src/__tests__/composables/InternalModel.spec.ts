@@ -39,8 +39,8 @@ describe('useInternalModel', () => {
     it('normalizes an initial null value instead of mistaking it for an empty echo', () => {
       const model = ref<External | null>(null);
       const internal = useInternalModel<External | null, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v?.name ?? 'empty', children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v?.name ?? 'empty', children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
       });
 
       expect(internal.value).toEqual({ key: 1, name: 'empty', children: [] });
@@ -51,8 +51,8 @@ describe('useInternalModel', () => {
     it('re-normalizes when the model is reassigned from outside', async () => {
       const model = ref(makeExternal('root'));
       const internal = useInternalModel(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: v.children.map((c) => ({ key: 2, ...c })) }),
-        strip: (v) => ({ name: v.name, children: v.children.map(({ name }) => ({ name })) }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: v.children.map((c) => ({ key: 2, ...c })) }),
+        toExternal: (v) => ({ name: v.name, children: v.children.map(({ name }) => ({ name })) }),
       });
 
       model.value = makeExternal('changed');
@@ -66,8 +66,8 @@ describe('useInternalModel', () => {
       const model = ref(makeExternal('root'));
       let calls = 0;
       useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
         onInbound: () => calls++,
       });
       expect(calls).toBe(1);
@@ -81,8 +81,8 @@ describe('useInternalModel', () => {
       const model = ref(makeExternal('root'));
       let calls = 0;
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
         onInbound: () => calls++,
       });
       expect(calls).toBe(1);
@@ -97,8 +97,8 @@ describe('useInternalModel', () => {
     it('strips the internal keys before emitting on a deep mutation', async () => {
       const model = ref(makeExternal());
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: v.children.map((c, i) => ({ key: i, ...c })) }),
-        strip: (v) => ({ name: v.name, children: v.children.map(({ name }) => ({ name })) }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: v.children.map((c, i) => ({ key: i, ...c })) }),
+        toExternal: (v) => ({ name: v.name, children: v.children.map(({ name }) => ({ name })) }),
       });
 
       internal.value.children[0].name = 'edited';
@@ -111,8 +111,8 @@ describe('useInternalModel', () => {
     it('emits when the internal ref is fully reassigned by the consumer', async () => {
       const model = ref(makeExternal());
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
       });
 
       internal.value = { key: 9, name: 'replaced', children: [] };
@@ -124,8 +124,8 @@ describe('useInternalModel', () => {
     it('does not write a parasite update back to the parent on an external set', async () => {
       const model = ref(makeExternal('root'));
       useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
       });
 
       const parentRef = makeExternal('fromParent');
@@ -143,11 +143,11 @@ describe('useInternalModel', () => {
       const model = ref(makeExternal());
       let normalizeCalls = 0;
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => {
+        toInternal: (v) => {
           normalizeCalls++;
           return { key: 1, name: v.name, children: v.children.map((c, i) => ({ key: i, ...c })) };
         },
-        strip: (v) => ({ name: v.name, children: v.children.map(({ name }) => ({ name })) }),
+        toExternal: (v) => ({ name: v.name, children: v.children.map(({ name }) => ({ name })) }),
       });
 
       const callsAfterMount = normalizeCalls;
@@ -164,8 +164,8 @@ describe('useInternalModel', () => {
     it('still normalizes a genuine external change after an emit', async () => {
       const model = ref(makeExternal());
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
       });
 
       internal.value.name = 'edited';
@@ -181,8 +181,8 @@ describe('useInternalModel', () => {
     it('applies a reassignment that reuses a previously emitted reference', async () => {
       const model = ref(makeExternal('root'));
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
       });
 
       internal.value.name = 'edited';
@@ -201,8 +201,8 @@ describe('useInternalModel', () => {
     it('emits when internal is reassigned to a previously normalized reference', async () => {
       const model = ref(makeExternal('root'));
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
       });
 
       model.value = makeExternal('fromParent'); // inbound normalizes into internal
@@ -225,8 +225,8 @@ describe('useInternalModel', () => {
     it('collapses a burst of mutations into a single emit with the final value', async () => {
       const model = ref(makeExternal());
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
         debounce: 50,
       });
 
@@ -248,8 +248,8 @@ describe('useInternalModel', () => {
     it('defers the emit even with delay 0 (not synchronous within the watch flush)', async () => {
       const model = ref(makeExternal());
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
         debounce: 0,
       });
 
@@ -266,8 +266,8 @@ describe('useInternalModel', () => {
     it('cancels the pending emit when an external change arrives during the window', async () => {
       const model = ref(makeExternal('root'));
       const internal = useInternalModel<External, Internal>(model, {
-        normalize: (v) => ({ key: 1, name: v.name, children: [] }),
-        strip: (v) => ({ name: v.name, children: [] }),
+        toInternal: (v) => ({ key: 1, name: v.name, children: [] }),
+        toExternal: (v) => ({ name: v.name, children: [] }),
         debounce: 50,
       });
 

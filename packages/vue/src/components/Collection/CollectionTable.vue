@@ -26,7 +26,7 @@ const emit = defineEmits<{ reachedEnd: [] }>();
 const props = withDefaults(defineProps<Props>(), { sortableHeaders: true });
 
 const internalSort = useInternalModel<(string | SortItemField)[] | null | undefined, Map<string, 'asc' | 'desc'>>(sort, {
-  normalize: (value) => {
+  toInternal: (value) => {
     const map = new Map<string, 'asc' | 'desc'>();
     for (const entry of value ?? []) {
       typeof entry === 'string'
@@ -35,7 +35,7 @@ const internalSort = useInternalModel<(string | SortItemField)[] | null | undefi
     }
     return map;
   },
-  strip: (map) => [...map].map(([field, order]) => ({ field, order })),
+  toExternal: (map) => [...map].map(([field, order]) => ({ field, order })),
   debounce: 300,
 });
 

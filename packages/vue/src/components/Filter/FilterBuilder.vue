@@ -43,8 +43,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const internalValue = useInternalModel<Filter | null, GroupFilter>(modelValue, {
-  normalize: (val) => normalizeFilter(val, props.allowedOperators),
-  strip: stripKeys,
+  toInternal: (val) => normalizeFilter(val, props.allowedOperators),
+  toExternal: stripKeys,
   onInbound: () => props.history?.rebaseline('filter'),
 });
 

@@ -34,13 +34,13 @@ const { liveMessage, onGripStart, setItemRef, getItemBindings, getDropZoneBindin
 const selectedField = ref<string | null>(null);
 const sortableFields = ref<string[]>([]);
 const internalModel = useInternalModel<(string | SortItemField)[], KeyedSort[]>(sort, {
-  normalize: (items) =>
+  toInternal: (items) =>
     items.map((item) =>
       typeof item === 'string'
         ? { field: item, order: 'asc', key: getUniqueId() }
         : { field: item.field, order: item.order || 'asc', key: getUniqueId() },
     ),
-  strip: (keyed) => keyed.map((k) => ({ field: k.field, order: k.order })),
+  toExternal: (keyed) => keyed.map((k) => ({ field: k.field, order: k.order })),
   onInbound: () => props.history?.rebaseline('sort'),
 });
 const optionLabels = useColumnLabels(toRef(props, 'entitySchema'), sortableFields, toRef(props, 'customFields'));
