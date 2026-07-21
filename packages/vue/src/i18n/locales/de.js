@@ -48,6 +48,7 @@ export default {
   export: 'exportieren',
   columns: 'Spalten',
   fields: 'Felder',
+  sort: 'Sortierung',
   pagination: 'Seitennummerierung',
   previous: 'zurück',
   next: 'weiter',

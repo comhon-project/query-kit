@@ -48,6 +48,7 @@ export default {
   export: 'экспорт',
   columns: 'столбцы',
   fields: 'поля',
+  sort: 'сортировка',
   pagination: 'пагинация',
   previous: 'предыдущий',
   next: 'следующий',

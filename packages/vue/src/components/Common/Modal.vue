@@ -14,8 +14,8 @@ interface Emits {
   closed: [];
 }
 
-const emit = defineEmits<Emits>();
 const show = defineModel<boolean>('show', { required: true });
+const emit = defineEmits<Emits>();
 
 const props = withDefaults(defineProps<Props>(), {
   closeOnConfirm: false,
@@ -41,6 +41,13 @@ function close(): void {
   emit('closed');
 }
 
+onMounted(() => {
+  if (show.value && !modal.value?.open) {
+    previouslyFocusedElement = document.activeElement as HTMLElement | null;
+    modal.value?.showModal();
+  }
+});
+
 watch(show, async (visible) => {
   if (visible) {
     hasBeenOpened.value = true;
@@ -51,13 +58,6 @@ watch(show, async (visible) => {
   await nextTick();
   await Promise.allSettled(modal.value?.getAnimations().map((a) => a.finished) ?? []);
   if (!show.value) close();
-});
-
-onMounted(() => {
-  if (show.value && !modal.value?.open) {
-    previouslyFocusedElement = document.activeElement as HTMLElement | null;
-    modal.value?.showModal();
-  }
 });
 </script>
 

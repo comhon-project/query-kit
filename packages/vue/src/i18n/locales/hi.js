@@ -48,6 +48,7 @@ export default {
   export: 'निर्यात',
   columns: 'स्तंभ',
   fields: 'फ़ील्ड',
+  sort: 'छँटाई',
   pagination: 'पृष्ठांकन',
   previous: 'पिछला',
   next: 'अगला',

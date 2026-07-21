@@ -24,14 +24,17 @@ import IconButton from '@components/Common/IconButton.vue';
 import Pagination from '@components/Pagination/Pagination.vue';
 import CollectionTable from '@components/Collection/CollectionTable.vue';
 import FieldsEditor from '@components/Collection/FieldsEditor.vue';
+import SortEditor from '@components/Collection/SortEditor.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import InvalidField from '@components/Messages/InvalidField.vue';
 import type {
   CustomFieldConfig,
-  SortItem,
+  SortItemField,
+  SortItemProperty,
   CollectionType,
   CollectionContent,
   CollectionConfig,
+  CollectionSortEditingLocation,
   Requester,
   RequesterFunction,
   Filter,
@@ -44,7 +47,7 @@ interface Props {
   directQuery?: boolean;
   limit?: number;
   onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
-  quickSort?: boolean;
+  sortEditingLocation?: CollectionSortEditingLocation;
   postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
   onRequestError?: (error: unknown) => void;
   allowedCollectionTypes?: CollectionType[];
@@ -61,11 +64,6 @@ interface Props {
   queryBuilderId?: string;
 }
 
-interface IndexedSortEntry {
-  order: 'asc' | 'desc';
-  properties: string[];
-}
-
 interface InitScope {
   entity?: boolean;
   fields?: boolean;
@@ -76,20 +74,19 @@ interface InitScope {
 interface Query {
   entity: string;
   fields: string[];
-  sort: (string | SortItem)[] | null | undefined;
+  sort: (string | SortItemField)[] | null | undefined;
   filter: Filter | null | undefined;
 }
 
 defineExpose({ submit });
 
 const fields = defineModel<string[]>('fields', { required: true });
-const sort = defineModel<(string | SortItem)[] | null>('sort');
+const sort = defineModel<(string | SortItemField)[] | null>('sort');
 const page = defineModel<number>('page', { default: 1 });
 
 // undefined: prevent Vue from casting absent boolean props to false
 const props = withDefaults(defineProps<Props>(), {
   directQuery: true,
-  quickSort: undefined,
   displayCount: undefined,
   editFields: undefined,
   naturalSortWhenEmpty: undefined,
@@ -104,6 +101,7 @@ let requestTimeoutId: ReturnType<typeof setTimeout> | undefined;
 let queue: Promise<unknown> = Promise.resolve();
 let lastChildSort: unknown;
 let lastChildFields: unknown;
+let resolvedSort: SortItemProperty[] = [];
 
 const computedFilter = shallowRef<Filter | undefined>();
 const lastValidatedFilter = shallowRef<Filter | undefined>();
@@ -115,7 +113,6 @@ const count = ref<number>(0);
 const limit = ref<number | undefined>();
 const end = ref<boolean>(false);
 const entitySchema = ref<EntitySchema>();
-const indexedSort = shallowRef<Record<string, IndexedSortEntry>>({});
 const invalidFields = ref<string[]>([]);
 const filterError = ref<boolean>(false);
 const validEntity = ref<boolean>(true);
@@ -144,6 +141,20 @@ const exportedFilter = computed<Filter | undefined>(() =>
 // !exportedFilter means "no successful compute yet", never "empty filter".
 const exportDisabled = computed<boolean>(
   () => pendingTasks.value > 0 || filterError.value || !exportedFilter.value,
+);
+
+const showSortEditor = computed<boolean>(
+  () => config.editSort === 'collection-modal' || (config.editSort === 'collection-column' && !!config.reflow),
+);
+
+const hasPermanentHeader = computed<boolean>(
+  () =>
+    !!config.displayCount ||
+    !infiniteScroll.value ||
+    !!props.onExport ||
+    config.allowedCollectionTypes.length > 1 ||
+    !!config.editFields ||
+    config.editSort === 'collection-modal',
 );
 
 // Synchronous on purpose: window.open/downloads in the consumer's handler
@@ -178,7 +189,7 @@ function snapshotQuery(overrides?: Partial<Query>): Query {
 async function doInit(scope: InitScope, query: Query): Promise<boolean> {
   const reEntity = scope.entity;
   const reFields = reEntity || scope.fields;
-  const reSort = reFields || scope.sort;
+  const reSort = reEntity || scope.sort;
   const reFilter = reEntity || scope.filter;
 
   if (reEntity) {
@@ -194,11 +205,11 @@ async function doInit(scope: InitScope, query: Query): Promise<boolean> {
   }
 
   if (reFields) await initFields(entitySchema.value!, query.fields);
-  if (reSort) await initSort(query.sort, Object.keys(fieldsProperties.value), entitySchema.value!.id, props.customFields);
+  if (reSort) await initSort(query.sort, entitySchema.value!.id, props.customFields);
   const filterChanged = reFilter ? await recomputeFilter(query.filter, query.entity) : false;
   if (reEntity) lastValidatedFilter.value = filterError.value ? undefined : computedFilter.value;
 
-  return reEntity || ((reSort || filterChanged) && autoRequest.value);
+  return reEntity || ((reFields || reSort || filterChanged) && autoRequest.value);
 }
 
 async function initFields(entitySchema: EntitySchema, cols: string[]): Promise<void> {
@@ -233,31 +244,26 @@ async function initFields(entitySchema: EntitySchema, cols: string[]): Promise<v
 }
 
 async function initSort(
-  sort: (string | SortItem)[] | null | undefined,
-  fields: string[],
+  sort: (string | SortItemField)[] | null | undefined,
   entity: string,
   customFields?: Record<string, CustomFieldConfig>,
 ): Promise<void> {
-  if (!sort) {
-    indexedSort.value = {};
-    return;
-  }
-  // These keep/drop rules are mirrored by orderByField in CollectionTable.vue
-  // (header arrows) — keep both in sync.
-  const indexed: Record<string, IndexedSortEntry> = {};
-  for (const value of sort) {
+  // Every entry in the sort model is honored, whether or not it is a displayed field.
+  const result: SortItemProperty[] = [];
+  for (const value of sort ?? []) {
+    const field = typeof value == 'string' ? value : value.field;
+    const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
     try {
-      const field = typeof value == 'string' ? value : value.field;
-      if (!fields.includes(field)) continue;
-      const order = typeof value == 'string' ? ('asc' as const) : ((value.order || 'asc') as 'asc' | 'desc');
-
       let reqProps: string[];
       if (customFields?.[field]?.sort) {
         reqProps = customFields[field].sort!;
       } else {
         // Open custom fields are only sortable through their sort config,
         // even when their id resolves to a schema property
-        if (customFields?.[field]?.open) continue;
+        if (customFields?.[field]?.open) {
+          console.warn(`[query-kit] ignored sort on "${field}": open custom field without a sort config`);
+          continue;
+        }
         const propertyPath = await getPropertyPath(entity, field);
         const property = propertyPath[propertyPath.length - 1];
 
@@ -273,12 +279,13 @@ async function initSort(
           reqProps = [field];
         }
       }
-      indexed[field] = { order, properties: reqProps };
+      for (const prop of reqProps) result.push({ property: prop, order });
     } catch (e) {
       if (!(e instanceof PropertyNotFoundError)) throw e;
+      console.warn(`[query-kit] ignored sort on "${field}": could not resolve the property path`);
     }
   }
-  indexedSort.value = indexed;
+  resolvedSort = result;
 }
 
 async function recomputeFilter(filter: Filter | null | undefined, entity: string): Promise<boolean> {
@@ -320,12 +327,11 @@ function queueRequest(): void {
       const requesterValue = activeRequester.value;
       const fetch = typeof requesterValue == 'function' ? requesterValue : requesterValue.request;
 
-      const sortRequest = Object.keys(indexedSort.value).length
-        ? Object.values(indexedSort.value).flatMap((entry) =>
-            entry.properties.map((prop) => ({ property: prop, order: entry.order })),
-          )
+      // Fall back to the entity's natural_sort (request-only) when no explicit sort resolved.
+      const sortRequest = resolvedSort.length
+        ? resolvedSort
         : config.naturalSortWhenEmpty && entitySchema.value?.natural_sort?.length
-          ? entitySchema.value.natural_sort.map((property) => ({ property, order: 'asc' }))
+          ? entitySchema.value.natural_sort.map((property) => ({ property, order: 'asc' as const }))
           : undefined;
 
       const response = await fetch({
@@ -406,7 +412,7 @@ function reloadCollection(debounce = false): void {
   delay ? (requestTimeoutId = setTimeout(run, delay)) : run();
 }
 
-async function onChildSort(value: (string | SortItem)[] | null | undefined): Promise<void> {
+async function onChildSort(value: (string | SortItemField)[] | null | undefined): Promise<void> {
   lastChildSort = toRaw(value);
   sort.value = value;
   const query = snapshotQuery({ sort: value });
@@ -445,7 +451,8 @@ onUnmounted(() => {
 watchEffect(() => {
   config.userTimezone = props.userTimezone ?? globalConfig.userTimezone;
   config.requestTimezone = props.requestTimezone ?? globalConfig.requestTimezone;
-  config.quickSort = props.quickSort ?? globalConfig.quickSort;
+  // Prop-only, never globalConfig: the *EditingLocation config is Search-only (it carries 'query-builder').
+  config.editSort = props.sortEditingLocation ?? 'collection-column';
   config.displayCount = props.displayCount ?? globalConfig.displayCount;
   config.editFields = props.editFields ?? false;
   config.naturalSortWhenEmpty = props.naturalSortWhenEmpty ?? globalConfig.naturalSortWhenEmpty;
@@ -491,14 +498,9 @@ watch(
     <template v-else>
       <div>
         <div
-          v-if="
-            config.displayCount ||
-            !infiniteScroll ||
-            onExport ||
-            config.allowedCollectionTypes.length > 1 ||
-            config.editFields
-          "
+          v-if="hasPermanentHeader || showSortEditor"
           :class="classes.collection_header"
+          :data-qkit-reflow-sort-only="!hasPermanentHeader || undefined"
         >
           <div>
             <div v-if="config.displayCount">{{ translate('results') }} : {{ count }}</div>
@@ -517,6 +519,15 @@ watch(
               :custom-fields="customFields"
               :entity-schema="entitySchema"
               @update:model-value="onChildFields"
+            />
+            <SortEditor
+              v-if="showSortEditor && entitySchema"
+              :model-value="sort"
+              :fields="config.editSort === 'collection-column' ? fields : undefined"
+              :reflow-fallback="config.editSort === 'collection-column'"
+              :custom-fields="customFields"
+              :entity-schema="entitySchema"
+              @update:model-value="onChildSort"
             />
           </div>
         </div>
@@ -540,6 +551,7 @@ watch(
           :user-timezone="config.userTimezone"
           :request-timezone="config.requestTimezone"
           :reflow="config.reflow"
+          :sortable-headers="config.editSort === 'collection-column'"
           :on-row-click="onItemClick"
           @reached-end="onReachedEnd"
           @update:sort="onChildSort"

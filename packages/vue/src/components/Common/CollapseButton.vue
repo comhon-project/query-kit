@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { classes } from '@core/ClassManager';
+import { classes, type ClassName } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
 import { icons } from '@core/IconManager';
 import Icon from '@components/Common/Icon.vue';
-import type { ButtonType, ButtonClass } from '@core/types';
+import type { ButtonType } from '@core/types';
 
 interface Props {
-  btnClass?: ButtonClass;
+  btnClass?: ClassName;
   type?: ButtonType;
   ariaLabel?: string;
 }

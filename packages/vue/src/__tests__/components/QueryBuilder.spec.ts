@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import QueryBuilder from '@components/QueryBuilder.vue';
 import FilterBuilder from '@components/Filter/FilterBuilder.vue';
 import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
+import SortBuilder from '@components/Collection/SortBuilder.vue';
 import FieldsListItem from '@components/Collection/FieldsListItem.vue';
 import Group from '@components/Filter/Group.vue';
 import IconButton from '@components/Common/IconButton.vue';
@@ -245,7 +246,7 @@ describe('QueryBuilder', () => {
 
     describe('header (fields builder present)', () => {
       it('renders the actions header with undo/redo/reset buttons when editFields is enabled', async () => {
-        await mountQueryBuilder({ editFields: true });
+        await mountQueryBuilder({ editFilter: true, editFields: true });
         const header = wrapper.find('header.qkit-query-builder-header');
         expect(header.exists()).toBe(true);
         const icons = iconsInScope('header.qkit-query-builder-header');
@@ -255,7 +256,7 @@ describe('QueryBuilder', () => {
       });
 
       it('places the header before the FilterBuilder section', async () => {
-        await mountQueryBuilder({ editFields: true });
+        await mountQueryBuilder({ editFilter: true, editFields: true });
         const children = Array.from(wrapper.find('section.qkit-query-builder').element.children);
         const headerIndex = children.findIndex((el) => el.tagName === 'HEADER');
         const filterIndex = children.findIndex(
@@ -267,7 +268,7 @@ describe('QueryBuilder', () => {
       });
 
       it('does not embed undo/redo/reset inside the FilterBuilder', async () => {
-        await mountQueryBuilder({ editFields: true });
+        await mountQueryBuilder({ editFilter: true, editFields: true });
         const icons = iconsInScope('section.qkit-filter-builder');
         expect(icons).not.toContain('undo');
         expect(icons).not.toContain('redo');
@@ -275,7 +276,7 @@ describe('QueryBuilder', () => {
       });
 
       it('shows the search button in the header in manual mode', async () => {
-        await mountQueryBuilder({ editFields: true, manual: true });
+        await mountQueryBuilder({ editFilter: true, editFields: true, manual: true });
         expect(iconsInScope('header.qkit-query-builder-header')).toContain('search');
       });
     });
@@ -401,7 +402,7 @@ describe('QueryBuilder', () => {
     });
 
     it('renders the fields builder after the filter builder', async () => {
-      await mountQueryBuilder({ editFields: true, fields: ['first_name'] });
+      await mountQueryBuilder({ editFilter: true, editFields: true, fields: ['first_name'] });
       const children = Array.from(wrapper.find('section.qkit-query-builder').element.children);
       const filterIndex = children.findIndex(
         (el) => el.tagName === 'SECTION' && el.classList.contains('qkit-filter-builder'),
@@ -470,6 +471,73 @@ describe('QueryBuilder', () => {
       await actionButton('reset').trigger('click');
       await flushAll();
       expect(wrapper.emitted('update:fields')!.at(-1)![0]).toEqual(['first_name', 'last_name']);
+    });
+  });
+
+  describe('sort editing', () => {
+    it('does not render the sort builder by default', async () => {
+      await mountQueryBuilder();
+      expect(wrapper.findComponent(SortBuilder).exists()).toBe(false);
+      expect(wrapper.find('.qkit-sort-builder').exists()).toBe(false);
+    });
+
+    it('renders the sort builder inline when editSort is true', async () => {
+      await mountQueryBuilder({ editSort: true });
+      expect(wrapper.find('section.qkit-query-builder').find('.qkit-sort-builder').exists()).toBe(true);
+      expect(wrapper.findComponent(SortBuilder).exists()).toBe(true);
+    });
+
+    it('renders the sort builder after the filter builder', async () => {
+      await mountQueryBuilder({ editFilter: true, editSort: true });
+      const children = Array.from(wrapper.find('section.qkit-query-builder').element.children);
+      const filterIndex = children.findIndex(
+        (el) => el.tagName === 'SECTION' && el.classList.contains('qkit-filter-builder'),
+      );
+      const sortIndex = children.findIndex((el) => el.classList.contains('qkit-sort-builder'));
+      expect(filterIndex).toBeGreaterThanOrEqual(0);
+      expect(sortIndex).toBeGreaterThan(filterIndex);
+    });
+
+    it('forwards the sort model and customFields to the sort builder', async () => {
+      const customFields = { first_name: { label: 'First' } };
+      await mountQueryBuilder({ editSort: true, sort: [{ field: 'first_name', order: 'asc' }], customFields });
+      const builder = wrapper.findComponent(SortBuilder);
+      expect(builder.props('modelValue')).toEqual([{ field: 'first_name', order: 'asc' }]);
+      expect(builder.props('customFields')).toEqual(customFields);
+    });
+
+    it('propagates a sort update from the sort builder to the parent', async () => {
+      await mountQueryBuilder({ editSort: true });
+      wrapper.findComponent(SortBuilder).vm.$emit('update:modelValue', [{ field: 'age', order: 'desc' }]);
+      await flushAll();
+      expect(wrapper.emitted('update:sort')!.at(-1)![0]).toEqual([{ field: 'age', order: 'desc' }]);
+    });
+
+    it('places the shared actions bar in the header when filter and sort are both shown', async () => {
+      await mountQueryBuilder({ editFilter: true, editSort: true });
+      expect(wrapper.find('header.qkit-query-builder-header').exists()).toBe(true);
+    });
+  });
+
+  describe('filter visibility', () => {
+    it('shows the filter by default (nothing enabled)', async () => {
+      await mountQueryBuilder();
+      expect(wrapper.findComponent(FilterBuilder).exists()).toBe(true);
+    });
+
+    it('hides the filter when only another builder is enabled', async () => {
+      await mountQueryBuilder({ editFields: true });
+      expect(wrapper.findComponent(FilterBuilder).exists()).toBe(false);
+    });
+
+    it('shows the filter when editFilter is true alongside another builder', async () => {
+      await mountQueryBuilder({ editFilter: true, editFields: true });
+      expect(wrapper.findComponent(FilterBuilder).exists()).toBe(true);
+    });
+
+    it('falls back to the filter when all builders are explicitly disabled', async () => {
+      await mountQueryBuilder({ editFilter: false, editFields: false, editSort: false });
+      expect(wrapper.findComponent(FilterBuilder).exists()).toBe(true);
     });
   });
 

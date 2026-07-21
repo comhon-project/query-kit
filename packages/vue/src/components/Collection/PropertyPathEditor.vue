@@ -4,31 +4,39 @@ import { classes } from '@core/ClassManager';
 import IconButton from '@components/Common/IconButton.vue';
 import FieldLabel from '@components/Collection/FieldLabel.vue';
 import { getPropertyPath, resolve, getPropertyTranslation, type EntitySchema, type Property } from '@core/EntitySchema';
+import { getSortableProperties } from '@core/RequestSchema';
 
 interface Props {
   entitySchema: EntitySchema;
-  fields: string[];
+  fields?: string[];
+  sortableOnly?: boolean;
+  labelId?: string;
   label?: string | ((locale: string) => string);
 }
 
-const props = defineProps<Props>();
 const propertyPath = defineModel<string>({ required: true });
+const props = defineProps<Props>();
 
 const resolvedPath = shallowRef<Property[] | false>([]);
 const lastRelatedSchema = ref<EntitySchema | null>(null);
+const sortableChildren = ref<string[]>([]);
 const editing = ref<boolean>(false);
 const selectedProperty = ref<string | null>(null);
-const expandable = computed<boolean>(() => {
-  if (!resolvedPath.value) return false;
-  const property = resolvedPath.value[resolvedPath.value.length - 1];
-  if (property?.type === 'object') return true;
-  if (property?.type === 'relationship' && isOneToOneRelationship(property)) return true;
-  return false;
-});
 
+const tailProperty = computed<Property | null>(() =>
+  resolvedPath.value && resolvedPath.value.length ? resolvedPath.value[resolvedPath.value.length - 1] : null,
+);
+const expandable = computed<boolean>(() => {
+  const property = tailProperty.value;
+  if (!property) return false;
+  const drillable = property.type === 'object' || (property.type === 'relationship' && isOneToOneRelationship(property));
+  if (!drillable) return false;
+  return props.sortableOnly ? sortableChildren.value.length > 0 : true;
+});
 const options = computed<Property[] | null>(() => {
-  if (!editing.value || !lastRelatedSchema.value) {
-    return null;
+  if (!editing.value || !lastRelatedSchema.value) return null;
+  if (props.sortableOnly) {
+    return lastRelatedSchema.value.properties.filter((property) => sortableChildren.value.includes(property.id));
   }
   const opts: Property[] = [];
   for (const property of lastRelatedSchema.value.properties) {
@@ -38,11 +46,10 @@ const options = computed<Property[] | null>(() => {
       if (isOneToOneRelationship(property)) {
         opts.push(property);
       }
-    } else if (!props.fields.includes(propertyPath.value + '.' + property.id)) {
+    } else if (!(props.fields ?? []).includes(propertyPath.value + '.' + property.id)) {
       opts.push(property);
     }
   }
-
   return opts;
 });
 
@@ -63,13 +70,6 @@ function reduceProperty(): void {
   }
 }
 
-watch(resolvedPath, async () => {
-  if (!resolvedPath.value || !resolvedPath.value.length) return;
-  const lastProperty = resolvedPath.value[resolvedPath.value.length - 1];
-  if (lastProperty.entity) {
-    lastRelatedSchema.value = await resolve(lastProperty.entity);
-  }
-});
 watch(selectedProperty, () => {
   if (selectedProperty.value) {
     propertyPath.value = propertyPath.value + '.' + selectedProperty.value;
@@ -77,17 +77,38 @@ watch(selectedProperty, () => {
     editing.value = false;
   }
 });
-watchEffect(async () => {
+watchEffect(async (onCleanup) => {
+  let stale = false;
+  onCleanup(() => (stale = true));
   try {
-    resolvedPath.value = await getPropertyPath(props.entitySchema.id, propertyPath.value);
+    const path = await getPropertyPath(props.entitySchema.id, propertyPath.value);
+    if (!stale) resolvedPath.value = path;
   } catch {
-    resolvedPath.value = false;
+    if (!stale) resolvedPath.value = false;
+  }
+});
+watchEffect(async (onCleanup) => {
+  let stale = false;
+  onCleanup(() => (stale = true));
+  const entity = tailProperty.value?.entity;
+  if (!entity) {
+    sortableChildren.value = [];
+    lastRelatedSchema.value = null;
+    return;
+  }
+  const [schema, sortable] = await Promise.all([
+    resolve(entity).catch(() => null),
+    props.sortableOnly ? getSortableProperties(entity).catch(() => [] as string[]) : Promise.resolve([] as string[]),
+  ]);
+  if (!stale) {
+    lastRelatedSchema.value = schema;
+    sortableChildren.value = sortable;
   }
 });
 </script>
 
 <template>
-  <FieldLabel :entity-schema="entitySchema" :field-id="propertyPath" :label="label" />
+  <FieldLabel :id="labelId" :entity-schema="entitySchema" :field-id="propertyPath" :label="label" />
   <template v-if="expandable && lastRelatedSchema">
     <select v-if="editing" v-model="selectedProperty" :class="classes.input">
       <option value="" disabled hidden />

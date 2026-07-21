@@ -3,6 +3,7 @@ import { defineComponent, h, markRaw, reactive, ref } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
 import CollectionTable from '@components/Collection/CollectionTable.vue';
 import FieldsEditor from '@components/Collection/FieldsEditor.vue';
+import SortEditor from '@components/Collection/SortEditor.vue';
 import { registerLoader, registerTranslationsLoader, loadRawTranslations } from '@core/EntitySchema';
 import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
 import { registerRequester, registerRequestErrorHandler } from '@core/Requester';
@@ -660,7 +661,7 @@ describe('Collection', () => {
       const vm = wrapper.vm as any;
       expect(vm.config.userTimezone).toBe('UTC');
       expect(vm.config.requestTimezone).toBe('UTC');
-      expect(vm.config.quickSort).toBe(true);
+      expect(vm.config.editSort).toBe('collection-column');
       expect(vm.config.displayCount).toBe(true);
       expect(vm.config.editFields).toBe(false);
       expect(vm.config.allowedCollectionTypes).toEqual(['pagination']);
@@ -670,7 +671,7 @@ describe('Collection', () => {
       mountCollection({
         userTimezone: 'Europe/Paris',
         requestTimezone: 'America/New_York',
-        quickSort: false,
+        sortEditingLocation: 'collection-modal',
         displayCount: false,
         editFields: true,
         allowedCollectionTypes: ['infinite'],
@@ -679,7 +680,7 @@ describe('Collection', () => {
       const vm = wrapper.vm as any;
       expect(vm.config.userTimezone).toBe('Europe/Paris');
       expect(vm.config.requestTimezone).toBe('America/New_York');
-      expect(vm.config.quickSort).toBe(false);
+      expect(vm.config.editSort).toBe('collection-modal');
       expect(vm.config.displayCount).toBe(false);
       expect(vm.config.editFields).toBe(true);
       expect(vm.config.allowedCollectionTypes).toEqual(['infinite']);
@@ -692,6 +693,111 @@ describe('Collection', () => {
       await flushAll();
       expect(calls).toHaveLength(1);
       expect(calls[0].sort).toBeUndefined();
+    });
+
+    it('honors a sort on a sortable property that is not a displayed column', async () => {
+      const { calls } = mountCollection({ fields: ['first_name'], sort: [{ field: 'age', order: 'desc' }] });
+      await flushAll();
+      expect(calls[0].sort).toEqual([{ property: 'age', order: 'desc' }]);
+    });
+
+    it('preserves multi-sort priority for numeric-named fields in the request', async () => {
+      // A Record keyed by field would reorder '2' before '10' via Object.values;
+      // the array keeps the sort model's order.
+      const { calls } = mountCollection({
+        sort: [
+          { field: '10', order: 'asc' },
+          { field: '2', order: 'desc' },
+        ],
+        customFields: {
+          '10': { label: 'Ten', open: true, sort: ['prop_ten'] },
+          '2': { label: 'Two', open: true, sort: ['prop_two'] },
+        },
+      });
+      await flushAll();
+      expect(calls[0].sort).toEqual([
+        { property: 'prop_ten', order: 'asc' },
+        { property: 'prop_two', order: 'desc' },
+      ]);
+    });
+
+    it('warns and drops a sort on an open custom field without a sort config', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { calls } = mountCollection({
+        sort: [{ field: 'first_name', order: 'asc' }, { field: 'virtual', order: 'asc' }],
+        customFields: { virtual: { label: 'Virtual', open: true } },
+      });
+      await flushAll();
+      expect(calls[0].sort).toEqual([{ property: 'first_name', order: 'asc' }]);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('"virtual"'));
+      warn.mockRestore();
+    });
+
+    it('warns and drops a sort on an unresolvable field', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { calls } = mountCollection({
+        sort: [{ field: 'first_name', order: 'asc' }, { field: 'nope_not_a_field', order: 'asc' }],
+      });
+      await flushAll();
+      expect(calls[0].sort).toEqual([{ property: 'first_name', order: 'asc' }]);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('"nope_not_a_field"'));
+      warn.mockRestore();
+    });
+  });
+
+  describe('editSort locations', () => {
+    it('shows an unscoped sort editor and no sortable headers in collection-modal mode', async () => {
+      mountCollection({ sortEditingLocation: 'collection-modal' });
+      await flushAll();
+      const editor = wrapper.findComponent(SortEditor);
+      expect(editor.exists()).toBe(true);
+      expect(editor.props('fields')).toBeUndefined();
+      expect(editor.props('reflowFallback')).toBe(false);
+      expect(wrapper.findAll('thead button').length).toBe(0);
+    });
+
+    it('makes headers sortable and hides the sort editor in collection-column mode (no reflow)', async () => {
+      mountCollection({ sortEditingLocation: 'collection-column' });
+      await flushAll();
+      expect(wrapper.findComponent(SortEditor).exists()).toBe(false);
+      expect(wrapper.findAll('thead button').length).toBeGreaterThan(0);
+    });
+
+    it('adds a scoped fallback sort editor in collection-column mode when reflow is on', async () => {
+      mountCollection({ sortEditingLocation: 'collection-column', reflow: true });
+      await flushAll();
+      const editor = wrapper.findComponent(SortEditor);
+      expect(editor.exists()).toBe(true);
+      expect(editor.props('reflowFallback')).toBe(true);
+      expect(editor.props('fields')).toEqual(['first_name', 'last_name']);
+      expect(wrapper.findAll('thead button').length).toBeGreaterThan(0);
+    });
+
+    it('shows no sort UI in none mode', async () => {
+      mountCollection({ sortEditingLocation: 'none' });
+      await flushAll();
+      expect(wrapper.findComponent(SortEditor).exists()).toBe(false);
+      expect(wrapper.findAll('thead button').length).toBe(0);
+    });
+
+    it('mounts the reflow fallback sort editor even when nothing else fills the header', async () => {
+      // No count, infinite scroll, no export, single collection type, no fields editing:
+      // the header block would otherwise not mount, hiding the card-mode sort button.
+      mountCollection({
+        sortEditingLocation: 'collection-column',
+        reflow: true,
+        displayCount: false,
+        allowedCollectionTypes: ['infinite'],
+      });
+      await flushAll();
+      expect(wrapper.findComponent(SortEditor).exists()).toBe(true);
+      expect(wrapper.find('.qkit-collection-header').attributes('data-qkit-reflow-sort-only')).toBe('true');
+    });
+
+    it('does not flag the header reflow-sort-only when it has permanent content', async () => {
+      mountCollection({ sortEditingLocation: 'collection-column', reflow: true, displayCount: true });
+      await flushAll();
+      expect(wrapper.find('.qkit-collection-header').attributes('data-qkit-reflow-sort-only')).toBeUndefined();
     });
   });
 
@@ -1577,6 +1683,34 @@ describe('Collection', () => {
       });
       await flushAll();
       expect(calls[0].sort).toEqual([{ property: 'age', order: 'desc' }]);
+    });
+
+    it('applies a runtime naturalSortWhenEmpty toggle to a later request (fallback resolved at request time)', async () => {
+      const { requester, calls } = createMockRequester({ collection: sampleRows, count: 2 });
+      wrapper = mountWithPlugin(Collection, {
+        props: {
+          entity: 'user',
+          limit: 10,
+          fields: ['first_name'],
+          'onUpdate:fields': () => {},
+          requester,
+          naturalSortWhenEmpty: false,
+          sort: [],
+        },
+      });
+      await flushAll();
+      expect(calls[0].sort).toBeUndefined();
+
+      // Toggle the prop without touching sort/fields/entity, then fire a request via submit().
+      await wrapper.setProps({ naturalSortWhenEmpty: true });
+      await flushAll();
+      (wrapper.vm as any).submit();
+      await flushAll();
+
+      expect(calls.at(-1)!.sort).toEqual([
+        { property: 'last_name', order: 'asc' },
+        { property: 'first_name', order: 'asc' },
+      ]);
     });
   });
 

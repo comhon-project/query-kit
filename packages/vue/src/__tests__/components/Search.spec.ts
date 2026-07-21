@@ -63,9 +63,14 @@ describe('Search', () => {
       expect(div.exists()).toBe(true);
     });
 
-    it('renders QueryBuilder component', async () => {
-      await mountSearch();
+    it('renders QueryBuilder when a builder is routed to it', async () => {
+      await mountSearch({ filterEditingLocation: 'query-builder' });
       expect(wrapper.findComponent(QueryBuilder).exists()).toBe(true);
+    });
+
+    it('does not render QueryBuilder when nothing is routed to it', async () => {
+      await mountSearch({ filterEditingLocation: 'none' });
+      expect(wrapper.findComponent(QueryBuilder).exists()).toBe(false);
     });
 
     it('renders Collection after QueryBuilder emits computed filter', async () => {
@@ -89,7 +94,7 @@ describe('Search', () => {
         requestTimezone: 'America/New_York',
         debounce: 2000,
         manual: false,
-        editFields: 'query-builder',
+        fieldsEditingLocation: 'query-builder',
         customFields: { full_name: { label: 'Full Name' } },
       });
       const builder = wrapper.findComponent(QueryBuilder);
@@ -110,7 +115,7 @@ describe('Search', () => {
 
     it('propagates fields update from QueryBuilder', async () => {
       const { requester } = createMockRequester();
-      await mountSearchAndTriggerComputed({ requester });
+      await mountSearchAndTriggerComputed({ requester, filterEditingLocation: 'query-builder' });
 
       wrapper.findComponent(QueryBuilder).vm.$emit('update:fields', ['age']);
       await flushAll();
@@ -126,9 +131,9 @@ describe('Search', () => {
       await mountSearchAndTriggerComputed({
         customFields: { full_name: { label: 'Full Name' } },
         directQuery: true,
-        quickSort: true,
         displayCount: true,
-        editFields: 'collection',
+        fieldsEditingLocation: 'collection',
+        sortEditingLocation: 'collection-modal',
         allowedCollectionTypes: ['pagination'],
         userTimezone: 'Europe/Paris',
         requestTimezone: 'America/New_York',
@@ -143,9 +148,9 @@ describe('Search', () => {
       expect(collection.props('limit')).toBe(10);
       expect(collection.props('customFields')).toEqual({ full_name: { label: 'Full Name' } });
       expect(collection.props('directQuery')).toBe(true);
-      expect(collection.props('quickSort')).toBe(true);
       expect(collection.props('displayCount')).toBe(true);
       expect(collection.props('editFields')).toBe(true);
+      expect(collection.props('sortEditingLocation')).toBe('collection-modal');
       expect(collection.props('allowedCollectionTypes')).toEqual(['pagination']);
       expect(collection.props('reflow')).toBe(true);
       expect(collection.props('userTimezone')).toBe('Europe/Paris');
@@ -159,34 +164,52 @@ describe('Search', () => {
 
   describe('editFields location', () => {
     it('routes field editing to the query builder only', async () => {
-      await mountSearch({ editFields: 'query-builder' });
+      await mountSearch({ fieldsEditingLocation: 'query-builder' });
       expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(true);
       expect(wrapper.findComponent(Collection).props('editFields')).toBe(false);
     });
 
     it('routes field editing to the collection only', async () => {
-      await mountSearch({ editFields: 'collection' });
+      await mountSearch({ filterEditingLocation: 'query-builder', fieldsEditingLocation: 'collection' });
       expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(false);
       expect(wrapper.findComponent(Collection).props('editFields')).toBe(true);
     });
 
     it('disables field editing in both when set to none', async () => {
-      await mountSearch({ editFields: 'none' });
+      await mountSearch({ filterEditingLocation: 'query-builder', fieldsEditingLocation: 'none' });
       expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(false);
       expect(wrapper.findComponent(Collection).props('editFields')).toBe(false);
     });
 
     it('disables field editing in both when omitted', async () => {
-      await mountSearch();
+      await mountSearch({ filterEditingLocation: 'query-builder' });
       expect(wrapper.findComponent(QueryBuilder).props('editFields')).toBe(false);
       expect(wrapper.findComponent(Collection).props('editFields')).toBe(false);
+    });
+  });
+
+  describe('editFilter location', () => {
+    it('shows the query builder with the filter enabled when set to query-builder', async () => {
+      await mountSearch({ filterEditingLocation: 'query-builder' });
+      expect(wrapper.findComponent(QueryBuilder).props('editFilter')).toBe(true);
+    });
+
+    it('shows the query builder for fields/sort even without editFilter', async () => {
+      await mountSearch({ filterEditingLocation: 'none', fieldsEditingLocation: 'query-builder' });
+      expect(wrapper.findComponent(QueryBuilder).exists()).toBe(true);
+      expect(wrapper.findComponent(QueryBuilder).props('editFilter')).toBe(false);
+    });
+
+    it('hides the query builder when set to none and nothing else is routed to it', async () => {
+      await mountSearch({ filterEditingLocation: 'none' });
+      expect(wrapper.findComponent(QueryBuilder).exists()).toBe(false);
     });
   });
 
   describe('fields editing', () => {
     it('debounces the request when fields are edited via the query builder', async () => {
       const { requester, calls } = createMockRequester();
-      await mountSearchAndTriggerComputed({ requester, editFields: 'query-builder', debounce: 1000 });
+      await mountSearchAndTriggerComputed({ requester, fieldsEditingLocation: 'query-builder', debounce: 1000 });
       const before = calls.length;
 
       // Emit from the FieldsBuilder actually rendered inside the QueryBuilder.
@@ -240,7 +263,7 @@ describe('Search', () => {
   describe('validate', () => {
     it('triggers a collection request when QueryBuilder emits validate (manual mode)', async () => {
       const { requester, calls } = createMockRequester();
-      await mountSearchAndTriggerComputed({ requester, manual: true });
+      await mountSearchAndTriggerComputed({ requester, manual: true, filterEditingLocation: 'query-builder' });
       const before = calls.length;
       wrapper.findComponent(QueryBuilder).vm.$emit('validate');
       await flushAll();
@@ -249,7 +272,7 @@ describe('Search', () => {
 
     it('scrolls to the collection on every manual validate (not just the first)', async () => {
       const { requester } = createMockRequester();
-      await mountSearchAndTriggerComputed({ requester, manual: true }, { attachTo: document.body });
+      await mountSearchAndTriggerComputed({ requester, manual: true, filterEditingLocation: 'query-builder' }, { attachTo: document.body });
 
       const collection = wrapper.findComponent(Collection);
       const scrollIntoView = vi.spyOn(collection.element, 'scrollIntoView');

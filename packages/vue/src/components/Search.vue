@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 import Collection from '@components/Collection/Collection.vue';
 import QueryBuilder from '@components/QueryBuilder.vue';
 import { classes } from '@core/ClassManager';
 import { getUniqueId } from '@core/Utils';
+import { config as globalConfig } from '@config/config';
 import type { AllowedOperators } from '@core/OperatorManager';
 import type {
   Filter,
@@ -11,9 +12,11 @@ import type {
   AllowedScopes,
   AllowedProperties,
   CustomFieldConfig,
-  SortItem,
+  SortItemField,
   CollectionType,
-  EditFieldsLocation,
+  FieldsEditingLocation,
+  SortEditingLocation,
+  FilterEditingLocation,
   Requester,
   RequesterFunction,
 } from '@core/types';
@@ -37,10 +40,11 @@ interface Props {
   directQuery?: boolean;
   debounce?: number;
   limit?: number;
-  quickSort?: boolean;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
-  editFields?: EditFieldsLocation;
+  filterEditingLocation?: FilterEditingLocation;
+  fieldsEditingLocation?: FieldsEditingLocation;
+  sortEditingLocation?: SortEditingLocation;
   naturalSortWhenEmpty?: boolean;
   reflow?: boolean;
   onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
@@ -50,7 +54,7 @@ interface Props {
 
 const filter = defineModel<Filter | null>('filter', { default: null });
 const fields = defineModel<string[]>('fields', { required: true });
-const sort = defineModel<(string | SortItem)[]>('sort');
+const sort = defineModel<(string | SortItemField)[]>('sort');
 const page = defineModel<number>('page', { default: 1 });
 
 // undefined: prevent Vue from casting absent boolean props to false
@@ -61,7 +65,6 @@ const props = withDefaults(defineProps<Props>(), {
   displayOperator: undefined,
   manual: undefined,
   directQuery: undefined,
-  quickSort: undefined,
   displayCount: undefined,
   naturalSortWhenEmpty: undefined,
   reflow: undefined,
@@ -73,6 +76,16 @@ const queryBuilderId = 'qkit-query-builder-' + uniqueId;
 const collectionId = 'qkit-collection-' + uniqueId;
 const collectionRef = useTemplateRef<{ submit: () => void }>('collection');
 
+const filterLocation = computed(() => props.filterEditingLocation ?? globalConfig.filterEditingLocation);
+const fieldsLocation = computed(() => props.fieldsEditingLocation ?? globalConfig.fieldsEditingLocation);
+const sortLocation = computed(() => props.sortEditingLocation ?? globalConfig.sortEditingLocation);
+const showQueryBuilder = computed(
+  () =>
+    filterLocation.value === 'query-builder' ||
+    fieldsLocation.value === 'query-builder' ||
+    sortLocation.value === 'query-builder',
+);
+
 function onValidate(): void {
   collectionRef.value?.submit();
   document.getElementById(collectionId)?.scrollIntoView();
@@ -82,12 +95,16 @@ function onValidate(): void {
 <template>
   <div :class="classes.search">
     <QueryBuilder
+      v-if="showQueryBuilder"
       :id="queryBuilderId"
       v-model:filter="filter"
       v-model:fields="fields"
+      v-model:sort="sort"
       :entity="entity"
       :custom-fields="customFields"
-      :edit-fields="editFields === 'query-builder'"
+      :edit-filter="filterLocation === 'query-builder'"
+      :edit-fields="fieldsLocation === 'query-builder'"
+      :edit-sort="sortLocation === 'query-builder'"
       :allow-reset="allowReset"
       :allow-undo="allowUndo"
       :allow-redo="allowRedo"
@@ -116,7 +133,6 @@ function onValidate(): void {
       :direct-query="directQuery"
       :limit="limit"
       :on-item-click="onItemClick"
-      :quick-sort="quickSort"
       :post-request="postRequest"
       :on-request-error="onRequestError"
       :allowed-collection-types="allowedCollectionTypes"
@@ -124,11 +140,12 @@ function onValidate(): void {
       :on-export="onExport"
       :user-timezone="userTimezone"
       :request-timezone="requestTimezone"
-      :edit-fields="editFields === 'collection'"
+      :edit-fields="fieldsLocation === 'collection'"
+      :sort-editing-location="sortLocation === 'query-builder' ? 'none' : sortLocation"
       :natural-sort-when-empty="naturalSortWhenEmpty"
       :reflow="reflow"
       :requester="requester"
-      :query-builder-id="queryBuilderId"
+      :query-builder-id="showQueryBuilder ? queryBuilderId : undefined"
     />
   </div>
 </template>

@@ -48,10 +48,15 @@ export type NativeHtmlComponent =
 
 // ==================== Requester Types ====================
 
+export interface SortItemProperty {
+  property: string;
+  order: 'asc' | 'desc';
+}
+
 /** Request parameters */
 export interface RequestParams {
   entity: string;
-  sort?: { property: string; order: string }[];
+  sort?: SortItemProperty[];
   page: number;
   limit?: number;
   filter?: Filter;
@@ -129,9 +134,17 @@ export type Filter = ConditionFilter | ScopeFilter | GroupFilter | EntityConditi
 
 export type FilterWithOperator = ConditionFilter | GroupFilter | EntityConditionFilter;
 
+// ==================== Search Types ====================
+
+export type FieldsEditingLocation = 'query-builder' | 'collection' | 'none';
+
+export type SortEditingLocation = 'query-builder' | CollectionSortEditingLocation;
+
+export type FilterEditingLocation = 'query-builder' | 'none';
+
 // ==================== Collection Types ====================
 
-export interface SortItem {
+export interface SortItemField {
   field: string;
   order: 'asc' | 'desc';
 }
@@ -147,9 +160,7 @@ export interface CustomFieldConfig {
 
 export type CollectionType = 'infinite' | 'pagination';
 
-// Where the fields editor is exposed in Search: inside the query builder, inside
-// the collection, or nowhere.
-export type EditFieldsLocation = 'query-builder' | 'collection' | 'none';
+export type CollectionSortEditingLocation = 'collection-modal' | 'collection-column' | 'none';
 
 export interface CollectionContent {
   collection: Record<string, unknown>[];
@@ -167,7 +178,6 @@ export interface SelectOption<T = string | number> {
 // ==================== Button Types ====================
 
 export type ButtonType = 'button' | 'submit' | 'reset';
-export type ButtonClass = 'btn_primary' | 'btn_danger' | 'btn';
 
 // ==================== Display Props ====================
 
@@ -215,7 +225,7 @@ export interface FilterBuilderConfig {
 export interface CollectionConfig {
   userTimezone: string;
   requestTimezone: string;
-  quickSort: boolean;
+  editSort: CollectionSortEditingLocation;
   displayCount: boolean;
   editFields: boolean;
   naturalSortWhenEmpty: boolean;

@@ -48,6 +48,7 @@ export default {
   export: 'エクスポート',
   columns: '列',
   fields: 'フィールド',
+  sort: '並び替え',
   pagination: 'ページネーション',
   previous: '前へ',
   next: '次へ',

@@ -111,6 +111,52 @@ describe('CollectionTable', () => {
     vi.useRealTimers();
   });
 
+  it('preserves a non-displayed sort entry on a header ctrl-click (multi-sort)', async () => {
+    vi.useFakeTimers();
+    // 'age' is not a displayed column here (fieldsProperties only has first/last name).
+    mountTable({ sort: [{ field: 'age', order: 'asc' }] });
+    await flushAll();
+
+    await wrapper.find('th button').trigger('click', { ctrlKey: true });
+    vi.advanceTimersByTime(300);
+    await flushAll();
+
+    const emits = wrapper.emitted('update:sort');
+    expect(emits).toHaveLength(1);
+    expect(emits![0][0]).toEqual([
+      { field: 'age', order: 'asc' },
+      { field: 'first_name', order: 'asc' },
+    ]);
+    vi.useRealTimers();
+  });
+
+  it('preserves the priority order of numeric-named sort entries (Map, not object keys)', async () => {
+    vi.useFakeTimers();
+    // Object keys would reorder '2' before '10'; the Map keeps insertion order.
+    mountTable({ sort: [{ field: '10', order: 'asc' }, { field: '2', order: 'desc' }] });
+    await flushAll();
+
+    await wrapper.find('th button').trigger('click', { ctrlKey: true });
+    vi.advanceTimersByTime(300);
+    await flushAll();
+
+    const emits = wrapper.emitted('update:sort');
+    expect(emits).toHaveLength(1);
+    expect(emits![0][0]).toEqual([
+      { field: '10', order: 'asc' },
+      { field: '2', order: 'desc' },
+      { field: 'first_name', order: 'asc' },
+    ]);
+    vi.useRealTimers();
+  });
+
+  it('does not render sort buttons when sortableHeaders is false', async () => {
+    mountTable({ sortableHeaders: false });
+    await flushAll();
+    expect(wrapper.findAll('thead button').length).toBe(0);
+    expect(wrapper.findAll('th').length).toBe(2);
+  });
+
   it('does not show a sort arrow for an open custom field the request drops', async () => {
     mountTable({
       fieldsProperties: { ...fieldsProperties, actions: undefined },

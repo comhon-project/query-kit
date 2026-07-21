@@ -24,7 +24,7 @@ const tabs = [
   { id: 'restricted', label: 'Restricted' },
   { id: 'clicks', label: 'Clicks' },
   { id: 'fixed', label: 'Fixed' },
-  { id: 'builderFields', label: 'Fields in builder' },
+  { id: 'builder', label: 'Fields + Sort in builder' },
   { id: 'reflow', label: 'Reflow' },
 ];
 
@@ -41,11 +41,11 @@ const customFields = {
   },
 };
 
-function createState(entity, fields, filter = null) {
+function createState(entity, fields, filter = null, sort = []) {
   return reactive({
     entity,
     fields: [...fields],
-    sort: [],
+    sort: [...sort],
     filter,
     page: 1,
   });
@@ -79,8 +79,11 @@ const state = {
   minimal: createState('user', ['first_name', 'last_name', 'age', 'company']),
   restricted: createState('user', ['first_name', 'last_name', 'age', 'gender', 'company']),
   clicks: createState('user', ['first_name', 'last_name', 'age', 'company']),
-  reflow: createState('user', ['first_name', 'last_name', 'age', 'company']),
-  builderFields: createState('user', userFields),
+  reflow: createState('user', ['first_name', 'last_name', 'age', 'company.brand_name']),
+  builder: createState('user', ['first_name', 'last_name', 'age', 'company'], null, [
+    { field: 'last_name', order: 'asc' },
+    { field: 'first_name', order: 'asc' },
+  ]),
   fixed: createState('organization', ['brand_name', 'address', 'description', 'country', 'contacts'], {
     type: 'group',
     operator: 'and',
@@ -144,7 +147,7 @@ function onThemeChange() {
 
 <template>
   <div class="root-app">
-    <p class="playground-notice">There is no backend — data is randomly generated and not actually filtered.</p>
+    <p class="playground-notice">There is no backend — data is randomly generated and not actually filtered or sorted.</p>
     <div class="playground-toolbar">
       <div class="playground-tabs">
         <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }" @click="switchTab(tab.id)">
@@ -183,8 +186,9 @@ function onThemeChange() {
         v-model:page="state.default.page"
         :entity="state.default.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :custom-fields="customFields"
-        edit-fields="collection"
+        fields-editing-location="collection"
         :allowed-collection-types="['infinite', 'pagination']"
         user-timezone="Europe/Paris"
       />
@@ -202,7 +206,8 @@ function onThemeChange() {
         v-model:page="state.prefilled.page"
         :entity="state.prefilled.entity"
         :requester="requester"
-        edit-fields="collection"
+        filter-editing-location="query-builder"
+        fields-editing-location="collection"
         :allowed-collection-types="['infinite', 'pagination']"
         :on-export="onExport"
         user-timezone="Europe/Paris"
@@ -221,8 +226,9 @@ function onThemeChange() {
         v-model:page="state.manual.page"
         :entity="state.manual.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :manual="true"
-        edit-fields="collection"
+        fields-editing-location="collection"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -239,8 +245,9 @@ function onThemeChange() {
         v-model:page="state.deferred.page"
         :entity="state.deferred.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :direct-query="false"
-        edit-fields="collection"
+        fields-editing-location="collection"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -257,11 +264,12 @@ function onThemeChange() {
         v-model:page="state.minimal.page"
         :entity="state.minimal.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :display-operator="false"
         :allow-reset="false"
         :allow-undo="false"
         :allow-redo="false"
-        edit-fields="none"
+        fields-editing-location="none"
         :display-count="false"
       />
     </div>
@@ -278,10 +286,11 @@ function onThemeChange() {
         v-model:page="state.restricted.page"
         :entity="state.restricted.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :allowed-properties="{ user: ['first_name', 'last_name', 'age', 'gender'], organization: ['brand_name'] }"
         :allowed-scopes="{ user: ['scope'] }"
         :allowed-operators="{ condition: { basic: ['=', '<>'] }, group: ['and'] }"
-        edit-fields="collection"
+        fields-editing-location="collection"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -296,6 +305,7 @@ function onThemeChange() {
         v-model:page="state.clicks.page"
         :entity="state.clicks.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :on-item-click="onItemClick"
         :custom-fields="{ company: { onFieldClick: onFieldClick } }"
       />
@@ -311,20 +321,24 @@ function onThemeChange() {
       </div>
     </div>
 
-    <!-- Fields in builder -->
-    <div v-if="activeTab === 'builderFields'">
+    <!-- Fields + Sort in builder -->
+    <div v-if="activeTab === 'builder'">
       <p class="playground-description">
-        The fields editor lives inside the query builder.
+        Both the fields editor and the sort editor live inside the query builder. Sorting can target
+        any sortable property, even columns that are not displayed. The custom sortable field
+        (age / weight) is offered too.
       </p>
       <QkitSearch
-        v-model:fields="state.builderFields.fields"
-        v-model:sort="state.builderFields.sort"
-        v-model:filter="state.builderFields.filter"
-        v-model:page="state.builderFields.page"
-        :entity="state.builderFields.entity"
+        v-model:fields="state.builder.fields"
+        v-model:sort="state.builder.sort"
+        v-model:filter="state.builder.filter"
+        v-model:page="state.builder.page"
+        :entity="state.builder.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         :custom-fields="customFields"
-        edit-fields="query-builder"
+        fields-editing-location="query-builder"
+        sort-editing-location="query-builder"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -341,6 +355,7 @@ function onThemeChange() {
         v-model:page="state.fixed.page"
         :entity="state.fixed.entity"
         :requester="requester"
+        filter-editing-location="query-builder"
         user-timezone="Europe/Paris"
       />
     </div>
@@ -361,6 +376,8 @@ function onThemeChange() {
           :entity="state.reflow.entity"
           :requester="requester"
           :reflow="true"
+          :allowed-collection-types="['infinite']"
+          :display-count="false"
           :custom-fields="{ first_name: { onFieldClick: () => {} } }"
         />
       </div>

@@ -14,6 +14,7 @@ interface Props {
   order?: 'asc' | 'desc';
   hasCustomSort?: boolean;
   reflow?: boolean;
+  sortableHeaders?: boolean;
 }
 
 interface Emits {
@@ -21,11 +22,13 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), { sortableHeaders: true });
 
 const sortable = ref(false);
 const propertyPath = computed<string | undefined>(() => (props.open ? undefined : props.fieldId));
-const isFieldSortable = computed<boolean>(() => sortable.value || !!props.hasCustomSort);
+const isFieldSortable = computed<boolean>(
+  () => props.sortableHeaders && (sortable.value || !!props.hasCustomSort),
+);
 const orderLabel = computed<string>(() => `(${translate(props.order ?? 'unsorted')})`);
 const sortLabel = computed<string>(() => [props.label, orderLabel.value].filter(Boolean).join(' '));
 const ariaSort = computed(() =>
@@ -57,7 +60,7 @@ watchEffect(async () => {
         :aria-label="sortLabel"
         @click="(e) => emit('click', fieldId, e.ctrlKey)"
       >
-        <Icon icon="sort" :label="orderLabel" />
+        <Icon icon="sort_direction" :label="orderLabel" />
       </button>
     </div>
   </th>

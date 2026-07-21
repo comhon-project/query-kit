@@ -1,4 +1,10 @@
-import type { CollectionType, DisplayOperator } from '@core/types';
+import type {
+  CollectionType,
+  DisplayOperator,
+  FilterEditingLocation,
+  FieldsEditingLocation,
+  SortEditingLocation,
+} from '@core/types';
 
 export interface Config {
   renderHtml: boolean;
@@ -11,8 +17,10 @@ export interface Config {
   allowUndo: boolean;
   allowRedo: boolean;
   displayOperator: DisplayOperator;
-  quickSort: boolean;
   displayCount: boolean;
+  filterEditingLocation: FilterEditingLocation;
+  fieldsEditingLocation: FieldsEditingLocation;
+  sortEditingLocation: SortEditingLocation;
   naturalSortWhenEmpty: boolean;
   allowedCollectionTypes: CollectionType[];
   aliasInsensitiveLabels: boolean;
@@ -30,8 +38,10 @@ const defaults: Config = {
   allowUndo: true,
   allowRedo: true,
   displayOperator: true,
-  quickSort: true,
   displayCount: true,
+  filterEditingLocation: 'query-builder',
+  fieldsEditingLocation: 'none',
+  sortEditingLocation: 'collection-column',
   naturalSortWhenEmpty: false,
   allowedCollectionTypes: ['pagination'],
   aliasInsensitiveLabels: false,

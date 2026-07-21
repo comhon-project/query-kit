@@ -48,6 +48,7 @@ export default {
   export: '导出',
   columns: '列',
   fields: '字段',
+  sort: '排序',
   pagination: '分页',
   previous: '上一页',
   next: '下一页',

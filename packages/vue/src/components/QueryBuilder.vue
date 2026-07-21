@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue';
 import FilterBuilder from '@components/Filter/FilterBuilder.vue';
 import FieldsBuilder from '@components/Collection/FieldsBuilder.vue';
+import SortBuilder from '@components/Collection/SortBuilder.vue';
 import QueryActionsBar from '@components/Common/QueryActionsBar.vue';
 import InvalidEntity from '@components/Messages/InvalidEntity.vue';
 import { useHistory } from '@components/Composable/History';
@@ -15,6 +16,7 @@ import type {
   AllowedScopes,
   AllowedProperties,
   CustomFieldConfig,
+  SortItemField,
 } from '@core/types';
 
 interface Props {
@@ -32,7 +34,9 @@ interface Props {
   manual?: boolean;
   aliasInsensitiveLabels?: boolean;
   customFields?: Record<string, CustomFieldConfig>;
+  editFilter?: boolean;
   editFields?: boolean;
+  editSort?: boolean;
 }
 
 interface Emits {
@@ -41,6 +45,7 @@ interface Emits {
 
 const filter = defineModel<Filter | null>('filter', { default: null });
 const fields = defineModel<string[]>('fields', { default: () => [] });
+const sort = defineModel<(string | SortItemField)[]>('sort', { default: () => [] });
 const emit = defineEmits<Emits>();
 
 // undefined: prevent Vue from casting absent boolean props to false
@@ -51,17 +56,15 @@ const props = withDefaults(defineProps<Props>(), {
   displayOperator: undefined,
   manual: undefined,
   aliasInsensitiveLabels: undefined,
-  editFields: undefined,
 });
 
 const history = useHistory();
 const entitySchema = ref<EntitySchema | null>(null);
 const validEntity = ref(true);
-const canEditFields = computed<boolean>(() => props.editFields ?? false);
-
-const showFilter = computed<boolean>(() => true);
-const showFields = computed<boolean>(() => canEditFields.value);
-const actionsInHeader = computed<boolean>(() => Number(showFilter.value) + Number(showFields.value) > 1);
+const showFilter = computed(() => props.editFilter || (!props.editFields && !props.editSort));
+const actionsInHeader = computed(
+  () => Number(showFilter.value) + Number(props.editFields) + Number(props.editSort) > 1,
+);
 
 const actionsBarProps = computed(() => ({
   history,
@@ -70,6 +73,10 @@ const actionsBarProps = computed(() => ({
   allowReset: props.allowReset,
   manual: props.manual,
 }));
+
+function onValidate(): void {
+  emit('validate');
+}
 
 watch(
   () => props.entity,
@@ -86,10 +93,6 @@ watch(
   },
   { immediate: true },
 );
-
-function onValidate(): void {
-  emit('validate');
-}
 </script>
 
 <template>
@@ -119,7 +122,7 @@ function onValidate(): void {
         </template>
       </FilterBuilder>
       <FieldsBuilder
-        v-if="showFields"
+        v-if="editFields"
         v-model="fields"
         :history="history"
         :entity-schema="entitySchema"
@@ -129,6 +132,17 @@ function onValidate(): void {
           <QueryActionsBar v-bind="actionsBarProps" @validate="onValidate" />
         </template>
       </FieldsBuilder>
+      <SortBuilder
+        v-if="editSort"
+        v-model="sort"
+        :history="history"
+        :entity-schema="entitySchema"
+        :custom-fields="customFields"
+      >
+        <template v-if="!actionsInHeader" #actions>
+          <QueryActionsBar v-bind="actionsBarProps" @validate="onValidate" />
+        </template>
+      </SortBuilder>
     </template>
   </section>
 </template>

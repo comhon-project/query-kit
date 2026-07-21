@@ -9,7 +9,7 @@
 ---
 
 # Query builder component
-The query builder is a visual editor for building a server query. Through `v-model` it edits two independent parts: the **filter** (nested `and`/`or` groups of conditions, scopes and relationship filters) and, when `editFields` is enabled, the **fields** to display and their order. Both share a single undo/redo/reset history. It is a pure editor: it only mutates its models and never queries the server itself (see [Validate](#validate)).
+The query builder is a visual editor for building a server query. Through `v-model` it edits the **filter** (nested `and`/`or` groups of conditions, scopes and relationship filters) and, when enabled, the **fields** to display (`editFields`) and the **sort** (`editSort`). They share a single undo/redo/reset history. It is a pure editor: it only mutates its models and never queries the server itself (see [Validate](#validate)).
 
 ## Usage
 ```js
@@ -33,8 +33,11 @@ Props marked with 🔗 support two-way binding via `v-model`.
 | entity                |         | string             | true     | -           | The entity id (user, company, post...)                                                                           |
 | filter                |   🔗    | object             | false    | `null`      | The query to build. Given object will be updated when user will make changes. Accepts any filter type or `null`; non-group filters are auto-wrapped in a top-level group. More info on filter format [here](Query-filter-format). |
 | fields                |   🔗    | array              | false    | `[]`        | Fields edited by the inline fields builder (only rendered when `editFields` is enabled). More information [here](Usage#fields). |
+| sort                  |   🔗    | array              | false    | `[]`        | Sort edited by the inline sort builder (only rendered when `editSort` is enabled). Array of field ids or objects `{ field: string, order: 'asc'\|'desc' }`. |
 | customFields          |         | object             | false    | -           | Customize the labels shown in the fields builder. More information [here](Usage#custom-fields).                  |
+| editFilter            |         | boolean            | false    | `false`     | Display the filter builder. Shown automatically when no other builder is enabled, so the query builder is never empty. |
 | editFields            |         | boolean            | false    | `false`     | Display an inline fields builder to add/remove/reorder the fields.                                               |
+| editSort              |         | boolean            | false    | `false`     | Display an inline sort builder to add/remove/reorder/orient the sort. It can sort by any sortable property, even columns that are not displayed. |
 | allowReset            |         | boolean            | false    | `true`      | Display a button to permit user to reset query to original state.                                                |
 | allowUndo             |         | boolean            | false    | `true`      | Enable undo button for filter changes.                                                                           |
 | allowRedo             |         | boolean            | false    | `true`      | Enable redo button for filter changes.                                                                           |
@@ -141,7 +144,7 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | debounce               |         | number             | false    | `1000`           | Time in ms to wait after a `filter`/`fields` change before requesting the server. `0` requests immediately.                      |
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                                   |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                                      |
-| quickSort              |         | boolean            | false    | `true`           | Permit to sort results when clicking on collection column headers.                                                              |
+| sortEditingLocation    |         | string             | false    | `'collection-column'` | Where sort can be edited: `'collection-column'` (sortable column headers), `'collection-modal'` (a sort editor button in the header), or `'none'`. The `'query-builder'` value is meaningful only via `QkitSearch`. |
 | postRequest            |         | function           | false    | -                | Function called just after querying server (permit to modify fetched items). Signature: `(collection) => void \| Promise<void>`. |
 | onRequestError         |         | function           | false    | -                | Called when a server request fails (requester rejection, `postRequest` rejection, or an invalid response). Overrides the plugin `onRequestError`. The error is otherwise swallowed. Signature: `(error) => void`. |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types. Allowed values: `'pagination'` and `'infinite'`.                                                                 |
@@ -250,13 +253,14 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                  |
 | debounce               |         | number             | false    | `1000`           | Time in ms to wait after a `filter`/`fields` change before requesting the server. `0` requests immediately.    |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                     |
-| quickSort              |         | boolean            | false    | `true`           | Permit to sort results when clicking on column headers.                                                        |
 | postRequest            |         | function           | false    | -                | Function called just after querying server.                                                                    |
 | onRequestError         |         | function           | false    | -                | Called when a server request fails. Overrides the plugin `onRequestError`. Signature: `(error) => void`.       |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types: `'pagination'` and/or `'infinite'`.                                                             |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count.                                                                                     |
 | reflow                 |         | boolean            | false    | `false`          | When the collection's own width is narrow (≤576px), reflow the table into stacked cards instead of a horizontally-scrolling table (container-based, not the viewport). |
-| editFields             |         | string             | false    | `'none'`         | Where users can add/remove/reorder fields: `'query-builder'` (inline in the query builder), `'collection'` (columns button in the collection header), or `'none'`. |
+| filterEditingLocation  |         | string             | false    | `'query-builder'` | Where the filter builder is shown: `'query-builder'` or `'none'`. The query builder is rendered only when at least one of `filterEditingLocation`/`fieldsEditingLocation`/`sortEditingLocation` is `'query-builder'`. Defaults come from the plugin config. |
+| fieldsEditingLocation  |         | string             | false    | `'none'`         | Where users can add/remove/reorder fields: `'query-builder'` (inline in the query builder), `'collection'` (columns button in the collection header), or `'none'`. |
+| sortEditingLocation    |         | string             | false    | `'collection-column'` | Where sort can be edited: `'query-builder'` (inline sort builder, sorts by any sortable property), `'collection-modal'` (sort editor button in the collection header), `'collection-column'` (sortable column headers), or `'none'`. |
 | naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only). No-op without `natural_sort`. |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
 | onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked): `(item, event) => void`.                                  |

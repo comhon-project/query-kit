@@ -10,6 +10,10 @@ export type ClassName =
   | 'fields_builder'
   | 'fields_builder_header'
   | 'fields_builder_actions'
+  | 'sort_builder'
+  | 'sort_builder_header'
+  | 'sort_builder_actions'
+  | 'collection_sort_order'
   | 'filter_builder'
   | 'builder_label'
   | 'condition_or_scope'
@@ -50,6 +54,7 @@ export type ClassName =
   | 'collection_cell_value'
   | 'collection_column_header'
   | 'collection_actions'
+  | 'collection_sort_button'
   | 'field_editor_list'
   | 'field_editor_list_item'
   | 'field_picker'
@@ -73,6 +78,10 @@ const classList: ClassList = {
   fields_builder: 'qkit-fields-builder',
   fields_builder_header: 'qkit-fields-builder-header',
   fields_builder_actions: 'qkit-fields-builder-actions',
+  sort_builder: 'qkit-sort-builder',
+  sort_builder_header: 'qkit-sort-builder-header',
+  sort_builder_actions: 'qkit-sort-builder-actions',
+  collection_sort_order: 'qkit-sort-order',
   filter_builder: 'qkit-filter-builder',
   builder_label: 'qkit-builder-label',
   condition_or_scope: 'qkit-leaf-filter qkit-condition-or-scope',
@@ -113,6 +122,7 @@ const classList: ClassList = {
   collection_cell_value: 'qkit-cell-value',
   collection_column_header: 'qkit-column-header',
   collection_actions: 'qkit-collection-actions',
+  collection_sort_button: 'qkit-btn qkit-btn-primary qkit-collection-sort-button',
   field_editor_list: 'qkit-field-editor-list',
   field_editor_list_item: 'qkit-field-editor-list-item',
   field_picker: 'qkit-field-picker',

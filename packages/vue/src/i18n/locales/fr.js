@@ -48,6 +48,7 @@ export default {
   export: 'exporter',
   columns: 'colonnes',
   fields: 'champs',
+  sort: 'tri',
   pagination: 'pagination',
   previous: 'précédent',
   next: 'suivant',

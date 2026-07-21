@@ -75,8 +75,10 @@ export interface PluginOptions {
   allowUndo?: Config['allowUndo'];
   allowRedo?: Config['allowRedo'];
   displayOperator?: Config['displayOperator'];
-  quickSort?: Config['quickSort'];
   displayCount?: Config['displayCount'];
+  filterEditingLocation?: Config['filterEditingLocation'];
+  fieldsEditingLocation?: Config['fieldsEditingLocation'];
+  sortEditingLocation?: Config['sortEditingLocation'];
   naturalSortWhenEmpty?: Config['naturalSortWhenEmpty'];
   allowedCollectionTypes?: Config['allowedCollectionTypes'];
   aliasInsensitiveLabels?: Config['aliasInsensitiveLabels'];

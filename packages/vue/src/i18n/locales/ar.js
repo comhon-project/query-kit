@@ -48,6 +48,7 @@ export default {
   export: 'تصدير',
   columns: 'أعمدة',
   fields: 'حقول',
+  sort: 'ترتيب',
   pagination: 'ترقيم الصفحات',
   previous: 'السابق',
   next: 'التالي',

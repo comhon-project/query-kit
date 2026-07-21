@@ -37,6 +37,7 @@ describe('IconManager', () => {
       'next',
       'collapse',
       'sort',
+      'sort_direction',
       'minus',
       'undo',
       'redo',
@@ -51,11 +52,11 @@ describe('IconManager', () => {
       'loading',
     ];
 
-    it('has all 21 expected icon keys', () => {
+    it('has all 22 expected icon keys', () => {
       for (const key of expectedKeys) {
         expect(defaultIcons).toHaveProperty(key);
       }
-      expect(Object.keys(defaultIcons)).toHaveLength(21);
+      expect(Object.keys(defaultIcons)).toHaveLength(22);
     });
 
     it('each default icon has a class and component property', () => {

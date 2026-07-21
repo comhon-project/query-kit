@@ -57,6 +57,15 @@ describe('Header', () => {
     expect(button.attributes('aria-label')).toContain('first name');
   });
 
+  it('renders no sort button when sortableHeaders is false', async () => {
+    wrapper = mountWithPlugin(Header, {
+      props: { entitySchema: userSchema, fieldId: 'first_name', label: 'first name', sortableHeaders: false },
+    });
+    await flushAll();
+    expect(wrapper.find('button').exists()).toBe(false);
+    expect(wrapper.find('span').text()).toBe('first name');
+  });
+
   it('is sortable when hasCustomSort is true even if property is not sortable', async () => {
     wrapper = mountWithPlugin(Header, {
       props: { entitySchema: userSchema, fieldId: 'gender', hasCustomSort: true },

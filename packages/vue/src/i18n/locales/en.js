@@ -48,6 +48,7 @@ export default {
   export: 'export',
   columns: 'columns',
   fields: 'fields',
+  sort: 'sort',
   pagination: 'pagination',
   previous: 'previous',
   next: 'next',

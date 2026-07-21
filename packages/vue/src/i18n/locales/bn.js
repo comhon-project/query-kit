@@ -48,6 +48,7 @@ export default {
   export: 'রপ্তানি',
   columns: 'কলাম',
   fields: 'ক্ষেত্র',
+  sort: 'সাজানো',
   pagination: 'পৃষ্ঠা বিন্যাস',
   previous: 'পূর্ববর্তী',
   next: 'পরবর্তী',

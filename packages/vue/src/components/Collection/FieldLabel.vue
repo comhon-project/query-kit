@@ -9,6 +9,7 @@ interface Props {
   entitySchema: EntitySchema;
   fieldId: string;
   open?: boolean;
+  id?: string;
   label?: string | ((locale: string) => string);
 }
 
@@ -30,5 +31,5 @@ watchEffect(async (onCleanup) => {
 
 <template>
   <InvalidField v-if="resolved === false" :field="fieldId" />
-  <span v-else-if="resolved">{{ resolved }}</span>
+  <span v-else-if="resolved" :id="id">{{ resolved }}</span>
 </template>
