@@ -1,10 +1,20 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import dts from 'vite-plugin-dts';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    dts({
+      root: fileURLToPath(new URL('.', import.meta.url)),
+      tsconfigPath: fileURLToPath(new URL('./tsconfig.json', import.meta.url)),
+      outDirs: fileURLToPath(new URL('./dist', import.meta.url)),
+      entryRoot: fileURLToPath(new URL('.', import.meta.url)),
+      include: ['index.ts', 'src/**/*.ts', 'src/**/*.vue'],
+    }),
+  ],
   root: './playground',
   resolve: {
     conditions: ['source'],

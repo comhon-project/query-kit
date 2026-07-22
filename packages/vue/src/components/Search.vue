@@ -19,6 +19,10 @@ import type {
   FilterEditingLocation,
   Requester,
   RequesterFunction,
+  ItemClickHandler,
+  PostRequestHandler,
+  RequestErrorHandler,
+  ExportHandler,
 } from '@core/types';
 
 interface Props {
@@ -34,8 +38,8 @@ interface Props {
   userTimezone?: string;
   requestTimezone?: string;
   requester?: Requester | RequesterFunction;
-  postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
-  onRequestError?: (error: unknown) => void;
+  postRequest?: PostRequestHandler;
+  onRequestError?: RequestErrorHandler;
   manual?: boolean;
   directQuery?: boolean;
   debounce?: number;
@@ -47,8 +51,8 @@ interface Props {
   sortEditingLocation?: SortEditingLocation;
   naturalSortWhenEmpty?: boolean;
   reflow?: boolean;
-  onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
-  onExport?: (filter?: Filter) => void;
+  onItemClick?: ItemClickHandler;
+  onExport?: ExportHandler;
   aliasInsensitiveLabels?: boolean;
 }
 

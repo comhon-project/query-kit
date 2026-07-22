@@ -1,13 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { locale } from '@query-kit/vue';
 import { computed, ref, watch, onBeforeUnmount } from 'vue';
+import type { CustomInputProps } from '@query-kit/vue';
 
-const emit = defineEmits(['update:modelValue']);
-const props = defineProps({
-  modelValue: { type: [Array, String], default: null },
-  multiple: { type: Boolean, required: true },
-  disabled: { type: Boolean, required: true },
-});
+const modelValue = defineModel<string | string[] | null | undefined>();
+const props = defineProps<CustomInputProps>();
 
 const options = computed(() => [
   { value: '1', label: locale.value === 'fr' ? 'Angleterre' : 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
@@ -16,45 +13,45 @@ const options = computed(() => [
 ]);
 
 // ── single ───────────────────────────────────────────────────
-const singleValue = computed(() => (Array.isArray(props.modelValue) ? props.modelValue[0] : props.modelValue));
-function onSingleChange(e) {
-  emit('update:modelValue', e.target.value || undefined);
+const singleValue = computed(() => (Array.isArray(modelValue.value) ? modelValue.value[0] : modelValue.value));
+function onSingleChange(e: Event) {
+  modelValue.value = (e.target as HTMLSelectElement).value || undefined;
 }
 
 // ── multi ────────────────────────────────────────────────────
 const selected = computed(() =>
-  Array.isArray(props.modelValue) ? props.modelValue : props.modelValue ? [props.modelValue] : [],
+  Array.isArray(modelValue.value) ? modelValue.value : modelValue.value ? [modelValue.value] : [],
 );
 
 const open = ref(false);
-const wrapper = ref(null);
+const wrapper = ref<HTMLElement | null>(null);
 
-function labelOf(val) {
+function labelOf(val: string) {
   return options.value.find((o) => o.value === val)?.label ?? val;
 }
-function flagOf(val) {
+function flagOf(val: string) {
   return options.value.find((o) => o.value === val)?.flag ?? '';
 }
-function isSelected(val) {
+function isSelected(val: string) {
   return selected.value.includes(val);
 }
 
-function toggle(val) {
+function toggle(val: string) {
   const next = isSelected(val) ? selected.value.filter((v) => v !== val) : [...selected.value, val];
-  emit('update:modelValue', next.length ? next : undefined);
+  modelValue.value = next.length ? next : undefined;
 }
 
-function remove(val) {
+function remove(val: string) {
   const next = selected.value.filter((v) => v !== val);
-  emit('update:modelValue', next.length ? next : undefined);
+  modelValue.value = next.length ? next : undefined;
 }
 
 function onFieldClick() {
   if (!props.disabled) open.value = !open.value;
 }
 
-function closeIfOutside(e) {
-  if (!wrapper.value?.contains(e.target)) open.value = false;
+function closeIfOutside(e: MouseEvent) {
+  if (!wrapper.value?.contains(e.target as Node)) open.value = false;
 }
 
 // Le setTimeout garantit que le listener s'enregistre APRÈS que le clic

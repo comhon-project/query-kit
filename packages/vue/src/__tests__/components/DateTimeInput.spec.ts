@@ -1,36 +1,49 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import DateTimeInput from '@components/Common/DateTimeInput.vue';
+import { EntitySchema } from '@core/EntitySchema';
+import type { CustomInputProps } from '@core/types';
+
+function ctx(overrides: Partial<CustomInputProps> = {}): CustomInputProps {
+  return {
+    target: { id: 'created_at', type: 'datetime' },
+    entitySchema: new EntitySchema('user', [], {}, [], {}),
+    multiple: false,
+    disabled: false,
+    userTimezone: 'UTC',
+    requestTimezone: 'UTC',
+    ...overrides,
+  };
+}
 
 describe('DateTimeInput', () => {
   it('renders a datetime-local input', () => {
-    const wrapper = mount(DateTimeInput, { props: { modelValue: null, 'onUpdate:modelValue': () => {} } });
+    const wrapper = mount(DateTimeInput, { props: { ...ctx(), modelValue: null, 'onUpdate:modelValue': () => {} } });
     expect(wrapper.find('input[type="datetime-local"]').exists()).toBe(true);
   });
 
   it('has step="60"', () => {
-    const wrapper = mount(DateTimeInput, { props: { modelValue: null, 'onUpdate:modelValue': () => {} } });
+    const wrapper = mount(DateTimeInput, { props: { ...ctx(), modelValue: null, 'onUpdate:modelValue': () => {} } });
     expect(wrapper.find('input').attributes('step')).toBe('60');
   });
 
   it('disables input when disabled', () => {
     const wrapper = mount(DateTimeInput, {
-      props: { modelValue: null, disabled: true, 'onUpdate:modelValue': () => {} },
+      props: { ...ctx({ disabled: true }), modelValue: null, 'onUpdate:modelValue': () => {} },
     });
     expect((wrapper.find('input').element as HTMLInputElement).disabled).toBe(true);
   });
 
   it('displays null for null modelValue', () => {
-    const wrapper = mount(DateTimeInput, { props: { modelValue: null, 'onUpdate:modelValue': () => {} } });
+    const wrapper = mount(DateTimeInput, { props: { ...ctx(), modelValue: null, 'onUpdate:modelValue': () => {} } });
     expect((wrapper.find('input').element as HTMLInputElement).value).toBe('');
   });
 
   it('converts UTC ISO value to local datetime format', () => {
     const wrapper = mount(DateTimeInput, {
       props: {
+        ...ctx(),
         modelValue: '2024-06-15T14:30:00.000Z',
-        userTimezone: 'UTC',
-        requestTimezone: 'UTC',
         'onUpdate:modelValue': () => {},
       },
     });
@@ -42,9 +55,8 @@ describe('DateTimeInput', () => {
   it('converts between timezones on display', () => {
     const wrapper = mount(DateTimeInput, {
       props: {
+        ...ctx({ requestTimezone: 'UTC', userTimezone: 'America/New_York' }),
         modelValue: '2024-06-15T20:00:00.000Z',
-        requestTimezone: 'UTC',
-        userTimezone: 'America/New_York',
         'onUpdate:modelValue': () => {},
       },
     });
@@ -54,7 +66,7 @@ describe('DateTimeInput', () => {
   });
 
   it('applies input class', () => {
-    const wrapper = mount(DateTimeInput, { props: { modelValue: null, 'onUpdate:modelValue': () => {} } });
+    const wrapper = mount(DateTimeInput, { props: { ...ctx(), modelValue: null, 'onUpdate:modelValue': () => {} } });
     expect(wrapper.find('input').classes()).toContain('qkit-input');
   });
 
@@ -62,9 +74,8 @@ describe('DateTimeInput', () => {
     const onUpdate = vi.fn();
     const wrapper = mount(DateTimeInput, {
       props: {
+        ...ctx(),
         modelValue: '2024-06-15T14:30:00.000Z',
-        userTimezone: 'UTC',
-        requestTimezone: 'UTC',
         'onUpdate:modelValue': onUpdate,
       },
     });
@@ -76,9 +87,8 @@ describe('DateTimeInput', () => {
     const onUpdate = vi.fn();
     const wrapper = mount(DateTimeInput, {
       props: {
+        ...ctx(),
         modelValue: null,
-        userTimezone: 'UTC',
-        requestTimezone: 'UTC',
         'onUpdate:modelValue': onUpdate,
       },
     });

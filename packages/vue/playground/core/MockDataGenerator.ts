@@ -7,7 +7,7 @@ const entityModules = import.meta.glob('../schemas/entities/*/schema.js', { eage
 const enumModules = import.meta.glob('../schemas/enums/*/schema.js', { eager: true }) as Record<string, { default: RawEnumSchema }>;
 
 const ENTITIES: Record<string, EntitySchema> = {};
-for (const [path, module] of Object.entries(entityModules)) {
+for (const module of Object.values(entityModules)) {
   const schema = module.default;
   ENTITIES[schema.id] = schema;
 }

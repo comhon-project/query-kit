@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watchEffect } from 'vue';
 import { getTranslation, getCases, type EnumCase } from '@core/EnumSchema';
-import { getLeafTypeContainer, type ArrayableTypeContainer } from '@core/EntitySchema';
+import { getLeafTypeContainer } from '@core/EntitySchema';
 import { classes } from '@core/ClassManager';
-
-interface Props {
-  target: ArrayableTypeContainer;
-  multiple: boolean;
-  disabled: boolean;
-}
+import type { CustomInputProps } from '@core/types';
 
 const modelValue = defineModel<string | string[] | undefined>();
 
-const props = defineProps<Props>();
+const props = defineProps<CustomInputProps>();
 
 const cases = ref<EnumCase[]>([]);
 

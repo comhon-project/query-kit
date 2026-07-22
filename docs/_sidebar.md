@@ -4,5 +4,6 @@
 - [Schemas](Schemas)
 - [Query filter format](Query-filter-format)
 - [Usage](Usage)
+- [TypeScript types](Types)
 - [I18n](I18n)
 - [Playground](Playground)

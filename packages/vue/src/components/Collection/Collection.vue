@@ -38,6 +38,10 @@ import type {
   Requester,
   RequesterFunction,
   Filter,
+  ItemClickHandler,
+  PostRequestHandler,
+  RequestErrorHandler,
+  ExportHandler,
 } from '@core/types';
 
 interface Props {
@@ -46,13 +50,13 @@ interface Props {
   filter?: Filter | null;
   directQuery?: boolean;
   limit?: number;
-  onItemClick?: (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
+  onItemClick?: ItemClickHandler;
   sortEditingLocation?: CollectionSortEditingLocation;
-  postRequest?: (collection: Record<string, unknown>[]) => void | Promise<void>;
-  onRequestError?: (error: unknown) => void;
+  postRequest?: PostRequestHandler;
+  onRequestError?: RequestErrorHandler;
   allowedCollectionTypes?: CollectionType[];
   displayCount?: boolean;
-  onExport?: (filter?: Filter) => void;
+  onExport?: ExportHandler;
   userTimezone?: string;
   requestTimezone?: string;
   editFields?: boolean;

@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import type { Property, ArrayableTypeContainer } from '@core/EntitySchema';
+import type { Property, RawScopeParameter, ArrayableTypeContainer, EntitySchema } from '@core/EntitySchema';
 import type { AllowedOperators } from '@core/OperatorManager';
 
 /**
@@ -149,12 +149,18 @@ export interface SortItemField {
   order: 'asc' | 'desc';
 }
 
+export type ItemClickHandler = (item: Record<string, unknown>, event: MouseEvent | KeyboardEvent) => void;
+export type FieldClickHandler = (value: unknown, item: Record<string, unknown>, fieldId: string, event: MouseEvent) => void;
+export type PostRequestHandler = (collection: Record<string, unknown>[]) => void | Promise<void>;
+export type RequestErrorHandler = (error: unknown) => void;
+export type ExportHandler = (filter?: Filter) => void;
+
 export interface CustomFieldConfig {
   label: string | ((locale: string) => string);
   sort?: string[];
   properties?: string[];
   renderer?: Component | RenderFunction | string;
-  onFieldClick?: (value: unknown, item: Record<string, unknown>, fieldId: string, event: MouseEvent) => void;
+  onFieldClick?: FieldClickHandler;
   open?: boolean;
 }
 
@@ -200,12 +206,12 @@ export type AllowedProperties = Record<string, string[]>;
 // ==================== Custom Input Props ====================
 
 export interface CustomInputProps {
-  modelValue: unknown;
-  entity: string;
-  target: ArrayableTypeContainer;
+  target: Property | RawScopeParameter;
+  entitySchema: EntitySchema;
   multiple: boolean;
-  disabled?: boolean;
-  enumId?: string;
+  disabled: boolean;
+  userTimezone: string;
+  requestTimezone: string;
 }
 
 // ==================== Filter Builder Config (Provide/Inject) ====================

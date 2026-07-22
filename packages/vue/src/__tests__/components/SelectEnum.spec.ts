@@ -3,7 +3,21 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import SelectEnum from '@components/Common/SelectEnum.vue';
 import { registerLoader, registerTranslationsLoader } from '@core/EnumSchema';
+import { EntitySchema } from '@core/EntitySchema';
+import type { CustomInputProps } from '@core/types';
 import { locale } from '@i18n/i18n';
+
+function ctx(overrides: Partial<CustomInputProps> = {}): CustomInputProps {
+  return {
+    target: { id: 'gender', type: 'string', enum: 'gender' },
+    entitySchema: new EntitySchema('user', [], {}, [], {}),
+    multiple: false,
+    disabled: false,
+    userTimezone: 'UTC',
+    requestTimezone: 'UTC',
+    ...overrides,
+  };
+}
 
 describe('SelectEnum', () => {
   beforeEach(() => {
@@ -17,7 +31,7 @@ describe('SelectEnum', () => {
 
   it('renders a select element', async () => {
     const wrapper = mount(SelectEnum, {
-      props: { target: { type: 'string', enum: 'gender' }, multiple: false, disabled: false },
+      props: { ...ctx() },
     });
     await flushPromises();
     expect(wrapper.find('select').exists()).toBe(true);
@@ -25,7 +39,7 @@ describe('SelectEnum', () => {
 
   it('loads and renders enum cases as options', async () => {
     const wrapper = mount(SelectEnum, {
-      props: { target: { type: 'string', enum: 'gender' }, multiple: false, disabled: false },
+      props: { ...ctx() },
     });
     await flushPromises();
     const options = wrapper.findAll('option');
@@ -36,7 +50,7 @@ describe('SelectEnum', () => {
 
   it('disables select when disabled', async () => {
     const wrapper = mount(SelectEnum, {
-      props: { target: { type: 'string', enum: 'gender' }, multiple: false, disabled: true },
+      props: { ...ctx({ disabled: true }) },
     });
     await flushPromises();
     expect((wrapper.find('select').element as HTMLSelectElement).disabled).toBe(true);
@@ -44,7 +58,7 @@ describe('SelectEnum', () => {
 
   it('sets multiple attribute when multiple is true', async () => {
     const wrapper = mount(SelectEnum, {
-      props: { target: { type: 'string', enum: 'gender' }, multiple: true, disabled: false },
+      props: { ...ctx({ multiple: true }) },
     });
     await flushPromises();
     expect((wrapper.find('select').element as HTMLSelectElement).multiple).toBe(true);
@@ -53,9 +67,7 @@ describe('SelectEnum', () => {
   it('emits update:modelValue on change', async () => {
     const wrapper = mount(SelectEnum, {
       props: {
-        target: { type: 'string', enum: 'gender' },
-        multiple: false,
-        disabled: false,
+        ...ctx(),
         modelValue: 'male',
         'onUpdate:modelValue': () => {},
       },
@@ -68,9 +80,7 @@ describe('SelectEnum', () => {
   it('returns empty array for multiple mode when modelValue is empty', async () => {
     const wrapper = mount(SelectEnum, {
       props: {
-        target: { type: 'string', enum: 'gender' },
-        multiple: true,
-        disabled: false,
+        ...ctx({ multiple: true }),
         modelValue: undefined,
         'onUpdate:modelValue': () => {},
       },
@@ -93,7 +103,7 @@ describe('SelectEnum', () => {
     });
 
     const wrapper = mount(SelectEnum, {
-      props: { target: { type: 'string', enum: 'gender' }, multiple: false, disabled: false },
+      props: { ...ctx() },
     });
     await flushPromises();
     expect(wrapper.findAll('option')[0].text()).toBe('Male');

@@ -145,8 +145,8 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                                   |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                                      |
 | sortEditingLocation    |         | string             | false    | `'collection-column'` | Where sort can be edited: `'collection-column'` (sortable column headers), `'collection-modal'` (a sort editor button in the header), or `'none'`. The `'query-builder'` value is meaningful only via `QkitSearch`. |
-| postRequest            |         | function           | false    | -                | Function called just after querying server (permit to modify fetched items). Signature: `(collection) => void \| Promise<void>`. |
-| onRequestError         |         | function           | false    | -                | Called when a server request fails (requester rejection, `postRequest` rejection, or an invalid response). Overrides the plugin `onRequestError`. The error is otherwise swallowed. Signature: `(error) => void`. |
+| postRequest            |         | PostRequestHandler | false    | -                | Function called just after querying server (permit to modify fetched items). Signature: `(collection) => void \| Promise<void>`. |
+| onRequestError         |         | RequestErrorHandler| false    | -                | Called when a server request fails (requester rejection, `postRequest` rejection, or an invalid response). Overrides the plugin `onRequestError`. The error is otherwise swallowed. Signature: `(error) => void`. |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types. Allowed values: `'pagination'` and `'infinite'`.                                                                 |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count that match query.                                                                                     |
 | reflow                 |         | boolean            | false    | `false`          | When the collection's own width is narrow (≤576px), reflow the table into stacked cards instead of a horizontally-scrolling table. Container-based: it responds to the collection's container width, not the viewport. |
@@ -156,8 +156,8 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | requestTimezone        |         | string             | false    | `'UTC'`          | Timezone to use when requesting server.                                                                                         |
 | requester              |         | function or object | false    | -                | Override the requester defined in global plugin configuration.                                                                  |
 | queryBuilderId         |         | string             | false    | -                | ID of linked query builder for skip-link navigation.                                                                           |
-| onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked). Signature: `(item, event) => void`.                                        |
-| onExport               |         | function           | false    | -                | Export handler. When provided, an export button is displayed (disabled while the filter is initializing or invalid). Receives the computed filter: the current one, or in `manual` mode the one committed by the last validate/mount/entity change. Signature: `(filter?) => void`. |
+| onItemClick            |         | ItemClickHandler   | false    | -                | Item click handler (fires when a record is clicked). Signature: `(item, event) => void`.                                        |
+| onExport               |         | ExportHandler      | false    | -                | Export handler. When provided, an export button is displayed (disabled while the filter is initializing or invalid). Receives the computed filter: the current one, or in `manual` mode the one committed by the last validate/mount/entity change. Signature: `(filter?) => void`. |
 
 ### Fields
 Fields to display in the collection. Each value must be a unique identifier for the current collection. Each value may be a property (a property of the requested entity or a property of nested objects) and/or a custom field identifier. If the field is a property, its label and renderer are determined automatically, but you may override them as you want with custom fields.
@@ -186,7 +186,7 @@ Custom fields permit to customize field label and rendering. Each key must be a 
 | renderer    | string, object or function| false    | The renderer that will display the field value. It might be a component or a callback. |
 | sort        | array of strings          | false    | Properties to use for sorting this field (overrides default sorting behavior).          |
 | properties  | array of strings          | false    | Additional entity properties to declare in the request for this field (useful for `open` fields whose renderer reads multiple entity properties). |
-| onFieldClick| function                  | false    | Function called on field click: `(value, item, fieldId, event) => void`.               |
+| onFieldClick| FieldClickHandler         | false    | Function called on field click: `(value, item, fieldId, event) => void`.               |
 
 Example:
 ```js
@@ -253,8 +253,8 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | directQuery            |         | boolean            | false    | `true`           | Request server and display results when component is mounted.                                                  |
 | debounce               |         | number             | false    | `1000`           | Time in ms to wait after a `filter`/`fields` change before requesting the server. `0` requests immediately.    |
 | limit                  |         | number             | false    | `undefined`      | The count limit of fetched items per page.                                                                     |
-| postRequest            |         | function           | false    | -                | Function called just after querying server.                                                                    |
-| onRequestError         |         | function           | false    | -                | Called when a server request fails. Overrides the plugin `onRequestError`. Signature: `(error) => void`.       |
+| postRequest            |         | PostRequestHandler | false    | -                | Function called just after querying server.                                                                    |
+| onRequestError         |         | RequestErrorHandler| false    | -                | Called when a server request fails. Overrides the plugin `onRequestError`. Signature: `(error) => void`.       |
 | allowedCollectionTypes |         | array              | false    | `['pagination']` | Display types: `'pagination'` and/or `'infinite'`.                                                             |
 | displayCount           |         | boolean            | false    | `true`           | Display total items count.                                                                                     |
 | reflow                 |         | boolean            | false    | `false`          | When the collection's own width is narrow (≤576px), reflow the table into stacked cards instead of a horizontally-scrolling table (container-based, not the viewport). |
@@ -263,6 +263,6 @@ Props marked with 🔗 support two-way binding via `v-model:<key>`.
 | sortEditingLocation    |         | string             | false    | `'collection-column'` | Where sort can be edited: `'query-builder'` (inline sort builder, sorts by any sortable property), `'collection-modal'` (sort editor button in the collection header), `'collection-column'` (sortable column headers), or `'none'`. |
 | naturalSortWhenEmpty   |         | boolean            | false    | `false`          | When `sort` is empty, send the entity's `natural_sort` to the server (request-only). No-op without `natural_sort`. |
 | requester              |         | function or object | false    | -                | Override the requester defined in plugin configuration.                                                        |
-| onItemClick            |         | function           | false    | -                | Item click handler (fires when a record is clicked): `(item, event) => void`.                                  |
-| onExport               |         | function           | false    | -                | Export handler (displays export button when provided). Receives the computed filter: the current one, or the last validated one in `manual` mode. Signature: `(filter?) => void`. |
+| onItemClick            |         | ItemClickHandler   | false    | -                | Item click handler (fires when a record is clicked): `(item, event) => void`.                                  |
+| onExport               |         | ExportHandler      | false    | -                | Export handler (displays export button when provided). Receives the computed filter: the current one, or the last validated one in `manual` mode. Signature: `(filter?) => void`. |
 | aliasInsensitiveLabels |         | boolean            | false    | `false`          | Display case-insensitive operators with their case-sensitive label.                                             |

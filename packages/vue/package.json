@@ -8,9 +8,11 @@
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
@@ -77,6 +79,7 @@
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
+    "vite-plugin-dts": "^5.0.3",
     "vitest": "^4.0.16",
     "vue-tsc": "^3.2.1"
   }

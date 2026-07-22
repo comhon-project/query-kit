@@ -2,18 +2,9 @@
 import { computed } from 'vue';
 import { DateTime } from 'luxon';
 import { classes } from '@core/ClassManager';
+import type { CustomInputProps } from '@core/types';
 
-interface Props {
-  disabled?: boolean;
-  userTimezone?: string;
-  requestTimezone?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  disabled: false,
-  userTimezone: 'UTC',
-  requestTimezone: 'UTC',
-});
+const props = defineProps<CustomInputProps>();
 
 const modelValue = defineModel<unknown>();
 

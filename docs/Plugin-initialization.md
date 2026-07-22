@@ -405,6 +405,51 @@ const config = {
 }
 ```
 
+### Custom input component
+
+When a type or property input resolves to a Vue component (rather than a native input type), that component owns the editing of the value. It receives the value through `v-model` and the following props, typed by the exported `CustomInputProps` (`import type { CustomInputProps } from '@query-kit/vue'`):
+
+| prop            | type    | description                                                                                            |
+| --------------- | ------- | ------------------------------------------------------------------------------------------------------ |
+| modelValue      | unknown | The edited value, bound with `v-model` (emit `update:modelValue` to write it back).                    |
+| target          | object  | The property or scope parameter being edited (see [Entity schema](Schemas#entity-schema)).             |
+| entitySchema    | object  | The resolved schema of the targeted entity.                                                            |
+| multiple        | boolean | `true` when the `multiple` setting is enabled: the component renders the whole array of values itself. |
+| disabled        | boolean | `true` when the input must be read-only.                                                               |
+| userTimezone    | string  | Timezone to display the value in.                                                                      |
+| requestTimezone | string  | Timezone used when communicating with the server.                                                      |
+| aria-label      | string  | Accessible label resolved from the property or scope translation.                                      |
+
+The `trim`, `emptyToUndefined` and `debounce` settings are applied around your `v-model`, so the component does not handle them itself.
+
+Example, a country selector:
+
+```html
+<script setup lang="ts">
+import { locale } from '@query-kit/vue';
+import { computed } from 'vue';
+import type { CustomInputProps } from '@query-kit/vue';
+
+const modelValue = defineModel<string>();
+defineProps<CustomInputProps>();
+
+const countries = computed(() => [
+  { value: '1', label: locale.value === 'fr' ? 'Angleterre' : 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { value: '2', label: 'France', flag: '🇫🇷' },
+  { value: '3', label: locale.value === 'fr' ? 'Allemagne' : 'Germany', flag: '🇩🇪' },
+]);
+</script>
+
+<template>
+  <select v-model="modelValue" :disabled="disabled">
+    <option value="" />
+    <option v-for="country in countries" :key="country.value" :value="country.value">
+      {{ country.flag }} {{ country.label }}
+    </option>
+  </select>
+</template>
+```
+
 ## Cell renderers
 
 ### Type renderers
@@ -446,6 +491,48 @@ const config = {
 ```
 
 The property renderers have a higher priority than type renderers.
+
+### Renderer component
+
+Instead of a callback, a type or property renderer can be a Vue component. It receives the value and its context as props, typed by the exported `FieldRendererProps` (`import type { FieldRendererProps } from '@query-kit/vue'`):
+
+| prop            | type    | description                                                                      |
+| --------------- | ------- | -------------------------------------------------------------------------------- |
+| value           | unknown | The value to render.                                                             |
+| item            | object  | The whole row the value belongs to.                                              |
+| fieldId         | string  | The property path of the rendered field.                                         |
+| property        | object  | The entity property being rendered (see [Entity schema](Schemas#entity-schema)). |
+| type            | object  | The type descriptor of the value.                                                |
+| index           | number  | The element position when rendering an array item, otherwise `undefined`.        |
+| userTimezone    | string  | Timezone to display the value in.                                                |
+| requestTimezone | string  | Timezone used when communicating with the server.                                |
+
+Unlike the callback form, the locale is not passed as a prop; import the exported `locale` ref if the component needs it.
+
+Example, a country renderer:
+
+```html
+<script setup lang="ts">
+import { locale } from '@query-kit/vue';
+import { computed } from 'vue';
+import type { FieldRendererProps } from '@query-kit/vue';
+
+const props = defineProps<FieldRendererProps>();
+
+const countries = computed(() => [
+  { value: '1', label: locale.value === 'fr' ? 'Angleterre' : 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { value: '2', label: 'France', flag: '🇫🇷' },
+  { value: '3', label: locale.value === 'fr' ? 'Allemagne' : 'Germany', flag: '🇩🇪' },
+]);
+
+const display = computed(() => {
+  const country = countries.value.find((c) => c.value === props.value);
+  return country ? `${country.flag} ${country.label}` : props.value;
+});
+</script>
+
+<template>{{ display }}</template>
+```
 
 ## Allowed operators
 

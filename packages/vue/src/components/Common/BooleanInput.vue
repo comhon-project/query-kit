@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { classes } from '@core/ClassManager';
 import { translate } from '@i18n/i18n';
-
-interface Props {
-  disabled: boolean;
-}
+import type { CustomInputProps } from '@core/types';
 
 const modelValue = defineModel<boolean>();
 
-defineProps<Props>();
+defineProps<CustomInputProps>();
 </script>
 
 <template>
