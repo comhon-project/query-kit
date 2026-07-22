@@ -124,8 +124,8 @@ function onValidate(): void {
       @validate="onValidate"
     />
     <Collection
-      ref="collection"
       :id="collectionId"
+      ref="collection"
       v-model:fields="fields"
       v-model:sort="sort"
       v-model:page="page"

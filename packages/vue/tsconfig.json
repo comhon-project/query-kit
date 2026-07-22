@@ -20,14 +20,13 @@
     "noFallthroughCasesInSwitch": true,
 
     "types": ["vite/client"],
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@core/*": ["src/core/*"],
-      "@components/*": ["src/components/*"],
-      "@i18n/*": ["src/i18n/*"],
-      "@config/*": ["src/config/*"],
-      "@tests/*": ["src/__tests__/*"]
+      "@/*": ["./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@components/*": ["./src/components/*"],
+      "@i18n/*": ["./src/i18n/*"],
+      "@config/*": ["./src/config/*"],
+      "@tests/*": ["./src/__tests__/*"]
     }
   },
   "include": [

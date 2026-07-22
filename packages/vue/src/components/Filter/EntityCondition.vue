@@ -158,7 +158,7 @@ async function setChild(schema: EntitySchema): Promise<void> {
         ? await resolveIntersection(childFilter.entities!)
         : await resolve(property.entity!);
     } catch {
-      invalidEntity.value = property.entity ?? childFilter.entities?.join(', ')!;
+      invalidEntity.value = (property.entity ?? childFilter.entities?.join(', '))!;
       return;
     }
     childFilter = childFilter.filter;
@@ -214,11 +214,11 @@ watch(
         />
       </div>
       <component
-        v-else
         :is="endQueueComponent"
+        v-else
+        v-model:collapsed="collapsed"
         :entity-schema="endQueuePropertySchema"
         :model-value="endQueueFilter"
-        v-model:collapsed="collapsed"
         @remove="removeEndFilter"
       >
         <template #entity-queue>

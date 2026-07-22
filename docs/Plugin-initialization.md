@@ -407,7 +407,7 @@ const config = {
 
 ### Custom input component
 
-When a type or property input resolves to a Vue component (rather than a native input type), that component owns the editing of the value. It receives the value through `v-model` and the following props, typed by the exported `CustomInputProps` (`import type { CustomInputProps } from '@query-kit/vue'`):
+When a type or property input resolves to a Vue component (rather than a native input type), that component owns the editing of the value. It receives the value through `v-model`, the props typed by the exported `CustomInputProps` (`import type { CustomInputProps } from '@query-kit/vue'`), and a forwarded `aria-label` attribute:
 
 | prop            | type    | description                                                                                            |
 | --------------- | ------- | ------------------------------------------------------------------------------------------------------ |
@@ -566,7 +566,7 @@ The default operators are:
 The `basic` operators are operators usable in condition that has a type not referenced in previous list (like `integer`, `string` ...).
 You can override any operator list with your own, you can specify new types with their allowed operators too.
 
-**Case-insensitive operators** are also available: `ilike`, `not_ilike`, `ibegins_with`, `idoesnt_begin_with`, `iends_with`, `idoesnt_end_with`. These are case-insensitive versions of their counterparts. See [aliasInsensitiveLabels](#alias-insensitive-labels) to control their display labels.
+**Case-insensitive operators** are also available: `ilike`, `not_ilike`, `ibegins_with`, `idoesnt_begin_with`, `iends_with`, `idoesnt_end_with`. These are case-insensitive versions of their counterparts. See [aliasInsensitiveLabels](#basic-options) to control their display labels.
 
 Example:
 

@@ -81,8 +81,8 @@ const workingValue = useWorkingValue<unknown>(modelValue, {
 <template>
   <InvalidType v-if="!inputType" :type-container="target" />
   <component
-    v-else-if="isVueComponent"
     :is="inputType"
+    v-else-if="isVueComponent"
     v-model="workingValue"
     :entity-schema="entitySchema"
     :target="target"

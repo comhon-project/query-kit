@@ -135,7 +135,7 @@ const rowEvents = (row: Record<string, unknown>) =>
         </template>
       </tr>
       <tr ref="observered" aria-hidden="true" style="opacity: 0">
-        <td :colspan="displayedFields.length" style="height: 1px; padding: 0; border: none"></td>
+        <td :colspan="displayedFields.length" style="height: 1px; padding: 0; border: none" />
       </tr>
     </tbody>
   </table>

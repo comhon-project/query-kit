@@ -1188,7 +1188,7 @@ describe('Collection', () => {
 
   describe('stale request handling', () => {
     it('discards stale request response when a newer request has started', async () => {
-      let resolvers: Array<(v: any) => void> = [];
+      const resolvers: Array<(v: any) => void> = [];
       const requester = {
         request: vi.fn(() => new Promise((resolve) => { resolvers.push(resolve); })),
       };

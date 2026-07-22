@@ -16,7 +16,7 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>();
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const collapsed = ref<boolean>(false);
 const ariaExpanded = computed<boolean>(() => !collapsed.value);
@@ -43,9 +43,9 @@ onMounted(() => {
       @tree-toggle="toggleCollapse"
     >
       <ChildGroup
+        v-model:collapsed="collapsed"
         :model-value="modelValue"
         :entity-schema="entitySchema"
-        v-model:collapsed="collapsed"
       >
         <template #builder_label>
           <slot name="builder_label" />

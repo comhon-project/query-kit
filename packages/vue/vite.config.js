@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import dts from 'vite-plugin-dts';
 
+const distDir = fileURLToPath(new URL('./dist', import.meta.url));
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -10,9 +12,11 @@ export default defineConfig({
     dts({
       root: fileURLToPath(new URL('.', import.meta.url)),
       tsconfigPath: fileURLToPath(new URL('./tsconfig.json', import.meta.url)),
-      outDirs: fileURLToPath(new URL('./dist', import.meta.url)),
+      outDirs: [distDir, { dir: distDir, moduleFormat: 'cjs' }],
       entryRoot: fileURLToPath(new URL('.', import.meta.url)),
       include: ['index.ts', 'src/**/*.ts', 'src/**/*.vue'],
+      exclude: ['src/__tests__/**'],
+      bundleTypes: true,
     }),
   ],
   root: './playground',

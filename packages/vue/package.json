@@ -12,11 +12,15 @@
   "exports": {
     ".": {
       "source": "./index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./dist/style.css": "./dist/style.css"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
   },
   "files": [
     "dist",
@@ -24,6 +28,7 @@
     "LICENSE",
     "README.md"
   ],
+  "sideEffects": false,
   "keywords": [
     "vue",
     "vue3",
@@ -38,7 +43,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/comhon-project/query-kit.git",
+    "url": "git+https://github.com/comhon-project/query-kit.git",
     "directory": "packages/vue"
   },
   "homepage": "https://github.com/comhon-project/query-kit",
@@ -52,35 +57,37 @@
     "test:unit": "vitest --config vitest.config.ts",
     "test:coverage": "vitest --config vitest.config.ts --coverage",
     "lint": "eslint . --fix",
-    "type-check": "vue-tsc --noEmit"
+    "lint:check": "eslint .",
+    "type-check": "vue-tsc --noEmit",
+    "check": "npm run lint:check && npm run type-check && vitest run --config vitest.config.ts && npm run build && publint && attw --pack .",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "luxon": "^3.7.2",
-    "vue": "^3.5.26"
+    "luxon": "^3.7.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.5",
-    "@babel/eslint-parser": "^7.28.5",
-    "@eslint/js": "^9.17.0",
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@fortawesome/fontawesome-svg-core": "^7.3.1",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@fortawesome/vue-fontawesome": "^3.0.3",
+    "@microsoft/api-extractor": "^7.58.12",
     "@query-kit/themes": "*",
     "@types/luxon": "^3.7.1",
-    "@types/node": "^25.0.3",
+    "@types/node": "^26.1.1",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.18",
-    "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/test-utils": "^2.2.4",
-    "eslint": "^9.39.2",
-    "eslint-plugin-vue": "^10.6.2",
-    "globals": "^15.14.0",
-    "jsdom": "^26.0.0",
+    "jsdom": "^29.1.1",
     "prettier": "^3.7.4",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.0",
+    "publint": "^0.3.21",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.5",
     "vite-plugin-dts": "^5.0.3",
     "vitest": "^4.0.16",
+    "vue": "^3.5.40",
     "vue-tsc": "^3.2.1"
   }
 }

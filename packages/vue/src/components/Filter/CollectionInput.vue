@@ -11,9 +11,9 @@ interface Props {
   entitySchema: EntitySchema;
 }
 
-const modelValue = defineModel<unknown[]>({ default: [] });
+const modelValue = defineModel<unknown[]>({ default: () => [] });
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   editable: true,
 });
 

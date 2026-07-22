@@ -114,7 +114,7 @@ const requesting = ref<boolean>(false);
 const fieldsProperties = shallowRef<Record<string, Property | undefined>>({});
 const collectionContent = shallowRef<CollectionContent>({ collection: [], fieldsProperties: {}, replaced: false });
 const count = ref<number>(0);
-const limit = ref<number | undefined>();
+const resolvedLimit = ref<number | undefined>();
 const end = ref<boolean>(false);
 const entitySchema = ref<EntitySchema>();
 const invalidFields = ref<string[]>([]);
@@ -136,7 +136,7 @@ const activeRequester = computed<Requester | RequesterFunction>(() => {
 });
 
 
-const pageCount = computed(() => (limit.value ? Math.max(1, Math.ceil(count.value / limit.value)) : 0));
+const pageCount = computed(() => (resolvedLimit.value ? Math.max(1, Math.ceil(count.value / resolvedLimit.value)) : 0));
 
 const exportedFilter = computed<Filter | undefined>(() =>
   autoRequest.value ? computedFilter.value : lastValidatedFilter.value,
@@ -342,7 +342,7 @@ function queueRequest(): void {
         entity: props.entity,
         sort: sortRequest,
         page: page.value,
-        limit: limit.value,
+        limit: resolvedLimit.value,
         filter: computedFilter.value,
         properties: properties,
       });
@@ -356,7 +356,7 @@ function queueRequest(): void {
         );
       }
       count.value = response.count;
-      limit.value = response.limit;
+      resolvedLimit.value = response.limit;
       if (props.postRequest) {
         const res = props.postRequest(response.collection);
         if (res instanceof Promise) {
@@ -374,7 +374,7 @@ function queueRequest(): void {
         replaced,
       };
 
-      if (infiniteScroll.value && response.collection.length < limit.value!) {
+      if (infiniteScroll.value && response.collection.length < resolvedLimit.value!) {
         end.value = true;
       }
     } catch (error) {
@@ -464,7 +464,7 @@ watchEffect(() => {
   config.reflow = props.reflow ?? globalConfig.reflow;
 });
 watchEffect(() => {
-  limit.value = props.limit ?? globalConfig.limit;
+  resolvedLimit.value = props.limit ?? globalConfig.limit;
 });
 
 watch(

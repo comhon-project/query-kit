@@ -125,7 +125,7 @@ function submitForm(): void {
     <template #body>
       <div v-if="invalidProperties.length || invalidScopes.length" :class="classes.error_message_bag">
         <InvalidProperty v-for="name in invalidProperties" :key="name" :property="name" />
-        <InvalidScope v-for="id in invalidScopes" :key="id" :id="id" />
+        <InvalidScope v-for="id in invalidScopes" :id="id" :key="id" />
       </div>
       <form ref="form" :class="classes.filter_picker" @submit.prevent="validate">
         <fieldset>

@@ -60,15 +60,15 @@ function toggleCollapse(): void {
     role="treeitem"
     :class="classes.group_list_item"
     :tabindex="-1"
-    @tree-toggle="toggleCollapse"
     :aria-expanded="ariaExpanded"
     :aria-label="translate(modelValue.type)"
+    @tree-toggle="toggleCollapse"
   >
     <component
       :is="component"
+      v-model:collapsed="collapsed"
       :model-value="modelValue"
       :entity-schema="entitySchema"
-      v-model:collapsed="collapsed"
       @remove="$emit('remove', modelValue.key)"
     />
   </li>
