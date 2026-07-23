@@ -2,10 +2,13 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import dts from 'vite-plugin-dts';
+import { resolve } from './vite.shared.js';
 
+// Library build only. Rooted at the package directory: the entry is `index.ts`
+// and the output is `dist/`, both siblings of this file. The playground (dev
+// server and its static build) lives entirely in vite.playground.config.js.
 const distDir = fileURLToPath(new URL('./dist', import.meta.url));
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
@@ -19,20 +22,9 @@ export default defineConfig({
       bundleTypes: true,
     }),
   ],
-  root: './playground',
-  resolve: {
-    conditions: ['source'],
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@core': fileURLToPath(new URL('./src/core', import.meta.url)),
-      '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
-      '@i18n': fileURLToPath(new URL('./src/i18n', import.meta.url)),
-      '@config': fileURLToPath(new URL('./src/config', import.meta.url)),
-      '@tests': fileURLToPath(new URL('./src/__tests__', import.meta.url)),
-    },
-  },
+  resolve,
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
     lib: {
       entry: fileURLToPath(new URL('./index.ts', import.meta.url)),

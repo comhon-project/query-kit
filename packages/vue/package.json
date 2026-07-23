@@ -58,9 +58,10 @@
     "url": "https://github.com/comhon-project/query-kit/issues"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --config vite.playground.config.js",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "build:playground": "vite build --config vite.playground.config.js",
+    "preview": "vite preview --config vite.playground.config.js",
     "test:unit": "vitest --config vitest.config.ts",
     "test:coverage": "vitest --config vitest.config.ts --coverage",
     "lint": "eslint . --fix",

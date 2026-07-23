@@ -2,7 +2,13 @@
 
 A fully functional playground is included with this library, allowing you to explore and experiment with all available features.
 
-## Getting Started
+## Try it online
+
+The playground is deployed and ready to use, no setup required:
+
+[**Open the live playground →**](https://comhon-project.github.io/query-kit/playground/ ':target=_blank')
+
+## Run it locally
 
 ### Prerequisites
 

@@ -72,6 +72,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['**/node_modules/', '**/dist/'],
+    ignores: ['**/node_modules/', '**/dist/', '**/dist-playground/', '**/_site/'],
   },
 );

@@ -2,6 +2,8 @@
 
 Vue 3 query builder and filter UI components, plus a schema-driven data table for displaying the results. Build complex nested filter and query conditions, then let users browse, sort and paginate the matching data collection, with the actual querying delegated to your own server.
 
+**[Try the live playground →](https://comhon-project.github.io/query-kit/playground/)**
+
 ![query-kit screenshot](https://github.com/user-attachments/assets/8ac614bc-75e9-45b3-8cac-2117407b0b20)
 
 ## Features

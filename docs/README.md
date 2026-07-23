@@ -2,6 +2,8 @@
 
 `query-kit` is a Vue 3 library that permits to build complex queries and display items collections with an intuitive user interface.
 
+[**Try the live playground →**](https://comhon-project.github.io/query-kit/playground/ ':target=_blank')
+
 ## Features
 
 - **Filter builder**: Create complex nested filters with conditions, groups, scopes and relationship conditions

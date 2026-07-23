@@ -1,0 +1,68 @@
+name: Deploy docs and playground to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least-privilege token: only what artifact-based Pages deployment needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publish at a time; never cancel an in-flight deployment.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Quality gate before anything goes public: a failure here fails the job,
+      # and the `deploy` job (needs: build) never runs. Same gate as the local
+      # pre-commit hook, so a bypassed (--no-verify) or hook-less commit can't
+      # ship a broken site.
+      - name: Quality gate (lint, type-check, tests, build, publint, attw)
+        run: npm run check
+
+      - name: Build playground (static app)
+        run: npm run build:playground
+
+      - name: Assemble site (docsify at root, playground under /playground)
+        run: |
+          mkdir -p _site
+          cp -r docs/. _site/
+          cp -r packages/vue/dist-playground _site/playground
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
