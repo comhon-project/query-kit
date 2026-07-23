@@ -1,7 +1,7 @@
 {
   "name": "@query-kit/vue",
   "version": "1.0.0",
-  "description": "Vue 3 library for building complex queries and displaying object collections with an intuitive user interface",
+  "description": "Vue 3 query builder and filter UI components, plus a schema-driven, sortable and paginated data table for displaying results. Server-side querying, written in TypeScript.",
   "author": "Jean-Philippe Perrotton <jeanphilippe.perrotton@gmail.com>",
   "license": "MIT",
   "private": false,
@@ -32,13 +32,20 @@
   "keywords": [
     "vue",
     "vue3",
+    "query-builder",
+    "filter-builder",
     "query",
     "filter",
-    "search",
-    "collection",
-    "query-builder",
-    "data-table",
     "filtering",
+    "search",
+    "advanced-search",
+    "condition",
+    "operators",
+    "data-table",
+    "datatable",
+    "pagination",
+    "schema-driven",
+    "typescript",
     "ui"
   ],
   "repository": {

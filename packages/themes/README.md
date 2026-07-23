@@ -1,6 +1,6 @@
 # @query-kit/themes
 
-CSS themes for [@query-kit/vue](https://github.com/comhon-project/query-kit) components.
+CSS themes for [@query-kit/vue](https://www.npmjs.com/package/@query-kit/vue) components.
 
 ## Installation
 
