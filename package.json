@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "npm run dev -w @query-kit/vue",
     "build": "npm run build -w @query-kit/vue",
     "preview": "npm run preview -w @query-kit/vue",

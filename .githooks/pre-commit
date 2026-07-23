@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Quality gate: every commit must be green on its own.
+# `check` runs lint + type-check + unit tests + build + publint + attw.
+# A non-zero exit here aborts the commit. Real emergency escape: git commit --no-verify
+npm run check

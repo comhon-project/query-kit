@@ -53,7 +53,7 @@
     "url": "git+https://github.com/comhon-project/query-kit.git",
     "directory": "packages/vue"
   },
-  "homepage": "https://github.com/comhon-project/query-kit",
+  "homepage": "https://comhon-project.github.io/query-kit/",
   "bugs": {
     "url": "https://github.com/comhon-project/query-kit/issues"
   },
