@@ -15,6 +15,13 @@ export default defineConfig(({ mode }) => ({
   root: './playground',
   resolve,
   build: {
+    // Preserve light-dark() in the theme CSS. Vite 8's default target
+    // ('baseline-widely-available') makes lightningcss lower light-dark() into a
+    // prefers-color-scheme polyfill, which only follows the OS and ignores the
+    // `color-scheme` the theme switcher forces. Targeting browsers that support
+    // light-dark() natively keeps it intact so manual light/dark switching works
+    // in the built site.
+    cssTarget: ['chrome123', 'firefox120', 'safari17.5'],
     outDir: '../dist-playground',
     emptyOutDir: true,
   },
