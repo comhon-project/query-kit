@@ -440,6 +440,12 @@
   display: flex;
   gap: var(--qkit-gap-spacer);
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.qkit-entity-condition-queue-item:not(:first-child)::before {
+  content: '→';
+  color: var(--qkit-text-muted);
 }
 
 .qkit-entity-condition-queue-item input[type='number'] {
