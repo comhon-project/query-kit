@@ -1,8 +1,52 @@
 import { describe, it, expect } from 'vitest';
+import { reactive } from 'vue';
 import { normalizeFilter, prepareFilters, stripKeys } from '@core/filterNormalize';
 import type { ConditionFilter, Filter, GroupFilter } from '@core/types';
 
 describe('filterNormalize', () => {
+  describe('reactive (proxy) input', () => {
+    it('de-proxies a first-level reactive proxy (shallow spread of a reactive ref) and normalizes it', () => {
+      const src = reactive<GroupFilter>({
+        type: 'group',
+        operator: 'and',
+        filters: [{ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }],
+      });
+      // Shallow spread of a reactive value: `filters` stays a reactive Proxy.
+      const polluted = { ...src } as GroupFilter;
+
+      const result = normalizeFilter(polluted);
+
+      expect(result.type).toBe('group');
+      expect(result.operator).toBe('and');
+      expect(result.filters).toHaveLength(1);
+      expect(result.filters[0]).toEqual(
+        expect.objectContaining({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' }),
+      );
+    });
+
+    it('throws an actionable error when a reactive proxy is nested too deep to be de-proxied', () => {
+      const deepCondition = reactive({ type: 'condition', property: 'first_name', operator: '=', value: 'Alice' });
+      const filter = { type: 'group', operator: 'and', filters: [deepCondition] } as unknown as GroupFilter;
+
+      expect(() => normalizeFilter(filter)).toThrow(
+        /\[query-kit\] The filter could not be cloned: it contains Vue reactive proxies/,
+      );
+    });
+
+    it('throws a generic error when no Vue proxy can be confirmed (e.g. a function value)', () => {
+      const withFunction = {
+        type: 'group',
+        operator: 'and',
+        filters: [],
+        onClick: () => {},
+      } as unknown as GroupFilter;
+
+      expect(() => normalizeFilter(withFunction)).toThrow(
+        /\[query-kit\] The filter could not be cloned: it contains a value that structuredClone cannot handle/,
+      );
+    });
+  });
+
   describe('prepareFilters', () => {
     it('assigns a key to every node lacking one', () => {
       const filter: GroupFilter = {

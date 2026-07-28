@@ -1,4 +1,4 @@
-import { toRaw } from 'vue';
+import { toClonedGroup } from '@core/filterNormalize';
 import { resolve, resolveIntersection, type EntitySchema, type Scope } from '@core/EntitySchema';
 import { getComputedScope, type ComputedScope } from '@core/ComputedScopesManager';
 import type { Filter, GroupFilter, ScopeFilter } from '@core/types';
@@ -54,10 +54,7 @@ function mustKeepFilter(filter: Filter, entitySchema: EntitySchema): boolean {
 
 export async function computeFilter(filter: Filter | null | undefined, entity: string): Promise<GroupFilter> {
   const entitySchema = await resolve(entity);
-  const raw = filter ? (toRaw(filter) as Filter) : null;
-  const group: GroupFilter =
-    raw && raw.type === 'group' ? raw : { type: 'group', operator: 'and', filters: raw ? [raw] : [] };
-  const computed = structuredClone(group);
+  const computed = toClonedGroup(filter);
   const stack: Array<[Filter, EntitySchema]> = [[computed, entitySchema]];
   while (stack.length) {
     const [currentFilter, currentSchema] = stack.pop()!;
