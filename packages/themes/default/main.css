@@ -452,6 +452,11 @@
   field-sizing: content;
 }
 
+/* webkit/blink only; no equivalent on Firefox (spinner not stylable). */
+.qkit-entity-condition-queue-item input[type='number']::-webkit-inner-spin-button {
+  margin-left: var(--qkit-padding-md);
+}
+
 @supports not (field-sizing: content) {
   .qkit-entity-condition-queue-item input[type='number'] {
     width: 6ch;
