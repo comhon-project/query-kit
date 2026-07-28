@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import IconButton from '@components/Common/IconButton.vue';
 import Modal from '@components/Common/Modal.vue';
 import FieldsList from '@components/Collection/FieldsList.vue';
@@ -31,6 +31,10 @@ function confirm(): void {
 function resetDraft(): void {
   draft.value = [...fields.value];
 }
+
+watch(fields, () => {
+  if (!showModal.value) resetDraft();
+});
 </script>
 
 <template>

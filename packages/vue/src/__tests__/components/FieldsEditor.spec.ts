@@ -90,6 +90,16 @@ describe('FieldsEditor', () => {
     expect(wrapper.findAll('dialog li').length).toBe(2);
   });
 
+  it('resyncs the draft when the model changes while the modal is closed (e.g. entity switch)', async () => {
+    await mount(['first_name', 'last_name']);
+
+    await wrapper.setProps({ modelValue: ['gender'] });
+    await flushAll();
+
+    await openModal();
+    expect(wrapper.findAll('dialog li').length).toBe(1);
+  });
+
   it('disables the confirm button when the draft is empty', async () => {
     await mount(['first_name']);
     await openModal();
