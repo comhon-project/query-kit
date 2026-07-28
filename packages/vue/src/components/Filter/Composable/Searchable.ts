@@ -24,6 +24,7 @@ const useSearchable = (config: FilterBuilderConfig, props: { entitySchema: Entit
   watchEffect(async () => {
     const entity = props.entitySchema.id;
     const filter = config.allowedProperties?.[entity];
+    const allowedOperators = config.allowedOperators;
     const schemaPropertyIds = props.entitySchema.properties.map((p) => p.id);
     let propertyNames = (await getFiltrableProperties(entity)).filter((name) => schemaPropertyIds.includes(name));
     if (propertyNames.length && filter) {
@@ -31,7 +32,7 @@ const useSearchable = (config: FilterBuilderConfig, props: { entitySchema: Entit
     }
     const properties: Property[] = [];
     const invalid: string[] = [];
-    const hasRelationshipOperator = getContainerOperators('entity_condition', config.allowedOperators).length;
+    const hasRelationshipOperator = getContainerOperators('entity_condition', allowedOperators).length;
     for (const propertyName of propertyNames) {
       try {
         const property = props.entitySchema.getProperty(propertyName);
@@ -39,7 +40,7 @@ const useSearchable = (config: FilterBuilderConfig, props: { entitySchema: Entit
           if (hasRelationshipOperator) {
             properties.push(property);
           }
-        } else if (getConditionOperators(property, config.allowedOperators).length) {
+        } else if (getConditionOperators(property, allowedOperators).length) {
           properties.push(property);
         }
       } catch (e) {

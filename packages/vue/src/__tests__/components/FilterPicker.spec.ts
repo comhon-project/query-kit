@@ -11,8 +11,9 @@ import { registerLoader as registerRequestLoader } from '@core/RequestSchema';
 import { entitySchemaLoader, entityTranslationsLoader } from '@tests/assets/SchemaLoader';
 import { requestSchemaLoader } from '@tests/assets/RequestSchemaLoader';
 import { mountWithPlugin } from '@tests/helpers/mountPlugin';
-import { builderConfigProvide } from '@tests/helpers/provideConfig';
+import { builderConfigProvide, defaultFilterBuilderConfig } from '@tests/helpers/provideConfig';
 import { flushAll } from '@tests/helpers/flushAsync';
+import { filterBuilderConfigKey } from '@core/InjectionKeys';
 import { locale } from '@i18n/i18n';
 import type { VueWrapper } from '@vue/test-utils';
 import type { EntitySchema } from '@core/EntitySchema';
@@ -167,6 +168,42 @@ describe('FilterPicker', () => {
 
     const radios = wrapper.findAll('input[type="radio"]');
     expect(radios.length).toBe(1);
+  });
+
+  it('re-filters properties when allowedOperators changes at runtime', async () => {
+    // A reactive config so we can toggle allowedOperators after mount, like the
+    // freeze switch does. This is what the async-watchEffect tracking bug broke.
+    const config = reactive(defaultFilterBuilderConfig());
+    const showRef = reactive({ value: true });
+    wrapper = mountWithPlugin(FilterPicker, {
+      props: {
+        entitySchema: schema,
+        show: showRef.value,
+        'onUpdate:show': (v: boolean) => {
+          showRef.value = v;
+          wrapper.setProps({ show: v });
+        },
+      },
+      global: { provide: { [filterBuilderConfigKey as symbol]: config } },
+    });
+    await flushAll();
+
+    // every property + scope is available initially (11 properties + 4 scopes)
+    expect(wrapper.findAll('select option').length).toBe(15);
+
+    // remove every operator at runtime; the property list must react
+    config.allowedOperators = {
+      condition: { basic: [], enum: [], date: [], time: [], datetime: [], boolean: [], array: [] },
+      group: [],
+      entity_condition: [],
+    };
+    await flushAll();
+
+    const values = wrapper.findAll('select option').map((o) => o.attributes('value'));
+    expect(wrapper.findAll('select option').length).toBe(4); // only the 4 scopes remain
+    expect(values).not.toContain('first_name');
+    expect(values).not.toContain('company');
+    expect(values).toContain('scope');
   });
 
   it('disables select when group radio is selected', async () => {
