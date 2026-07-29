@@ -1,6 +1,6 @@
 {
   "name": "@query-kit/vue",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Vue 3 query builder and filter UI components, plus a schema-driven, sortable and paginated data table for displaying results. Server-side querying, written in TypeScript.",
   "author": "Jean-Philippe Perrotton <jeanphilippe.perrotton@gmail.com>",
   "license": "MIT",
