@@ -83,14 +83,18 @@ function generateValue(property: RawProperty): unknown {
     case 'country':
       return String(Math.floor(Math.random() * 3) + 1);
     case 'array': {
-      const count = Math.floor(Math.random() * 4);
+      const count = Math.floor(Math.random() * 3);
+      if (property.items?.enum) {
+        const available = ENUMS[property.items.enum]?.cases.length ?? 0;
+        const chosen = new Set<string>();
+        while (chosen.size < Math.min(count, available)) {
+          chosen.add(randomEnumCase(property.items.enum));
+        }
+        return [...chosen];
+      }
       const items: unknown[] = [];
       for (let i = 0; i < count; i++) {
-        if (property.items?.enum) {
-          items.push(randomEnumCase(property.items.enum));
-        } else {
-          items.push(generateValue({ id: '', type: property.items?.type || 'string' }));
-        }
+        items.push(generateValue({ id: '', type: property.items?.type || 'string' }));
       }
       return items;
     }

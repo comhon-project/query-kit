@@ -70,7 +70,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeIfOutside));
 
 <template>
   <!-- single -->
-  <select v-if="!multiple" :disabled="disabled" :value="singleValue" @change="onSingleChange">
+  <select v-if="!multiple" class="qkit-input" :disabled="disabled" :value="singleValue" @change="onSingleChange">
     <option value="" />
     <option v-for="o in options" :key="o.value" :value="o.value">{{ o.flag }} {{ o.label }}</option>
   </select>
