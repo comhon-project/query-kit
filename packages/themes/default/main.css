@@ -1082,6 +1082,9 @@
     border-radius: var(--qkit-border-radius-md);
     overflow: hidden;
   }
+  [data-qkit-reflow] .qkit-collection-table tbody tr:first-child {
+    margin-top: var(--qkit-padding-md);
+  }
   [data-qkit-reflow] .qkit-collection-table tbody td {
     display: flex;
     align-items: center;
