@@ -746,6 +746,7 @@
   top: anchor(bottom);
 }
 .qkit-loading[position='bottom'] {
+  position-anchor: normal;
   top: auto;
   bottom: 0;
   translate: -50% -5px;
@@ -1060,7 +1061,7 @@
   }
   /* The header (spinner's wide-screen anchor) is hidden and no longer sticky here,
      so anchor the top spinner to the stable results container instead. */
-  [data-qkit-reflow] .qkit-loading {
+  [data-qkit-reflow] .qkit-loading[position='top'] {
     position-anchor: --qkit-collection-content;
     top: anchor(top);
   }
